@@ -1,5 +1,5 @@
 {
-  "name": "PrepArena",
+  "name": "preparena",
   "private": true,
   "scripts": {
     "build": "turbo build",
