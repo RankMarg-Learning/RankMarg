@@ -181,7 +181,8 @@ export class ChallengeManager {
         if (!availableGame) {
           const challenge = new Challenge(
             challengeFromDb?.player1Id!,
-            challengeFromDb?.player2Id!
+            challengeFromDb?.player2Id!,
+            challengeId
           );
           // challenge.seedMoves(challengeFromDb?.moves || []);
           this.challenges.push(challenge);

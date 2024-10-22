@@ -46,19 +46,20 @@ enum Provider {
 }
 
 model Question {
-  id          String       @id @default(uuid())
-  slug        String       @unique
-  type        QuestionType
-  content     String
-  difficulty  String
-  topic       String
-  subject     String
-  class       String
-  tag         String?
-  options     Option[]
-  isnumerical Float?
-  isTrueFalse Boolean?
-  accuracy    Float?       @default(0)
+  id           String       @id @default(uuid())
+  slug         String       @unique
+  type         QuestionType
+  content      String
+  difficulty   String
+  topic        String
+  subject      String
+  class        String
+  tag          String?
+  options      Option[]
+  isnumerical  Float?
+  isTrueFalse  Boolean?
+  accuracy     Float?       @default(0)
+  questionTime Int?         @default(5)
 
   attempts  Attempt[]
   challenge Challenge[]

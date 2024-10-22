@@ -26,6 +26,7 @@ export interface Userprops {
     isTrueFalse?: boolean; // True/False answer if applicable
     attempts: Attempt[]; // List of attempts related to this question
     accuracy?: number; // Accuracy of the question
+    questionTime?: number; // Time taken to solve the question
     createdAt: string; // DateTime in ISO string format
   }
   export interface Option {

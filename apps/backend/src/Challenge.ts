@@ -1,18 +1,19 @@
 import { randomUUID } from "crypto";
 import { socketManager, User } from "./SocketManager";
 import { db } from "./db";
-import { INIT_GAME } from "./messages";
+import { Question } from "@prisma/client";
 
 export class Challenge {
   public challengeId: string;
   public player1Id: string;
   public player2Id: string | null;
   public result: string | null = null;
-  public questions: any[] = [];
+  public questions: Question[] = [];
   public player1Score: number[] = [];
   public player2Score: number[] = [];
   private startTime = new Date(Date.now());
-  private lastTime = new Date(Date.now());
+  private timeoutId: NodeJS.Timeout | null = null;
+  private timeLimit: number = 100000;
 
   constructor(
     player1UserId: string,
@@ -25,50 +26,61 @@ export class Challenge {
     this.player2Id = player2UserId;
     this.challengeId = challengeId ?? randomUUID();
     if (!questionCount) {
-      questionCount = 1;
+      questionCount = 2;
     }
     this.loadRandomQuestions(questionCount);
     if (startTime) {
       this.startTime = startTime;
-      this.lastTime = startTime;
     }
+  }
+
+  startChallengeTimer() {
+    this.timeoutId = setInterval(() => {
+      const elapsedTime = Date.now() - this.startTime.getTime();
+      const remainingTime = this.timeLimit - elapsedTime;
+
+      if (remainingTime <= 0) {
+        clearInterval(this.timeoutId!);
+        this.endChellenge();
+      } else {
+        console.log("Remaining time:", remainingTime);
+        // Emit the remaining time to the frontend
+      }
+    }, 1000);
   }
 
   async loadRandomQuestions(questionCount: number) {
     try {
-      const questions = await db.$queryRaw`
+      const questions: Question[] = await db.$queryRaw`
       SELECT * FROM "Question" 
       ORDER BY RANDOM() 
       LIMIT ${questionCount}
   `;
-      this.questions.push(questions);
+      this.questions.push(...questions);
     } catch (error) {
       console.error("Error fetching questions:", error);
     }
   }
 
-  async answerQuestion(user: User, questionId: string, isCorrect: string) {
-    const question = this.questions.find((q) => q.id === questionId);
+  async answerQuestion(user: User, questionId: string, isCorrect: boolean) {
+    const question = this.questions.find((q) => {
+      return q.id === questionId;
+    });
+
+    console.log("Question:", this.questions.length);
+
     if (!question) {
       console.error("Question not found?");
       return;
     }
 
-    if (isCorrect) {
-      if (user.userId === this.player1Id) {
-        this.player1Score.push(1);
-      } else {
-        this.player2Score.push(1);
-      }
+    if (user.userId === this.player1Id) {
+      this.player1Score.push(isCorrect ? 1 : 0);
+      // this.player1Times.push(timeTaken);
     } else {
-      if (user.userId === this.player1Id) {
-        this.player1Score.push(0);
-      } else {
-        this.player2Score.push(0);
-      }
+      this.player2Score.push(isCorrect ? 1 : 0);
+      // this.player2Times.push(timeTaken);
     }
-
-    this.lastTime = new Date(Date.now());
 
     socketManager.broadcast(
       this.challengeId,
@@ -83,7 +95,10 @@ export class Challenge {
       })
     );
 
+    //!Average time taken to solve each question [use this method to find the winner]
+
     //!This Logic for isChallengeOver is some what wrong plz test it.
+    console.log(this.isChallengeOver());
     if (this.isChallengeOver()) {
       this.endChellenge();
     }
@@ -91,16 +106,19 @@ export class Challenge {
 
   isChallengeOver() {
     return (
-      this.questions.length === this.player1Score.length ||
-      this.player2Score.length
+      this.player1Score.length === this.questions.length &&
+      this.player2Score.length === this.questions.length
     );
   }
 
   async endChellenge() {
+    const player1TotalScore = this.player1Score.reduce((a, b) => a + b, 0); // Sum of player 1 scores
+    const player2TotalScore = this.player2Score.reduce((a, b) => a + b, 0);
+
     this.result =
-      this.player1Score > this.player2Score
+      player1TotalScore > player2TotalScore
         ? this.player1Id
-        : this.player1Score < this.player2Score
+        : player1TotalScore < player2TotalScore
           ? this.player1Id
           : "DRAW";
     await db.challenge.update({
@@ -169,10 +187,10 @@ export class Challenge {
         },
       })
     );
+    this.startChallengeTimer();
   }
   async createGameInDb() {
     this.startTime = new Date(Date.now());
-    this.lastTime = this.startTime;
 
     const challenge = await db.challenge.create({
       data: {
