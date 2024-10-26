@@ -18,13 +18,15 @@ export interface Userprops {
     type: "MCQ" | "NUM" | "TF"; // Use your QuestionType enum values
     content: string; // Content of the question (e.g., Markdown or text)
     difficulty: string; // Difficulty level (e.g., 'easy', 'medium', 'hard')
+    topic: string; // Topic of the question
     subject: string; // Subject of the question
     class: string; // Class level (e.g., '11th', '12th', 'Foundation')
+    tag?: string; // List of tags related to the question
     options: Option[]; // Options related to this question
-    correctOptions: Option[]; // Correct options for this question
-    numericalAnswer?: number; // Numerical answer if applicable
+    isnumerical?: number; // Numerical answer if applicable
     isTrueFalse?: boolean; // True/False answer if applicable
     attempts: Attempt[]; // List of attempts related to this question
+    challenge: ChallengeProps[]; // List of challenges related to this question
     accuracy?: number; // Accuracy of the question
     questionTime?: number; // Time taken to solve the question
     createdAt: string; // DateTime in ISO string format
@@ -36,12 +38,25 @@ export interface Userprops {
   }
   
   export interface Attempt {
-    id: string;
     userId: string; // ID of the user who attempted the question
     questionId: string; // ID of the question being attempted
     isCorrect: boolean; // Whether the user's attempt was correct
-    attemptDate: string; // DateTime in ISO string format
-    status: "SOLVED" | "UNSOLVED" | "ATTEMPTED"; // Status of the attempt
+    solvedAt: string; // DateTime in ISO string format
+  }
+
+  export interface ChallengeProps {
+    challengeId: string;
+    player1Id: string;
+    player2Id?: string;
+    status:string;
+    result?: string;
+    questions: QuestionProps[];
+    player1Score: number;
+    player2Score: number;
+    startTime: Date;
+    endedAt: Date;
+    createdAt: Date;
+    updatedAt: Date;
   }
   
   export interface ContributeFormProps {

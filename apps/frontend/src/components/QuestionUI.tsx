@@ -8,6 +8,7 @@ import Select from './Select';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { QuestionProps } from '@/types';
 
 //Create True/False options for the question
 const TF = [
@@ -18,10 +19,22 @@ const TF = [
     content: "False",
   },
 ];
+interface attempDataProps {
+  questionId: string;
+  userId: string;
+  isCorrect: boolean;
+  selectedOptions: number[];
+}
+
+interface QuestionShowProps extends Omit<QuestionProps, "challenge" | "attempts" | "createdAt"> {}
 
 
+interface QuestionUIProps {
+  question: QuestionShowProps;
+  handleAttempt: (attemptData: attempDataProps) => void;
+}
 
-const QuestionUI = ({question,handleAttempt}) => {
+const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
   const { data: session } = useSession();
   const router = useRouter();
   const { toast } = useToast()
@@ -92,6 +105,7 @@ const QuestionUI = ({question,handleAttempt}) => {
       questionId: question.id, // Replace with actual question ID
       userId: session?.user?.id, // Replace with actual user ID
       isCorrect: isCorrect,
+      selectedOptions
       
     };
     if(isCorrect){
@@ -147,7 +161,8 @@ const QuestionUI = ({question,handleAttempt}) => {
               </Tooltip>
             </TooltipProvider> */}
 
-            <Badge variant={question.difficulty}>{question.difficulty}</Badge>
+            {/*!Change Difficulty type to enum <Badge variant={question.difficulty}>{question.difficulty}</Badge> */}
+            <Badge variant={"Medium"}>{question.difficulty}</Badge>
             <Badge
               variant="secondary"
             > 

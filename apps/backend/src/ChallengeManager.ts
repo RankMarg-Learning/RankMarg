@@ -52,7 +52,7 @@ export class ChallengeManager {
   private addHandler(user: User) {
     user.socket.on("message", async (data) => {
       const message = JSON.parse(data.toString());
-      if (message.type === INIT_GAME) {
+      if (message.type === "INIT_CHALLENGE") {
         if (this.pendingChallengeId) {
           const challenge = this.challenges.find(
             (x) => x.challengeId === this.pendingChallengeId
@@ -85,14 +85,14 @@ export class ChallengeManager {
           socketManager.broadcast(
             challenge.challengeId,
             JSON.stringify({
-              type: GAME_ADDED,
+              type: "CHALLENGE_ADD",
               challengeId: challenge.challengeId,
             })
           );
         }
       }
 
-      if (message.type === MOVE) {
+      if (message.type === "CHALLENGE_UPDATE") {
         const challengeId = message.payload.challengeId;
         const challenge = this.challenges.find(
           (challenge) => challenge.challengeId === challengeId

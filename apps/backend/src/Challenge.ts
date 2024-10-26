@@ -43,7 +43,7 @@ export class Challenge {
         clearInterval(this.timeoutId!);
         this.endChellenge();
       } else {
-        console.log("Remaining time:", remainingTime);
+        // console.log("Remaining time:", remainingTime);
         // Emit the remaining time to the frontend
       }
     }, 1000);
@@ -56,9 +56,18 @@ export class Challenge {
       ORDER BY RANDOM() 
       LIMIT ${questionCount}
   `;
+      this.timeCalculate();
       this.questions.push(...questions);
     } catch (error) {
       console.error("Error fetching questions:", error);
+    }
+  }
+
+  timeCalculate() {
+    if (this.questions.length > 0) {
+      this.questions.forEach((question) => {
+        if (question.questionTime) this.timeLimit += question.questionTime;
+      });
     }
   }
 
@@ -95,9 +104,6 @@ export class Challenge {
       })
     );
 
-    //!Average time taken to solve each question [use this method to find the winner]
-
-    //!This Logic for isChallengeOver is some what wrong plz test it.
     console.log(this.isChallengeOver());
     if (this.isChallengeOver()) {
       this.endChellenge();
@@ -170,18 +176,16 @@ export class Challenge {
     socketManager.broadcast(
       this.challengeId,
       JSON.stringify({
-        type: "GAME_STARTED",
+        type: "CHALLENGE_START",
         payload: {
-          gameId: this.challengeId,
+          challengeId: this.challengeId,
           Player1: {
             name: Player1?.username,
             id: this.player1Id,
-            isGuest: false,
           },
           Player2: {
             name: Player2?.username,
             id: this.player2Id,
-            isGuest: false,
           },
           questions: this.questions, //TODO:questions: this.questions.map(q => ({ id: q._id, content: q.content })),
         },

@@ -10,6 +10,9 @@
     "lint": "next lint",
     "postinstall": "prisma generate"
   },
+  "prisma": {
+    "schema": "packages/db/prisma/schema.prisma"
+  },
   "dependencies": {
     "@repo/db": "*",
     "@hookform/resolvers": "^3.9.0",
@@ -51,7 +54,8 @@
     "slugify": "^1.6.6",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "recoil": "^0.7.7"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

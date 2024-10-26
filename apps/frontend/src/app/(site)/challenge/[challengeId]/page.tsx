@@ -1,10 +1,11 @@
 "use client";
 
 import QuestionUI from "@/components/QuestionUI";
+import { useSocket } from "@/hooks/useSocket";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import {  useEffect, useState } from "react";
+import {  use, useEffect, useState } from "react";
 
 interface attempDataProps {
   questionId: string;
@@ -13,11 +14,12 @@ interface attempDataProps {
   isCorrect: boolean;
 }
 
+const questionType = "MCQ" as "MCQ" | "NUM" | "TF";
 const questions = [
   {
     "id": "fb085ef3-842b-46c3-a5a2-533d5f7f372c",
     "slug": "physics-gravity-mcq-1",
-    "type": "MCQ",
+    "type": questionType,
     "content": "What is the acceleration due to gravity on Earth?",
     "difficulty": "medium",
     "topic": "Gravity",
@@ -33,11 +35,12 @@ const questions = [
     "isnumerical": null,
     "isTrueFalse": false,
     "accuracy": 0.75
+
   },
   {
     "id": "fb085ef3-842b-46c3-a5a2-533d5f7f372c",
     "slug": "math-pythagoras-mcq-1",
-    "type": "MCQ",
+    "type": questionType,
     "content": "In a right triangle, if a=3 and b=4, what is the length of the hypotenuse?",
     "difficulty": "easy",
     "topic": "Pythagoras Theorem",
@@ -57,7 +60,7 @@ const questions = [
   {
     "id": "q3",
     "slug": "chemistry-water-mcq-1",
-    "type": "MCQ",
+    "type": questionType,
     "content": "What is the chemical formula of water?",
     "difficulty": "easy",
     "topic": "Water",
@@ -77,7 +80,7 @@ const questions = [
   {
     "id": "q4",
     "slug": "biology-photosynthesis-mcq-1",
-    "type": "MCQ",
+    "type": questionType,
     "content": "Which of the following is necessary for photosynthesis?",
     "difficulty": "medium",
     "topic": "Photosynthesis",
@@ -97,7 +100,7 @@ const questions = [
   {
     "id": "q5",
     "slug": "history-independence-mcq-1",
-    "type": "MCQ",
+    "type": questionType,
     "content": "In which year did India gain independence?",
     "difficulty": "easy",
     "topic": "Independence",
@@ -121,35 +124,43 @@ const questions = [
 
 const ChallengePage = ({params}:{params:{challengeId:string}}) => {
   const { challengeId } = params;
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const socket = useSocket();
+
+  const [questions1, setQuestions] = useState<any>([]);
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.send(
+      JSON.stringify({
+        type: "CHALLENGE_JOIN",
+        payload: { challengeId }
+      })
+    );
 
 
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      switch (message.type) {
+        case "CHALLENGE_ADD":
+          console.log("Challenge Added");
+          break;
+        case "CHALLENGE_INIT":
+          console.log("Challenge Initialized");
+          break;
+        case "CHALLENGE_START":
+          console.log(message.payload);
+          setQuestions(message.payload.questions);
+          break;
+        case "GAME_OVER":
+          console.log("Game Over");
+          break;
+      }
+    };
+  }, [socket]);
 
- useEffect(() => {
-   if (status === 'loading') return;
 
-   if (status === 'unauthenticated') {
-     router.push('/sign-in');
-     return;
-   }
-
-   async function checkChallengeStatus() {
-     try {
-       // Join the challenge
-       const response = await axios.post('/api/challenge/join', { user2Id: session?.user?.id,challengeId  });
-
-       if (response.status === 200) {
-         console.log('Waiting for User2 to join...');
-       }
-     } catch (error) {
-       console.error(error);
-     }
-   }
-
-   checkChallengeStatus();
- }, [status, challengeId, router]);
-
+ 
+  
  
  
  
@@ -159,6 +170,7 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
  const [attempts, setAttempts] = useState([]);
  const question = questions[currentQuestionIndex];
+ console.log(questions1);
 
  const handleAttempt = async(attemptData:attempDataProps) => {
   try {
@@ -193,7 +205,7 @@ const getButtonColor = (index) => {
   return (
     <div>
       <QuestionUI question={question} 
-      handleAttempt={handleAttempt}
+      handleAttempt={handleAttempt} 
       />
       <div className="sticky bottom-0 bg-white p-4 flex justify-center space-x-4">
         {/* Map question numbers */}
