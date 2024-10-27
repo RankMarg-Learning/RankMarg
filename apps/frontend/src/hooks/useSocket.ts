@@ -2,33 +2,39 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
-
 const WS_URL = process.env.VITE_APP_WS_URL ?? 'ws://localhost:8080';
 
 export const useSocket = () => {
-  const {data:session,status} = useSession();
-  if(status === "loading") {
-    return null;
-  }
+  const { data: session, status } = useSession();
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  
-  // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE2OWNiNDIzLTk4MDQtNGJjNy1hNjIwLWY4MGI4YjRhOWQ2OCIsInVzZXJuYW1lIjoiQW5pa2V0IFN1ZGtlIiwiaWF0IjoxNzI5Njc3NjkzfQ.7pHm9-naa06inWSfRwwv5vBcwiR9jv9rS9ymMltQLq8";
-  const token = session?.user.accessToken;
+
+  // Wait for session to load
   useEffect(() => {
-    
-    const ws = new WebSocket(`${WS_URL}?token=${token}`);
+    // Only establish WebSocket connection if session is loaded and not loading
+    if (status === "loading") {
+      return; // Don't do anything until loading is finished
+    }
 
-    ws.onopen = () => {
-      setSocket(ws);
-    };
+    const token = session?.user.accessToken;
 
-    ws.onclose = () => {
-      setSocket(null);
-    };
+    // Create a WebSocket connection only if we have a token
+    if (token) {
+      const ws = new WebSocket(`${WS_URL}?token=${token}`);
 
-    return () => {
-      ws.close();
-    };
-  }, [session]);
+      ws.onopen = () => {
+        setSocket(ws);
+      };
+
+      ws.onclose = () => {
+        setSocket(null);
+      };
+
+      // Cleanup function to close the WebSocket when the component unmounts or session changes
+      return () => {
+        ws.close();
+      };
+    }
+  }, [status, session]); // Include `status` and `session` in the dependency array
+
   return socket;
 };
