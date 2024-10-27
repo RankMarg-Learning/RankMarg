@@ -211,6 +211,11 @@ export class Challenge {
             id: this.player2Id ?? "",
           },
         },
+        ChallengeQuestion: {
+          create: this.questions.map((q) => ({
+            questionId: q.id,
+          })),
+        },
       },
     });
     this.challengeId = challenge.challengeId;

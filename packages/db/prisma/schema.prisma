@@ -18,7 +18,6 @@ model User {
   provider Provider
   attempts Attempt[]
 
-  status  UserStatus  @default(Online)
   rank    Int         @default(50)
   player1 Challenge[] @relation("U1")
   player2 Challenge[] @relation("U2")
@@ -34,37 +33,30 @@ enum Role {
   ADMIN
 }
 
-enum UserStatus {
-  Online
-  Playing
-  Offline
-}
-
 enum Provider {
   google
   credentials
 }
 
 model Question {
-  id           String       @id @default(uuid())
-  slug         String       @unique
-  type         QuestionType
-  content      String
-  difficulty   String
-  topic        String
-  subject      String
-  class        String
-  tag          String?
-  options      Option[]
-  isnumerical  Float?
-  isTrueFalse  Boolean?
-  accuracy     Float?       @default(0)
-  questionTime Int?         @default(5)
-
-  attempts  Attempt[]
-  challenge Challenge[]
-
-  createdAt DateTime @default(now())
+  id                String              @id @default(uuid())
+  slug              String              @unique
+  type              QuestionType
+  content           String
+  difficulty        String
+  topic             String
+  subject           String
+  class             String
+  tag               String?
+  options           Option[]
+  isnumerical       Float?
+  isTrueFalse       Boolean?
+  accuracy          Float?              @default(0)
+  questionTime      Int?                @default(5)
+  hint              String?
+  attempts          Attempt[]
+  ChallengeQuestion ChallengeQuestion[]
+  createdAt         DateTime            @default(now())
 }
 
 model Option {
@@ -93,17 +85,27 @@ model Attempt {
 }
 
 model Challenge {
-  challengeId  String     @id @unique
-  player1Id    String
-  player2Id    String?
-  status       String     @default("PENDING")
-  result       String?
-  player1Score Int?       @default(0)
-  player2Score Int?       @default(0)
-  player1      User       @relation("U1", fields: [player1Id], references: [id], onDelete: Cascade)
-  player2      User?      @relation("U2", fields: [player2Id], references: [id], onDelete: Cascade)
-  questions    Question[]
-  endedAt      DateTime?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime?  @updatedAt
+  challengeId       String              @id @unique
+  player1Id         String
+  player2Id         String?
+  status            String              @default("PENDING")
+  result            String?
+  player1Score      Int?                @default(0)
+  player2Score      Int?                @default(0)
+  player1           User                @relation("U1", fields: [player1Id], references: [id], onDelete: Cascade)
+  player2           User?               @relation("U2", fields: [player2Id], references: [id], onDelete: Cascade)
+  ChallengeQuestion ChallengeQuestion[]
+  endedAt           DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime?           @updatedAt
+}
+
+model ChallengeQuestion {
+  challengeId String
+  questionId  String
+
+  challenge Challenge @relation(fields: [challengeId], references: [challengeId], onDelete: Cascade)
+  question  Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([challengeId, questionId])
 }

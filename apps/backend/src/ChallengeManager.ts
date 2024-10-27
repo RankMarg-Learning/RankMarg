@@ -120,7 +120,7 @@ export class ChallengeManager {
         }
       }
 
-      if (message.type === JOIN_ROOM) {
+      if (message.type === "CHALLENGE_JOIN") {
         const challengeId = message.payload?.challengeId;
         if (!challengeId) {
           return;
@@ -132,11 +132,21 @@ export class ChallengeManager {
         const challengeFromDb = await db.challenge.findUnique({
           where: { challengeId },
           include: {
-            questions: true,
+            ChallengeQuestion: {
+              include: {
+                question: {
+                  include: {
+                    options: true,
+                  },
+                },
+              },
+            },
             player1: true,
             player2: true,
           },
         });
+
+        console.log("Challenge From DB", challengeFromDb);
 
         // There is a challenge created but no second player available
 
@@ -154,6 +164,9 @@ export class ChallengeManager {
           );
           return;
         }
+        const questions = challengeFromDb.ChallengeQuestion.map(
+          (q) => q.question
+        );
 
         if (challengeFromDb.status !== "IN_PROGRESS") {
           user.socket.send(
@@ -162,7 +175,7 @@ export class ChallengeManager {
               payload: {
                 result: challengeFromDb.result,
                 status: challengeFromDb.status,
-                questions: challengeFromDb.questions,
+                questions: questions,
                 player1: {
                   id: challengeFromDb.player1.id,
                   username: challengeFromDb.player1.username,
@@ -191,18 +204,12 @@ export class ChallengeManager {
 
         user.socket.send(
           JSON.stringify({
-            type: GAME_JOINED,
+            type: "CHALLENGE_JOIN",
             payload: {
               challengeId,
-              questions: challengeFromDb.questions,
-              player1: {
-                id: challengeFromDb.player1.id,
-                username: challengeFromDb.player1.username,
-              },
-              player2: {
-                id: challengeFromDb.player2?.id,
-                username: challengeFromDb.player2?.username,
-              },
+              questions: questions,
+              player1: challengeFromDb.player1Id,
+              player2: challengeFromDb.player2Id,
             },
           })
         );

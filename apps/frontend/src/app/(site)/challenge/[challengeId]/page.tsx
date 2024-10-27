@@ -2,6 +2,8 @@
 
 import QuestionUI from "@/components/QuestionUI";
 import { useSocket } from "@/hooks/useSocket";
+import { QuestionProps } from "@/types";
+import { Question } from "@prisma/client";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -119,14 +121,15 @@ const questions = [
   }
 ]
 
-
+interface QuestionShowProps extends Omit<QuestionProps, "challenge" | "attempts" | "createdAt"> {}
 
 
 const ChallengePage = ({params}:{params:{challengeId:string}}) => {
   const { challengeId } = params;
   const socket = useSocket();
 
-  const [questions1, setQuestions] = useState<any>([]);
+  const [questions, setQuestions] = useState<QuestionShowProps[]>([]);
+  
 
   useEffect(() => {
     if (!socket) return;
@@ -140,6 +143,7 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
 
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
+      console.log("Message received:", message);
       switch (message.type) {
         case "CHALLENGE_ADD":
           console.log("Challenge Added");
@@ -147,10 +151,11 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
         case "CHALLENGE_INIT":
           console.log("Challenge Initialized");
           break;
-        case "CHALLENGE_START":
-          console.log(message.payload);
+        case "CHALLENGE_JOIN":
+          console.log("payload",message.payload.questions);
           setQuestions(message.payload.questions);
           break;
+        
         case "GAME_OVER":
           console.log("Game Over");
           break;
@@ -159,9 +164,10 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
   }, [socket]);
 
 
+//  console.log("All Question",questions);
+
  
   
- 
  
  
 
@@ -170,7 +176,6 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
  const [attempts, setAttempts] = useState([]);
  const question = questions[currentQuestionIndex];
- console.log(questions1);
 
  const handleAttempt = async(attemptData:attempDataProps) => {
   try {
@@ -180,6 +185,15 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
       ...prev,
       { questionId: attemptData.questionId, isCorrect: attemptData.isCorrect }
     ]);
+    socket.send(
+      JSON.stringify({
+        type: "CHALLENGE_UPDATE",
+        payload: {
+          questionId: attemptData.questionId,
+          isCorrect: attemptData.isCorrect
+        }
+      })
+    );
 
     // Move to the next question after submission
     if (currentQuestionIndex < questions.length - 1) {
@@ -204,23 +218,26 @@ const getButtonColor = (index) => {
 
   return (
     <div>
-      <QuestionUI question={question} 
-      handleAttempt={handleAttempt} 
-      />
-      <div className="sticky bottom-0 bg-white p-4 flex justify-center space-x-4">
-        {/* Map question numbers */}
-        {questions.map((question, index) => (
-           <button
-           key={index}
-           onClick={() => setCurrentQuestionIndex(index)}
-           className={`text-white font-semibold py-2 px-4 rounded
-             ${getButtonColor(index)}`}
-           disabled={index !== currentQuestionIndex}
-         >
-           {index + 1}
-         </button>
-        ))}
-      </div>
+      {question ? (
+        <>
+          <QuestionUI question={question} handleAttempt={handleAttempt} />
+          <div className="sticky bottom-0 bg-white p-4 flex justify-center space-x-4">
+            {/* Map question numbers */}
+            {questions.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentQuestionIndex(index)}
+                className={`text-white font-semibold py-2 px-4 rounded ${getButtonColor(index)}`}
+                disabled={index !== currentQuestionIndex}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div>Loading...</div>
+      )}
     </div>
   )
 }
