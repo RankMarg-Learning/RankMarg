@@ -35,5 +35,3 @@ wss.on("connection", function connection(ws, req) {
     challengeManager.removeUser(ws);
   });
 });
-
-console.log("done");

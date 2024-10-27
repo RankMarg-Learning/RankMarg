@@ -73,7 +73,7 @@ const Banner = () => {
   const [added, setAdded] = useState(false);
   const router = useRouter();
   const  socket = useSocket();
-  console.log(socket);
+  
   useEffect(() => {
     if (!socket) return;
     socket.onmessage = (event) => {

@@ -97,6 +97,7 @@ export class ChallengeManager {
         const challenge = this.challenges.find(
           (challenge) => challenge.challengeId === challengeId
         );
+        console.log("Challenge:[ChallengeManager]", challenge);
         if (challenge) {
           challenge.answerQuestion(
             user,
@@ -145,8 +146,6 @@ export class ChallengeManager {
             player2: true,
           },
         });
-
-        console.log("Challenge From DB", challengeFromDb);
 
         // There is a challenge created but no second player available
 

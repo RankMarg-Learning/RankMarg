@@ -155,7 +155,9 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
           console.log("payload",message.payload.questions);
           setQuestions(message.payload.questions);
           break;
-        
+        case "QUESTION_ANSWERED":
+          console.log("Question Answered",message.payload);
+          break;
         case "GAME_OVER":
           console.log("Game Over");
           break;
@@ -189,6 +191,7 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
       JSON.stringify({
         type: "CHALLENGE_UPDATE",
         payload: {
+          challengeId,
           questionId: attemptData.questionId,
           isCorrect: attemptData.isCorrect
         }

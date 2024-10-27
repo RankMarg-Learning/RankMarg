@@ -76,8 +76,6 @@ export class Challenge {
       return q.id === questionId;
     });
 
-    console.log("Question:", this.questions.length);
-
     if (!question) {
       console.error("Question not found?");
       return;
@@ -104,7 +102,6 @@ export class Challenge {
       })
     );
 
-    console.log(this.isChallengeOver());
     if (this.isChallengeOver()) {
       this.endChellenge();
     }
