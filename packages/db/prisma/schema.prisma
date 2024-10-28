@@ -92,6 +92,8 @@ model Challenge {
   result            String?
   player1Score      Int?                @default(0)
   player2Score      Int?                @default(0)
+  attemptByPlayer1  Int[]               @default([])
+  attemptByPlayer2  Int[]               @default([])
   player1           User                @relation("U1", fields: [player1Id], references: [id], onDelete: Cascade)
   player2           User?               @relation("U2", fields: [player2Id], references: [id], onDelete: Cascade)
   ChallengeQuestion ChallengeQuestion[]

@@ -170,7 +170,7 @@ export class ChallengeManager {
         if (challengeFromDb.status !== "IN_PROGRESS") {
           user.socket.send(
             JSON.stringify({
-              type: GAME_ENDED,
+              type: "CHALLENGE_OVER",
               payload: {
                 result: challengeFromDb.result,
                 status: challengeFromDb.status,
@@ -178,10 +178,14 @@ export class ChallengeManager {
                 player1: {
                   id: challengeFromDb.player1.id,
                   username: challengeFromDb.player1.username,
+                  attempt: challengeFromDb.attemptByPlayer1,
+                  rank: challengeFromDb.player1Score,
                 },
                 player2: {
                   id: challengeFromDb.player2?.id,
                   username: challengeFromDb.player2?.username,
+                  attempt: challengeFromDb.attemptByPlayer2,
+                  rank: challengeFromDb.player2Score,
                 },
               },
             })

@@ -132,18 +132,32 @@ export class Challenge {
         status: "COMPLETED",
         // endAt: new Date(Date.now()),
         result: this.result,
+        attemptByPlayer1: this.player1Score,
+        attemptByPlayer2: this.player2Score,
         player1Score: 40, //!this is dummy data
         player2Score: -40, //!this is dummy data
       },
     });
+
     socketManager.broadcast(
       this.challengeId,
       JSON.stringify({
-        type: "GAME_OVER",
+        type: "CHALLENGE_OVER",
         payload: {
           result: this.result,
-          player1Score: this.player1Score,
-          player2Score: this.player2Score,
+          questions: this.questions,
+          player1: {
+            id: this.player1Id,
+            username: User.name, //TODO:username: this.player1
+            attempt: this.player1Score,
+            rank: -40,
+          },
+          player2: {
+            id: this.player2Id,
+            username: User.name, //TODO:username: this.player2
+            attempt: this.player2Score,
+            rank: 40,
+          },
         },
       })
     );

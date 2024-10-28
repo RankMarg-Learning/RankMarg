@@ -1,5 +1,7 @@
 "use client";
 
+import ChallengeOver from "@/components/challenge/challengeOver";
+import Loading from "@/components/Loading";
 import QuestionUI from "@/components/QuestionUI";
 import { useSocket } from "@/hooks/useSocket";
 import { QuestionProps } from "@/types";
@@ -8,6 +10,7 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {  use, useEffect, useState } from "react";
+import { set } from "react-hook-form";
 
 interface attempDataProps {
   questionId: string;
@@ -127,7 +130,9 @@ interface QuestionShowProps extends Omit<QuestionProps, "challenge" | "attempts"
 const ChallengePage = ({params}:{params:{challengeId:string}}) => {
   const { challengeId } = params;
   const socket = useSocket();
-
+  const [start, setStart] = useState(false);
+  const [isOver, setIsOver] = useState(false);
+  const [overDetails, setOverDetails] = useState({}); 
   const [questions, setQuestions] = useState<QuestionShowProps[]>([]);
   
 
@@ -145,21 +150,18 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
       const message = JSON.parse(event.data);
       console.log("Message received:", message);
       switch (message.type) {
-        case "CHALLENGE_ADD":
-          console.log("Challenge Added");
-          break;
-        case "CHALLENGE_INIT":
-          console.log("Challenge Initialized");
-          break;
         case "CHALLENGE_JOIN":
-          console.log("payload",message.payload.questions);
+          setStart(true);
           setQuestions(message.payload.questions);
           break;
         case "QUESTION_ANSWERED":
           console.log("Question Answered",message.payload);
           break;
-        case "GAME_OVER":
-          console.log("Game Over");
+        case "CHALLENGE_OVER":
+          setStart(false);
+          setIsOver(true);
+          setOverDetails(message.payload);
+          console.log("Game Ended",message.payload);
           break;
       }
     };
@@ -219,9 +221,15 @@ const getButtonColor = (index) => {
   return index === currentQuestionIndex ? 'bg-yellow-500' : 'bg-gray-300';
 };
 
+
+
+
   return (
     <div>
-      {question ? (
+
+      {
+        !isOver ? (
+      question && start ? (
         <>
           <QuestionUI question={question} handleAttempt={handleAttempt} />
           <div className="sticky bottom-0 bg-white p-4 flex justify-center space-x-4">
@@ -239,8 +247,12 @@ const getButtonColor = (index) => {
           </div>
         </>
       ) : (
-        <div>Loading...</div>
-      )}
+        <Loading />
+      )
+        ):(
+          <ChallengeOver details={overDetails} />
+        )
+    }
     </div>
   )
 }

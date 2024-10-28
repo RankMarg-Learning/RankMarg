@@ -15,7 +15,6 @@ interface attempDataProps {
 
 const QuestionPage = ({ params }: { params: { slug: string } }) => {
   const { slug } = params;
-  console.log(slug);
   const { data: question, isLoading } = useQuery({
     queryKey: ["question",slug],
     queryFn: async () => {
