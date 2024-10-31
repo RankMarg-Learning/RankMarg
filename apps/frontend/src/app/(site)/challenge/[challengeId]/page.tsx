@@ -150,6 +150,14 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
       const message = JSON.parse(event.data);
       console.log("Message received:", message);
       switch (message.type) {
+        case "CHALLENGE_START":
+          socket.send(
+            JSON.stringify({
+              type: "CHALLENGE_JOIN",
+              payload: { challengeId }
+            })
+          );
+          break;
         case "CHALLENGE_JOIN":
           setStart(true);
           setQuestions(message.payload.questions);

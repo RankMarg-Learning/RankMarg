@@ -1,3 +1,7 @@
+//! This component is not in use Discard any time 
+
+
+
 "use client"; 
 import { CopyIcon } from "@radix-ui/react-icons"
 
@@ -29,14 +33,7 @@ const  InviteFriend = () => {
 
   
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      // Redirect to the sign-in page if the user is not logged in
-      router.push('/sign-in');
-    }
-  }, [status && router && session]);
-
-  if(status === 'loading') return null;
+ 
   
   
 
@@ -47,17 +44,7 @@ const  InviteFriend = () => {
     navigator.clipboard.writeText(challengeLink);
   }
 
-  const handleInvite = async () => {
-    const res = await axios.post("/api/challenge/invite", { user1Id: session.user.id,challengeId, questions: [] });
-    // setIsOpen(true);
-    if (res.status === 200) {
-      router.push(`/challenge/${challengeId}`);
-      
-      return;
-    }
-      router.push(`/challenge`);
-      return;
-  };
+ 
   
   // open={isOpen} onOpenChange={setIsOpen}
 
@@ -104,7 +91,7 @@ const  InviteFriend = () => {
             </Button>
           </DialogClose>
           <Button type="submit" 
-          onClick={()=>handleInvite()} >
+           >
                 Start Challenge
             </Button>
         </DialogFooter>

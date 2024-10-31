@@ -1,7 +1,7 @@
 "use client";
 import { Card } from "@/components/ui/card";
-import React, { use, useEffect, useState } from "react";
-import { TrendingUp, Link2 } from "lucide-react";
+import React, {  useEffect, useState } from "react";
+import { TrendingUp, Link2, CopyIcon } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import InviteFriend from "@/components/challenge/inviteFriend";
@@ -9,16 +9,12 @@ import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 import { useSocket } from "@/hooks/useSocket";
 import { useRouter } from "next/navigation";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
-interface BannerProps {
-  user: {
-    id: string;
-    username?: string;
-    createdAt?: Date;
-    Role?: "ADMIN" | "USER" | "INSTRUCTOR";
-    accessToken?: string;
-  };
-}
+
+
 
 
 
@@ -70,31 +66,41 @@ const UserProfile = () => {
 };
 
 const Banner = () => {
-  const [added, setAdded] = useState(false);
   const router = useRouter();
   const  socket = useSocket();
+  const [open, setOpen] = useState(false);
+  const [invite, setInvite] = useState(false);
+  const [challengeLink,setChallengeLink] = useState<string>(`http://localhost:3000/challenge/test`);
+
+  console.log("Invite",invite);
+  console.log("Open",open); 
+  
   
   useEffect(() => {
     if (!socket) return;
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
       switch (message.type) {
-        case "CHALLENGE_ADD":
-          setAdded(true);
-          console.log("Challenge Added");
+        case "INIT_CHALLENGE":
+          if(message.payload.invite){setInvite(true);}
           break;
-        case "CHALLENGE_INIT":
-          console.log("Challenge Initialized");
+        case "CHALLENGE_ADD":
+          setChallengeLink(`http://localhost:3000/challenge/${message.challengeId}`);
+          if(invite){setOpen(true);}
           break;
         case "CHALLENGE_START":
           router.push(`/challenge/${message.payload.challengeId}`);
-          console.log("Challenge Started");
           break;
 
       }
     };
   }, [socket]);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(challengeLink);
+  }
   return (
+    
     <div className="relative bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700 py-16 px-6 sm:px-12 md:px-24 lg:px-36 rounded-lg shadow-lg text-white text-center overflow-hidden">
       <div className="absolute inset-0 bg-white/5 backdrop-blur-lg rounded-lg"></div>
       <div className="relative z-10">
@@ -108,14 +114,77 @@ const Banner = () => {
           <Button className="relative bg-yellow-700 hover:bg-yellow-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-300 transform hover:scale-105 overflow-hidden group" 
           onClick={
             () => {
-              socket?.send(JSON.stringify({ type: "INIT_CHALLENGE" }));
+              socket?.send(JSON.stringify({ type: "INIT_CHALLENGE",
+              payload: {
+                invite: false,
+              }
+               }));
             }
           }
+          
           >
             <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 transform -translate-x-full group-hover:translate-x-full"></span>
             <span className="relative z-10" >Join Challenge </span>
           </Button>
-         <InviteFriend />
+      {/* <DialogTrigger asChild> */}
+        <Button className="relative bg-yellow-600 hover:bg-yellow-500 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-300 transform hover:scale-105 overflow-hidden group"
+        onClick={
+          () => {
+            socket?.send(JSON.stringify({ type: "INIT_CHALLENGE",
+            payload: {
+              invite: true,
+            }
+             }));
+             setInvite(true);
+            }
+        }
+        >
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 transform -translate-x-full group-hover:translate-x-full"></span>
+                <span className="relative z-10">Invite a Friend</span>
+        </Button>
+      {/* </DialogTrigger> */}
+      <Dialog open={open} onOpenChange={setOpen}>
+      
+      <DialogContent className="sm:max-w-md bg-white" >
+        <DialogHeader>
+          <DialogTitle>Share link</DialogTitle>
+          <DialogDescription>
+            Anyone who has this link will be able to view this.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center space-x-2">
+          <div className="grid flex-1 gap-2">
+            <Label htmlFor="link" className="sr-only">
+              Link
+            </Label>
+            <Input
+              id="link"
+              defaultValue={challengeLink}
+              
+              readOnly
+            />
+          </div>
+          <Button type="submit" size="sm" className="px-3"
+          onClick={handleCopy}
+          >
+            <span className="sr-only">Copy</span>
+            <CopyIcon className="h-4 w-4" />
+          </Button>
+        </div>
+        <DialogFooter className="sm:justify-between gap-2">
+          <DialogClose asChild>
+            <Button type="button" >
+              Close
+            </Button>
+          </DialogClose>
+          <Button type="submit" 
+           >
+                Start Challenge
+            </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+         {/* <InviteFriend /> */}
         </div>
       </div>
     </div>

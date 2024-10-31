@@ -53,7 +53,7 @@ export class ChallengeManager {
     user.socket.on("message", async (data) => {
       const message = JSON.parse(data.toString());
       if (message.type === "INIT_CHALLENGE") {
-        if (this.pendingChallengeId) {
+        if (this.pendingChallengeId && !message.payload.invite) {
           const challenge = this.challenges.find(
             (x) => x.challengeId === this.pendingChallengeId
           );
@@ -90,6 +90,14 @@ export class ChallengeManager {
             })
           );
         }
+        user.socket.send(
+          JSON.stringify({
+            type: "INIT_CHALLENGE",
+            payload: {
+              invite: message.payload.invite,
+            },
+          })
+        );
       }
 
       if (message.type === "CHALLENGE_UPDATE") {
