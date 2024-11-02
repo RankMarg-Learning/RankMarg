@@ -31,7 +31,7 @@ export default function Home() {
           href="#"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
-          <Image src={'/logo.svg'} alt="Acme Inc" width={250} height={250} />
+          <Image src={'https://utfs.io/f/DbhgrrAIqRoKZABd17kyzMn5glOosUYSuEeWAbhwd4pCxkHf'} alt="Acme Inc" width={250} height={250} />
         </Link>
         <Link
           href="/"
@@ -176,7 +176,7 @@ export default function Home() {
 
                 <div>
                     <div className="flex items-center justify-center">
-                        <Image src={'/hero.png'} alt="Hero" width={500} height={500} />
+                        <Image src={'https://utfs.io/f/DbhgrrAIqRoKdWvAT6OEPwob42XZe6usTnqBa8yk7dtKScQL'} alt="Hero" width={700} height={700} />
                     </div>
                 </div>
             </div>
