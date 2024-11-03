@@ -4,9 +4,7 @@ import React, {  useEffect, useState } from "react";
 import { TrendingUp, Link2, CopyIcon, MoveUp, MoveDown } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
-import InviteFriend from "@/components/challenge/inviteFriend";
 import { Button } from "@/components/ui/button";
-import { useSession } from "next-auth/react";
 import { useSocket } from "@/hooks/useSocket";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -81,7 +79,7 @@ const ChallengePage = () => {
             <span className="text-green-500 ml-1"><MoveUp/></span>
           ) : challenge.userScore < 0 ? (
             <span className="text-red-500 ml-1"><MoveDown/></span>
-          ) : <span className="text-red-500 ml-1">&nbsp;&nbsp; &nbsp;&nbsp;</span>}
+          ) : <span className=" ml-1">&nbsp; - &nbsp;</span>}
                   </p>
                 </Link>
               ))
@@ -128,8 +126,8 @@ const Banner = () => {
   const router = useRouter();
   const  socket = useSocket();
   const [open, setOpen] = useState(false);
-  const [invite, setInvite] = useState(false);
   const [challengeLink,setChallengeLink] = useState<string>(`http://localhost:3000/challenge/test`);
+
 
 
   
@@ -139,11 +137,12 @@ const Banner = () => {
       const message = JSON.parse(event.data);
       switch (message.type) {
         case "INIT_CHALLENGE":
-          if(message.payload.invite){setInvite(true);}
+          if(message.payload.invite){setOpen(true);}
           break;
         case "CHALLENGE_ADD":
           setChallengeLink(`http://localhost:3000/challenge/${message.challengeId}`);
-          if(invite){setOpen(true);}
+          // if(invite){setOpen(true);}
+          
           break;
         case "CHALLENGE_START":
           router.push(`/challenge/${message.payload.challengeId}`);
@@ -192,7 +191,7 @@ const Banner = () => {
               invite: true,
             }
              }));
-             setInvite(true);
+            //  setInvite(true);
             }
         }
         >

@@ -27,6 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 
 const Questionset = () => {
+  const [loading, setLoading] = useState(false);
   const [tabSubject, setTabSubject] = useState( "");
   const [difficulty, setDifficulty] = useState("");
   const [topic, setTopic] = useState("");
@@ -64,7 +65,6 @@ const Questionset = () => {
   };
 
 
-  console.log(difficulty,topic);
 
 
   const { data: questions } = useQuery({
@@ -79,16 +79,15 @@ const Questionset = () => {
 
   
     return (
-        <>
-          {/* <div className="flex min-h-screen w-full flex-col bg-muted/40"> */}
-    
+        (!loading ?(
           <div className="flex flex-col sm:gap-2 sm:py-4 mx-1   ">
             {/* <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 "> */}
             <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 ">
               <Card className="py-8">
               <h1 className="text-2xl font-bold text-center pb-3">Pick Random Question </h1>
               <RandomQuestion 
-                
+                loading={loading}
+                setLoading={setLoading}
               />
               </Card>
               <Tabs defaultValue="all">
@@ -198,9 +197,8 @@ const Questionset = () => {
                 </TabsContent>
               </Tabs>
             </main>
-          </div>
-          {/* </div> */}
-        </>
+          </div>):(<Loading/> ))
+          
   )
 }
 
@@ -211,16 +209,18 @@ import { CaretSortIcon } from "@radix-ui/react-icons";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import Loading from "@/components/Loading";
 
 
 
-const RandomQuestion = () => {
+const RandomQuestion = ({ loading, setLoading }) => {
   const router = useRouter();
   const [topicTitle, setTopicTitle] = useState("");
   const [difficulty, setDifficulty] = useState("");
 
   const handleRandom = async() => {
     localStorage.setItem('questionFilters', JSON.stringify({topicTitle, difficulty, }));
+    setLoading(true);
     try {
       const question = await axios.post(`/api/pickRandom`,
       {
@@ -233,13 +233,17 @@ const RandomQuestion = () => {
       }
     } catch (error) {
       console.error( error);
+    }finally {
+      setLoading(false);
     }
 
   }
 
+ 
   
   
   return (
+    
       <div className="flex flex-wrap  mb-6 w-full">
         <div className="w-full md:w-2/5 px-3 mb-6 md:mb-0">
           

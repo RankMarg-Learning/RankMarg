@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
 
-export async function GET(req: Request) {
+export async function GET() {
     try {
         // Fetch session and validate
         const session = await getServerSession(authOptions);
