@@ -122,22 +122,71 @@ export class Challenge {
       player1TotalScore > player2TotalScore
         ? this.player1Id
         : player1TotalScore < player2TotalScore
-          ? this.player1Id
+          ? this.player2Id
           : "DRAW";
-    await db.challenge.update({
+
+    const player1 = await db.user.findUnique({
       where: {
-        challengeId: this.challengeId,
+        id: this.player1Id,
       },
-      data: {
-        status: "COMPLETED",
-        // endAt: new Date(Date.now()),
-        result: this.result,
-        attemptByPlayer1: this.player1Score,
-        attemptByPlayer2: this.player2Score,
-        player1Score: 40, //!this is dummy data
-        player2Score: -40, //!this is dummy data
+      select: {
+        rank: true,
       },
     });
+
+    const player2 = await db.user.findUnique({
+      where: {
+        id: this.player2Id || "",
+      },
+      select: {
+        rank: true,
+      },
+    });
+    if (!player1 || !player2) return;
+
+    const K_FACTOR = 32;
+    const expectedScore1 =
+      1 / (1 + Math.pow(10, (player2.rank - player1.rank) / 400));
+    const expectedScore2 = 1 - expectedScore1;
+
+    let actualScore1, actualScore2;
+    if (this.result === this.player1Id) {
+      actualScore1 = 1;
+      actualScore2 = 0;
+    } else if (this.result === this.player2Id) {
+      actualScore1 = 0;
+      actualScore2 = 1;
+    } else {
+      actualScore1 = 0.5;
+      actualScore2 = 0.5;
+    }
+
+    const newPlayer1Rank = Math.round(
+      player1.rank + K_FACTOR * (actualScore1 - expectedScore1)
+    );
+    const newPlayer2Rank = Math.round(
+      player2.rank + K_FACTOR * (actualScore2 - expectedScore2)
+    );
+
+    await db.user.update({
+      where: {
+        id: this.player1Id,
+      },
+      data: {
+        rank: newPlayer1Rank,
+      },
+    });
+    await db.user.update({
+      where: {
+        id: this.player2Id || "",
+      },
+      data: {
+        rank: newPlayer2Rank,
+      },
+    });
+
+    const Player1rankChange = newPlayer1Rank - player1.rank;
+    const Player2rankChange = newPlayer2Rank - player2.rank;
 
     socketManager.broadcast(
       this.challengeId,
@@ -150,17 +199,32 @@ export class Challenge {
             id: this.player1Id,
             username: "Player 1", //TODO:username: this.player1
             attempt: this.player1Score,
-            rank: -40,
+            rank: Player1rankChange,
           },
           player2: {
             id: this.player2Id,
             username: "Player 2", //TODO:username: this.player2
             attempt: this.player2Score,
-            rank: 40,
+            rank: Player2rankChange,
           },
         },
       })
     );
+
+    await db.challenge.update({
+      where: {
+        challengeId: this.challengeId,
+      },
+      data: {
+        status: "COMPLETED",
+        // endAt: new Date(Date.now()),
+        result: this.result,
+        attemptByPlayer1: this.player1Score,
+        attemptByPlayer2: this.player2Score,
+        player1Score: newPlayer1Rank - player1.rank,
+        player2Score: newPlayer2Rank - player2.rank,
+      },
+    });
   }
 
   async updateSecondPlayer(player2Id: string) {

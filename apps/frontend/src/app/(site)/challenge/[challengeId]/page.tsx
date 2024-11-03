@@ -148,7 +148,6 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
 
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      console.log("Message received:", message);
       switch (message.type) {
         case "CHALLENGE_START":
           socket.send(
@@ -163,13 +162,11 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
           setQuestions(message.payload.questions);
           break;
         case "QUESTION_ANSWERED":
-          console.log("Question Answered",message.payload);
           break;
         case "CHALLENGE_OVER":
           setStart(false);
           setIsOver(true);
           setOverDetails(message.payload);
-          console.log("Game Ended",message.payload);
           break;
       }
     };

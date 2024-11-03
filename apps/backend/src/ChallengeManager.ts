@@ -105,7 +105,6 @@ export class ChallengeManager {
         const challenge = this.challenges.find(
           (challenge) => challenge.challengeId === challengeId
         );
-        console.log("Challenge:[ChallengeManager]", challenge);
         if (challenge) {
           challenge.answerQuestion(
             user,

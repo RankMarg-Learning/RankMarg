@@ -1,7 +1,7 @@
 "use client";
 import { Card } from "@/components/ui/card";
 import React, {  useEffect, useState } from "react";
-import { TrendingUp, Link2, CopyIcon } from "lucide-react";
+import { TrendingUp, Link2, CopyIcon, MoveUp, MoveDown } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import InviteFriend from "@/components/challenge/inviteFriend";
@@ -12,40 +12,99 @@ import { useRouter } from "next/navigation";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import Loading from "@/components/Loading";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 
+interface ChallengeInfoProps {
+ user:{
+    username: string;
+    rank: number;
+ },
+  recentChallenges:{
+    challengeId: string;
+    result: string | null; 
+    createdAt: Date; 
+    opponentUsername: string; 
+    userScore: number;
+  }[]
+}
 
 
 
 
 const ChallengePage = () => {
+  
+
+  const { data: challengeInfo, isLoading } = useQuery<ChallengeInfoProps>({
+    queryKey: ["challenge-info"],
+    queryFn: async () => {
+      const { data } = await axios.get<ChallengeInfoProps>(`/api/challenge/info`);
+      return data;
+    },
+  });
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+
   return (
     <div className="min-h-screen bg text-white p-5">
       <div className="grid grid-cols-12 gap-1 md:gap-3">
         <div className="col-span-12 md:col-span-3">
           <Card className="p-2  md:p-4   space-y-6 rounded-lg">
-            <UserProfile />
+            <UserProfile user={challengeInfo.user}/>
           </Card>
         </div>
         <div className="col-span-12 md:col-span-9 space-y-4">
           <Banner/>
           <Card className=" p-4 rounded-lg">
             <h2 className="text-xl font-semibold">Recent Challenges</h2>
-            <div className="mt-2 text-gray-400">No recent challenges found.</div>
+            {
+              challengeInfo ? (challengeInfo.recentChallenges.map((challenge) => (
+                
+                
+              
+                <Link href={`/challenge/${challenge.challengeId}`} className="flex border-2 font-semibold justify-between p-3 px-3 my-2 hover:bg-gray-50" key={challenge.challengeId}>
+                  <div className="flex items-center">
+          <span className="bg-blue-100 text-blue-600  px-2 py-1 rounded-full mr-3">
+            VS
+          </span>
+          <h2 className="  text-gray-800">
+            {challenge.opponentUsername}
+          </h2>
+        </div>
+                  <p className="mr-5 flex">{challenge.userScore} 
+                  {challenge.userScore > 0 ? (
+            <span className="text-green-500 ml-1"><MoveUp/></span>
+          ) : challenge.userScore < 0 ? (
+            <span className="text-red-500 ml-1"><MoveDown/></span>
+          ) : <span className="text-red-500 ml-1">&nbsp;&nbsp; &nbsp;&nbsp;</span>}
+                  </p>
+                </Link>
+              ))
+            ):(
+              <div className="mt-2 text-gray-400">No recent challenges found.</div>
+            )
+            }
           </Card>
+            
+            
         </div>
       </div>
     </div>
   );
 };
 
-const UserProfile = () => {
+const UserProfile = ({user}) => {
   return (
     <div className="   flex justify-between p-2 md:flex-col rounded-lg ">
       <div className="flex flex-row md:justify-between  ">
         <div className="flex flex-col justify-center items-center">
           <h2 className="text-base sm:text-lg font-semibold">Aniket Sudke</h2>
-          <p className="text-gray-400 text-sm sm:text-base ">@aniketsudke</p>
+          <p className="text-gray-400 text-sm sm:text-base ">@{user.username}</p>
         </div>
         <Link className="hidden" href={`/`}>
           <Link2 className="text-yellow-500 hover:text-yellow-400 md:mt-0.5 mt-1 size-4 md:size-7" />
@@ -55,7 +114,7 @@ const UserProfile = () => {
       <div className="mt-2  text-center ">
         <h3 className="text-lg sm:text-xl flex justify-center sm:justify-start">Rating</h3>
         <p className="text-2xl sm:text-4xl flex items-center justify-center sm:justify-start">
-          1080{" "}
+          {user.rank}{" "}
           <span className="items-center flex ml-2">
             <TrendingUp color="green" />
           </span>
@@ -72,9 +131,7 @@ const Banner = () => {
   const [invite, setInvite] = useState(false);
   const [challengeLink,setChallengeLink] = useState<string>(`http://localhost:3000/challenge/test`);
 
-  console.log("Invite",invite);
-  console.log("Open",open); 
-  
+
   
   useEffect(() => {
     if (!socket) return;
