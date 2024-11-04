@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { authOptions } from "../auth/[...nextauth]/options";
+import { getServerSession } from "next-auth";
 
 export async function POST(req: Request) {
  
@@ -64,4 +66,38 @@ export async function GET() {
     console.log("[User]:",error);
 
   }
+}
+
+export async function PUT(req: Request) {
+  const body = await req.json();
+  const { username ,isCheck} = body;
+  const session = await getServerSession(authOptions);
+  try {
+    const userExists = await prisma.user.findUnique({
+      where: { username },
+  });
+  
+
+  if (!userExists ) {
+
+    if(!isCheck){
+      
+        await prisma.user.update({
+          where: { id: session.user.id }, 
+          data: { username }, // Update username
+      });
+      
+    }
+      return Response.json({
+        msg: 'Username updated',
+        available:true
+      })
+  }
+  return Response.json({ msg: 'Username is already taken',available:false });
+   
+  } catch (error) {
+    console.log("Dynamic-[User]:",error);
+
+  }
+
 }

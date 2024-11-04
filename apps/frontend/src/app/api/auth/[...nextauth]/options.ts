@@ -4,12 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcrypt";
 import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
-// import { Userprops } from "@/types";
-// type CredentialsProps = {
-//     email: string;
-//     password: string;
-//   };
-  // "vercel-build": "prisma generate && next build"
+
 
 
 export const authOptions: NextAuthOptions = {
@@ -74,9 +69,6 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks:{
         async signIn({ user}) {
-        
-            
-
             try {
                 if (!user.email) {
                     console.log("User email is not available");
@@ -85,16 +77,22 @@ export const authOptions: NextAuthOptions = {
                 const existingUser = await prisma.user.findUnique({
                     where: { email: user.email },
                   });
-
+                  console.log("Existing User",existingUser);
                     if (!existingUser) {
-                        await prisma.user.create({
+                      console.log("User does not exist");
+                        const checkUser = await prisma.user.create({
                             data: {
-                                username: user.name!,
+                                username: user.email!,
                                 email: user.email!,
                                 avatar: user.image,
                                 provider: 'google',
                             },
                         });
+                        if(checkUser.email === checkUser.username){
+                            
+
+                            return '/set/username';
+                        }
                     }else{
                         
                         console.log("User already exists");
@@ -115,7 +113,6 @@ export const authOptions: NextAuthOptions = {
 
 
         async jwt({ token, user }) {
-          
             if(user){
                 token.id = user.id.toString();
                 token.username = user.username;
