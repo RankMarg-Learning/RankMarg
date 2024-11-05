@@ -10,17 +10,18 @@ import React from "react";
 import SubjectStats from "@/components/profile/SubjectStats";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
+import { ChallengeStats } from "@/components/profile/ChallengeStats";
 
 const UserProfile = ({ params }: { params: { username: string } }) => {
   const { username } = params;
 
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["user",username],
-    queryFn: async () => {
-      const { data } = await axios.get(`/api/users/${username}`);
-      return data;
-    },
-  });
+  // const { data: user, isLoading } = useQuery({
+  //   queryKey: ["user",username],
+  //   queryFn: async () => {
+  //     const { data } = await axios.get(`/api/users/${username}`);
+  //     return data;
+  //   },
+  // });
 
 
   return (
@@ -53,6 +54,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
         </Card>
         <div className="w-full">
           <Calender />
+          <ChallengeStats />
           <ContributionBanner />
         </div>
       </div>

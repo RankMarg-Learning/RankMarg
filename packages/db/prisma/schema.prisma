@@ -10,21 +10,22 @@ datasource db {
 }
 
 model User {
-  id       String    @id @default(uuid())
+  id       String  @id @default(uuid())
   name     String?
-  username String    @unique
-  email    String    @unique
+  username String  @unique
+  email    String  @unique
   password String?
   phone    String?
   standard String?
   avatar   String?
-  provider Provider
+  rank     Int     @default(50)
+  coins    Int     @default(0)
+
   attempts Attempt[]
+  player1  Challenge[] @relation("U1")
+  player2  Challenge[] @relation("U2")
 
-  rank    Int         @default(50)
-  player1 Challenge[] @relation("U1")
-  player2 Challenge[] @relation("U2")
-
+  provider  Provider
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
   Role      Role?     @default(USER)

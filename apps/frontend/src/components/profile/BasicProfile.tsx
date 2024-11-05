@@ -1,3 +1,4 @@
+import { AtomIcon, Medal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -14,7 +15,7 @@ export default function BasicProfile() {
 
       <hr />
 
-      <div className="p-5">
+      <div className="p-2">
         <div className="flex">
           <Image
             src={"/Profile_image.png"}
@@ -28,20 +29,28 @@ export default function BasicProfile() {
             <span className="font-semibold text-lg text-gray-700 whitespace-nowrap">
               Aniket Sudke
             </span>
-            <Link
-              href="/u/robbin_johnson"
-              className="text-xs rounded-md px-1 cursor-pointer bg-[#f2f3f4] hover:bg-[#e2e3e4] transition-colors"
+            <span
+              
+              className="text-xs rounded-md px-1 cursor-pointer bg-[#f2f3f4]"
             >
               @robbin_johnson
-            </Link>
-
-            <span>⭐⭐⭐⭐⭐</span>
+            </span>
+            <span className="mt-1 text-xs text-gray-500">Joined 2 years ago</span>
+            
           </div>
         </div>
-        <div className="hidden mt-4">
-          <div>
-            <span className="font-semibold">Age:</span> 26
-          </div>
+        <div className="flex   mt-2 ">
+            
+            <div className="hidden  items-center mx-2 gap-1">
+              <Medal size={20} color="orange" />
+              <span className="text-sm font-semibold text-gray-700">Topper</span>
+            </div>
+           <div className="flex   items-center mx-2 gap-1">
+              <AtomIcon size={20} color="orange" />
+              <span className="text-sm font-semibold text-gray-700">10 points</span>
+            </div>
+
+           
         </div>
       </div>
     </div>
