@@ -17,10 +17,16 @@ const AdditionInfo = () => {
         </div>
         <Separator orientation="vertical" className="h-auto" />
         <div className="m-2 text-center">
-          <h3 className="md:text-4xl text-3xl font-bold flex justify-center items-center text-red-500">
+        <h3 className="md:text-4xl text-3xl font-bold ">
+            77
+          </h3>
+          <p className="text-gray-600 text-base font-thin  leading-6">
+            Challenges
+          </p>
+          {/* <h3 className="md:text-4xl text-3xl font-bold flex justify-center items-center text-red-500">
             10 <Flame color="red" fill="red" />
           </h3>
-          <p className="text-gray-600 text-base font-thin leading-6">Streak</p>
+          <p className="text-gray-600 text-base font-thin leading-6">Streak</p> */}
         </div>
         <Separator orientation="vertical" className="h-auto" />
         <div className="m-2 text-center">

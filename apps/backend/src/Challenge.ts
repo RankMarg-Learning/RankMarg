@@ -115,6 +115,8 @@ export class Challenge {
   }
 
   async endChellenge() {
+    clearInterval(this.timeoutId!);
+
     const player1TotalScore = this.player1Score.reduce((a, b) => a + b, 0); // Sum of player 1 scores
     const player2TotalScore = this.player2Score.reduce((a, b) => a + b, 0);
 
@@ -130,6 +132,7 @@ export class Challenge {
         id: this.player1Id,
       },
       select: {
+        username: true,
         rank: true,
       },
     });
@@ -139,6 +142,7 @@ export class Challenge {
         id: this.player2Id || "",
       },
       select: {
+        username: true,
         rank: true,
       },
     });
@@ -197,13 +201,13 @@ export class Challenge {
           questions: this.questions,
           player1: {
             id: this.player1Id,
-            username: "Player 1", //TODO:username: this.player1
+            username: player1.username, //TODO:username: this.player1
             attempt: this.player1Score,
             rank: Player1rankChange,
           },
           player2: {
             id: this.player2Id,
-            username: "Player 2", //TODO:username: this.player2
+            username: player2.username, //TODO:username: this.player2
             attempt: this.player2Score,
             rank: Player2rankChange,
           },
