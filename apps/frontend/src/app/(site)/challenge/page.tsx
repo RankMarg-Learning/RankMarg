@@ -16,7 +16,8 @@ import axios from "axios";
 
 
 interface ChallengeInfoProps {
- user:{
+  userStats:{
+    name: string;
     username: string;
     rank: number;
  },
@@ -53,7 +54,7 @@ const ChallengePage = () => {
       <div className="grid grid-cols-12 gap-1 md:gap-3">
         <div className="col-span-12 md:col-span-3">
           <Card className="p-2  md:p-4   space-y-6 rounded-lg">
-            <UserProfile user={challengeInfo.user}/>
+            <UserProfile user={challengeInfo.userStats}/>
           </Card>
         </div>
         <div className="col-span-12 md:col-span-9 space-y-4">
@@ -101,7 +102,7 @@ const UserProfile = ({user}) => {
     <div className="   flex justify-between p-2 md:flex-col rounded-lg ">
       <div className="flex flex-row md:justify-between  ">
         <div className="flex flex-col justify-center items-center">
-          <h2 className="text-base sm:text-lg font-semibold">Aniket Sudke</h2>
+          <h2 className="text-base sm:text-lg font-semibold">{user.name || "User Name"}</h2>
           <p className="text-gray-400 text-sm sm:text-base ">@{user.username}</p>
         </div>
         <Link className="hidden" href={`/`}>

@@ -175,7 +175,7 @@ const Contribute = () => {
                 <SelectFilter
                   width={"full"}
                   placeholder="Subjects"
-                  selectName={["Biology", "Physics", "Chemistry"]}
+                  selectName={["Mathematics", "Physics", "Chemistry"]}
                   onChange={(value: string[]) => setSubject(value[0])}
                 />
               </div>

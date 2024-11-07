@@ -2,14 +2,27 @@ import { Separator } from "@/components/ui/separator";
 import { Flame } from "lucide-react";
 import React from "react";
 
-const AdditionInfo = () => {
+interface AdditionInfoProps {
+  additionInfo: {
+    totalAttempt: number;
+    totalQuestions: number;
+    totalChallenge: number;
+    accuracy: number;
+  };
+}
+
+
+
+const AdditionInfo:React.FC<AdditionInfoProps> = ({additionInfo}) => {
+  const { totalAttempt, totalQuestions, totalChallenge, accuracy } = additionInfo;
   return (
     <>
       <div className="flex flex-row w-full bg-white justify-center md:space-x-8 space-x-3 ">
         <div className="m-2 text-center">
           <h3 className="md:text-4xl text-3xl font-bold ">
-            1080
-            <span className="text-xs ">/ 5000</span>
+            {totalAttempt}
+            <span className="text-xs ">/ {totalQuestions
+              }</span>
           </h3>
           <p className="text-gray-600 text-base font-thin leading-6  ">
             Solved Problems
@@ -18,7 +31,7 @@ const AdditionInfo = () => {
         <Separator orientation="vertical" className="h-auto" />
         <div className="m-2 text-center">
         <h3 className="md:text-4xl text-3xl font-bold ">
-            77
+           {totalChallenge}
           </h3>
           <p className="text-gray-600 text-base font-thin  leading-6">
             Challenges
@@ -31,7 +44,7 @@ const AdditionInfo = () => {
         <Separator orientation="vertical" className="h-auto" />
         <div className="m-2 text-center">
           <h3 className="md:text-4xl text-3xl font-bold ">
-            77.63
+            {parseFloat(accuracy.toFixed(2))}
             <span className="text-base ">%</span>
           </h3>
           <p className="text-gray-600 text-base font-thin  leading-6">

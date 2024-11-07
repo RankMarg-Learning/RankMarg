@@ -1,64 +1,68 @@
 "use client";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { useSession } from "next-auth/react";
+
 import AdditionInfo from "@/components/profile/AdditionInfo";
 import BasicProfile from "@/components/profile/BasicProfile";
 import Calender from "@/components/profile/Calender";
 import ContributionBanner from "@/components/profile/Contribute";
-// import { STProblemSolved } from "@/test/STProblemSolved";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import React from "react";
 import SubjectStats from "@/components/profile/SubjectStats";
-import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
+import { User } from "@prisma/client";
 import { ChallengeStats } from "@/components/profile/ChallengeStats";
+
+
+
+
 
 const UserProfile = ({ params }: { params: { username: string } }) => {
   const { username } = params;
+  
+  const [physics,setPhysics] = React.useState(0);
+  const [chemistry,setChemistry] = React.useState(0);
+  const [mathematics,setMathematics] = React.useState(0);
 
-  // const { data: user, isLoading } = useQuery({
-  //   queryKey: ["user",username],
-  //   queryFn: async () => {
-  //     const { data } = await axios.get(`/api/users/${username}`);
-  //     return data;
-  //   },
-  // });
+  const { data: profile, isLoading, isError } = useQuery({
+    queryKey: ["user", username],
+    queryFn: async () => {
+      const { data } = await axios.get(`/api/profile/${username}`);
+      return data;
+    },
+  });
 
+  console.log(profile);
+
+  
+
+  // console.log(profile);
+
+  if (isLoading) return <ProfileSkeleton />;
+  if (isError) return <p className="text-center text-red-500">Failed to load user data</p>;
 
   return (
-    <>
-      <div className="md:min-w-[940px] max-w- mx-auto  my-5  ">
-        <Card className="md:flex  justify-center items-center m-1 ">
-          <BasicProfile />
-          <Separator orientation="vertical" className="h-auto" />
-          <AdditionInfo />
-        </Card>
-        <Card className="flex mx-1 my-3 ">
-          <SubjectStats
-            subject="Physics"
-            color="blue"
-            totalQuestions={243}
-            solvedQuestions={243}
-          />
-          <SubjectStats
-            subject="Chemistry"
-            color="green"
-            totalQuestions={1742}
-            solvedQuestions={682}
-          />
-          <SubjectStats
-            subject="Mathematics"
-            color="orange"
-            totalQuestions={1742}
-            solvedQuestions={976}
-          />
-        </Card>
-        <div className="w-full">
-          <Calender />
-          <ChallengeStats />
-          <ContributionBanner />
-        </div>
+    <div className="md:min-w-[940px] max-w- mx-auto my-5">
+      <Card className="md:flex justify-center items-center m-1">
+        <BasicProfile basicProfile={profile.basicProfile} />
+        <Separator orientation="vertical" className="h-auto" />
+        <AdditionInfo additionInfo={profile.additionInfo} />
+      </Card>
+
+      <Card className="flex mx-1 my-3">
+        <SubjectStats subject="Physics" color="blue" totalQuestions={profile.subjects.Physics.TotalQuestion} solvedQuestions={profile.subjects.Physics.AttemptCount} />
+        <SubjectStats subject="Chemistry" color="green" totalQuestions={profile.subjects.Chemistry.TotalQuestion} solvedQuestions={profile.subjects.Chemistry.AttemptCount} />
+        <SubjectStats subject="Mathematics" color="orange" totalQuestions={profile.subjects.Mathematics.TotalQuestion} solvedQuestions={profile.subjects.Mathematics.AttemptCount} />
+      </Card>
+
+      <div className="w-full">
+        <ChallengeStats stats={profile.challengeStats} />
+        <Calender />
+        <ContributionBanner />
       </div>
-    </>
+    </div>
   );
 };
 

@@ -16,6 +16,7 @@ export async function GET() {
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: {
+                name: true,
                 username: true,
                 rank: true,
                 player1: {
@@ -65,7 +66,13 @@ export async function GET() {
             })),
         ].sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)).slice(0,25); // Sort by creation date
 
-        return new Response(JSON.stringify({ user, recentChallenges }), { status: 200 });
+        const userStats = {
+            name: user?.name,
+            username: user.username,
+            rank:user.rank,
+        };
+
+        return new Response(JSON.stringify({ userStats, recentChallenges }), { status: 200 });
     } catch (error) {
         console.error("[Challenge-Info-Dynamic] Error:", error);
         return new Response("Internal Server Error", { status: 500 });

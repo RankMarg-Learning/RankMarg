@@ -5,47 +5,27 @@ import { CartesianGrid, Line, LineChart, XAxis, YAxis, Tooltip } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer } from "@/components/ui/chart"
 
-// Sample data to match the component requirements
-const initialParams = [
-  { updatedAt: "2024-10-01T10:00:00Z", rankChanges: 5, attemptScore: [1, 1, 0, 1] },
-  { updatedAt: "2024-10-02T12:30:00Z", rankChanges: -3, attemptScore: [1, 0, 0, 1] },
-  { updatedAt: "2024-10-03T14:15:00Z", rankChanges: 4, attemptScore: [1, 1, 1, 0] },
-  { updatedAt: "2024-10-04T08:45:00Z", rankChanges: -2, attemptScore: [1, 0, 1, 0] },
-  { updatedAt: "2024-10-05T09:30:00Z", rankChanges: 6, attemptScore: [1, 1, 1, 1] },
-  { updatedAt: "2024-10-06T16:20:00Z", rankChanges: 2, attemptScore: [1, 0, 1, 1] },
-  { updatedAt: "2024-10-07T18:10:00Z", rankChanges: -1, attemptScore: [1, 1, 0, 0] },
-  { updatedAt: "2024-10-08T11:00:00Z", rankChanges: 3, attemptScore: [1, 1, 1, 1] },
-  { updatedAt: "2024-10-09T13:25:00Z", rankChanges: -4, attemptScore: [0, 1, 0, 0] },
-  { updatedAt: "2024-10-10T15:50:00Z", rankChanges: 1, attemptScore: [1, 1, 0, 1] },
-  { updatedAt: "2024-10-11T10:05:00Z", rankChanges: 15, attemptScore: [1, 1, 1, 1] },
-  { updatedAt: "2024-10-12T17:45:00Z", rankChanges: -2, attemptScore: [1, 1, 0, 0] },
-  { updatedAt: "2024-10-13T14:35:00Z", rankChanges: 5, attemptScore: [1, 1, 1, 0] },
-  { updatedAt: "2024-10-14T08:15:00Z", rankChanges: -3, attemptScore: [1, 0, 1, 1] },
-  { updatedAt: "2024-10-15T18:30:00Z", rankChanges: 4, attemptScore: [1, 1, 1, 1] },
-  { updatedAt: "2024-10-16T16:00:00Z", rankChanges: -10, attemptScore: [1, 0, 1, 0] },
-  { updatedAt: "2024-10-17T09:40:00Z", rankChanges: 6, attemptScore: [1, 1, 1, 0] },
-  { updatedAt: "2024-10-18T07:55:00Z", rankChanges: -2, attemptScore: [0, 1, 1, 0] },
-  { updatedAt: "2024-10-19T20:20:00Z", rankChanges: 30, attemptScore: [1, 1, 1, 1] },
-  { updatedAt: "2024-10-20T13:10:00Z", rankChanges: -4, attemptScore: [1, 0, 0, 1] },
-];
+
 
 // Utility function to transform params to chartData
 const transformParamsToChartData = (params) => {
-  let cumulativeRank = 0;
+  let cumulativeRank = 50;
   return params.map((item) => {
-    cumulativeRank += item.rankChanges;
+    cumulativeRank += item.userScore;
     const correctAttempts = item.attemptScore.filter((score) => score === 1).length;
     return {
-      date: item.updatedAt,
+      
+      date: item.createdAt,
       rank: cumulativeRank,
       correctAttempts: `${correctAttempts}/${item.attemptScore.length}`,
     };
   });
 };
 
-const initialChartData = transformParamsToChartData(initialParams);
 
-export function ChallengeStats() {
+
+export function ChallengeStats({stats}) {
+  const initialChartData = transformParamsToChartData(stats.recentChallenges);
   const [chartData] = React.useState(initialChartData);
 
   // Get the date 30 days ago from today
@@ -59,7 +39,7 @@ export function ChallengeStats() {
   });
 
 
-  const rank = filteredData[filteredData.length - 1].rank;
+  
  
   
   
@@ -70,7 +50,7 @@ export function ChallengeStats() {
         <CardTitle>Rating</CardTitle>
         <CardDescription
         className="md:text-4xl text-2xl font-bold"
-        >{rank}</CardDescription>
+        >{stats.rank}</CardDescription>
       </CardHeader>
       <CardContent >
         <ChartContainer

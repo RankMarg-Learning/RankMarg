@@ -12,7 +12,7 @@ export async function GET(req: Request, {params} : { params: { username: string 
             include:{
                 attempts:true,
                 player1:true,
-                player2:true,
+                player2:true,    
             },
         });
 
