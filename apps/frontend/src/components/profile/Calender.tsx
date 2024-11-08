@@ -4,9 +4,11 @@ import React from "react";
 import Heatmap from "./heatmap/Heatmap";
 import { Separator } from "@/components/ui/separator";
 
+interface CalenderProps {
+  attempts: Date[];
+}
 
-
-const Calender = ({attempts}) => {
+const Calender = ({attempts}:CalenderProps) => {
   return (
     <Card className="my-3 mx-2">
       <div className="h-[27.8px] p-[9px_12px_0_12px]">

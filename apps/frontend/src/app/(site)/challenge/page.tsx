@@ -1,7 +1,7 @@
 "use client";
 import { Card } from "@/components/ui/card";
 import React, {  useEffect, useState } from "react";
-import { TrendingUp, Link2, CopyIcon, MoveUp, MoveDown } from "lucide-react";
+import { TrendingUp, Link2, CopyIcon, MoveUp, MoveDown, Ban } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import Loading from "@/components/Loading";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import ChallengeSkeleton from "@/components/challenge/ChallengeSkelaton";
 
 
 interface ChallengeInfoProps {
@@ -45,7 +46,7 @@ const ChallengePage = () => {
   });
 
   if (isLoading) {
-    return <Loading />;
+    return <ChallengeSkeleton />;
   }
 
 
@@ -123,7 +124,7 @@ const UserProfile = ({user}) => {
   );
 };
 
-const Banner = () => {
+  const Banner = () => {
   const router = useRouter();
   const  socket = useSocket();
   const [open, setOpen] = useState(false);
@@ -248,4 +249,5 @@ const Banner = () => {
   );
 };
 
-export default ChallengePage;
+export { ChallengePage as default, Banner };
+

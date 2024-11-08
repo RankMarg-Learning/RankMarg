@@ -11,7 +11,7 @@ type AttemptData = {
 };
 const today = new Date();
 
-function Heatmap({ attempts }: { attempts: any }) {
+function Heatmap({ attempts }: { attempts: Date[] }) {
 
   
 

@@ -14,6 +14,7 @@ import SubjectStats from "@/components/profile/SubjectStats";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
 import { User } from "@prisma/client";
 import { ChallengeStats } from "@/components/profile/ChallengeStats";
+import { UserProfileResponse } from "@/types";
 
 
 
@@ -22,23 +23,14 @@ import { ChallengeStats } from "@/components/profile/ChallengeStats";
 const UserProfile = ({ params }: { params: { username: string } }) => {
   const { username } = params;
   
-  const [physics,setPhysics] = React.useState(0);
-  const [chemistry,setChemistry] = React.useState(0);
-  const [mathematics,setMathematics] = React.useState(0);
 
-  const { data: profile, isLoading, isError } = useQuery({
+  const { data: profile, isLoading, isError } = useQuery<UserProfileResponse>({
     queryKey: ["user", username],
     queryFn: async () => {
       const { data } = await axios.get(`/api/profile/${username}`);
       return data;
     },
   });
-
-  // console.log(profile.additionalInfo);
-
-  
-
-  // console.log(profile);
 
   if (isLoading) return <ProfileSkeleton />;
   if (isError) return <p className="text-center text-red-500">Failed to load user data</p>;

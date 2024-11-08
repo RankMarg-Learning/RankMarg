@@ -4,8 +4,11 @@ import * as React from "react"
 import { CartesianGrid, Line, LineChart, XAxis, YAxis, Tooltip } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer } from "@/components/ui/chart"
+import {  UserChallengeStats } from "@/types"
 
-
+type ChallengeStatsProps = {
+  stats: UserChallengeStats;  // Use the UserChallengeDetails type here
+};
 
 // Utility function to transform params to chartData
 const transformParamsToChartData = (params) => {
@@ -24,7 +27,7 @@ const transformParamsToChartData = (params) => {
 
 
 
-export function ChallengeStats({stats}) {
+export function ChallengeStats({stats}:ChallengeStatsProps) {
   const initialChartData = transformParamsToChartData(stats.recentChallenges);
   const [chartData] = React.useState(initialChartData);
 

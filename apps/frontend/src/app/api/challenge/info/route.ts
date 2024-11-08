@@ -2,6 +2,26 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
 
+// Define types for the response data
+type ChallengeDetails = {
+    challengeId: string;
+    opponentUsername: string;
+    result: string | null;
+    userScore: number | null;
+    createdAt: Date;
+};
+
+type UserStats = {
+    name: string | null;
+    username: string;
+    rank: number;
+};
+
+type ResponseData = {
+    userStats: UserStats;
+    recentChallenges: ChallengeDetails[];
+};
+
 export async function GET() {
     try {
         // Fetch session and validate
@@ -49,7 +69,7 @@ export async function GET() {
         }
 
         // Combine and map player1 and player2 challenges
-        const recentChallenges = [
+        const recentChallenges: ChallengeDetails[] = [
             ...user.player1.map((challenge) => ({
                 challengeId: challenge.challengeId,
                 opponentUsername: challenge.player2?.username || "Unknown", // Get opponent's username for player1 challenges
@@ -64,15 +84,22 @@ export async function GET() {
                 userScore: challenge.player2Score, // User's score when they are player2
                 createdAt: challenge.createdAt,
             })),
-        ].sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)).slice(0,25); // Sort by creation date
+        ].sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)).slice(0, 25); // Sort by creation date
 
-        const userStats = {
+        // Define the user stats
+        const userStats: UserStats = {
             name: user?.name,
             username: user.username,
-            rank:user.rank,
+            rank: user.rank,
         };
 
-        return new Response(JSON.stringify({ userStats, recentChallenges }), { status: 200 });
+        // Return the data in the correct format with types
+        const responseData: ResponseData = {
+            userStats,
+            recentChallenges,
+        };
+
+        return new Response(JSON.stringify(responseData), { status: 200 });
     } catch (error) {
         console.error("[Challenge-Info-Dynamic] Error:", error);
         return new Response("Internal Server Error", { status: 500 });
