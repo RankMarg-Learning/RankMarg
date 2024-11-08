@@ -1,4 +1,4 @@
-
+export * from "./typeAPI";
 
 
 export interface Userprops {

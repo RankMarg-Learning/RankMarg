@@ -34,7 +34,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
     },
   });
 
-  console.log(profile);
+  // console.log(profile.additionalInfo);
 
   
 
@@ -48,7 +48,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
       <Card className="md:flex justify-center items-center m-1">
         <BasicProfile basicProfile={profile.basicProfile} />
         <Separator orientation="vertical" className="h-auto" />
-        <AdditionInfo additionInfo={profile.additionInfo} />
+        <AdditionInfo additionInfo={profile.additionalInfo} />
       </Card>
 
       <Card className="flex mx-1 my-3">
@@ -59,7 +59,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
 
       <div className="w-full">
         <ChallengeStats stats={profile.challengeStats} />
-        <Calender />
+        <Calender attempts={profile.solvedAtValues}/>
         <ContributionBanner />
       </div>
     </div>

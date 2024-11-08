@@ -1,5 +1,4 @@
 import { Separator } from "@/components/ui/separator";
-import { Flame } from "lucide-react";
 import React from "react";
 
 interface AdditionInfoProps {

@@ -12,6 +12,9 @@ type AttemptData = {
 const today = new Date();
 
 function Heatmap({ attempts }: { attempts: any }) {
+
+  
+
   const [daysToShow, setDaysToShow] = useState(365);
   const [heatmapData, setHeatmapData] = useState<AttemptData[]>([]);
   
@@ -33,7 +36,7 @@ function Heatmap({ attempts }: { attempts: any }) {
     attempts.forEach((attempt) => {
         
       
-        const date = new Date(attempt.solvedAt).toISOString().split("T")[0]; // format date to YYYY-MM-DD
+        const date = new Date(attempt).toISOString().split("T")[0]; // format date to YYYY-MM-DD
         allDays[date] = (allDays[date] || 0) + 1; // Increment the count for this date
         
       
