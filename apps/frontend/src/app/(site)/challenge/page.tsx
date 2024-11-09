@@ -63,31 +63,28 @@ const ChallengePage = () => {
           <Card className=" p-4 rounded-lg">
             <h2 className="text-xl font-semibold">Recent Challenges</h2>
             {
-              challengeInfo ? (challengeInfo.recentChallenges.map((challenge) => (
-                
-                
-              
-                <Link href={`/challenge/${challenge.challengeId}`} className="flex border-2 font-semibold justify-between p-3 px-3 my-2 hover:bg-gray-50" key={challenge.challengeId}>
+              challengeInfo ? (challengeInfo.recentChallenges.slice(0, 12).map((challenge) => (
+                <Link href={`/challenge/${challenge.challengeId}`} className="flex border-2 rounded-md  justify-between p-3 px-3 my-2 hover:bg-gray-50" key={challenge.challengeId}>
                   <div className="flex items-center">
-          <span className="bg-blue-100 text-blue-600  px-2 py-1 rounded-full mr-3">
-            VS
-          </span>
-          <h2 className="  text-gray-800">
-            {challenge.opponentUsername}
-          </h2>
-        </div>
-                  <p className="mr-5 flex">{challenge.userScore} 
-                  {challenge.userScore > 0 ? (
-            <span className="text-green-500 ml-1"><MoveUp/></span>
-          ) : challenge.userScore < 0 ? (
-            <span className="text-red-500 ml-1"><MoveDown/></span>
-          ) : <span className=" ml-1">&nbsp; - &nbsp;</span>}
-                  </p>
-                </Link>
-              ))
-            ):(
-              <div className="mt-2 text-gray-400">No recent challenges found.</div>
-            )
+                    <span className="bg-yellow-100 text-yellow-500 font-semibold px-2 py-1 rounded mr-3">
+                      VS
+                    </span>
+                    <h2 className="  text-gray-800">
+                      {challenge.opponentUsername}
+                    </h2>
+                  </div>
+                  <p className="mr-5 font-semibold text-gray-600 flex">{challenge.userScore} 
+                          {challenge.userScore > 0 ? (
+                    <span className="text-green-500 ml-1"><MoveUp/></span>
+                  ) : challenge.userScore < 0 ? (
+                    <span className="text-red-500 ml-1"><MoveDown/></span>
+                  ) : <span className=" ml-1">&nbsp; - &nbsp;</span>}
+                          </p>
+                        </Link>
+                      ))
+                    ):(
+                      <div className="mt-2 text-gray-400">No recent challenges found.</div>
+                    )
             }
           </Card>
             
@@ -98,11 +95,11 @@ const ChallengePage = () => {
   );
 };
 
-const UserProfile = ({user}) => {
+const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) => {
   return (
-    <div className="   flex justify-between p-2 md:flex-col rounded-lg ">
+    <div className="flex justify-between p-2  rounded-lg ">
       <div className="flex flex-row md:justify-between  ">
-        <div className="flex flex-col justify-center items-center">
+        <div className="flex flex-col md:justify-start justify-center items-start">
           <h2 className="text-base sm:text-lg font-semibold">{user.name || "User Name"}</h2>
           <p className="text-gray-400 text-sm sm:text-base ">@{user.username}</p>
         </div>
@@ -111,13 +108,11 @@ const UserProfile = ({user}) => {
         </Link>
       </div>
       <Separator className=" md:my-5 hidden " />
-      <div className="mt-2  text-center ">
-        <h3 className="text-lg sm:text-xl flex justify-center sm:justify-start">Rating</h3>
-        <p className="text-2xl sm:text-4xl flex items-center justify-center sm:justify-start">
+      <div className=" text-center ">
+        <h3 className="text-base  flex justify-center sm:justify-start">Rating</h3>
+        <p className="text-4xl sm:text-4xl font-semibold flex items-center justify-center sm:justify-start">
           {user.rank}{" "}
-          <span className="items-center flex ml-2">
-            <TrendingUp color="green" />
-          </span>
+         
         </p>
       </div>
     </div>

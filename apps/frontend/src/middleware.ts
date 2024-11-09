@@ -29,7 +29,7 @@ export async function middleware(request:NextRequest){
 }
 
 export const config = {
-    matcher: ['/sign-in', '/sign-up','/','/question/:path*',
+    matcher: ['/sign-in','/question/:path*',
         '/question/:questionId',
         '/challenge'
     ], //!'/problems/:path*' use this if you want to match all routes starting with /problems
