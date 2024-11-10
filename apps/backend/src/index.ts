@@ -1,8 +1,3 @@
-import dotenv from "dotenv";
-
-// Load environment variables from .env file
-dotenv.config({ path: "../.env" });
-
 import { WebSocketServer } from "ws";
 import { ChallengeManager } from "./ChallengeManager";
 import url from "url";
