@@ -5,7 +5,8 @@ declare global {
     gtag: (
       command: 'config' | 'event',
       trackingIdOrEventName: string,
-      params?: { [key: string]: any }
+      // params?: { [key: string]: any }
+      params?: Record<string, unknown>
     ) => void;
   }
 }

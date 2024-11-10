@@ -18,16 +18,11 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {  useEffect, useState } from "react";
-import axios from "axios";
+import {   useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
 const  InviteFriend = () => {
   const challengeId = uuidv4();
-  const router = useRouter();
-  const { data: session,status } = useSession();
   
   const [challengeLink] = useState<string>(`${window.location.origin}/challenge/${challengeId}`);
 

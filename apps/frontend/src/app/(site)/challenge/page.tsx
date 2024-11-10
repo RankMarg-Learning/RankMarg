@@ -1,16 +1,15 @@
 "use client";
 import { Card } from "@/components/ui/card";
 import React, {  useEffect, useState } from "react";
-import { TrendingUp, Link2, CopyIcon, MoveUp, MoveDown, Ban } from "lucide-react";
+import {  Link2, CopyIcon, MoveUp, MoveDown } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { useSocket } from "@/hooks/useSocket";
 import { useRouter } from "next/navigation";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import Loading from "@/components/Loading";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import ChallengeSkeleton from "@/components/challenge/ChallengeSkelaton";

@@ -13,7 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import SelectFilter from "@/components/SelectFilter";
-import React, {   use, useEffect, useState } from "react";
+import React, {   useState } from "react";
 // import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { QTableRow } from "@/components/questions/QTableRow"; 
 import { QTableRowSkeleton } from "@/components/questions/QTableRowSkeleton";
@@ -30,8 +30,11 @@ const Questionset = () => {
   const [loading, setLoading] = useState(false);
   const [tabSubject, setTabSubject] = useState( "");
   const [difficulty, setDifficulty] = useState("");
-  const [topic, setTopic] = useState("");
+  // const [topic, setTopic] = useState("");
   const [status, setStatus] = useState("");
+
+
+  console.log(difficulty,status);
  
   try {
     const storedFilters = JSON.parse(localStorage.getItem('questionFilters'));
@@ -214,6 +217,7 @@ import Loading from "@/components/Loading";
 
 
 const RandomQuestion = ({ loading, setLoading }) => {
+  console.log(loading);
   const router = useRouter();
   const [topicTitle, setTopicTitle] = useState("");
   const [difficulty, setDifficulty] = useState("");

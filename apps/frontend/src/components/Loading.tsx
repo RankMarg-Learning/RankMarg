@@ -4,10 +4,10 @@ import { TestTube, Binary, DraftingCompass, Cog } from "lucide-react"; // Import
 const Loading = () => {
   const [iconIndex, setIconIndex] = useState(0);
   const icons = [
-    <TestTube className="w-12 h-12 text-blue-600 animate-spin" />,
-    <Binary className="w-12 h-12 text-green-600 animate-spin" />,
-    <DraftingCompass className="w-12 h-12 text-purple-600 animate-spin" />,
-    <Cog className="w-12 h-12 text-red-600 animate-spin" />,
+    <TestTube key="icon-0" className="w-12 h-12 text-blue-600 animate-spin" />,
+    <Binary key="icon-1" className="w-12 h-12 text-green-600 animate-spin" />,
+    <DraftingCompass key="icon-2" className="w-12 h-12 text-purple-600 animate-spin" />,
+    <Cog key="icon-3" className="w-12 h-12 text-red-600 animate-spin" />,
   ];
 
   useEffect(() => {
