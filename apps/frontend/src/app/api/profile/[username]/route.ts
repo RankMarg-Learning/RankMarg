@@ -15,6 +15,7 @@ export async function GET(req: Request, { params }: { params: { username: string
           select: {
             isCorrect: true,
             solvedAt: true,
+            questionId: true,
             question: { select: { subject: true } },
           },
           orderBy: { solvedAt: "desc" },
@@ -44,7 +45,18 @@ export async function GET(req: Request, { params }: { params: { username: string
 
     const totalQuestions = await prisma.question.count();
 
-    const totalAttempt = user.attempts.filter((attempt) => attempt.isCorrect).length;
+    const correctQuestionIds = new Set();
+
+    user.attempts.forEach((attempt) => {
+      if (attempt.isCorrect) {
+        correctQuestionIds.add(attempt.questionId);
+      }
+    });
+
+    const totalAttempt = correctQuestionIds.size;
+    console.log(totalAttempt);
+
+    // const totalAttempt = user.attempts.filter((attempt) => attempt.isCorrect).length;
     const accuracy = totalAttempt / (user.attempts.length || 1);
 
     const totalChallenge = user.player1.length + user.player2.length;
@@ -58,16 +70,23 @@ export async function GET(req: Request, { params }: { params: { username: string
     }, {} as Record<string, number>);
 
     const subjectCounts = user.attempts
-      .filter((attempt) => attempt.isCorrect)
-      .reduce((acc, attempt) => {
-        const subject = attempt.question.subject;
-        acc[subject] = (acc[subject] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+  .filter((attempt) => attempt.isCorrect)
+  .reduce((acc, attempt) => {
+    const subject = attempt.question.subject;  // Subject is a string
+    const questionId = attempt.questionId;  // Ensure questionId is a string
+
+    // Initialize a Set for each subject if not already initialized
+    if (!acc[subject]) {
+      acc[subject] = new Set<string>();  // Initialize as a Set of strings
+    }
+
+    acc[subject].add(questionId);  // Add the questionId (string) to the Set for the subject
+    return acc;
+  }, {} as Record<string, Set<string>>);
 
     const subjects: SubjectStatsMap = ["Physics", "Chemistry", "Mathematics"].reduce((acc, subject) => {
       acc[subject] = {
-        AttemptCount: subjectCounts[subject] || 0,
+        AttemptCount: subjectCounts[subject] ? subjectCounts[subject].size : 0,
         TotalQuestion: subjectTotalQuestionMap[subject] || 0,
       };
       return acc;

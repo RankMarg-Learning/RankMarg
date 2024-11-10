@@ -52,7 +52,7 @@ export function ChallengeStats({stats}:ChallengeStatsProps) {
       <CardHeader>
         <CardTitle>Rating</CardTitle>
         <CardDescription
-        className="md:text-4xl text-2xl font-bold"
+        className="md:text-4xl text-2xl font-bold text-yellow-500"
         >{stats.rank}</CardDescription>
       </CardHeader>
       <CardContent >

@@ -10,7 +10,7 @@ interface CalenderProps {
 
 const Calender = ({attempts}:CalenderProps) => {
   return (
-    <Card className="my-3 mx-2">
+    <Card >
       <div className="h-[27.8px] p-[9px_12px_0_12px]">
         <div className="font-semibold">{attempts.length} submissions in the last year</div>
       </div>
