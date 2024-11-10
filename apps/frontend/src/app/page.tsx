@@ -1,636 +1,404 @@
-"use client";
-import Link from "next/link";
-import { AlarmClockCheck, ChartSpline, CircleUser, Landmark, Menu, Swords } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { signOut, useSession } from "next-auth/react";
+"use client"
+import { Button } from "@/components/ui/button"
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import Image from "next/image";
-import { Skeleton } from "@/components/ui/skeleton";
-
-
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import Image from "next/image"
+import Link from "next/link"
+import { Users, BookOpen, Clock, Menu, X, Brain, Trophy, BarChart2, Gamepad, UserPlus, Settings, PlayCircle, TrendingUp } from "lucide-react"
+import { useState } from "react"
+import { motion } from "framer-motion"
 
 export default function Home() {
-    const { data: session,status } = useSession();
-    console.log(session);
-    
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  const fadeInUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.5 }
+  }
+
+  const staggerChildren = {
+    animate: {
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  }
+
   return (
-    <>
-    
-    <div className="bg-gray-50">
-    <header className=" top-0 flex w-full h-16 items-center gap-4  px-4 md:px-6">
-      <nav className="hidden  flex-col gap-8 text-lg font-medium md:flex md:flex-row md:items-center md:gap-8 md:text-sm lg:gap-10">
-        <Link
-          href="#"
-          className="flex items-center gap-2 text-lg font-semibold md:text-base"
-        >
-          <Image src={'https://utfs.io/f/DbhgrrAIqRoKZABd17kyzMn5glOosUYSuEeWAbhwd4pCxkHf'} alt="Acme Inc" width={250} height={250} />
-        </Link>
-        <Link
-          href="/"
-          className="text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Home
-        </Link>
-        <Link
-          href="/questionset"
-          className="text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Questions
-        </Link>
-        <Link
-          href="/challenge"
-          className="text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Challenge
-        </Link>
-      </nav>
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0 md:hidden">
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle navigation menu</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="bg-white w-[220px] ">
-          <nav className="grid gap-6 text-lg font-medium">
-            <Link
-              href="#"
-              className="flex items-center gap-2 text-lg font-semibold"
-            >
-              <Image src={'/logo.svg'} alt="Acme Inc" width={60} height={60} />
+    <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-white">
+      <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-sm border-b border-yellow-100">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <Link href="#" className="flex items-center space-x-2">
+              <motion.div 
+                className="w-8 h-8 bg-yellow-500 rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              />
+              <span className="font-bold text-xl text-yellow-600">PrepMaster</span>
             </Link>
-            <Link
-              href="/"
-              className="text-muted-foreground  hover:text-foreground"
-            >
-              Home
-            </Link>
-            <Link
-              href="/questionset"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Question
-            </Link>
-            <Link
-              href="challenge"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Challenge
-            </Link>
-
-            <Link href="#" className="hover:text-foreground">
-              Profile
-            </Link>
-          </nav>
-        </SheetContent>
-      </Sheet>
-      <div className="flex w-full items-center justify-end  md:ml-auto md:gap-2 lg:gap-4">
-        {!session && status === "unauthenticated" ? (
-          <div className="flex gap-1 md:gap-2">
-            <Link href={"/sign-in"}>
-              {" "}
-              <Button>Login</Button>
-            </Link>
-            <Link href={"/sign-up"}>
-              {" "}
-              <Button>Register</Button>
-            </Link>
-          </div>
-        ) : (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                {status !== "loading" ? (session?.user.image ? (
-                  <Image
-                    src={session.user.image}
-                    alt="user profile"
-                    width={28}
-                    height={28}
-                    className="rounded-full"
-                  />
-                ) : (
-                  <CircleUser className="h-7 w-7" />
-                )):(
-                  <Skeleton className="h-7 w-7 rounded-full" />
-                )}
-                <span className="sr-only">Toggle user menu</span>
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link href="#" className="text-sm font-medium text-gray-600 hover:text-yellow-600 transition-colors">
+                Features
+              </Link>
+              <Link href="#" className="text-sm font-medium text-gray-600 hover:text-yellow-600 transition-colors">
+                How It Works
+              </Link>
+              <Link href="#" className="text-sm font-medium text-gray-600 hover:text-yellow-600 transition-colors">
+                Success Stories
+              </Link>
+              <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">
+                Start Free Trial
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
-                Log Out{" "}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </nav>
+            <button
+              className="md:hidden"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6 text-gray-600" />
+              ) : (
+                <Menu className="h-6 w-6 text-gray-600" />
+              )}
+            </button>
+          </div>
+        </div>
+        {isMenuOpen && (
+          <motion.div 
+            className="md:hidden bg-white border-t border-yellow-100"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="container mx-auto px-4 py-4">
+              <nav className="flex flex-col space-y-4">
+                <Link href="#" className="text-sm font-medium text-gray-600 hover:text-yellow-600 transition-colors">
+                  Features
+                </Link>
+                <Link href="#" className="text-sm font-medium text-gray-600 hover:text-yellow-600 transition-colors">
+                  How It Works
+                </Link>
+                <Link href="#" className="text-sm font-medium text-gray-600 hover:text-yellow-600 transition-colors">
+                  Success Stories
+                </Link>
+                <Button className="bg-yellow-500 hover:bg-yellow-600 text-white w-full">
+                  Start Free Trial
+                </Button>
+              </nav>
+            </div>
+          </motion.div>
         )}
-      </div>
-    </header>
-
-    
-                                            
-
-    <section className="pt-12 pb-12 sm:pb-16 lg:pt-8">
-        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div className="grid max-w-lg grid-cols-1 mx-auto lg:max-w-full lg:items-center lg:grid-cols-2 gap-y-12 lg:gap-x-16">
-                <div>
-                    <div className="text-center lg:text-left">
-                        <h1 className="text-4xl font-bold leading-tight text-gray-700 sm:text-5xl sm:leading-tight lg:leading-tight lg:text-6xl font-pj">Conquer JEE - Challenge Yourself with Real-Time Challenges!</h1>
-                        <p className="mt-2 text-lg text-gray-600 sm:mt-8 font-inter">Personalized learning paths, real-time competition, and in-depth performance insights to help you excel.</p>
+      </header>
+      <main className="pt-16">
+        <section className="py-12 md:py-20 px-4 relative overflow-hidden">
+          <div className="container mx-auto">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-12">
+              <motion.div 
+                className="md:w-1/2 space-y-8 relative z-10"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <h1 className="text-4xl font-bold leading-tight lg:text-5xl text-gray-800">
+                  Unlock Your Potential with Our Smart Learning Platform
+                </h1>
+                <p className="text-lg text-gray-600 max-w-lg">
+                  Prepare for JEE & NEET like never before with personalized question banks, real-time challenges, and gamified learning.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <Button className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-full px-8">
+                    Start Your Free Trial
+                  </Button>
+                </div>
+              </motion.div>
+              <motion.div 
+                className="md:w-1/2 relative"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="relative z-10 bg-yellow-100 rounded-3xl p-8 shadow-xl">
+                  <Image
+                    src="/hero.png"
+                    alt="Students using PrepMaster platform"
+                    width={400}
+                    height={400}
+                    className="rounded-2xl mx-auto"
+                  />
+                  {/* Floating Stats */}
+                  <motion.div 
+                    className="absolute top-4 left-4 bg-white rounded-2xl p-3 shadow-lg flex items-center space-x-2"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <Users className="h-5 w-5 text-yellow-500" />
+                    <div>
+                      <div className="font-bold text-sm">10M+</div>
+                      <div className="text-xs text-gray-500">Users</div>
                     </div>
-
-                    <div className="flex items-center justify-center mt-10 space-x-6 lg:justify-start sm:space-x-8">
-                        <div className="flex items-center">
-                            <p className="text-3xl font-medium text-yellow-400 sm:text-4xl font-pj">3K+</p>
-                            <p className="ml-3 text-sm text-gray-900 font-pj">No. of<br />Questions</p>
-                        </div>
-
-                        <div className="hidden sm:block">
-                            <svg className="text-gray-400" width="16" height="39" viewBox="0 0 16 39" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                <line x1="0.72265" y1="10.584" x2="15.7226" y2="0.583975"></line>
-                                <line x1="0.72265" y1="17.584" x2="15.7226" y2="7.58398"></line>
-                                <line x1="0.72265" y1="24.584" x2="15.7226" y2="14.584"></line>
-                                <line x1="0.72265" y1="31.584" x2="15.7226" y2="21.584"></line>
-                                <line x1="0.72265" y1="38.584" x2="15.7226" y2="28.584"></line>
-                            </svg>
-                        </div>
-
-                        <div className="flex items-center">
-                            <p className="text-3xl font-medium text-yellow-400 sm:text-4xl font-pj">50+</p>
-                            <p className="ml-3 text-sm text-gray-900 font-pj">No. of<br />Instrcutor</p>
-                        </div>
+                  </motion.div>
+                  <motion.div 
+                    className="absolute top-1/3 right-4 bg-white rounded-2xl p-3 shadow-lg flex items-center space-x-2"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <BookOpen className="h-5 w-5 text-yellow-500" />
+                    <div>
+                      <div className="font-bold text-sm">50k+</div>
+                      <div className="text-xs text-gray-500">Questions</div>
                     </div>
-                </div>
-
-                <div>
-                    <div className="flex items-center justify-center">
-                        <Image src={'https://utfs.io/f/DbhgrrAIqRoKdWvAT6OEPwob42XZe6usTnqBa8yk7dtKScQL'} alt="Hero" width={700} height={700} />
+                  </motion.div>
+                  <motion.div 
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-2xl p-3 shadow-lg flex items-center space-x-2"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                  >
+                    <Clock className="h-5 w-5 text-yellow-500" />
+                    <div>
+                      <div className="font-bold text-sm">24/7</div>
+                      <div className="text-xs text-gray-500">Support</div>
                     </div>
+                  </motion.div>
                 </div>
+              </motion.div>
             </div>
-        </div>
-    </section>
-</div>
+          </div>
+          {/* Background Elements */}
+          <motion.div 
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-200 rounded-full blur-3xl opacity-30"
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: [0.3, 0.2, 0.3],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              repeatType: "reverse",
+            }}
+          />
+          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-200 to-transparent" />
+        </section>
 
-{/* Feature Section */}
-<section className="py-24 ">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <div className="mb-10 lg:mb-16 flex justify-center items-center flex-col gap-x-0 gap-y-6 lg:gap-y-0 lg:flex-row lg:justify-between max-md:max-w-lg max-md:mx-auto">
-                  <div className="relative w-full text-center lg:text-left lg:w-2/4">
-                      <h2 className="text-4xl font-bold text-gray-900 leading-[3.25rem] lg:mb-6 mx-auto max-w-max lg:max-w-md lg:mx-0">Everything You Need for Exam Success</h2>
-                  </div>
-                  
-              </div>
-              <div className="flex justify-center items-center  gap-x-5 gap-y-8 lg:gap-y-0 flex-wrap md:flex-wrap lg:flex-nowrap lg:flex-row lg:justify-between lg:gap-x-8">
-                  <div className="group relative w-full bg-gray-100 rounded-2xl p-4 transition-all duration-500 max-md:max-w-md max-md:mx-auto md:w-2/5 md:h-64 xl:p-7 xl:w-1/4 hover:bg-yellow-500">
-                      <div className="bg-white rounded-full flex justify-center items-center mb-5 w-14 h-14 ">
-                         <Landmark className="h-7 w-7 text-yellow-500" />
-                              
-                      </div>
-                      <h4 className="text-xl font-semibold text-gray-900 mb-3 capitalize transition-all duration-500 group-hover:text-white">Smart Question Bank</h4>
-                      <p className="text-sm font-normal text-gray-500 transition-all duration-500 leading-5 group-hover:text-white">
-                      Access an extensive library of personalized questions tailored to your strengths and weaknesses.
-                      </p>
-                  </div>
-                  <div className="group relative w-full bg-gray-100 rounded-2xl p-4 transition-all duration-500 max-md:max-w-md max-md:mx-auto md:w-2/5 md:h-64 xl:p-7 xl:w-1/4 hover:bg-yellow-500">
-                      <div className="bg-white rounded-full flex justify-center items-center mb-5 w-14 h-14 ">
-                      <AlarmClockCheck className="h-7 w-7 text-yellow-500" />
-                              
-                      </div>
-                      <h4 className="text-xl font-semibold text-gray-900 mb-3 capitalize transition-all duration-500 group-hover:text-white">Real-Time Challenges</h4>
-                      <p className="text-sm font-normal text-gray-500 transition-all duration-500 leading-5 group-hover:text-white">
-                      Challenge your friends in real-time quizzes and compete for the top spot on the leaderboard. 
-                      </p>
-                  </div>
-                  <div className="group relative w-full bg-gray-100 rounded-2xl p-4 transition-all duration-500 max-md:max-w-md max-md:mx-auto md:w-2/5 md:h-64 xl:p-7 xl:w-1/4 hover:bg-yellow-500">
-                      <div className="bg-white rounded-full flex justify-center items-center mb-5 w-14 h-14 ">
-                      <ChartSpline className="h-7 w-7 text-yellow-500"  />
-                              
-                      </div>
-                      <h4 className="text-xl font-semibold text-gray-900 mb-3 capitalize transition-all duration-500 group-hover:text-white">Performance Analytics </h4>
-                      <p className="text-sm font-normal text-gray-500 transition-all duration-500 leading-5 group-hover:text-white">
-                      Monitor your progress with in-depth analytics and insights.
-                      </p>
-                  </div>
-                  <div className="group relative w-full bg-gray-100 rounded-2xl p-4 transition-all duration-500 max-md:max-w-md max-md:mx-auto md:w-2/5 md:h-64 xl:p-7 xl:w-1/4 hover:bg-yellow-500">
-                      <div className="bg-white rounded-full flex justify-center items-center mb-5 w-14 h-14 ">
-                      <Swords  className="h-7 w-7 text-yellow-500" />
-                              
-                      </div>
-                      <h4 className="text-xl font-semibold text-gray-900 mb-3 capitalize transition-all duration-500 group-hover:text-white">Gamified Learning</h4>
-                      <p className="text-sm font-normal text-gray-500 transition-all duration-500 leading-5 group-hover:text-white">
-                      Earn points, badges, and rewards as you complete challenges and master topics for JEE & NEET.
-                      </p>
-                  </div>
-              </div>
-        </div>
-      </section>
+        <section className="py-20 px-4 bg-white">
+          <div className="container mx-auto">
+            <motion.h2 
+              className="text-3xl font-bold mb-12 text-center text-gray-800"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              Key Features
+            </motion.h2>
+            <motion.div 
+              className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
+              variants={staggerChildren}
+              initial="initial"
+              animate="animate"
+            >
+              {[
+                {
+                  title: "Comprehensive Question Bank",
+                  description: "Access a wide range of expertly curated questions tailored to JEE and NEET. With AI-powered recommendations, our question bank adapts to your progress.",
+                  icon: Brain,
+                },
+                {
+                  title: "Compete with Peers in Real-Time",
+                  description: "Join live challenges and compete with friends or fellow students. The first to solve the problem wins, creating excitement and healthy competition.",
+                  icon: Trophy,
+                },
+                {
+                  title: "Track Your Progress",
+                  description: "Detailed performance analytics give you insights into your strengths and areas for improvement. Stay on track to reach your full potential.",
+                  icon: BarChart2,
+                },
+                {
+                  title: "Learn While You Play",
+                  description: "Turn your study sessions into a fun and rewarding experience with points, badges, and leaderboards. Stay motivated to learn!",
+                  icon: Gamepad,
+                },
+              ].map((feature, index) => (
+                <motion.div key={index} variants={fadeInUp}>
+                  <Card className="bg-yellow-50 border-yellow-100 h-full">
+                    <CardHeader>
+                      <feature.icon className="h-10 w-10 text-yellow-500 mb-2" />
+                      <CardTitle>{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription>{feature.description}</CardDescription>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
 
+        <section className="py-20 px-4 bg-yellow-100">
+          <div className="container mx-auto">
+            <motion.h2 
+              className="text-3xl font-bold mb-12 text-center text-gray-800"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              How It Works
+            </motion.h2>
+            <motion.div 
+              className="grid md:grid-cols-3 lg:grid-cols-5 gap-8"
+              variants={staggerChildren}
+              initial="initial"
+              animate="animate"
+            >
+              {[
+                { title: "Sign Up", description: "Create your account in minutes.", icon: UserPlus },
+                { title: "Personalize", description: "Select subjects and topics you want to focus on.", icon: Settings },
+                { title: "Start Solving", description: "Access your smart question bank and begin practicing.", icon: PlayCircle },
+                { title: "Challenge Yourself", description: "Join real-time challenges with your peers.", icon: Trophy },
+                { title: "Analyze & Improve", description: "Review performance analytics to identify areas for growth.", icon: TrendingUp },
+              ].map((step, index) => (
+                <motion.div key={index} className="flex flex-col items-center text-center" variants={fadeInUp}>
+                  <motion.div 
+                    className="bg-yellow-500 rounded-full p-4 mb-4"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <step.icon className="h-8 w-8 text-white" />
+                  </motion.div>
+                  <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                  <p className="text-gray-600">{step.description}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
 
-{/* Testimonial Section */}
+        <section className="py-20 px-4 bg-white">
+          <div className="container mx-auto">
+            <motion.h2 
+              className="text-3xl font-bold mb-12 text-center text-gray-800"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              Success Stories from Our Students
+            </motion.h2>
+            <motion.div 
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+              variants={staggerChildren}
+              initial="initial"
+              animate="animate"
+            >
+              {[
+                { name: "Priya S.", quote: "I improved my physics scores by 30% in just 3 months thanks to the smart question bank and real-time challenges!", achievement: "JEE Rank: 342" },
+                { name: "Rahul M.", quote: "The gamified learning approach kept me motivated throughout my NEET preparation. It made studying fun!", achievement: "NEET Score: 650/720" },
+                { name: "Ananya K.", quote: "The performance analytics helped me identify my weak areas quickly. I could focus my efforts where they were needed most.", achievement: "JEE Rank: 127" },
+              ].map((testimonial, index) => (
+                <motion.div key={index} variants={fadeInUp}>
+                  <Card className="bg-yellow-50 border-yellow-100 h-full">
+                    <CardHeader>
+                      <CardTitle>{testimonial.name}</CardTitle>
+                      <CardDescription>{testimonial.achievement}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="italic">"{testimonial.quote}"</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
 
-<section className="py-10 bg-gray-100 sm:py-16 lg:py-24">
-    <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-3xl font-bold leading-tight text-black sm:text-4xl lg:text-5xl">What our customers say</h2>
-            <p className="max-w-lg mx-auto mt-4 text-base leading-relaxed text-gray-600">Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint. Velit officia consequat duis.</p>
-        </div>
+        <section className="py-20 px-4 bg-yellow-500 text-white">
+          <div className="container mx-auto text-center">
+            <motion.h2 
+              className="text-3xl font-bold mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              Experience the Platform
+            </motion.h2>
+            <motion.p 
+              className="mb-8 text-lg"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              Get a taste of our real-time challenges and smart question bank.
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <Button className="bg-white text-yellow-600 hover:bg-yellow-100 rounded-full px-8 py-6 text-lg">
+                Try It Now
+              </Button>
+            </motion.div>
+          </div>
+        </section>
+      </main>
 
-        <div className="grid grid-cols-1 gap-6 px-4 mt-12 sm:px-0 xl:mt-20 xl:grid-cols-4 sm:grid-cols-2">
-            <div className="overflow-hidden bg-white rounded-md">
-                <div className="px-5 py-6">
-                    <div className="flex items-center justify-between">
-                        <Image className="flex-shrink-0 object-cover w-10 h-10 rounded-full" src="/poster.jpeg" width={40} height={40} alt="" />
-                        <div className="min-w-0 ml-3 mr-auto">
-                            <p className="text-base font-semibold text-black truncate">Darrell Steward</p>
-                            <p className="text-sm text-gray-600 truncate">@darrels</p>
-                        </div>
-                        <a href="#" title="" className="inline-block text-sky-500">
-                            <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M19.633 7.997c.013.175.013.349.013.523 0 5.325-4.053 11.461-11.46 11.461-2.282 0-4.402-.661-6.186-1.809.324.037.636.05.973.05a8.07 8.07 0 0 0 5.001-1.721 4.036 4.036 0 0 1-3.767-2.793c.249.037.499.062.761.062.361 0 .724-.05 1.061-.137a4.027 4.027 0 0 1-3.23-3.953v-.05c.537.299 1.16.486 1.82.511a4.022 4.022 0 0 1-1.796-3.354c0-.748.199-1.434.548-2.032a11.457 11.457 0 0 0 8.306 4.215c-.062-.3-.1-.611-.1-.923a4.026 4.026 0 0 1 4.028-4.028c1.16 0 2.207.486 2.943 1.272a7.957 7.957 0 0 0 2.556-.973 4.02 4.02 0 0 1-1.771 2.22 8.073 8.073 0 0 0 2.319-.624 8.645 8.645 0 0 1-2.019 2.083z"
-                                ></path>
-                            </svg>
-                        </a>
-                    </div>
-                    <blockquote className="mt-5">
-                        <p className="text-base text-gray-800">
-                            You made it so simple. My new site is so much faster and easier to work with than my old site. I just choose the page, make the change and click save.
-                            <span className="block text-sky-500">#another</span>
-                        </p>
-                    </blockquote>
-                </div>
-            </div>
-
-            <div className="overflow-hidden bg-white rounded-md">
-                <div className="px-5 py-6">
-                    <div className="flex items-center justify-between">
-                        <Image className="flex-shrink-0 object-cover w-10 h-10 rounded-full" src="https://cdn.rareblocks.xyz/collection/celebration/images/testimonials/7/avatar-2.jpg" width={10} height={10} alt="" />
-                        <div className="min-w-0 ml-3 mr-auto">
-                            <p className="text-base font-semibold text-black truncate">Leslie Alexander</p>
-                            <p className="text-sm text-gray-600 truncate">@lesslie</p>
-                        </div>
-                        <a href="#" title="" className="inline-block text-sky-500">
-                            <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M19.633 7.997c.013.175.013.349.013.523 0 5.325-4.053 11.461-11.46 11.461-2.282 0-4.402-.661-6.186-1.809.324.037.636.05.973.05a8.07 8.07 0 0 0 5.001-1.721 4.036 4.036 0 0 1-3.767-2.793c.249.037.499.062.761.062.361 0 .724-.05 1.061-.137a4.027 4.027 0 0 1-3.23-3.953v-.05c.537.299 1.16.486 1.82.511a4.022 4.022 0 0 1-1.796-3.354c0-.748.199-1.434.548-2.032a11.457 11.457 0 0 0 8.306 4.215c-.062-.3-.1-.611-.1-.923a4.026 4.026 0 0 1 4.028-4.028c1.16 0 2.207.486 2.943 1.272a7.957 7.957 0 0 0 2.556-.973 4.02 4.02 0 0 1-1.771 2.22 8.073 8.073 0 0 0 2.319-.624 8.645 8.645 0 0 1-2.019 2.083z"
-                                ></path>
-                            </svg>
-                        </a>
-                    </div>
-                    <blockquote className="mt-5">
-                        <p className="text-base text-gray-800">
-                            Simply the best. Better than all the rest. I’d recommend this product to beginners and advanced users.
-                            <span className="block text-sky-500">#Celebration</span>
-                        </p>
-                    </blockquote>
-                </div>
-            </div>
-
-            <div className="overflow-hidden bg-white rounded-md">
-                <div className="px-5 py-6">
-                    <div className="flex items-center justify-between">
-                        <Image className="flex-shrink-0 object-cover w-10 h-10 rounded-full" src="https://cdn.rareblocks.xyz/collection/celebration/images/testimonials/7/avatar-3.jpg" width={10} height={10} alt="" />
-                        <div className="min-w-0 ml-3 mr-auto">
-                            <p className="text-base font-semibold text-black truncate">Jenny Wilson</p>
-                            <p className="text-sm text-gray-600 truncate">@jennywilson</p>
-                        </div>
-                        <a href="#" title="" className="inline-block text-sky-500">
-                            <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M19.633 7.997c.013.175.013.349.013.523 0 5.325-4.053 11.461-11.46 11.461-2.282 0-4.402-.661-6.186-1.809.324.037.636.05.973.05a8.07 8.07 0 0 0 5.001-1.721 4.036 4.036 0 0 1-3.767-2.793c.249.037.499.062.761.062.361 0 .724-.05 1.061-.137a4.027 4.027 0 0 1-3.23-3.953v-.05c.537.299 1.16.486 1.82.511a4.022 4.022 0 0 1-1.796-3.354c0-.748.199-1.434.548-2.032a11.457 11.457 0 0 0 8.306 4.215c-.062-.3-.1-.611-.1-.923a4.026 4.026 0 0 1 4.028-4.028c1.16 0 2.207.486 2.943 1.272a7.957 7.957 0 0 0 2.556-.973 4.02 4.02 0 0 1-1.771 2.22 8.073 8.073 0 0 0 2.319-.624 8.645 8.645 0 0 1-2.019 2.083z"
-                                ></path>
-                            </svg>
-                        </a>
-                    </div>
-                    <blockquote className="mt-5">
-                        <p className="text-base text-gray-800">
-                            This is a top quality product. No need to think twice before making it live on web.
-                            <span className="block text-sky-500">#make_it_fast</span>
-                        </p>
-                    </blockquote>
-                </div>
-            </div>
-
-            <div className="overflow-hidden bg-white rounded-md">
-                <div className="px-5 py-6">
-                    <div className="flex items-center justify-between">
-                        <Image className="flex-shrink-0 object-cover w-10 h-10 rounded-full" src="https://cdn.rareblocks.xyz/collection/celebration/images/testimonials/7/avatar-4.jpg" width={10} height={10} alt="" />
-                        <div className="min-w-0 ml-3 mr-auto">
-                            <p className="text-base font-semibold text-black truncate">Kristin Watson</p>
-                            <p className="text-sm text-gray-600 truncate">@kristinwatson2</p>
-                        </div>
-                        <a href="#" title="" className="inline-block text-sky-500">
-                            <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M19.633 7.997c.013.175.013.349.013.523 0 5.325-4.053 11.461-11.46 11.461-2.282 0-4.402-.661-6.186-1.809.324.037.636.05.973.05a8.07 8.07 0 0 0 5.001-1.721 4.036 4.036 0 0 1-3.767-2.793c.249.037.499.062.761.062.361 0 .724-.05 1.061-.137a4.027 4.027 0 0 1-3.23-3.953v-.05c.537.299 1.16.486 1.82.511a4.022 4.022 0 0 1-1.796-3.354c0-.748.199-1.434.548-2.032a11.457 11.457 0 0 0 8.306 4.215c-.062-.3-.1-.611-.1-.923a4.026 4.026 0 0 1 4.028-4.028c1.16 0 2.207.486 2.943 1.272a7.957 7.957 0 0 0 2.556-.973 4.02 4.02 0 0 1-1.771 2.22 8.073 8.073 0 0 0 2.319-.624 8.645 8.645 0 0 1-2.019 2.083z"
-                                ></path>
-                            </svg>
-                        </a>
-                    </div>
-                    <blockquote className="mt-5">
-                        <p className="text-base text-gray-800">
-                            YFinally, I’ve found a template that covers all bases for a bootstrapped startup. We were able to launch in days, not months.
-                            <span className="block text-sky-500">#Celebration</span>
-                        </p>
-                    </blockquote>
-                </div>
-            </div>
-
-            <div className="overflow-hidden bg-white rounded-md">
-                <div className="px-5 py-6">
-                    <div className="flex items-center justify-between">
-                        <Image className="flex-shrink-0 object-cover w-10 h-10 rounded-full" src="https://cdn.rareblocks.xyz/collection/celebration/images/testimonials/7/avatar-5.jpg" width={10} height={10} alt="" />
-                        <div className="min-w-0 ml-3 mr-auto">
-                            <p className="text-base font-semibold text-black truncate">Guy Hawkins</p>
-                            <p className="text-sm text-gray-600 truncate">@jennywilson</p>
-                        </div>
-                        <a href="#" title="" className="inline-block text-sky-500">
-                            <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M19.633 7.997c.013.175.013.349.013.523 0 5.325-4.053 11.461-11.46 11.461-2.282 0-4.402-.661-6.186-1.809.324.037.636.05.973.05a8.07 8.07 0 0 0 5.001-1.721 4.036 4.036 0 0 1-3.767-2.793c.249.037.499.062.761.062.361 0 .724-.05 1.061-.137a4.027 4.027 0 0 1-3.23-3.953v-.05c.537.299 1.16.486 1.82.511a4.022 4.022 0 0 1-1.796-3.354c0-.748.199-1.434.548-2.032a11.457 11.457 0 0 0 8.306 4.215c-.062-.3-.1-.611-.1-.923a4.026 4.026 0 0 1 4.028-4.028c1.16 0 2.207.486 2.943 1.272a7.957 7.957 0 0 0 2.556-.973 4.02 4.02 0 0 1-1.771 2.22 8.073 8.073 0 0 0 2.319-.624 8.645 8.645 0 0 1-2.019 2.083z"
-                                ></path>
-                            </svg>
-                        </a>
-                    </div>
-                    <blockquote className="mt-5">
-                        <p className="text-base text-gray-800">
-                            This is a top quality product. No need to think twice before making it live on web.
-                            <span className="block text-sky-500">#make_it_fast</span>
-                        </p>
-                    </blockquote>
-                </div>
-            </div>
-
-            <div className="overflow-hidden bg-white rounded-md">
-                <div className="px-5 py-6">
-                    <div className="flex items-center justify-between">
-                        <Image className="flex-shrink-0 object-cover w-10 h-10 rounded-full" src="https://cdn.rareblocks.xyz/collection/celebration/images/testimonials/7/avatar-6.jpg" width={10} height={10} alt="" />
-                        <div className="min-w-0 ml-3 mr-auto">
-                            <p className="text-base font-semibold text-black truncate">Marvin McKinney</p>
-                            <p className="text-sm text-gray-600 truncate">@darrels</p>
-                        </div>
-                        <a href="#" title="" className="inline-block text-sky-500">
-                            <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M19.633 7.997c.013.175.013.349.013.523 0 5.325-4.053 11.461-11.46 11.461-2.282 0-4.402-.661-6.186-1.809.324.037.636.05.973.05a8.07 8.07 0 0 0 5.001-1.721 4.036 4.036 0 0 1-3.767-2.793c.249.037.499.062.761.062.361 0 .724-.05 1.061-.137a4.027 4.027 0 0 1-3.23-3.953v-.05c.537.299 1.16.486 1.82.511a4.022 4.022 0 0 1-1.796-3.354c0-.748.199-1.434.548-2.032a11.457 11.457 0 0 0 8.306 4.215c-.062-.3-.1-.611-.1-.923a4.026 4.026 0 0 1 4.028-4.028c1.16 0 2.207.486 2.943 1.272a7.957 7.957 0 0 0 2.556-.973 4.02 4.02 0 0 1-1.771 2.22 8.073 8.073 0 0 0 2.319-.624 8.645 8.645 0 0 1-2.019 2.083z"
-                                ></path>
-                            </svg>
-                        </a>
-                    </div>
-                    <blockquote className="mt-5">
-                        <p className="text-base text-gray-800">
-                            With Celebration, it’s quicker with the customer, the customer is more ensured of getting exactly what they ordered, and I’m all for the efficiency.
-                            <span className="block text-sky-500">#dev #tools</span>
-                        </p>
-                    </blockquote>
-                </div>
-            </div>
-
-            <div className="overflow-hidden bg-white rounded-md">
-                <div className="px-5 py-6">
-                    <div className="flex items-center justify-between">
-                        <Image className="flex-shrink-0 object-cover w-10 h-10 rounded-full" src="https://cdn.rareblocks.xyz/collection/celebration/images/testimonials/7/avatar-7.jpg" width={10} height={10} alt="" />
-                        <div className="min-w-0 ml-3 mr-auto">
-                            <p className="text-base font-semibold text-black truncate">Annette Black</p>
-                            <p className="text-sm text-gray-600 truncate">@darrels</p>
-                        </div>
-                        <a href="#" title="" className="inline-block text-sky-500">
-                            <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M19.633 7.997c.013.175.013.349.013.523 0 5.325-4.053 11.461-11.46 11.461-2.282 0-4.402-.661-6.186-1.809.324.037.636.05.973.05a8.07 8.07 0 0 0 5.001-1.721 4.036 4.036 0 0 1-3.767-2.793c.249.037.499.062.761.062.361 0 .724-.05 1.061-.137a4.027 4.027 0 0 1-3.23-3.953v-.05c.537.299 1.16.486 1.82.511a4.022 4.022 0 0 1-1.796-3.354c0-.748.199-1.434.548-2.032a11.457 11.457 0 0 0 8.306 4.215c-.062-.3-.1-.611-.1-.923a4.026 4.026 0 0 1 4.028-4.028c1.16 0 2.207.486 2.943 1.272a7.957 7.957 0 0 0 2.556-.973 4.02 4.02 0 0 1-1.771 2.22 8.073 8.073 0 0 0 2.319-.624 8.645 8.645 0 0 1-2.019 2.083z"
-                                ></path>
-                            </svg>
-                        </a>
-                    </div>
-                    <blockquote className="mt-5">
-                        <p className="text-base text-gray-800">
-                            You made it so simple. My new site is so much faster and easier to work with than my old site. I just choose the page, make the change and click save.
-                            <span className="block text-sky-500">#another</span>
-                        </p>
-                    </blockquote>
-                </div>
-            </div>
-
-            <div className="overflow-hidden bg-white rounded-md">
-                <div className="px-5 py-6">
-                    <div className="flex items-center justify-between">
-                        <Image className="flex-shrink-0 object-cover w-10 h-10 rounded-full" src="https://cdn.rareblocks.xyz/collection/celebration/images/testimonials/7/avatar-8.jpg" width={10} height={10} alt="" />
-                        <div className="min-w-0 ml-3 mr-auto">
-                            <p className="text-base font-semibold text-black truncate">Floyd Miles</p>
-                            <p className="text-sm text-gray-600 truncate">@darrels</p>
-                        </div>
-                        <a href="#" title="" className="inline-block text-sky-500">
-                            <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M19.633 7.997c.013.175.013.349.013.523 0 5.325-4.053 11.461-11.46 11.461-2.282 0-4.402-.661-6.186-1.809.324.037.636.05.973.05a8.07 8.07 0 0 0 5.001-1.721 4.036 4.036 0 0 1-3.767-2.793c.249.037.499.062.761.062.361 0 .724-.05 1.061-.137a4.027 4.027 0 0 1-3.23-3.953v-.05c.537.299 1.16.486 1.82.511a4.022 4.022 0 0 1-1.796-3.354c0-.748.199-1.434.548-2.032a11.457 11.457 0 0 0 8.306 4.215c-.062-.3-.1-.611-.1-.923a4.026 4.026 0 0 1 4.028-4.028c1.16 0 2.207.486 2.943 1.272a7.957 7.957 0 0 0 2.556-.973 4.02 4.02 0 0 1-1.771 2.22 8.073 8.073 0 0 0 2.319-.624 8.645 8.645 0 0 1-2.019 2.083z"
-                                ></path>
-                            </svg>
-                        </a>
-                    </div>
-                    <blockquote className="mt-5">
-                        <p className="text-base text-gray-800">
-                            My new site is so much faster and easier to work with than my old site. I just choose the page, make the change and click save.
-                            <span className="block text-sky-500">#Celebration</span>
-                        </p>
-                    </blockquote>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-{/* FAQ */}
-{/* <section className="py-10 bg-gray-50 sm:py-16 lg:py-24">
-    <div className="px-4 mx-auto sm:px-6 lg:px-8 max-w-7xl">
-        <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-3xl font-bold leading-tight text-black sm:text-4xl lg:text-5xl">Frequently Asked Questions</h2>
-            <p className="max-w-xl mx-auto mt-4 text-base leading-relaxed text-gray-600">Amet minim mollit non deserunt ullamco est sit aliqua dolor do</p>
-        </div>
-
-        <div className="max-w-3xl mx-auto mt-8 space-y-4 md:mt-16">
-            <div className="transition-all duration-200 bg-white border border-gray-200 shadow-lg cursor-pointer hover:bg-gray-50">
-                <button type="button" className="flex items-center justify-between w-full px-4 py-5 sm:p-6">
-                    <span className="flex text-lg font-semibold text-black"> How to create an account? </span>
-
-                    <svg className="w-6 h-6 text-gray-400 rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
-
-                <div className="px-4 pb-5 sm:px-6 sm:pb-6">
-                    <p>Amet minim mollit non deserunt ullamco est sit <a href="#" title="" className="text-blue-600 transition-all duration-200 hover:underline">aliqua dolor</a> do amet sint. Velit officia consequat duis enim velit mollit.</p>
-                </div>
-            </div>
-
-            <div className="transition-all duration-200 bg-white border border-gray-200 cursor-pointer hover:bg-gray-50">
-                <button type="button" className="flex items-center justify-between w-full px-4 py-5 sm:p-6">
-                    <span className="flex text-lg font-semibold text-black"> How can I make payment using Paypal? </span>
-
-                    <svg className="w-6 h-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
-
-                <div className="hidden px-4 pb-5 sm:px-6 sm:pb-6">
-                    <p>Amet minim mollit non deserunt ullamco est sit <a href="#" title="" className="text-blue-600 transition-all duration-200 hover:underline">aliqua dolor</a> do amet sint. Velit officia consequat duis enim velit mollit.</p>
-                </div>
-            </div>
-
-            <div className="transition-all duration-200 bg-white border border-gray-200 cursor-pointer hover:bg-gray-50">
-                <div className="">
-                    <button type="button" className="flex items-center justify-between w-full px-4 py-5 sm:p-6">
-                        <span className="flex text-lg font-semibold text-black"> Can I cancel my plan? </span>
-
-                        <svg className="w-6 h-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-
-                    <div className="hidden px-4 pb-5 sm:px-6 sm:pb-6">
-                        <p>Amet minim mollit non deserunt ullamco est sit <a href="#" title="" className="text-blue-600 transition-all duration-200 hover:underline">aliqua dolor</a> do amet sint. Velit officia consequat duis enim velit mollit.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="transition-all duration-200 bg-white border border-gray-200 cursor-pointer hover:bg-gray-50">
-                <button type="button" className="flex items-center justify-between w-full px-4 py-5 sm:p-6">
-                    <span className="flex text-lg font-semibold text-black"> How can I reach to support? </span>
-
-                    <svg className="w-6 h-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
-
-                <div className="hidden px-4 pb-5 sm:px-6 sm:pb-6">
-                    <p>Amet minim mollit non deserunt ullamco est sit <a href="#" title="" className="text-blue-600 transition-all duration-200 hover:underline">aliqua dolor</a> do amet sint. Velit officia consequat duis enim velit mollit.</p>
-                </div>
-            </div>
-        </div>
-
-        <p className="text-center text-gray-600 textbase mt-9">Didn’t find the answer you are looking for? <a href="#" title="" className="font-medium text-blue-600 transition-all duration-200 hover:text-blue-700 focus:text-blue-700 hover:underline">Contact our support</a></p>
-    </div>
-</section> */}
-
-<section className="py-10 bg-gray-50 sm:pt-16 lg:pt-24">
-    <div className="px-4 mx-auto sm:px-6 lg:px-8 max-w-7xl">
-        <div className="grid grid-cols-2 md:col-span-3 lg:grid-cols-6 gap-y-16 gap-x-12">
-            <div className="col-span-2 md:col-span-3 lg:col-span-2 lg:pr-8">
-                <Image className="w-auto h-9" src="https://cdn.rareblocks.xyz/collection/celebration/images/logo.svg" width={50} height={9} alt="" />
-
-                <p className="text-base leading-relaxed text-gray-600 mt-7">Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint. Velit officia consequat duis enim velit mollit.</p>
-
-                <ul className="flex items-center space-x-3 mt-9">
-                    <li>
-                        <a href="#" title="" className="flex items-center justify-center text-white transition-all duration-200 bg-gray-800 rounded-full w-7 h-7 hover:bg-blue-600 focus:bg-blue-600">
-                            <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M19.633 7.997c.013.175.013.349.013.523 0 5.325-4.053 11.461-11.46 11.461-2.282 0-4.402-.661-6.186-1.809.324.037.636.05.973.05a8.07 8.07 0 0 0 5.001-1.721 4.036 4.036 0 0 1-3.767-2.793c.249.037.499.062.761.062.361 0 .724-.05 1.061-.137a4.027 4.027 0 0 1-3.23-3.953v-.05c.537.299 1.16.486 1.82.511a4.022 4.022 0 0 1-1.796-3.354c0-.748.199-1.434.548-2.032a11.457 11.457 0 0 0 8.306 4.215c-.062-.3-.1-.611-.1-.923a4.026 4.026 0 0 1 4.028-4.028c1.16 0 2.207.486 2.943 1.272a7.957 7.957 0 0 0 2.556-.973 4.02 4.02 0 0 1-1.771 2.22 8.073 8.073 0 0 0 2.319-.624 8.645 8.645 0 0 1-2.019 2.083z"
-                                ></path>
-                            </svg>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="#" title="" className="flex items-center justify-center text-white transition-all duration-200 bg-gray-800 rounded-full w-7 h-7 hover:bg-blue-600 focus:bg-blue-600">
-                            <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M13.397 20.997v-8.196h2.765l.411-3.209h-3.176V7.548c0-.926.258-1.56 1.587-1.56h1.684V3.127A22.336 22.336 0 0 0 14.201 3c-2.444 0-4.122 1.492-4.122 4.231v2.355H7.332v3.209h2.753v8.202h3.312z"></path>
-                            </svg>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="#" title="" className="flex items-center justify-center text-white transition-all duration-200 bg-gray-800 rounded-full w-7 h-7 hover:bg-blue-600 focus:bg-blue-600">
-                            <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M11.999 7.377a4.623 4.623 0 1 0 0 9.248 4.623 4.623 0 0 0 0-9.248zm0 7.627a3.004 3.004 0 1 1 0-6.008 3.004 3.004 0 0 1 0 6.008z"></path>
-                                <circle cx="16.806" cy="7.207" r="1.078"></circle>
-                                <path
-                                    d="M20.533 6.111A4.605 4.605 0 0 0 17.9 3.479a6.606 6.606 0 0 0-2.186-.42c-.963-.042-1.268-.054-3.71-.054s-2.755 0-3.71.054a6.554 6.554 0 0 0-2.184.42 4.6 4.6 0 0 0-2.633 2.632 6.585 6.585 0 0 0-.419 2.186c-.043.962-.056 1.267-.056 3.71 0 2.442 0 2.753.056 3.71.015.748.156 1.486.419 2.187a4.61 4.61 0 0 0 2.634 2.632 6.584 6.584 0 0 0 2.185.45c.963.042 1.268.055 3.71.055s2.755 0 3.71-.055a6.615 6.615 0 0 0 2.186-.419 4.613 4.613 0 0 0 2.633-2.633c.263-.7.404-1.438.419-2.186.043-.962.056-1.267.056-3.71s0-2.753-.056-3.71a6.581 6.581 0 0 0-.421-2.217zm-1.218 9.532a5.043 5.043 0 0 1-.311 1.688 2.987 2.987 0 0 1-1.712 1.711 4.985 4.985 0 0 1-1.67.311c-.95.044-1.218.055-3.654.055-2.438 0-2.687 0-3.655-.055a4.96 4.96 0 0 1-1.669-.311 2.985 2.985 0 0 1-1.719-1.711 5.08 5.08 0 0 1-.311-1.669c-.043-.95-.053-1.218-.053-3.654 0-2.437 0-2.686.053-3.655a5.038 5.038 0 0 1 .311-1.687c.305-.789.93-1.41 1.719-1.712a5.01 5.01 0 0 1 1.669-.311c.951-.043 1.218-.055 3.655-.055s2.687 0 3.654.055a4.96 4.96 0 0 1 1.67.311 2.991 2.991 0 0 1 1.712 1.712 5.08 5.08 0 0 1 .311 1.669c.043.951.054 1.218.054 3.655 0 2.436 0 2.698-.043 3.654h-.011z"
-                                ></path>
-                            </svg>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="#" title="" className="flex items-center justify-center text-white transition-all duration-200 bg-gray-800 rounded-full w-7 h-7 hover:bg-blue-600 focus:bg-blue-600">
-                            <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M12.026 2c-5.509 0-9.974 4.465-9.974 9.974 0 4.406 2.857 8.145 6.821 9.465.499.09.679-.217.679-.481 0-.237-.008-.865-.011-1.696-2.775.602-3.361-1.338-3.361-1.338-.452-1.152-1.107-1.459-1.107-1.459-.905-.619.069-.605.069-.605 1.002.07 1.527 1.028 1.527 1.028.89 1.524 2.336 1.084 2.902.829.091-.645.351-1.085.635-1.334-2.214-.251-4.542-1.107-4.542-4.93 0-1.087.389-1.979 1.024-2.675-.101-.253-.446-1.268.099-2.64 0 0 .837-.269 2.742 1.021a9.582 9.582 0 0 1 2.496-.336 9.554 9.554 0 0 1 2.496.336c1.906-1.291 2.742-1.021 2.742-1.021.545 1.372.203 2.387.099 2.64.64.696 1.024 1.587 1.024 2.675 0 3.833-2.33 4.675-4.552 4.922.355.308.675.916.675 1.846 0 1.334-.012 2.41-.012 2.737 0 .267.178.577.687.479C19.146 20.115 22 16.379 22 11.974 22 6.465 17.535 2 12.026 2z"
-                                ></path>
-                            </svg>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
+      <footer className="bg-white py-12 px-4 border-t border-gray-200">
+        <div className="container mx-auto">
+          <div className="grid md:grid-cols-4 gap-8">
             <div>
-                <p className="text-sm font-semibold tracking-widest text-gray-400 uppercase">Company</p>
-
-                <ul className="mt-6 space-y-4">
-                    <li>
-                        <a href="#" title="" className="flex text-base text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"> About </a>
-                    </li>
-
-                    <li>
-                        <a href="#" title="" className="flex text-base text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"> Features </a>
-                    </li>
-
-                    <li>
-                        <a href="#" title="" className="flex text-base text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"> Works </a>
-                    </li>
-
-                    <li>
-                        <a href="#" title="" className="flex text-base text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"> Career </a>
-                    </li>
-                </ul>
+              <h3 className="font-bold text-lg mb-4">PrepMaster</h3>
+              <p className="text-gray-600">Empowering students to excel in JEE and NEET exams.</p>
             </div>
-
             <div>
-                <p className="text-sm font-semibold tracking-widest text-gray-400 uppercase">Help</p>
-
-                <ul className="mt-6 space-y-4">
-                    <li>
-                        <a href="#" title="" className="flex text-base text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"> Customer Support </a>
-                    </li>
-
-                    <li>
-                        <a href="#" title="" className="flex text-base text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"> Delivery Details </a>
-                    </li>
-
-                    <li>
-                        <a href="#" title="" className="flex text-base text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"> Terms & Conditions </a>
-                    </li>
-
-                    <li>
-                        <a href="#" title="" className="flex text-base text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"> Privacy Policy </a>
-                    </li>
-                </ul>
+              <h4 className="font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2">
+                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">About Us</Link></li>
+                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">Features</Link></li>
+                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">Pricing</Link></li>
+                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">Contact Us</Link></li>
+              </ul>
             </div>
-
-           
+            <div>
+              <h4 className="font-semibold mb-4">Legal</h4>
+              <ul className="space-y-2">
+                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">Terms of Service</Link></li>
+                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">Privacy Policy</Link></li>
+                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">Cookie Policy</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Connect With Us</h4>
+              <div className="flex space-x-4">
+                <Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">
+                  <span className="sr-only">Facebook</span>
+                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
+                  </svg>
+                </Link>
+                <Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">
+                  <span className="sr-only">Instagram</span>
+                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" />
+                  </svg>
+                </Link>
+                <Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">
+                  <span className="sr-only">Twitter</span>
+                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-gray-200 text-center">
+            <p className="text-gray-600 text-sm">© 2024 PrepMaster. All rights reserved.</p>
+          </div>
         </div>
-
-        <hr className="mt-16 mb-10 border-gray-200" />
-
-        <p className="text-sm text-center text-gray-600">© Copyright 2021, All Rights Reserved by Postcraft</p>
+      </footer>
     </div>
-</section>
-
-
-    </>
-
-  );
+  )
 }
