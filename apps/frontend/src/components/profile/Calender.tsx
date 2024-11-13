@@ -12,7 +12,7 @@ const Calender = ({attempts}:CalenderProps) => {
   return (
     <Card >
       <div className="h-[27.8px] p-[9px_12px_0_12px]">
-        <div className="font-semibold">{attempts.length} submissions in the last year</div>
+        <div className="font-semibold">{attempts.length} submissions</div>
       </div>
       <Separator className="my-2" />
       <div className="p-3">

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Image from "next/image"
 import Link from "next/link"
-import { Users, BookOpen, Clock, Menu, X, Brain, Trophy, BarChart2, Gamepad, UserPlus, Settings, PlayCircle, TrendingUp } from "lucide-react"
+import { Users, BookOpen, Clock, Menu, X, Brain, Trophy, BarChart2, Gamepad, UserPlus, Settings, PlayCircle, TrendingUp, ChevronRight } from "lucide-react"
 import { useState } from "react"
 import { motion } from "framer-motion"
 
@@ -49,7 +49,9 @@ export default function Home() {
                 Success Stories
               </Link>
               <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">
-                Start Free Trial
+                <Link href="/challenge">
+                Get Started 
+                </Link>
               </Button>
             </nav>
             <button
@@ -84,8 +86,10 @@ export default function Home() {
                 <Link href="#" className="text-sm font-medium text-gray-600 hover:text-yellow-600 transition-colors">
                   Success Stories
                 </Link>
-                <Button className="bg-yellow-500 hover:bg-yellow-600 text-white w-full">
-                  Start Free Trial
+                <Button  className="bg-yellow-500 hover:bg-yellow-600 text-white w-full">
+                  <Link href="/challenge">
+                  Get Started
+                  </Link>
                 </Button>
               </nav>
             </div>
@@ -102,17 +106,21 @@ export default function Home() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <h1 className="text-4xl font-bold leading-tight lg:text-5xl text-gray-800">
+                <h1 className="text-4xl md:text-left text-center font-bold leading-tight lg:text-5xl text-gray-800">
                   Unlock Your Potential with Our Smart Learning Platform
                 </h1>
-                <p className="text-lg text-gray-600 max-w-lg">
+                <p className="text-lg md:text-left text-center text-gray-600 max-w-lg">
                   Prepare for JEE & NEET like never before with personalized question banks, real-time challenges, and gamified learning.
                 </p>
-                <div className="flex flex-wrap gap-4">
-                  <Button className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-full px-8">
-                    Start Your Free Trial
-                  </Button>
-                </div>
+                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
+                <Button size="lg" className="bg-white text-yellow-600 hover:bg-yellow-100 rounded-full px-8 py-6 text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+                  Start Your Journey
+                </Button>
+                <Link href="#features" className="group inline-flex items-center text-yellow-600 hover:text-black transition-colors">
+                  <span className="mr-2">Explore Features</span>
+                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
               </motion.div>
               <motion.div 
                 className="md:w-1/2 relative"
@@ -185,7 +193,7 @@ export default function Home() {
           <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-200 to-transparent" />
         </section>
 
-        <section className="py-20 px-4 bg-white">
+        <section id="features" className="py-20 px-4 bg-white">
           <div className="container mx-auto">
             <motion.h2 
               className="text-3xl font-bold mb-12 text-center text-gray-800"
