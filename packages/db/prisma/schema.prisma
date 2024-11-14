@@ -1,7 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
-  dotenv          = "../../../.env"
 }
 
 datasource db {
@@ -19,6 +18,7 @@ model User {
   phone    String?
   standard String?
   avatar   String?
+  stream   Role?
   rank     Int     @default(50)
   coins    Int     @default(0)
 
@@ -26,10 +26,16 @@ model User {
   player1  Challenge[] @relation("U1")
   player2  Challenge[] @relation("U2")
 
+  Locaction String?
+  Role      Role?     @default(USER)
   provider  Provider
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
-  Role      Role?     @default(USER)
+}
+
+enum Stream {
+  JEE
+  NEET
 }
 
 enum Role {

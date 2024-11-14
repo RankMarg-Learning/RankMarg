@@ -1,3 +1,5 @@
+import { Attempt } from "@prisma/client";
+
 // User basic profile type
 export type UserBasicProfile = {
     name: string;
@@ -39,6 +41,18 @@ export type UserBasicProfile = {
   // Map of subject statistics, where the key is the subject name
   export type SubjectStatsMap = Record<string, SubjectStats>;
   
+
+  interface AttemptProps{
+   
+      isCorrect: boolean
+      solvedAt: Date 
+      questionId: string
+      question: {
+        subject: string
+      }
+    
+    
+  }
   // Complete API response type for user profile
   export type UserProfileResponse = {
     basicProfile: UserBasicProfile;
@@ -46,5 +60,6 @@ export type UserBasicProfile = {
     subjects: SubjectStatsMap;
     challengeStats: UserChallengeStats;
     solvedAtValues: Date[];
+    attempts: AttemptProps[];
   };
   

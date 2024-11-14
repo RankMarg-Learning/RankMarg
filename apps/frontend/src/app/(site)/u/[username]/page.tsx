@@ -23,7 +23,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Trophy, Medal, Target, Edit2, CheckCircle2, XCircle, Zap, Book, Users, Calendar, Star } from "lucide-react"
+import { Trophy, Medal, Target, Edit2, CheckCircle2, XCircle, Zap, Book, Users, Calendar, Star, Atom, CircleCheckBig, Swords } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import Image from "next/image";
 
@@ -74,16 +74,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
       { name: "Quick Learner", description: "Completed 10 challenges in a day", icon: Zap },
       { name: "Consistent Performer", description: "Maintained 80% accuracy for a week", icon: Target },
       { name: "Team Player", description: "Participated in 5 group challenges", icon: Users },
-    ],
-    studyStreaks: [
-      { date: "2024-11-01", hours: 2 },
-      { date: "2024-11-02", hours: 1.5 },
-      { date: "2024-11-03", hours: 3 },
-      { date: "2024-11-04", hours: 2.5 },
-      { date: "2024-11-05", hours: 1 },
-      { date: "2024-11-06", hours: 2 },
-      { date: "2024-11-07", hours: 2.5 },
-    ],
+    ]
   }
 
   const { data: profile, isLoading, isError } = useQuery<UserProfileResponse>({
@@ -113,13 +104,13 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
             <p className="text-sm text-muted-foreground mt-1">Joined 2 days ago</p>
             <div className="flex flex-wrap items-center justify-center md:justify-start mt-3 gap-2">
               <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 px-3 py-1">
-                <Trophy className="w-4 h-4 mr-1" />
-                Rank {profile.challengeStats.rank}
+                <Star className="w-4 h-4 mr-1" />
+                Rating {profile.challengeStats.rank}
               </Badge>
               {profile.basicProfile.isSelf && (
               <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 px-3 py-1">
-                <Star className="w-4 h-4 mr-1" />
-                {profile.basicProfile.coins} Coins
+                <Atom className="w-4 h-4 mr-1" />
+                {profile.basicProfile.coins} Atoms
               </Badge>)}
             </div>
           </div>
@@ -143,14 +134,14 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
             <CardContent className="grid gap-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Trophy className="h-5 w-5 text-yellow-500 mr-2" />
+                  <CircleCheckBig className="h-5 w-5 text-yellow-500 mr-2" />
                   <span>Solved Problems</span>
                 </div>
-                <span className="font-bold">{profile.additionalInfo.totalAttempt}<span className="font-normal text-xs"> /{profile.additionalInfo.totalQuestions}</span></span>
+                <span className="font-bold">{profile.additionalInfo.totalAttempt} </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Medal className="h-5 w-5 text-yellow-500 mr-2" />
+                  <Swords className="h-5 w-5 text-yellow-500 mr-2" />
                   <span>Challenges</span>
                 </div>
                 <span className="font-bold">{profile.additionalInfo.totalChallenge}</span>
@@ -239,25 +230,28 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
                   <CardTitle>Recent Attempts</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea className="h-[300px] w-full pr-4">
+                 
                     <ul className="space-y-4">
-                      {profileData.recentAttempts.map((attempt) => (
-                        <li key={attempt.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                          <div className="space-y-1 flex-grow mr-4">
-                            <p className="font-medium">{attempt.questionName}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(attempt.solvedAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                          {attempt.isCorrect ? (
-                            <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0" />
-                          ) : (
-                            <XCircle className="h-6 w-6 text-red-500 flex-shrink-0" />
-                          )}
-                        </li>
-                      ))}
+                    {profile.attempts && profile.attempts.length > 0 ? (
+                        profile.attempts.map((attempt) => (
+                          <li key={attempt.questionId} className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                            <div className="space-y-1 flex-grow mr-4">
+                              <p className="font-medium">{attempt.question.subject}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {new Date(attempt.solvedAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            {attempt.isCorrect ? (
+                              <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0" />
+                            ) : (
+                              <XCircle className="h-6 w-6 text-red-500 flex-shrink-0" />
+                            )}
+                          </li>
+                        ))
+                      ) : (
+                        <p>No attempts found</p>
+                      )}
                     </ul>
-                  </ScrollArea>
                 </CardContent>
               </Card>
         </div>

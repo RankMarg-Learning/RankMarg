@@ -138,6 +138,7 @@ export async function GET(req: Request, { params }: { params: { username: string
       subjects,
       challengeStats,
       solvedAtValues,
+      attempts: user.attempts,
     };
 
     return new Response(JSON.stringify(responseBody), { status: 200, headers: { "Content-Type": "application/json" } });

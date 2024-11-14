@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcrypt";
 import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
+import { generateUniqueUsername } from "@/lib/generateUniqueUsername";
 
 
 
@@ -80,19 +81,18 @@ export const authOptions: NextAuthOptions = {
                   console.log("Existing User",existingUser);
                     if (!existingUser) {
                       console.log("User does not exist");
-                        const checkUser = await prisma.user.create({
+                      const emailPrefix = user.email.split('@')[0];
+                         await prisma.user.create({
                             data: {
-                                username: user.email!,
+                                name: user.name!,
+                                username: await generateUniqueUsername(emailPrefix),
                                 email: user.email!,
                                 avatar: user.image,
                                 provider: 'google',
                             },
                         });
-                        if(checkUser.email === checkUser.username){
-                            
-
-                            return '/set/username';
-                        }
+                        return true;
+                        
                     }else{
                         
                         console.log("User already exists");

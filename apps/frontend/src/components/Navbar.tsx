@@ -20,7 +20,7 @@ const Navbar = () => {
   const { data: session,status } = useSession();
   
 
-  ;
+  
   return (
     <header className="sticky z-50 top-0 flex w-full h-16 items-center gap-4 border-b bg-white px-4 md:px-6">
       <nav className="hidden  flex-col gap-8 text-lg font-medium md:flex md:flex-row md:items-center md:gap-8 md:text-sm lg:gap-10">
@@ -90,7 +90,7 @@ const Navbar = () => {
         </SheetContent>
       </Sheet>
       <div className="flex w-full items-center justify-end  md:ml-auto md:gap-2 lg:gap-4">
-        {!session && status === "unauthenticated" ? (
+        {!session && status !== "authenticated"   ? (
           <div className="flex gap-1 md:gap-2">
             <Link href={"/sign-in"}>
               {" "}
@@ -122,9 +122,11 @@ const Navbar = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>{session.user.name }</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href={`/u/${session.user.username}`}>Profile</Link>
+              </DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
