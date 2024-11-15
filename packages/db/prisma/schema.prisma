@@ -18,7 +18,7 @@ model User {
   phone    String?
   standard String?
   avatar   String?
-  stream   Role?
+  stream   Stream?
   rank     Int     @default(50)
   coins    Int     @default(0)
 

@@ -21,7 +21,8 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { QuestionTableProps } from "@/types";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
+import Loading from "@/components/Loading";
+import RandomQuestion from "@/components/questions/RandomQuestion";
 
 
 
@@ -86,13 +87,12 @@ const Questionset = () => {
           <div className="flex flex-col sm:gap-2 sm:py-4 mx-1   ">
             {/* <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 "> */}
             <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 ">
-              <Card className="py-8">
-              <h1 className="text-2xl font-bold text-center pb-3">Pick Random Question </h1>
+              
               <RandomQuestion 
                 loading={loading}
                 setLoading={setLoading}
               />
-              </Card>
+              
               <Tabs defaultValue="all">
 
                 <div className="grid md:flex items-center ">
@@ -151,8 +151,6 @@ const Questionset = () => {
                       selectName={["Default","Solved", "Unsolved", "Attempted"]}
                       onChange={handleStatus}
                     />
-                    
-                    
                     <Button size="sm" className="h-9 gap-1">
                       <Shuffle className="h-4 w-4" />
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -207,133 +205,3 @@ const Questionset = () => {
 
 export default Questionset
 
-import { topics } from "@/constant/topics";
-import { CaretSortIcon } from "@radix-ui/react-icons";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
-import Loading from "@/components/Loading";
-
-
-
-const RandomQuestion = ({ loading, setLoading }) => {
-  console.log(loading);
-  const router = useRouter();
-  const [topicTitle, setTopicTitle] = useState("");
-  const [difficulty, setDifficulty] = useState("");
-
-  const handleRandom = async() => {
-    localStorage.setItem('questionFilters', JSON.stringify({topicTitle, difficulty, }));
-    setLoading(true);
-    try {
-      const question = await axios.post(`/api/pickRandom`,
-      {
-        topic: topicTitle,
-        difficulty: difficulty,
-      }
-      );
-      if(question){
-        router.push(`/questions/${question.data.slug}`);
-      }
-    } catch (error) {
-      console.error( error);
-    }finally {
-      setLoading(false);
-    }
-
-  }
-
- 
-  
-  
-  return (
-    
-      <div className="flex flex-wrap  mb-6 w-full">
-        <div className="w-full md:w-2/5 px-3 mb-6 md:mb-0">
-          
-          <Combobox
-            onchange={(newTopic: string) => {
-            setTopicTitle(newTopic);
-            }}
-          />
-          </div>
-          <div className="w-full md:w-1/5 px-3 mb-6 md:mb-0">
-                  
-                  <SelectFilter
-                    width={"full"}
-                    placeholder="Difficulty"
-                    selectName={["Easy", "Medium", "Hard"]}
-                    onChange={(value: string[]) => setDifficulty(value[0])}
-                  />
-                 
-          </div>
-          <div className="w-full md:w-1/5 px-3 mb-6 md:mb-0">
-          <Button size="sm" className="h-9 gap-1"
-          onClick={handleRandom}
-          >
-                      <Shuffle className="h-4 w-4" />
-                      <span >
-                        Pick random
-                      </span>
-                    </Button>
-          </div>
-
-      </div>
-  )
-}
-
-interface ComboboxProps {
-  onchange: (value: string) => void;
-}
-
-function Combobox({ onchange }: ComboboxProps) {
-  const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
-  React.useEffect(() => {
-    onchange(value);
-  }, [value, onchange]);
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between"
-        >
-          {value ? topics.find((topic) => topic === value) : "Select Topic..."}
-          <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-       className="w-full p-0">
-        <Command>
-          <CommandInput placeholder="Search topic..." className="h-9" />
-          <CommandList>
-            <CommandEmpty>No topic found.</CommandEmpty>
-            <CommandGroup>
-              {topics.map((topic) => (
-                <CommandItem
-                  key={topic}
-                  value={topic}
-                  onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
-                    setOpen(false);
-                  }}
-                >
-                  {topic}
-                  <CheckIcon
-                    className={cn(
-                      "ml-auto h-4 w-4",
-                      value === topic ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-}

@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { topic, difficulty } = body;
+  const { topic, difficulty,subject } = body;
 
 
   const session = await getServerSession(authOptions);
@@ -47,6 +47,7 @@ export async function POST(req: Request) {
 
       if (topic) fallbackFilter.topic = topic;
       if (difficulty) fallbackFilter.difficulty = difficulty;
+      if (subject) fallbackFilter.subject = subject;
 
       questions = await prisma.question.findMany({
         where: fallbackFilter,

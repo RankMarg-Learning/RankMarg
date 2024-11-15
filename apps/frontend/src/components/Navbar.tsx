@@ -14,12 +14,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Image from "next/image";
-import { Skeleton } from "./ui/skeleton";
 
 const Navbar = () => {
   const { data: session,status } = useSession();
   
-
   
   return (
     <header className="sticky z-50 top-0 flex w-full h-16 items-center gap-4 border-b bg-white px-4 md:px-6">
@@ -28,7 +26,7 @@ const Navbar = () => {
           href="#"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
-          <Image src={'https://utfs.io/f/DbhgrrAIqRoKZABd17kyzMn5glOosUYSuEeWAbhwd4pCxkHf'} alt="Acme Inc" width={250} height={250} />
+          <Image src={'https://utfs.io/f/DbhgrrAIqRoKZABd17kyzMn5glOosUYSuEeWAbhwd4pCxkHf'} alt="Acme Inc" width={250} height={250} priority />
         </Link>
         <Link
           href="/"
@@ -90,8 +88,9 @@ const Navbar = () => {
         </SheetContent>
       </Sheet>
       <div className="flex w-full items-center justify-end  md:ml-auto md:gap-2 lg:gap-4">
-        {!session && status !== "authenticated"   ? (
-          <div className="flex gap-1 md:gap-2">
+        {
+          status === "loading" ? null: status === "unauthenticated" ? (
+            <div className="flex gap-1 md:gap-2">
             <Link href={"/sign-in"}>
               {" "}
               <Button>Login</Button>
@@ -100,41 +99,43 @@ const Navbar = () => {
               {" "}
               <Button>Register</Button>
             </Link>
-          </div>
-        ) : (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                {status !== "loading" ? (session?.user.image ? (
-                  <Image
-                    src={session.user.image}
-                    alt="user profile"
-                    width={28}
-                    height={28}
-                    className="rounded-full"
-                  />
-                ) : (
-                  <CircleUser className="h-7 w-7" />
-                )):(
-                  <Skeleton className="h-7 w-7 rounded-full" />
-                )}
-                <span className="sr-only">Toggle user menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{session.user.name }</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Link href={`/u/${session.user.username}`}>Profile</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
-                Log Out{" "}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+          </div>):(
+             <DropdownMenu>
+             <DropdownMenuTrigger asChild>
+               <Button variant="secondary" size="icon" className="rounded-full">
+                 {session?.user?.image ? (
+                   <Image
+                     src={session.user.image}
+                     alt="User profile"
+                     width={28}
+                     height={28}
+                     className="rounded-full"
+                   />
+                 ) : (
+                   <CircleUser className="h-7 w-7" />
+                 )}
+                 <span className="sr-only">Toggle user menu</span>
+               </Button>
+             </DropdownMenuTrigger>
+             <DropdownMenuContent align="end">
+               <DropdownMenuLabel>{session?.user?.name || "User"}</DropdownMenuLabel>
+               <DropdownMenuSeparator />
+               <DropdownMenuItem>
+                 <Link href={`/u/${session?.user?.username}`}>Profile</Link>
+               </DropdownMenuItem>
+               <DropdownMenuItem>Support</DropdownMenuItem>
+               <DropdownMenuSeparator />
+               <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+                 Log Out
+               </DropdownMenuItem>
+             </DropdownMenuContent>
+           </DropdownMenu>
+          )
+
+        }
+
+
+        
       </div>
     </header>
   );
