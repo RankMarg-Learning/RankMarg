@@ -74,12 +74,22 @@ export interface Userprops {
   }
 
   export interface QuestionTableProps {
-    id: string;
-    slug: string;
-    topic: string;
-    difficulty: string;
-    subject: string;
-    class: string;
-    accuracy: number;
-    Status: string;
+    id: string,
+    slug: string,
+    content: string,
+    difficulty: string,
+    topic: string,
+    subject: string,
+    class: string,
+    tag: string,
+    accuracy: string,
+    createdAt: string
+  }
+
+
+  export interface QuestionSetProps {
+    questionSet: QuestionTableProps[];
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
   }

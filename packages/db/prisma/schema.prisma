@@ -58,6 +58,7 @@ model Question {
   topic             String
   subject           String
   class             String
+  stream            Stream?
   tag               String?
   options           Option[]
   isnumerical       Float?

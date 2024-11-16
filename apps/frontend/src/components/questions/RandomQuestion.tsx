@@ -14,8 +14,8 @@ import { Badge } from "../ui/badge";
 
 
 
-const RandomQuestion = ({ loading, setLoading }) => {
-  console.log(loading);
+const RandomQuestion = ({ setLoading }) => {
+  
   const router = useRouter();
   const [topicTitle, setTopicTitle] = useState("");
   const [difficulty, setDifficulty] = useState("");
@@ -64,13 +64,13 @@ const RandomQuestion = ({ loading, setLoading }) => {
                 <SelectFilter
                     width={"full"}
                     placeholder="Difficulty"
-                    selectName={["Easy", "Medium", "Hard"]}
+                    selectName={["Default","Easy", "Medium", "Hard"]}
                     onChange={(value: string[]) => setDifficulty(value[0])}
                 />
                 <SelectFilter
                     width={"full"}
                     placeholder="Subject"
-                    selectName={["Physics", "Chemistry", "Mathematics"]}
+                    selectName={["Default","Physics", "Chemistry", "Mathematics"]}
                     onChange={(value: string[]) => setSubject(value[0])}
                 />
                 <Button className="w-full md:w-1/3 "

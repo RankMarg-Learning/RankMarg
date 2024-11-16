@@ -13,45 +13,29 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import SelectFilter from "@/components/SelectFilter";
-import React, {   useState } from "react";
+import React, {   use, useState } from "react";
 // import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { QTableRow } from "@/components/questions/QTableRow"; 
 import { QTableRowSkeleton } from "@/components/questions/QTableRowSkeleton";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { QuestionTableProps } from "@/types";
+import { QuestionSetProps, QuestionTableProps } from "@/types";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import Loading from "@/components/Loading";
 import RandomQuestion from "@/components/questions/RandomQuestion";
+import { Tags } from "@/constant/tags";
+import { Question } from "@prisma/client";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 
 
 
 const Questionset = () => {
   const [loading, setLoading] = useState(false);
-  const [tabSubject, setTabSubject] = useState( "");
+  const [subject, setSubject] = useState("");
   const [difficulty, setDifficulty] = useState("");
-  // const [topic, setTopic] = useState("");
-  const [status, setStatus] = useState("");
-
-
-  console.log(difficulty,status);
- 
-  try {
-    const storedFilters = JSON.parse(localStorage.getItem('questionFilters'));
-    if (storedFilters) {
-      console.log('Stored Filters:', storedFilters);
-    } else {
-      console.log('No filters found in localStorage');
-    }
-  } catch (error) {
-    console.error('Error parsing filters from localStorage', error);
-  }
-  
-
- 
-
-  
+  const [tags, setTags] = useState("");
+  const [search, setSearch] = useState("");
 
   const handleDifficulty = (value: string[]) => {
     if(value[0] === "Default"){
@@ -60,36 +44,66 @@ const Questionset = () => {
     }
     setDifficulty(value[0]);
   };
-  const handleStatus = (value: string[]) => {
+  const handleTags = (value: string[]) => {
     if(value[0] === "Default"){
-      setStatus("");
+      setTags("");
       return;
     }
-    setStatus(value[0]);
-  };
+    setTags(value[0]);
+  }
 
 
+  const [currentPage, setCurrentPage] = useState(1);
+  
 
 
-  const { data: questions } = useQuery({
-    queryKey: ["questions"],
+  const { data } = useQuery({
+    queryKey: ["questions",currentPage],
     queryFn: async () => {
-      const { data } = await axios.get("/api/question");
+      const response = await axios.get<QuestionSetProps>(`/api/question?page=${currentPage}`);
+      const { data } = response;
       return data;
     },
+    
   });
 
-  // console.log(questions);
+
+  
+    
+
+  const questions = data?.questionSet.filter((question:QuestionTableProps) => {
+    const matchesDifficulty = !difficulty || question.difficulty === difficulty;
+    const matchesTags = !tags || (question.tag && question.tag === tags);
+    const matchesSubject = !subject || question.subject === subject;
+    const matchesSearch = !search || 
+      question.content.toLowerCase().includes(search.toLowerCase()) || 
+      question.topic.toLowerCase().includes(search.toLowerCase());
+    return matchesDifficulty && matchesTags && matchesSubject && matchesSearch;
+  }) || [];
+
+
+
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePrevious = () => {
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+  };
+
+  const handleNext = () => {
+    if (data?.totalPages && currentPage < data.totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
 
   
     return (
         (!loading ?(
           <div className="flex flex-col sm:gap-2 sm:py-4 mx-1   ">
-            {/* <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 "> */}
             <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 ">
               
               <RandomQuestion 
-                loading={loading}
                 setLoading={setLoading}
               />
               
@@ -100,7 +114,7 @@ const Questionset = () => {
                     <TabsTrigger
                       value="all"
                       onClick={() => {
-                        setTabSubject("");
+                        setSubject("");
                       }}
                     >
                       All
@@ -108,7 +122,7 @@ const Questionset = () => {
                     <TabsTrigger
                       value="Mathematics"
                       onClick={() => {
-                        setTabSubject("Mathematics");
+                        setSubject("Mathematics");
                       }}
                     >
                       Mathematics
@@ -116,7 +130,7 @@ const Questionset = () => {
                     <TabsTrigger
                       value="Physics"
                       onClick={() => {
-                        setTabSubject("Physics");
+                        setSubject("Physics");
                       }}
                     >
                       Physics
@@ -124,7 +138,7 @@ const Questionset = () => {
                     <TabsTrigger
                       value="Chemistry"
                       onClick={() => {
-                        setTabSubject("Chemistry");
+                        setSubject("Chemistry");
                       }}
                     >
                       Chemistry
@@ -135,6 +149,8 @@ const Questionset = () => {
                     <Input
                       type="search"
                       placeholder="Search..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
                       className="w-full rounded-lg bg-background pl-8 h-9 md:w-[200px] lg:w-[320px]"
                     />
                   </div>
@@ -148,29 +164,24 @@ const Questionset = () => {
                     <SelectFilter
                       width={"[100px]"}
                       placeholder="Status"
-                      selectName={["Default","Solved", "Unsolved", "Attempted"]}
-                      onChange={handleStatus}
+                      selectName={Tags}
+                      onChange={handleTags}
                     />
-                    <Button size="sm" className="h-9 gap-1">
-                      <Shuffle className="h-4 w-4" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Pick random
-                      </span>
-                    </Button>
+                    
                   </div>
                 </div>
-                <TabsContent value={tabSubject || "all"}>
+                <TabsContent value={subject || "all"}>
                   <Card x-chunk="dashboard-06-chunk-0" >
                     <CardContent>
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Status</TableHead>
                             <TableHead className="hidden md:table-cell">Class</TableHead>
-                            <TableHead>Topic</TableHead>
-                            <TableHead>Difficulty</TableHead>
-                            <TableHead>Accurcy</TableHead>
                             <TableHead className="hidden md:table-cell">Subject</TableHead>
+                            <TableHead>Difficulty</TableHead>
+                            <TableHead className="hidden md:table-cell">Question </TableHead>
+                            <TableHead>Topic</TableHead>
+                            <TableHead>Accurcy</TableHead>
                             
                           </TableRow>
                         </TableHeader>
@@ -192,7 +203,56 @@ const Questionset = () => {
                       </Table>
                     </CardContent>
                     <CardFooter className="flex flex-1">
-                      <h2>Paginations</h2>
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handlePrevious();
+                              }}
+                              aria-disabled={currentPage === 1}
+                              className={currentPage === 1 ? "cursor-not-allowed opacity-50" : ""}
+                            />
+                          </PaginationItem>
+
+                          {Array.from({ length: data?.totalPages }, (_, i) => (
+                            <PaginationItem key={i + 1}>
+                              <PaginationLink
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handlePageClick(i + 1);
+                                }}
+                                className={`${
+                                  i + 1 === currentPage
+                                    ? "bg-yellow-500 text-white font-semibold" 
+                                    : "bg-transparent text-muted-foreground"
+                                } p-2 rounded`}
+                              >
+                                {i + 1}
+                              </PaginationLink>
+                            </PaginationItem>
+                          ))}
+
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+
+                          <PaginationItem>
+                            <PaginationNext
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleNext();
+                              }}
+                              aria-disabled={currentPage === data?.totalPages}
+                              className={currentPage === data?.totalPages ? "cursor-not-allowed opacity-50" : ""}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
                     </CardFooter>
                   </Card>
                 </TabsContent>

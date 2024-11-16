@@ -1,39 +1,48 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { ContributeFormProps } from "@/types";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/options";
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
+export async function GET(req:Request) {
+  const limit = 20;
+  const { searchParams } = new URL(req.url);
+  const page = parseInt(searchParams.get("page") || "1", 10); // Default to page 1
+
+  const skip = (page - 1) * limit;
     try {
         const questions = await prisma.question.findMany({
-          include:{
-            attempts: {
-              where:{
-                userId: session?.user?.id,
-              }
-            }
-          }
-          
+          select:{
+            id: true,
+            slug: true,
+            content: true,
+            difficulty: true,
+            topic: true,
+            subject: true,
+            class: true,
+            tag: true,
+            accuracy: true,
+            createdAt: true
+          },
+          orderBy: {
+            createdAt: 'desc'
+          },
+          skip,
+          take: limit
         });
-        const questionSet = questions.map((question) => {
-          // const hasAttempt = question.attempts.length > 0;
-          // const attemptStatus = hasAttempt ? question.attempts[0].status : 'UNSOLVED';
-          //! This is a bug, it should be  
-    
-          return {
-            id: question.id,
-            slug: question.slug,
-            difficulty: question.difficulty,
-            topic: question.topic,
-            subject: question.subject,
-            class: question.class,
-            accuracy: question.accuracy,
-            Status: "UNSOLVED",
-          };
-        });
-        return Response.json(questionSet, { status: 200 });
+        
+
+
+        const total = await prisma.question.count(); // Total number of records
+        const totalPages = Math.ceil(total / limit);
+
+        return Response.json(
+            {
+                questionSet: questions,
+                currentPage: page,
+                totalPages,
+                totalItems: total,
+            },
+            { status: 200 }
+        );
         
     } catch (error) {
         console.log("[Question] :",error);
