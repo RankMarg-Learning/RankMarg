@@ -31,7 +31,7 @@ export async function GET(req:Request) {
         
 
 
-        const total = await prisma.question.count(); // Total number of records
+        const total = await prisma.question.count(); 
         const totalPages = Math.ceil(total / limit);
 
         return Response.json(

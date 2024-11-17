@@ -1,412 +1,311 @@
-"use client"
-import { Button } from "@/components/ui/button"
+'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import Image from "next/image"
-import Link from "next/link"
-import { Users, BookOpen, Clock, Menu, X, Brain, Trophy, BarChart2, Gamepad, UserPlus, Settings, PlayCircle, TrendingUp, ChevronRight } from "lucide-react"
-import { useState } from "react"
 import { motion } from "framer-motion"
+import { Button } from "@/components/ui/button"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import Link from "next/link"
+import Image from "next/image"
+
+const BlobShape = ({ className }: { className?: string }) => (
+  <motion.div
+    initial={{ scale: 0.8, opacity: 0 }}
+    animate={{ scale: 1, opacity: 1 }}
+    transition={{ duration: 1 }}
+    className={className}
+  >
+    <svg
+      viewBox="0 0 200 200"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-full h-full"
+    >
+      <path
+        fill="currentColor"
+        d="M45.7,-77.8C58.9,-69.3,69.3,-55.5,76.8,-40.3C84.3,-25.1,89,-8.5,87.5,7.4C86,23.3,78.4,38.5,67.8,50.2C57.2,61.9,43.6,70.1,29,74.7C14.4,79.3,-1.3,80.3,-16.8,77.1C-32.3,73.9,-47.6,66.5,-60.2,55.3C-72.8,44.1,-82.7,29,-85.1,12.8C-87.5,-3.4,-82.3,-20.7,-73.7,-35.3C-65.1,-49.9,-53,-61.8,-39.4,-70C-25.8,-78.2,-10.7,-82.7,3.4,-88.1C17.5,-93.5,32.5,-86.3,45.7,-77.8Z"
+        transform="translate(100 100)"
+      />
+    </svg>
+  </motion.div>
+)
 
 export default function Home() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-
-  const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.5 }
-  }
-
-  const staggerChildren = {
-    animate: {
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-white">
-      <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-sm border-b border-yellow-100">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <Link href="#" className="flex items-center space-x-2">
-              <motion.div 
-                className="w-8 h-8 bg-yellow-500 rounded-full"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              />
-              <span className="font-bold text-xl text-yellow-600">PrepMaster</span>
-            </Link>
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link href="#" className="text-sm font-medium text-gray-600 hover:text-yellow-600 transition-colors">
-                Features
-              </Link>
-              <Link href="#" className="text-sm font-medium text-gray-600 hover:text-yellow-600 transition-colors">
-                How It Works
-              </Link>
-              <Link href="#" className="text-sm font-medium text-gray-600 hover:text-yellow-600 transition-colors">
-                Success Stories
-              </Link>
-              <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">
-                <Link href="/challenge">
-                Get Started 
-                </Link>
+    <div className="min-h-screen bg-yellow-50 overflow-hidden">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-yellow-50/80 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex-shrink-0">
+              <span className="text-2xl font-bold text-yellow-600">EduTech</span>
+            </div>
+            <div className="flex gap-4">
+              <Button variant="ghost" asChild>
+                <Link href="/login">Login</Link>
               </Button>
-            </nav>
-            <button
-              className="md:hidden"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? (
-                <X className="h-6 w-6 text-gray-600" />
-              ) : (
-                <Menu className="h-6 w-6 text-gray-600" />
-              )}
-            </button>
+              <Button className="bg-yellow-500 hover:bg-yellow-600 text-white" asChild>
+                <Link href="/signup">Sign up</Link>
+              </Button>
+            </div>
           </div>
         </div>
-        {isMenuOpen && (
-          <motion.div 
-            className="md:hidden bg-white border-t border-yellow-100"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="container mx-auto px-4 py-4">
-              <nav className="flex flex-col space-y-4">
-                <Link href="#" className="text-sm font-medium text-gray-600 hover:text-yellow-600 transition-colors">
-                  Features
-                </Link>
-                <Link href="#" className="text-sm font-medium text-gray-600 hover:text-yellow-600 transition-colors">
-                  How It Works
-                </Link>
-                <Link href="#" className="text-sm font-medium text-gray-600 hover:text-yellow-600 transition-colors">
-                  Success Stories
-                </Link>
-                <Button  className="bg-yellow-500 hover:bg-yellow-600 text-white w-full">
-                  <Link href="/challenge">
-                  Get Started
-                  </Link>
-                </Button>
-              </nav>
-            </div>
-          </motion.div>
-        )}
-      </header>
+      </nav>
+
+      {/* Hero Section */}
       <main className="pt-16">
-        <section className="py-12 md:py-20 px-4 relative overflow-hidden">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-12">
-              <motion.div 
-                className="md:w-1/2 space-y-8 relative z-10"
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <h1 className="text-4xl md:text-left text-center font-bold leading-tight lg:text-5xl text-gray-800">
-                  Unlock Your Potential with Our Smart Learning Platform
-                </h1>
-                <p className="text-lg md:text-left text-center text-gray-600 max-w-lg">
-                  Prepare for JEE & NEET like never before with personalized question banks, real-time challenges, and gamified learning.
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
-                <Button size="lg" className="bg-white text-yellow-600 hover:bg-yellow-100 rounded-full px-8 py-6 text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-                  Start Your Journey
-                </Button>
-                <Link href="#features" className="group inline-flex items-center text-yellow-600 hover:text-black transition-colors">
-                  <span className="mr-2">Explore Features</span>
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-              </motion.div>
-              <motion.div 
-                className="md:w-1/2 relative"
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="relative z-10 bg-yellow-100 rounded-3xl p-8 shadow-xl">
-                  <Image
-                    src="/hero.png"
-                    alt="Students using PrepMaster platform"
-                    width={400}
-                    height={400}
-                    className="rounded-2xl mx-auto"
-                  />
-                  {/* Floating Stats */}
-                  <motion.div 
-                    className="absolute top-4 left-4 bg-white rounded-2xl p-3 shadow-lg flex items-center space-x-2"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <Users className="h-5 w-5 text-yellow-500" />
-                    <div>
-                      <div className="font-bold text-sm">10M+</div>
-                      <div className="text-xs text-gray-500">Users</div>
-                    </div>
-                  </motion.div>
-                  <motion.div 
-                    className="absolute top-1/3 right-4 bg-white rounded-2xl p-3 shadow-lg flex items-center space-x-2"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <BookOpen className="h-5 w-5 text-yellow-500" />
-                    <div>
-                      <div className="font-bold text-sm">50k+</div>
-                      <div className="text-xs text-gray-500">Questions</div>
-                    </div>
-                  </motion.div>
-                  <motion.div 
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-2xl p-3 shadow-lg flex items-center space-x-2"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
-                  >
-                    <Clock className="h-5 w-5 text-yellow-500" />
-                    <div>
-                      <div className="font-bold text-sm">24/7</div>
-                      <div className="text-xs text-gray-500">Support</div>
-                    </div>
-                  </motion.div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-          {/* Background Elements */}
-          <motion.div 
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-200 rounded-full blur-3xl opacity-30"
-            animate={{
-              scale: [1, 1.1, 1],
-              opacity: [0.3, 0.2, 0.3],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              repeatType: "reverse",
-            }}
-          />
-          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-200 to-transparent" />
-        </section>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
+          {/* Decorative blobs */}
+          <BlobShape className="absolute top-0 left-0 w-72 h-72 text-yellow-200 -translate-x-1/2 -translate-y-1/2" />
+          <BlobShape className="absolute top-1/2 right-0 w-64 h-64 text-yellow-300 translate-x-1/3" />
+          <BlobShape className="absolute bottom-0 left-1/2 w-80 h-80 text-yellow-100 -translate-x-1/2 translate-y-1/4" />
 
-        <section id="features" className="py-20 px-4 bg-white">
-          <div className="container mx-auto">
-            <motion.h2 
-              className="text-3xl font-bold mb-12 text-center text-gray-800"
+          {/* Content */}
+          <div className="relative z-10 text-center max-w-3xl mx-auto">
+            <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.8 }}
+              className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-yellow-900 mb-8"
             >
-              Key Features
-            </motion.h2>
-            <motion.div 
-              className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
-              variants={staggerChildren}
-              initial="initial"
-              animate="animate"
-            >
-              {[
-                {
-                  title: "Comprehensive Question Bank",
-                  description: "Access a wide range of expertly curated questions tailored to JEE and NEET. With AI-powered recommendations, our question bank adapts to your progress.",
-                  icon: Brain,
-                },
-                {
-                  title: "Compete with Peers in Real-Time",
-                  description: "Join live challenges and compete with friends or fellow students. The first to solve the problem wins, creating excitement and healthy competition.",
-                  icon: Trophy,
-                },
-                {
-                  title: "Track Your Progress",
-                  description: "Detailed performance analytics give you insights into your strengths and areas for improvement. Stay on track to reach your full potential.",
-                  icon: BarChart2,
-                },
-                {
-                  title: "Learn While You Play",
-                  description: "Turn your study sessions into a fun and rewarding experience with points, badges, and leaderboards. Stay motivated to learn!",
-                  icon: Gamepad,
-                },
-              ].map((feature, index) => (
-                <motion.div key={index} variants={fadeInUp}>
-                  <Card className="bg-yellow-50 border-yellow-100 h-full">
-                    <CardHeader>
-                      <feature.icon className="h-10 w-10 text-yellow-500 mb-2" />
-                      <CardTitle>{feature.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <CardDescription>{feature.description}</CardDescription>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        <section className="py-20 px-4 bg-yellow-100">
-          <div className="container mx-auto">
-            <motion.h2 
-              className="text-3xl font-bold mb-12 text-center text-gray-800"
+              Don&apos;t make learning complicated
+            </motion.h1>
+            <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-xl text-yellow-700 mb-12 max-w-2xl mx-auto"
             >
-              How It Works
-            </motion.h2>
-            <motion.div 
-              className="grid md:grid-cols-3 lg:grid-cols-5 gap-8"
-              variants={staggerChildren}
-              initial="initial"
-              animate="animate"
-            >
-              {[
-                { title: "Sign Up", description: "Create your account in minutes.", icon: UserPlus },
-                { title: "Personalize", description: "Select subjects and topics you want to focus on.", icon: Settings },
-                { title: "Start Solving", description: "Access your smart question bank and begin practicing.", icon: PlayCircle },
-                { title: "Challenge Yourself", description: "Join real-time challenges with your peers.", icon: Trophy },
-                { title: "Analyze & Improve", description: "Review performance analytics to identify areas for growth.", icon: TrendingUp },
-              ].map((step, index) => (
-                <motion.div key={index} className="flex flex-col items-center text-center" variants={fadeInUp}>
-                  <motion.div 
-                    className="bg-yellow-500 rounded-full p-4 mb-4"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <step.icon className="h-8 w-8 text-white" />
-                  </motion.div>
-                  <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                  <p className="text-gray-600">{step.description}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        <section className="py-20 px-4 bg-white">
-          <div className="container mx-auto">
-            <motion.h2 
-              className="text-3xl font-bold mb-12 text-center text-gray-800"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Success Stories from Our Students
-            </motion.h2>
-            <motion.div 
-              className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-              variants={staggerChildren}
-              initial="initial"
-              animate="animate"
-            >
-              {[
-                { name: "Priya S.", quote: "I improved my physics scores by 30% in just 3 months thanks to the smart question bank and real-time challenges!", achievement: "JEE Rank: 342" },
-                { name: "Rahul M.", quote: "The gamified learning approach kept me motivated throughout my NEET preparation. It made studying fun!", achievement: "NEET Score: 650/720" },
-                { name: "Ananya K.", quote: "The performance analytics helped me identify my weak areas quickly. I could focus my efforts where they were needed most.", achievement: "JEE Rank: 127" },
-              ].map((testimonial, index) => (
-                <motion.div key={index} variants={fadeInUp}>
-                  <Card className="bg-yellow-50 border-yellow-100 h-full">
-                    <CardHeader>
-                      <CardTitle>{testimonial.name}</CardTitle>
-                      <CardDescription>{testimonial.achievement}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="italic">"{testimonial.quote}"</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        <section className="py-20 px-4 bg-yellow-500 text-white">
-          <div className="container mx-auto text-center">
-            <motion.h2 
-              className="text-3xl font-bold mb-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Experience the Platform
-            </motion.h2>
-            <motion.p 
-              className="mb-8 text-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              Get a taste of our real-time challenges and smart question bank.
+              No more struggling with complex study materials or getting lost in endless notes.
+              Master your subjects with our interactive learning platform designed for NEET & JEE success.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <Button className="bg-white text-yellow-600 hover:bg-yellow-100 rounded-full px-8 py-6 text-lg">
-                Try It Now
+              <Button size="lg" className="text-lg px-8 py-6 bg-yellow-500 hover:bg-yellow-600 text-white">
+                Start learning free
               </Button>
             </motion.div>
           </div>
-        </section>
-      </main>
 
-      <footer className="bg-white py-12 px-4 border-t border-gray-200">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-bold text-lg mb-4">PrepMaster</h3>
-              <p className="text-gray-600">Empowering students to excel in JEE and NEET exams.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2">
-                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">About Us</Link></li>
-                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">Features</Link></li>
-                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">Pricing</Link></li>
-                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">Contact Us</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2">
-                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">Terms of Service</Link></li>
-                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">Privacy Policy</Link></li>
-                <li><Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">Cookie Policy</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Connect With Us</h4>
-              <div className="flex space-x-4">
-                <Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">
-                  <span className="sr-only">Facebook</span>
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
-                  </svg>
-                </Link>
-                <Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">
-                  <span className="sr-only">Instagram</span>
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" />
-                  </svg>
-                </Link>
-                <Link href="#" className="text-gray-600 hover:text-yellow-600 transition-colors">
-                  <span className="sr-only">Twitter</span>
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                  </svg>
-                </Link>
+          {/* Phone Mockups */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.6 }}
+            className="relative mt-20 max-w-5xl mx-auto"
+          >
+            <div className="grid grid-cols-2 gap-8">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-3xl transform rotate-2" />
+                <Image
+                  src="/placeholder.svg?height=600&width=300"
+                  width={300}
+                  height={600}
+                  alt="Study Dashboard"
+                  className="relative rounded-3xl shadow-2xl border border-yellow-200"
+                />
+              </div>
+              <div className="relative mt-16">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-200 to-yellow-300 rounded-3xl transform -rotate-2" />
+                <Image
+                  src="/placeholder.svg?height=600&width=300"
+                  width={300}
+                  height={600}
+                  alt="Interactive Learning"
+                  className="relative rounded-3xl shadow-2xl border border-yellow-200"
+                />
               </div>
             </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-gray-200 text-center">
-            <p className="text-gray-600 text-sm">© 2024 PrepMaster. All rights reserved.</p>
-          </div>
+          </motion.div>
         </div>
-      </footer>
+
+        {/* Features Section */}
+        <section className="bg-white py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-center mb-12 text-yellow-800">Our Features</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+                className="text-center"
+              >
+                <div className="w-16 h-16 mx-auto mb-6 bg-yellow-100 rounded-2xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-4 text-yellow-800">Smart Learning Path</h3>
+                <p className="text-yellow-600">Personalized study plans that adapt to your learning style and pace</p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="text-center"
+              >
+                <div className="w-16 h-16 mx-auto mb-6 bg-yellow-100 rounded-2xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-4 text-yellow-800">Interactive Content</h3>
+                <p className="text-yellow-600">Engage with dynamic study materials and real-time practice questions</p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                viewport={{ once: true }}
+                className="text-center"
+              >
+                <div className="w-16 h-16 mx-auto mb-6 bg-yellow-100 rounded-2xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-4 text-yellow-800">Progress Tracking</h3>
+                <p className="text-yellow-600">Monitor your improvement with detailed analytics and insights</p>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section className="bg-yellow-100 py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-center mb-12 text-yellow-800">What Our Students Say</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { name: "Priya S.", quote: "EduTech transformed my NEET preparation. The adaptive learning is a game-changer!", avatar: "/placeholder.svg?height=100&width=100" },
+                { name: "Rahul M.", quote: "Thanks to EduTech, I cracked JEE with flying colors. The practice tests were spot on!", avatar: "/placeholder.svg?height=100&width=100" },
+                { name: "Ananya K.", quote: "The personalized study plans helped me focus on my weak areas. Highly recommended!", avatar: "/placeholder.svg?height=100&width=100" },
+              ].map((testimonial, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: index * 0.2 }}
+                  viewport={{ once: true }}
+                  className="bg-white p-6 rounded-lg shadow-lg"
+                >
+                  <div className="flex items-center mb-4">
+                    <Image
+                      src={testimonial.avatar}
+                      width={50}
+                      height={50}
+                      alt={testimonial.name}
+                      className="rounded-full mr-4"
+                    />
+                    <h3 className="font-semibold text-yellow-800">{testimonial.name}</h3>
+                  </div>
+                  <p className="text-yellow-600 italic">"{testimonial.quote}"</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Rewards & Tiers Section */}
+        <section className="bg-white py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-center mb-12 text-yellow-800">Rewards & Tiers</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { tier: "Bronze", rewards: ["Access to basic courses", "Weekly quizzes", "Community forum access"] },
+                { tier: "Silver", rewards: ["All Bronze rewards", "Personalized study plans", "Monthly mock tests"] },
+                { tier: "Gold", rewards: ["All Silver rewards", "1-on-1 mentoring sessions", "Guaranteed score improvement"] },
+              ].map((tier, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: index * 0.2 }}
+                  viewport={{ once: true }}
+                  className="bg-yellow-50 p-6 rounded-lg shadow-lg border-2 border-yellow-200"
+                >
+                  <h3 className="text-xl font-semibold mb-4 text-yellow-800">{tier.tier}</h3>
+                  <ul className="space-y-2">
+                    {tier.rewards.map((reward, rewardIndex) => (
+                      <li key={rewardIndex} className="flex items-center text-yellow-600">
+                        <svg className="w-5 h-5 mr-2 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {reward}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="bg-yellow-100 py-24">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-center mb-12 text-yellow-800">Frequently Asked Questions</h2>
+            <Accordion type="single" collapsible className="space-y-4">
+              {[
+                { question: "How does the adaptive learning work?", answer: "Our AI-powered system analyzes your performance and adjusts your study plan in real-time, focusing on areas where you need the most improvement." },
+                { question: "Can I access EduTech on mobile devices?", answer: "Yes! EduTech is fully responsive and can be accessed on smartphones, tablets, and computers." },
+                { question: "How often is the content updated?", answer: "We update our content regularly to align with the latest NEET and JEE syllabus changes and exam patterns." },
+                { question: "Is there a free trial available?", answer: "Yes, we offer a 7-day free trial so you can experience the full benefits of our platform before committing." },
+              ].map((faq, index) => (
+                <AccordionItem key={index} value={`item-${index}`}>
+                  <AccordionTrigger className="text-yellow-800 hover:text-yellow-600">{faq.question}</AccordionTrigger>
+                  <AccordionContent className="text-yellow-600">{faq.answer}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="bg-yellow-800 text-yellow-100 py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              <div>
+                <h3 className="text-2xl font-bold mb-4">EduTech</h3>
+                <p className="text-yellow-200">Empowering students to achieve their dreams in NEET and JEE.</p>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+                <ul className="space-y-2">
+                  <li><a href="#" className="hover:text-yellow-300">Home</a></li>
+                  <li><a href="#" className="hover:text-yellow-300">Features</a></li>
+                  <li><a href="#" className="hover:text-yellow-300">Pricing</a></li>
+                  <li><a href="#" className="hover:text-yellow-300">Contact</a></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold mb-4">Legal</h4>
+                <ul className="space-y-2">
+                  <li><a href="#" className="hover:text-yellow-300">Terms of Service</a></li>
+                  <li><a href="#" className="hover:text-yellow-300">Privacy Policy</a></li>
+                  <li><a href="#" className="hover:text-yellow-300">Cookie Policy</a></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold mb-4">Connect</h4>
+                <ul className="space-y-2">
+                  <li><a href="#" className="hover:text-yellow-300">Facebook</a></li>
+                  <li><a href="#" className="hover:text-yellow-300">Twitter</a></li>
+                  <li><a href="#" className="hover:text-yellow-300">Instagram</a></li>
+                  <li><a href="#" className="hover:text-yellow-300">LinkedIn</a></li>
+                </ul>
+              </div>
+            </div>
+            <div className="mt-8 pt-8 border-t border-yellow-700 text-center">
+              <p>&copy; 2024 EduTech. All rights reserved.</p>
+            </div>
+          </div>
+        </footer>
+      </main>
     </div>
   )
 }

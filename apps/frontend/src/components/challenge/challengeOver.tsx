@@ -1,70 +1,78 @@
-import React from 'react';
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { CheckCircle, XCircle, Trophy } from 'lucide-react'
+import Link from 'next/link'
 
-const ChallengeOver = ({ details }: any) => {
-  const { result, questions, player1, player2, status } = details;
+const ChallengeOver = ({ details }: { details: any }) => {
+  const { result, questions, player1, player2, status } = details
 
-  // Determine the result message
   const resultMessage = result === player1.id
     ? `${player1.username} is the Winner!`
     : result === player2.id
       ? `${player2.username} is the Winner!`
-      : 'It’s a Draw!';
+      : 'It\'s a Draw!'
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
-      <div className="bg-white shadow-lg rounded-lg p-8 max-w-3xl w-full">
-        {/* Challenge Result */}
-        <h1 className="text-2xl font-bold text-center mb-6">Challenge Result</h1>
-        <h2 className={`text-xl font-semibold text-center mb-6 ${status === 'won' ? 'text-green-600' : 'text-yellow-600'}`}>
-          {resultMessage}
-        </h2>
-
-        {/* Player Scores */}
-        <div className="flex justify-around mb-8">
-          {[player1, player2].map((player, index) => (
-            <div key={index} className="flex-1 text-center px-4">
-              <h3 className="font-semibold text-lg">{player.username}</h3>
-              <p className="text-gray-500">Rank: {player.rank}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Questions and Attempts */}
-        <h3 className="text-lg font-semibold mb-4">Question Results</h3>
-        <ul className="divide-y divide-gray-200">
-          {questions.map((question: any, index: number) => (
-            <li key={index} className="py-4">
-              <div className="flex justify-between items-center">
-                <div className="text-gray-800">
-                  <span className="font-semibold">Q{index + 1}:
-                   {question.topic}, Difficulty: {question.difficulty}</span>
-                </div>
+    <div className="min-h-screen bg-yellow-50 flex flex-col items-center justify-center p-4 sm:p-6">
+      <Card className="w-full max-w-3xl border-yellow-500 border-2">
+        <CardHeader className="bg-yellow-400 text-yellow-900">
+          <CardTitle className="text-2xl sm:text-3xl font-bold text-center">Challenge Result</CardTitle>
+          <div className="flex justify-center items-center space-x-2 mt-4">
+            <Trophy className="w-6 h-6 sm:w-8 sm:h-8" />
+            <h2 className={`text-xl sm:text-2xl text-center font-semibold ${status === 'won' ? 'text-green-700' : 'text-yellow-700'}`}>
+              {resultMessage}
+            </h2>
+          </div>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-around mb-6 sm:mb-8">
+            {[player1, player2].map((player, index) => (
+              <div key={index} className="text-center px-4 mb-4 sm:mb-0">
+                <h3 className="font-semibold text-lg sm:text-xl text-yellow-900"><Link href={`/u/${player.username}`}>{player.username}</Link></h3>
+                <Badge variant="outline" className="mt-2">Rank: {player.rank}</Badge>
               </div>
+            ))}
+          </div>
 
-              {/* Player Attempts */}
-              <div className="flex justify-around mt-2">
-                {[player1, player2].map((player, idx) => (
-                  <div key={idx} className="flex-1 text-center">
-                    <span className="text-sm">{player.username}</span>
-                    <p className={`font-semibold ${player.attempt[index] === 1 ? 'text-green-600' : 'text-red-600'}`}>
-                      {player.attempt[index] === 1 ? 'Correct' : 'Wrong'}
-                    </p>
+          <h3 className="text-lg sm:text-xl font-semibold mb-4 text-yellow-900">Question Results</h3>
+          <ul className="space-y-4">
+            {questions.map((question: any, index: number) => (
+              <li key={index} className="border-b border-yellow-200 pb-4 last:border-b-0">
+                <div className=" justify-between items-start sm:items-center mb-2">
+                  <div className="text-yellow-900 mb-2 sm:mb-0">
+                    <span className="font-semibold">Q{index + 1}: {question.topic}</span>
+                    <Badge variant="secondary" className="ml-2">{question.difficulty}</Badge>
                   </div>
-                ))}
-              </div>
-            </li>
-          ))}
-        </ul>
+                  <div className="flex flex-col justify-between  sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-2">
+                    {[player1, player2].map((player, idx) => (
+                      <div key={idx} className="flex items-center space-x-2">
+                        <span className="text-sm font-medium text-yellow-900">{player.username}:</span>
+                        {player.attempt[index] === 1 ? (
+                          <CheckCircle className="text-green-500 w-5 h-5" aria-label="Correct" />
+                        ) : (
+                          <XCircle className="text-red-500 w-5 h-5" aria-label="Incorrect" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
 
-        {/* Play Again Button */}
-        <div className="mt-8 text-center">
-          <button className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-200">
-            Play Again
-          </button>
-        </div>
-      </div>
+          <div className="mt-6 sm:mt-8 text-center">
+            <Button 
+              className="bg-yellow-500 hover:bg-yellow-600 text-yellow-900 font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-full transition-all duration-200 transform hover:scale-105 w-full sm:w-auto"
+            >
+              Play Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
-  );
+  )
 }
 
-export default ChallengeOver;
+export default ChallengeOver

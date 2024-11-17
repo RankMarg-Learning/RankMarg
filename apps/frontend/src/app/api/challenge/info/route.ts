@@ -2,12 +2,12 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
 
-// Define types for the response data
-type ChallengeDetails = {
+type recentChallenges = {
     challengeId: string;
     opponentUsername: string;
-    result: string | null;
-    userScore: number | null;
+    result : string | null;
+    userScore: number[] | null;
+    opponentScore: number[] | null;
     createdAt: Date;
 };
 
@@ -19,12 +19,11 @@ type UserStats = {
 
 type ResponseData = {
     userStats: UserStats;
-    recentChallenges: ChallengeDetails[];
+    recentChallenges: recentChallenges[];
 };
 
 export async function GET() {
     try {
-        // Fetch session and validate
         const session = await getServerSession(authOptions);
         if (!session || !session.user) {
             return new Response("Unauthorized", { status: 401 });
@@ -32,7 +31,6 @@ export async function GET() {
 
         const userId = session.user.id;
 
-        // Fetch user and related challenges
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: {
@@ -46,8 +44,10 @@ export async function GET() {
                         player2Id: true,
                         result: true,
                         player1Score: true,
+                        attemptByPlayer1: true,
+                        attemptByPlayer2: true,
                         createdAt: true,
-                        player2: { select: { username: true } }, // Opponent (player2) username for player1 challenges
+                        player2: { select: { username: true } }, 
                     },
                 },
                 player2: {
@@ -57,8 +57,10 @@ export async function GET() {
                         player1Id: true,
                         result: true,
                         player2Score: true,
+                        attemptByPlayer1: true,
+                        attemptByPlayer2: true,
                         createdAt: true,
-                        player1: { select: { username: true } }, // Opponent (player1) username for player2 challenges
+                        player1: { select: { username: true } }, 
                     },
                 },
             },
@@ -68,32 +70,31 @@ export async function GET() {
             return new Response("User not found", { status: 404 });
         }
 
-        // Combine and map player1 and player2 challenges
-        const recentChallenges: ChallengeDetails[] = [
+        const recentChallenges: recentChallenges[] = [
             ...user.player1.map((challenge) => ({
                 challengeId: challenge.challengeId,
-                opponentUsername: challenge.player2?.username || "Unknown", // Get opponent's username for player1 challenges
+                opponentUsername: challenge.player2?.username || "Unknown", 
                 result: challenge.result,
-                userScore: challenge.player1Score, // User's score when they are player1
+                userScore: challenge.attemptByPlayer1, 
+                opponentScore: challenge.attemptByPlayer2,
                 createdAt: challenge.createdAt,
             })),
             ...user.player2.map((challenge) => ({
                 challengeId: challenge.challengeId,
-                opponentUsername: challenge.player1?.username || "Unknown", // Get opponent's username for player2 challenges
+                opponentUsername: challenge.player1?.username || "Unknown", 
                 result: challenge.result,
-                userScore: challenge.player2Score, // User's score when they are player2
+                userScore: challenge.attemptByPlayer2, 
+                opponentScore: challenge.attemptByPlayer1,
                 createdAt: challenge.createdAt,
             })),
-        ].sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)).slice(0, 25); // Sort by creation date
+        ].sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)).slice(0, 25); 
 
-        // Define the user stats
         const userStats: UserStats = {
             name: user?.name,
             username: user.username,
             rank: user.rank,
         };
 
-        // Return the data in the correct format with types
         const responseData: ResponseData = {
             userStats,
             recentChallenges,

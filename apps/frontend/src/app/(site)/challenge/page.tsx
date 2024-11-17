@@ -1,7 +1,7 @@
 "use client";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React, {  useEffect, useState } from "react";
-import {  Link2, CopyIcon, MoveUp, MoveDown } from "lucide-react";
+import {  Link2, CopyIcon, MoveUp, MoveDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -23,11 +23,18 @@ interface ChallengeInfoProps {
  },
   recentChallenges:{
     challengeId: string;
-    result: string | null; 
-    createdAt: Date; 
-    opponentUsername: string; 
-    userScore: number;
+    opponentUsername: string;
+    result : string | null;
+    userScore: number[] | null;
+    opponentScore: number[] | null;
+    createdAt: Date;
   }[]
+}
+
+
+const challengeScore = (score: number[] | null) => {
+  if (!score) return "-";
+  return score.reduce((acc, curr) => acc + curr, 0);
 }
 
 
@@ -48,6 +55,7 @@ const ChallengePage = () => {
     return <ChallengeSkeleton />;
   }
 
+  
 
   return (
     <div className="min-h-screen bg text-white p-5">
@@ -59,33 +67,43 @@ const ChallengePage = () => {
         </div>
         <div className="col-span-12 md:col-span-9 space-y-4">
           <Banner/>
-          <Card className=" p-4 rounded-lg">
-            <h2 className="text-xl font-semibold">Recent Challenges</h2>
-            {
-              challengeInfo ? (challengeInfo.recentChallenges.slice(0, 12).map((challenge) => (
-                <Link href={`/challenge/${challenge.challengeId}`} className="flex border-2 rounded-md  justify-between p-3 px-3 my-2 hover:bg-gray-50" key={challenge.challengeId}>
-                  <div className="flex items-center">
-                    <span className="bg-yellow-100 text-yellow-500 font-semibold px-2 py-1 rounded mr-3">
-                      VS
-                    </span>
-                    <h2 className="  text-gray-800">
-                      {challenge.opponentUsername}
-                    </h2>
+          <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Recent Challenges</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {challengeInfo.recentChallenges.map((challenge) => (
+                <div
+                  key={challenge.challengeId}
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                >
+                  <div className="mb-2 sm:mb-0">
+                    <div className="font-semibold">CHAL-{challenge.challengeId.slice(0,5)}</div>
+                    <div className="text-sm text-muted-foreground">
+                      vs {challenge.opponentUsername}
+                    </div>
                   </div>
-                  <p className="mr-5 font-semibold text-gray-600 flex">{challenge.userScore} 
-                          {challenge.userScore > 0 ? (
-                    <span className="text-green-500 ml-1"><MoveUp/></span>
-                  ) : challenge.userScore < 0 ? (
-                    <span className="text-red-500 ml-1"><MoveDown/></span>
-                  ) : <span className=" ml-1">&nbsp; - &nbsp;</span>}
-                          </p>
-                        </Link>
-                      ))
-                    ):(
-                      <div className="mt-2 text-gray-400">No recent challenges found.</div>
-                    )
-            }
-          </Card>
+                  
+                  <div className="flex flex-row justify-between  items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                    <div className="text-left sm:text-right">
+                      <div className={`font-semibold`}>{challengeScore(challenge.userScore)} - {challengeScore(challenge.opponentScore)}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(challenge.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <Link href={`/challenge/${challenge.challengeId}`}>
+                      <Button variant="ghost" size="sm" className="ml-auto font-semibold">
+                        View 
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
             
             
         </div>
