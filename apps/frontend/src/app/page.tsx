@@ -1,10 +1,14 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import Link from "next/link"
 import Image from "next/image"
+import {  Brain, Trophy, BarChart2, Gamepad } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 const BlobShape = ({ className }: { className?: string }) => (
   <motion.div
@@ -27,7 +31,31 @@ const BlobShape = ({ className }: { className?: string }) => (
   </motion.div>
 )
 
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 }
+}
+
+const staggerChildren = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
 export default function Home() {
+  const [email, setEmail] = useState('')
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    // Handle newsletter subscription
+    console.log('Subscribed email:', email)
+    // Reset email input
+    setEmail('')
+  }
+
   return (
     <div className="min-h-screen bg-yellow-50 overflow-hidden">
       {/* Navigation */}
@@ -35,14 +63,14 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex-shrink-0">
-              <span className="text-2xl font-bold text-yellow-600">EduTech</span>
+            <Image src={'https://utfs.io/f/DbhgrrAIqRoKWCwFFv4kujRo2cBDzhfSAtQ1p0ZrLwxy9lHG'} alt="Acme Inc" width={140} height={140} priority />
             </div>
             <div className="flex gap-4">
               <Button variant="ghost" asChild>
-                <Link href="/login">Login</Link>
+                <Link href="/sign-in">Login</Link>
               </Button>
               <Button className="bg-yellow-500 hover:bg-yellow-600 text-white" asChild>
-                <Link href="/signup">Sign up</Link>
+                <Link href="/sign-up">Sign up</Link>
               </Button>
             </div>
           </div>
@@ -65,7 +93,7 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-yellow-900 mb-8"
             >
-              Don&apos;t make learning complicated
+              Compete, Learn, Achieve Dream
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -73,107 +101,102 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="text-xl text-yellow-700 mb-12 max-w-2xl mx-auto"
             >
-              No more struggling with complex study materials or getting lost in endless notes.
-              Master your subjects with our interactive learning platform designed for NEET & JEE success.
+              Learn smarter with our platform made for NEET and JEE students. Practice with topic-wise questions, compete in fun challenges, and track your progress to improve your rank and score better!
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <Button size="lg" className="text-lg px-8 py-6 bg-yellow-500 hover:bg-yellow-600 text-white">
+              <Link href={'/challenge'}  className="text-lg px-8 py-4 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white">
                 Start learning free
-              </Button>
+              </Link>
             </motion.div>
           </div>
 
-          {/* Phone Mockups */}
+          {/* Laptop Image */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.6 }}
             className="relative mt-20 max-w-5xl mx-auto"
           >
-            <div className="grid grid-cols-2 gap-8">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-100 to-yellow-300 rounded-3xl transform rotate-1" />
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-3xl transform rotate-2" />
                 <Image
-                  src="/placeholder.svg?height=600&width=300"
-                  width={300}
-                  height={600}
-                  alt="Study Dashboard"
-                  className="relative rounded-3xl shadow-2xl border border-yellow-200"
+                  src="/Desktop.png"
+                  width={1200}
+                  height={800}
+                  alt="EduTech Platform Dashboard"
+                  className="rounded-3xl shadow-2xl border-2 border-yellow-200"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-yellow-500/20 to-transparent rounded-3xl" />
               </div>
-              <div className="relative mt-16">
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-200 to-yellow-300 rounded-3xl transform -rotate-2" />
-                <Image
-                  src="/placeholder.svg?height=600&width=300"
-                  width={300}
-                  height={600}
-                  alt="Interactive Learning"
-                  className="relative rounded-3xl shadow-2xl border border-yellow-200"
-                />
-              </div>
+            </div>
+            <div className="absolute -bottom-4 -right-4 bg-yellow-400 text-yellow-900 px-6 py-2 rounded-full font-semibold transform rotate-3">
+              Boost your learning!
             </div>
           </motion.div>
         </div>
 
         {/* Features Section */}
-        <section className="bg-white py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12 text-yellow-800">Our Features</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
-                <div className="w-16 h-16 mx-auto mb-6 bg-yellow-100 rounded-2xl flex items-center justify-center">
-                  <svg className="w-8 h-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold mb-4 text-yellow-800">Smart Learning Path</h3>
-                <p className="text-yellow-600">Personalized study plans that adapt to your learning style and pace</p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
-                <div className="w-16 h-16 mx-auto mb-6 bg-yellow-100 rounded-2xl flex items-center justify-center">
-                  <svg className="w-8 h-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold mb-4 text-yellow-800">Interactive Content</h3>
-                <p className="text-yellow-600">Engage with dynamic study materials and real-time practice questions</p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
-                <div className="w-16 h-16 mx-auto mb-6 bg-yellow-100 rounded-2xl flex items-center justify-center">
-                  <svg className="w-8 h-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold mb-4 text-yellow-800">Progress Tracking</h3>
-                <p className="text-yellow-600">Monitor your improvement with detailed analytics and insights</p>
-              </motion.div>
-            </div>
+        <section id="features" className="py-20 px-4 bg-white">
+          <div className="container mx-auto">
+            <motion.h2 
+              className="text-3xl font-bold mb-12 text-center text-gray-800"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              Key Features
+            </motion.h2>
+            <motion.div 
+              className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
+              variants={staggerChildren}
+              initial="initial"
+              animate="animate"
+            >
+              {[
+                {
+                  title: "Comprehensive Question Bank",
+                  description: "Access a wide range of expertly curated questions tailored to JEE and NEET. With AI-powered recommendations, our question bank adapts to your progress.",
+                  icon: Brain,
+                },
+                {
+                  title: "Compete with Peers in Real-Time",
+                  description: "Join live challenges and compete with friends or fellow students. The first to solve the problem wins, creating excitement and healthy competition.",
+                  icon: Trophy,
+                },
+                {
+                  title: "Track Your Progress",
+                  description: "Detailed performance analytics give you insights into your strengths and areas for improvement. Stay on track to reach your full potential.",
+                  icon: BarChart2,
+                },
+                {
+                  title: "Learn While You Play",
+                  description: "Turn your study sessions into a fun and rewarding experience with points, badges, and leaderboards. Stay motivated to learn!",
+                  icon: Gamepad,
+                },
+              ].map((feature, index) => (
+                <motion.div key={index} variants={fadeInUp}>
+                  <Card className="bg-yellow-50 border-yellow-100 h-full">
+                    <CardHeader>
+                      <feature.icon className="h-10 w-10 text-yellow-500 mb-2" />
+                      <CardTitle>{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription>{feature.description}</CardDescription>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
         </section>
+
+        
+
 
         {/* Testimonials Section */}
         <section className="bg-yellow-100 py-24">
@@ -244,7 +267,14 @@ export default function Home() {
             </div>
           </div>
         </section>
-
+            
+        {/* Qoute Section */}    
+        <section className="relative w-full h-52 overflow-hidden flex justify-center items-center my-24 bg-yellow-900">
+          <div className="absolute  text-8xl font-bold text-yellow-100 tracking-wide">
+            COMPETE.LEARN.ACHIEVE
+          </div>
+        </section>
+        
         {/* FAQ Section */}
         <section className="bg-yellow-100 py-24">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -264,6 +294,8 @@ export default function Home() {
             </Accordion>
           </div>
         </section>
+
+        
 
         {/* Footer */}
         <footer className="bg-yellow-800 text-yellow-100 py-12">
@@ -292,12 +324,18 @@ export default function Home() {
               </div>
               <div>
                 <h4 className="text-lg font-semibold mb-4">Connect</h4>
-                <ul className="space-y-2">
-                  <li><a href="#" className="hover:text-yellow-300">Facebook</a></li>
-                  <li><a href="#" className="hover:text-yellow-300">Twitter</a></li>
-                  <li><a href="#" className="hover:text-yellow-300">Instagram</a></li>
-                  <li><a href="#" className="hover:text-yellow-300">LinkedIn</a></li>
-                </ul>
+                <form onSubmit={handleSubmit} className="space-y-2">
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="bg-yellow-700 border-yellow-600 text-yellow-100 placeholder-yellow-300"
+                  />
+                  <Button type="submit" className="w-full bg-yellow-600 hover:bg-yellow-500 text-yellow-100">
+                    Subscribe to Newsletter
+                  </Button>
+                </form>
               </div>
             </div>
             <div className="mt-8 pt-8 border-t border-yellow-700 text-center">

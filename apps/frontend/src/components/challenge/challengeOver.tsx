@@ -63,11 +63,11 @@ const ChallengeOver = ({ details }: { details: any }) => {
           </ul>
 
           <div className="mt-6 sm:mt-8 text-center">
-            <Button 
+            <Link href="/challenge"
               className="bg-yellow-500 hover:bg-yellow-600 text-yellow-900 font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-full transition-all duration-200 transform hover:scale-105 w-full sm:w-auto"
             >
               Play Again
-            </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>

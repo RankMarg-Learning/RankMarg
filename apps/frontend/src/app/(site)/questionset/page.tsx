@@ -81,6 +81,7 @@ const Questionset = () => {
     return matchesDifficulty && matchesTags && matchesSubject && matchesSearch;
   }) || [];
 
+  
 
 
   const handlePageClick = (page: number) => {
@@ -186,7 +187,7 @@ const Questionset = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {questions
+                          {data?.questionSet 
                             ? questions.map((question: QuestionTableProps) => {
                                 return (
                                   
@@ -203,6 +204,7 @@ const Questionset = () => {
                       </Table>
                     </CardContent>
                     <CardFooter className="flex flex-1">
+                      
                       <Pagination>
                         <PaginationContent>
                           <PaginationItem>

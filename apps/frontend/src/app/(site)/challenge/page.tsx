@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import ChallengeSkeleton from "@/components/challenge/ChallengeSkelaton";
+import JoinLoader from "@/components/JoinLoader";
 
 
 interface ChallengeInfoProps {
@@ -41,7 +42,7 @@ const challengeScore = (score: number[] | null) => {
 
 
 const ChallengePage = () => {
-  
+  const [joinLoader, setJoinLoader] = useState(false);
 
   const { data: challengeInfo, isLoading } = useQuery<ChallengeInfoProps>({
     queryKey: ["challenge-info"],
@@ -54,10 +55,15 @@ const ChallengePage = () => {
   if (isLoading) {
     return <ChallengeSkeleton />;
   }
-
   
+  if(joinLoader){
+    return <JoinLoader />
+  }
+
 
   return (
+    <>
+    
     <div className="min-h-screen bg text-white p-5">
       <div className="grid grid-cols-12 gap-1 md:gap-3">
         <div className="col-span-12 md:col-span-3">
@@ -66,7 +72,7 @@ const ChallengePage = () => {
           </Card>
         </div>
         <div className="col-span-12 md:col-span-9 space-y-4">
-          <Banner/>
+          <Banner setJoinLoader={setJoinLoader}/>
           <Card className="mb-6">
           <CardHeader>
             <CardTitle>Recent Challenges</CardTitle>
@@ -109,6 +115,7 @@ const ChallengePage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
@@ -136,7 +143,9 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
   );
 };
 
-  const Banner = () => {
+  const Banner = (
+    {setJoinLoader}:{setJoinLoader:React.Dispatch<React.SetStateAction<boolean>>}
+  ) => {
   const router = useRouter();
   const  socket = useSocket();
   const [open, setOpen] = useState(false);
@@ -152,6 +161,9 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
       switch (message.type) {
         case "INIT_CHALLENGE":
           if(message.payload.invite){setOpen(true);}
+          else{
+            setJoinLoader(true);
+          }
           break;
         case "CHALLENGE_ADD":
           setChallengeLink(`http://localhost:3000/challenge/${message.challengeId}`);
@@ -169,6 +181,9 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
   const handleCopy = () => {
     navigator.clipboard.writeText(challengeLink);
   }
+
+  
+
   return (
     
     <div className="relative bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700 py-16 px-6 sm:px-12 md:px-24 lg:px-36 rounded-lg shadow-lg text-white text-center overflow-hidden">
@@ -181,6 +196,7 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
           Challenge friends, compete for the top spot, and improve your rank.
         </p>
         <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+
           <Button className="relative bg-yellow-700 hover:bg-yellow-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-300 transform hover:scale-105 overflow-hidden group" 
           onClick={
             () => {

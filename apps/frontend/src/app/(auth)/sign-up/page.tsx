@@ -79,7 +79,7 @@ const SignUpForm = () => {
                     id="username"
                     type="text"
                     placeholder="username"
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase())}
                     required
                   />
                 </div>

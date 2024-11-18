@@ -26,7 +26,7 @@ const Navbar = () => {
           href="#"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
-          <Image src={'https://utfs.io/f/DbhgrrAIqRoKZABd17kyzMn5glOosUYSuEeWAbhwd4pCxkHf'} alt="Acme Inc" width={250} height={250} priority />
+          <Image src={'https://utfs.io/f/DbhgrrAIqRoKWCwFFv4kujRo2cBDzhfSAtQ1p0ZrLwxy9lHG'} alt="Acme Inc" width={290} height={290} priority />
         </Link>
         <Link
           href="/"
