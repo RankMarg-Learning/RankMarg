@@ -1,7 +1,6 @@
 "use client";
 import { Skeleton } from "@/components/ui/skeleton"; // Assuming you have Skeleton component from ShadCN
 import { Card } from "../ui/card";
-import { Banner } from "@/app/(site)/challenge/page";
 
 const ChallengeSkeleton = () => {
   return (
@@ -16,7 +15,7 @@ const ChallengeSkeleton = () => {
 
         {/* Skeleton for Recent Challenges */}
         <div className="col-span-12 md:col-span-9 space-y-4">
-          <Banner />
+          <Skeleton className="w-full h-30 rounded-lg" />
           <Card className="p-4 rounded-lg">
             <h2 className="text-xl font-semibold">
             Recent Challenges
