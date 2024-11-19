@@ -277,5 +277,5 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
   );
 };
 
-export { ChallengePage as default, Banner };
+export default ChallengePage;
 
