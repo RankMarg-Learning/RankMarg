@@ -9,6 +9,7 @@ import Link from "next/link"
 import Image from "next/image"
 import {  Brain, Trophy, BarChart2, Gamepad } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useSession } from 'next-auth/react'
 
 const BlobShape = ({ className }: { className?: string }) => (
   <motion.div
@@ -46,15 +47,7 @@ const staggerChildren = {
 }
 
 export default function Home() {
-  const [email, setEmail] = useState('')
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    // Handle newsletter subscription
-    console.log('Subscribed email:', email)
-    // Reset email input
-    setEmail('')
-  }
+  const { data: session,status } = useSession();
 
   return (
     <div className="min-h-screen bg-yellow-50 overflow-hidden">
@@ -65,13 +58,27 @@ export default function Home() {
             <div className="flex-shrink-0">
             <Image src={'https://utfs.io/f/DbhgrrAIqRoKWCwFFv4kujRo2cBDzhfSAtQ1p0ZrLwxy9lHG'} alt="Acme Inc" width={140} height={140} priority />
             </div>
+            
             <div className="flex gap-4">
-              <Button variant="ghost" asChild>
-                <Link href="/sign-in">Login</Link>
-              </Button>
-              <Button className="bg-yellow-500 hover:bg-yellow-600 text-white" asChild>
-                <Link href="/sign-up">Sign up</Link>
-              </Button>
+            {
+          status === "loading" ? null: status === "unauthenticated" ? (
+            <div className="flex gap-1 md:gap-2">
+            <Link href={"/sign-in"}>
+              {" "}
+              <Button>Login</Button>
+            </Link>
+            <Link href={"/sign-up"}>
+              {" "}
+              <Button>Register</Button>
+            </Link>
+          </div>):(
+             <Link href={`/u/${session.user.username}`}>
+             <p className='hover:underline'> Welcome, {session.user.name}! </p>
+            </Link>
+          )
+
+        }
+              
             </div>
           </div>
         </div>
@@ -281,10 +288,11 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-center mb-12 text-yellow-800">Frequently Asked Questions</h2>
             <Accordion type="single" collapsible className="space-y-4">
               {[
-                { question: "How does the adaptive learning work?", answer: "Our AI-powered system analyzes your performance and adjusts your study plan in real-time, focusing on areas where you need the most improvement." },
-                { question: "Can I access EduTech on mobile devices?", answer: "Yes! EduTech is fully responsive and can be accessed on smartphones, tablets, and computers." },
-                { question: "How often is the content updated?", answer: "We update our content regularly to align with the latest NEET and JEE syllabus changes and exam patterns." },
-                { question: "Is there a free trial available?", answer: "Yes, we offer a 7-day free trial so you can experience the full benefits of our platform before committing." },
+                { question: "What is RankMarg?", answer: "RankMarg is a gamified learning platform for NEET and JEE aspirants, offering personalized content, real-time challenges, and performance insights to help you excel." },
+                { question: "What kind of challenges does RankMarg offer?", answer: "Challenges are short (10–15 minutes), real-time quizzes where you compete with others. Questions are tailored to your chosen exam (NEET or JEE)." },
+                { question: "What is the tier system?", answer: "The tier system ranks users into five levels, each with sub-tiers, based on Elo ratings and challenge performance." },
+                { question: "How do I report bugs or suggest features?", answer: "Use the 'Email' section in your profile menu to share suggestions or report issues." },
+                
               ].map((faq, index) => (
                 <AccordionItem key={index} value={`item-${index}`}>
                   <AccordionTrigger className="text-yellow-800 hover:text-yellow-600">{faq.question}</AccordionTrigger>
@@ -302,7 +310,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               <div>
-                <h3 className="text-2xl font-bold mb-4">EduTech</h3>
+                <h3 className="text-2xl font-bold mb-4">RankMarg</h3>
                 <p className="text-yellow-200">Empowering students to achieve their dreams in NEET and JEE.</p>
               </div>
               <div>
@@ -322,24 +330,10 @@ export default function Home() {
                   <li><a href="#" className="hover:text-yellow-300">Cookie Policy</a></li>
                 </ul>
               </div>
-              <div>
-                <h4 className="text-lg font-semibold mb-4">Connect</h4>
-                <form onSubmit={handleSubmit} className="space-y-2">
-                  <Input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="bg-yellow-700 border-yellow-600 text-yellow-100 placeholder-yellow-300"
-                  />
-                  <Button type="submit" className="w-full bg-yellow-600 hover:bg-yellow-500 text-yellow-100">
-                    Subscribe to Newsletter
-                  </Button>
-                </form>
-              </div>
+             
             </div>
             <div className="mt-8 pt-8 border-t border-yellow-700 text-center">
-              <p>&copy; 2024 EduTech. All rights reserved.</p>
+              <p>&copy; 2024 RankMarg. All rights reserved.</p>
             </div>
           </div>
         </footer>
