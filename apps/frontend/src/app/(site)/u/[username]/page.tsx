@@ -1,30 +1,18 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { useSession } from "next-auth/react";
-
-import AdditionInfo from "@/components/profile/AdditionInfo";
-import BasicProfile from "@/components/profile/BasicProfile";
 import Calender from "@/components/profile/Calender";
-import ContributionBanner from "@/components/profile/Contribute";
-// import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import SubjectStats from "@/components/profile/SubjectStats";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
-import { User } from "@prisma/client";
 import { ChallengeStats } from "@/components/profile/ChallengeStats";
 import { UserProfileResponse } from "@/types";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Trophy, Medal, Target, Edit2, CheckCircle2, XCircle, Zap, Book, Users, Calendar, Star, Atom, CircleCheckBig, Swords } from "lucide-react"
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import {  Target, Edit2, CheckCircle2, XCircle, Zap,  Users, Star, Atom, CircleCheckBig, Swords } from "lucide-react"
 import Image from "next/image";
 
 

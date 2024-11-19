@@ -201,13 +201,13 @@ export class Challenge {
           questions: this.questions,
           player1: {
             id: this.player1Id,
-            username: player1.username, //TODO:username: this.player1
+            username: player1.username,
             attempt: this.player1Score,
             rank: Player1rankChange,
           },
           player2: {
             id: this.player2Id,
-            username: player2.username, //TODO:username: this.player2
+            username: player2.username,
             attempt: this.player2Score,
             rank: Player2rankChange,
           },

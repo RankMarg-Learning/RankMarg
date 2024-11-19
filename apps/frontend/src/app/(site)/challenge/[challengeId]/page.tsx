@@ -4,7 +4,7 @@ import ChallengeOver from "@/components/challenge/challengeOver";
 import Loading from "@/components/Loading";
 import QuestionUI from "@/components/QuestionUI";
 import { useSocket } from "@/hooks/useSocket";
-import { QuestionProps } from "@/types";
+import { DetailsProps, QuestionProps } from "@/types";
 import axios from "axios";
 import {  useEffect, useState } from "react";
 
@@ -25,7 +25,7 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
   const socket = useSocket();
   const [start, setStart] = useState(false);
   const [isOver, setIsOver] = useState(false);
-  const [overDetails, setOverDetails] = useState({}); 
+  const [overDetails, setOverDetails] = useState<DetailsProps>(); 
   const [questions, setQuestions] = useState<QuestionShowProps[]>([]);
   
 
@@ -63,7 +63,7 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
           break;
       }
     };
-  }, [socket]);
+  }, [socket,challengeId]);
 
 
 //  console.log("All Question",questions);

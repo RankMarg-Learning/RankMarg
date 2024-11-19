@@ -9,10 +9,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {   use, useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { useSession } from "next-auth/react";
 
 const SetUsername = () => {
   const router = useRouter();

@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React, {  useEffect, useState } from "react";
-import {  Link2, CopyIcon, MoveUp, MoveDown, ChevronRight } from "lucide-react";
+import {  Link2, CopyIcon, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";

@@ -1,11 +1,15 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { CheckCircle, XCircle, Trophy } from 'lucide-react'
 import Link from 'next/link'
+import { Question } from '@prisma/client'
+import { DetailsProps } from '@/types'
 
-const ChallengeOver = ({ details }: { details: any }) => {
+
+
+
+const ChallengeOver = ({ details }: { details: DetailsProps }) => {
   const { result, questions, player1, player2, status } = details
 
   const resultMessage = result === player1.id

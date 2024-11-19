@@ -1,4 +1,3 @@
-import { Attempt } from "@prisma/client";
 
 // User basic profile type
 export type UserBasicProfile = {

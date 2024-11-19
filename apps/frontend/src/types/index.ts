@@ -1,3 +1,5 @@
+import { Question } from "@prisma/client";
+
 export * from "./typeAPI";
 
 
@@ -93,3 +95,18 @@ export interface Userprops {
     totalPages: number;
     totalItems: number;
   }
+
+ export type PlayerDetails = {
+    id: string;
+    username: string;
+    attempt: number;
+    rank: number;
+  };
+  
+ export type DetailsProps = {
+    result: string;
+    questions: Question[]; 
+    player1: PlayerDetails;
+    player2: PlayerDetails;
+    status: string;
+  };

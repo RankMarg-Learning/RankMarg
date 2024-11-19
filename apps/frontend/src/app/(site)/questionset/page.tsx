@@ -1,6 +1,5 @@
 "use client";
-import {  CheckIcon, Search, Shuffle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,20 +10,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 import SelectFilter from "@/components/SelectFilter";
-import React, {   use, useState } from "react";
-// import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import React, {  useState } from "react";
 import { QTableRow } from "@/components/questions/QTableRow"; 
 import { QTableRowSkeleton } from "@/components/questions/QTableRowSkeleton";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { QuestionSetProps, QuestionTableProps } from "@/types";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import Loading from "@/components/Loading";
 import RandomQuestion from "@/components/questions/RandomQuestion";
 import { Tags } from "@/constant/tags";
-import { Question } from "@prisma/client";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 
