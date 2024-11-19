@@ -42,7 +42,7 @@ const ChallengeOver = ({ details }: { details: DetailsProps }) => {
 
           <h3 className="text-lg sm:text-xl font-semibold mb-4 text-yellow-900">Question Results</h3>
           <ul className="space-y-4">
-            {questions.map((question: any, index: number) => (
+            {questions.map((question: Question, index: number) => (
               <li key={index} className="border-b border-yellow-200 pb-4 last:border-b-0">
                 <div className=" justify-between items-start sm:items-center mb-2">
                   <div className="text-yellow-900 mb-2 sm:mb-0">
