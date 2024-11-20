@@ -2,6 +2,8 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
 
+import { headers } from 'next/headers';
+
 type recentChallenges = {
     challengeId: string;
     opponentUsername: string;
@@ -23,6 +25,7 @@ type ResponseData = {
 };
 
 export async function GET() {
+    const headers = new Headers();
     try {
         const session = await getServerSession(authOptions);
         if (!session || !session.user) {

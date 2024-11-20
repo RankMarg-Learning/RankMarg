@@ -4,7 +4,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import SelectFilter from "@/components/SelectFilter";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button } from "../ui/button";
 import { CheckIcon, Shuffle } from "lucide-react";
@@ -20,30 +20,39 @@ const RandomQuestion = ({ setLoading }) => {
   const [topicTitle, setTopicTitle] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [subject, setSubject] = useState("");
+  const [storedFilters, setStoredFilters] = useState(null); 
 
-  const handleRandom = async() => {
-    localStorage.setItem('questionFilters', JSON.stringify({topicTitle, difficulty,subject }));
+  useEffect(() => {
+    const filters = localStorage.getItem("questionFilters");
+    if (filters) {
+      setStoredFilters(JSON.parse(filters));
+    }
+  }, []);
+
+  const handleRandom = async () => {
+    localStorage.setItem(
+      "questionFilters",
+      JSON.stringify({ topicTitle, difficulty, subject })
+    );
+
     setLoading(true);
+
     try {
-      const question = await axios.post(`/api/pickRandom`,
-      {
+      const response = await axios.post(`/api/pickRandom`, {
         topic: topicTitle,
         difficulty: difficulty,
-        subject:subject
-      }
-      );
-      if(question){
-        router.push(`/questions/${question.data.slug}`);
+        subject: subject,
+      });
+
+      if (response.data) {
+        router.push(`/questions/${response.data.slug}`);
       }
     } catch (error) {
-      console.error( error);
-    }finally {
+      console.error("Error fetching random question:", error);
+    } finally {
       setLoading(false);
     }
-
-  }
-
-  const storedFilters = JSON.parse(localStorage.getItem('questionFilters'));
+  };
  
   
   
