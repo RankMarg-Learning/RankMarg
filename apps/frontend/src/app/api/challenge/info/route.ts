@@ -25,7 +25,7 @@ type ResponseData = {
 };
 
 export async function GET() {
-    const headers = new Headers();
+     new Headers();
     try {
         const session = await getServerSession(authOptions);
         if (!session || !session.user) {
