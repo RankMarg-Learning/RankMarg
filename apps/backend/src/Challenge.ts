@@ -148,7 +148,7 @@ export class Challenge {
     });
     if (!player1 || !player2) return;
 
-    const K_FACTOR = 32;
+    const K_FACTOR = 10;
     const expectedScore1 =
       1 / (1 + Math.pow(10, (player2.rank - player1.rank) / 400));
     const expectedScore2 = 1 - expectedScore1;

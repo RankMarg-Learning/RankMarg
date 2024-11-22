@@ -44,6 +44,29 @@ const staggerChildren = {
   }
 }
 
+const rankingData = [
+    {
+      rank: "Rookie",
+      subRanks: ["Rookie I", "Rookie II", "Rookie III"],
+    },
+    {
+      rank: "Aspirant",
+      subRanks: ["Aspirant I", "Aspirant II", "Aspirant III"],
+    },
+    {
+      rank: "Contender",
+      subRanks: ["Contender I", "Contender II", "Contender III"],
+    },
+    {
+      rank: "Achiever",
+      subRanks: ["Achiever I", "Achiever II", "Achiever III"],
+    },
+    {
+      rank: "Luminary",
+      subRanks: ["Luminary I", "Luminary II", "Luminary III"],
+    }
+  ]
+
 export default function Home() {
   const { data: session,status } = useSession();
 
@@ -114,7 +137,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.4 }}
             >
               <Link href={'/challenge'}  className="text-lg px-8 py-4 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white">
-                Start learning free
+                Start Challenging Yourself
               </Link>
             </motion.div>
           </div>
@@ -204,7 +227,7 @@ export default function Home() {
 
 
         {/* Testimonials Section */}
-        <section className="bg-yellow-100 py-24">
+        <section className="hidden bg-yellow-100 py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-center mb-12 text-yellow-800">What Our Students Say</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -239,43 +262,54 @@ export default function Home() {
         </section>
 
         {/* Rewards & Tiers Section */}
-        <section className="bg-white py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12 text-yellow-800">Rewards & Tiers</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                { tier: "Bronze", rewards: ["Access to basic courses", "Weekly quizzes", "Community forum access"] },
-                { tier: "Silver", rewards: ["All Bronze rewards", "Personalized study plans", "Monthly mock tests"] },
-                { tier: "Gold", rewards: ["All Silver rewards", "1-on-1 mentoring sessions", "Guaranteed score improvement"] },
-              ].map((tier, index) => (
+        <section id="ranking" className="min-h-screen bg-yellow-50 text-yellow-900 p-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-2xl mx-auto"
+          >
+            <div className="flex items-center gap-2 mb-12 text-yellow-600">
+              <Trophy className="w-6 h-6" />
+              <h2 className="text-2xl font-semibold">Ranking Progression</h2>
+            </div>
+
+            <div className="relative pl-8">
+              {/* Vertical Line */}
+              <div className="absolute left-0 top-2 bottom-2 w-px bg-yellow-300" />
+
+              {/* Ranking Items */}
+              {rankingData.map((item, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: index * 0.2 }}
-                  viewport={{ once: true }}
-                  className="bg-yellow-50 p-6 rounded-lg shadow-lg border-2 border-yellow-200"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.2 }}
+                  className="relative mb-12 last:mb-0"
                 >
-                  <h3 className="text-xl font-semibold mb-4 text-yellow-800">{tier.tier}</h3>
-                  <ul className="space-y-2">
-                    {tier.rewards.map((reward, rewardIndex) => (
-                      <li key={rewardIndex} className="flex items-center text-yellow-600">
-                        <svg className="w-5 h-5 mr-2 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        {reward}
-                      </li>
-                    ))}
-                  </ul>
+                  {/* Timeline Node */}
+                  <div className="absolute -left-[0.5625rem] w-4 h-4 rounded-full bg-yellow-400" />
+                  
+                  {/* Content */}
+                  <div className="ml-8">
+                    <h3 className="text-xl font-semibold mb-1 text-yellow-800">{item.rank}</h3>
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      {item.subRanks.map((subRank, subIndex) => (
+                        <span key={subIndex} className="text-sm text-yellow-700 bg-yellow-100 px-2 py-1 rounded">
+                          {subRank}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </section>
+       
             
         {/* Qoute Section */}    
-        <section className="relative w-full h-52 overflow-hidden flex justify-center items-center my-24 bg-yellow-900">
-          <div className="absolute  text-8xl font-bold text-yellow-100 tracking-wide">
+        <section className="relative w-full h-52 sm:h-64 md:h-72 lg:h-80 xl:h-96 overflow-hidden flex justify-center items-center my-24 bg-yellow-900">
+          <div className="absolute text-3xl sm:text-2xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-yellow-100 tracking-wide text-center px-4">
             COMPETE.LEARN.ACHIEVE
           </div>
         </section>
@@ -314,18 +348,17 @@ export default function Home() {
               <div>
                 <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
                 <ul className="space-y-2">
-                  <li><a href="#" className="hover:text-yellow-300">Home</a></li>
-                  <li><a href="#" className="hover:text-yellow-300">Features</a></li>
-                  <li><a href="#" className="hover:text-yellow-300">Pricing</a></li>
+                  <li><a href="/" className="hover:text-yellow-300">Home</a></li>
+                  <li><a href="#features" className="hover:text-yellow-300">Features</a></li>
+                  <li><a href="#ranking" className="hover:text-yellow-300">Ranking</a></li>
                   <li><a href="#" className="hover:text-yellow-300">Contact</a></li>
                 </ul>
               </div>
               <div>
                 <h4 className="text-lg font-semibold mb-4">Legal</h4>
                 <ul className="space-y-2">
-                  <li><a href="#" className="hover:text-yellow-300">Terms of Service</a></li>
-                  <li><a href="#" className="hover:text-yellow-300">Privacy Policy</a></li>
-                  <li><a href="#" className="hover:text-yellow-300">Cookie Policy</a></li>
+                  <li><a href="/terms" className="hover:text-yellow-300">Terms of Service</a></li>
+                  <li><a href="/privacy-policy" className="hover:text-yellow-300">Privacy Policy</a></li>
                 </ul>
               </div>
              
