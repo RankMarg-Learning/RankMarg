@@ -49,6 +49,8 @@ const Contribute = () => {
   const [subject, setSubject] = useState("");
   const [std, setStd] = useState("");
   const [tag, setTag] = useState("");
+  const [stream, setStream] = useState("");
+  const [hint, setHint] = useState("");
   const [numericalAnswer, setNumericalAnswer] = useState<number | undefined>(
     undefined
   );
@@ -82,6 +84,8 @@ const Contribute = () => {
     std,
     difficulty,
     subject,
+    stream,
+    hint,
     tag,
     content,
     options,
@@ -194,6 +198,30 @@ const Contribute = () => {
                   onChange={(value: string[]) => setTag(value[0])}
                 />
             </div>  
+            <div className="flex flex-wrap  px-3 w-full md:w-1/2">
+            <label
+                  className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                  htmlFor="grid-last-name"
+                >
+                  Stream
+                </label>
+                <SelectFilter
+                  width={"full"}
+                  placeholder="Stream"
+                  selectName={["NEET", "JEE"]}
+                  onChange={(value: string[]) => setStream(value[0])}
+                />
+            </div>  
+            <div className="w-full m-2">
+              <Label htmlFor="grid-title">Hints</Label>
+              <Textarea
+                className="min-h-[50px]"
+                id="grid-desc"
+                name="question hints"
+                placeholder="Question Hinits"
+                onChange={(e) => setHint(e.target.value)}
+              />
+            </div>
             <div className="w-full m-2">
               <Label htmlFor="grid-title">Question</Label>
               <Textarea

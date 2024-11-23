@@ -55,6 +55,8 @@ export async function POST(req: Request) {
     const formState: ContributeFormProps = body;
     try {
       if (
+        !formState.stream ||
+        !formState.hint ||
         !formState.slug ||
         !formState.questionType ||
         !formState.content ||
@@ -74,6 +76,8 @@ export async function POST(req: Request) {
           difficulty: formState.difficulty,
           topic: formState.topicTitle,
           subject: formState.subject,
+          hint: formState.hint,
+          stream: formState.stream,
           class: formState.std,
           tag: formState.tag,
           isnumerical: formState.numericalAnswer,

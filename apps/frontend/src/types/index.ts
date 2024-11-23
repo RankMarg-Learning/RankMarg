@@ -73,7 +73,10 @@ export interface Userprops {
     options?: Option[]; // Options for MCQ and MultipleOptionCorrect types
     numericalAnswer?: number; // Numerical answer for Numerical type questions
     isTrueFalse?: boolean; // True/False answer for True/False type questions
+    stream?: "NEET" | "JEE"; // Stream of the question
+    hint: string; // Hint for the question
   }
+ 
 
   export interface QuestionTableProps {
     id: string,
