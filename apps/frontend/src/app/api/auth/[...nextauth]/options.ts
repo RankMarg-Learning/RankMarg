@@ -78,7 +78,6 @@ export const authOptions: NextAuthOptions = {
                 const existingUser = await prisma.user.findUnique({
                     where: { email: user.email },
                   });
-                  console.log("Existing User",existingUser);
                     if (!existingUser) {
                       console.log("User does not exist");
                       const emailPrefix = user.email.split('@')[0];

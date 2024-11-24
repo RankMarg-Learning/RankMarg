@@ -19,7 +19,7 @@ model User {
   standard String?
   avatar   String?
   stream   Stream?
-  rank     Int     @default(50)
+  rank     Int     @default(100)
   coins    Int     @default(0)
 
   attempts Attempt[]

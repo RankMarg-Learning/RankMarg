@@ -54,7 +54,6 @@ export async function GET(req: Request, { params }: { params: { username: string
     });
 
     const totalAttempt = correctQuestionIds.size;
-    console.log(totalAttempt);
 
     // const totalAttempt = user.attempts.filter((attempt) => attempt.isCorrect).length;
     const accuracy = totalAttempt / (user.attempts.length || 1);

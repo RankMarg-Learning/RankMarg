@@ -14,10 +14,12 @@ const nextConfig = {
       NEXTAUTH_URL: process.env.NEXTAUTH_URL,
       JWT_SECRET: process.env.JWT_SECRET,
       NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-    },
-    experimental: {
-      appDir: true,
-    },
+      NEXTAUTH_JWT_SECRET: process.env.NEXTAUTH_JWT_SECRET,
+      SMTP_HOST: process.env.SMTP_HOST,
+      SMTP_PORT: process.env.SMTP_PORT,
+      SMTP_USER: process.env.SMTP_USER,
+      SMTP_PASSWORD: process.env.SMTP_PASSWORD,
+    }
 };
 
 export default nextConfig;

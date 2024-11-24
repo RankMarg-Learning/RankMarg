@@ -35,7 +35,6 @@ interface QuestionUIProps {
 }
 
 const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
-  console.log("UI Question",question)
   const { data: session } = useSession();
   const router = useRouter();
   const { toast } = useToast()

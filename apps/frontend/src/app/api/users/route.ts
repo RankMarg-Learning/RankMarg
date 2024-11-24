@@ -72,7 +72,6 @@ export async function PUT(req: Request) {
   const body = await req.json();
   const { username ,isCheck} = body;
   const session = await getServerSession(authOptions);
-  console.log("Session:",session);
   try {
     const userExists = await prisma.user.findUnique({
       where: { username },

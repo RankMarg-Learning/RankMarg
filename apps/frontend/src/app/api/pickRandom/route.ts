@@ -32,7 +32,6 @@ export async function POST(req: Request) {
     });
 
     if (questions.length === 0) {
-      console.log('No unattempted questions found, fetching attempted ones...');
       const fallbackFilter: Prisma.QuestionWhereInput = {
         attempts: {
           some: {
