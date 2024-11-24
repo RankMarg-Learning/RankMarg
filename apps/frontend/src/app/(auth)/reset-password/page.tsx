@@ -46,7 +46,7 @@ export default function ResetPassword() {
 
       if (!res.ok) throw new Error("Failed to reset password.")
       setSuccess(true)
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || "Something went wrong.")
     } finally {
       setIsLoading(false)

@@ -1,7 +1,6 @@
 "use client";
 import axios from 'axios';
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,8 +10,7 @@ import { AlertCircle, ArrowRight } from 'lucide-react'
 const ForgotPassoword = () => {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  const [isLoading] = useState(false)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
