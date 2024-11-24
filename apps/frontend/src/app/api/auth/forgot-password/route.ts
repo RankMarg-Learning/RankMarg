@@ -1,7 +1,6 @@
-// pages/api/auth/forgot-password.ts
+import { PasswordResetEmail } from '@/constant/passwordResetEmail';
 import prisma from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
-
 import nodemailer from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
@@ -37,15 +36,13 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       }
-    });
-
-    
-
+    } as SMTPTransport.Options);
+  
    await transporter.sendMail({
       from: 'no-reply@example.com',
       to: email,
       subject: 'Password Reset',
-      html: `<p>You requested a password reset. Click <a href="${resetUrl}">here</a> to reset your password.</p>`,
+      html: PasswordResetEmail(resetUrl),
     });
     return Response.json({ msg: 'Password reset email sent.' });
   } catch (error) {
