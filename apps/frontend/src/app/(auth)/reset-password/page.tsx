@@ -115,7 +115,6 @@ import Link from "next/link"
 
 
 import React from 'react'
-import { set } from "react-hook-form"
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("")
