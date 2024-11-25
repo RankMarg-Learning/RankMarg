@@ -1,13 +1,14 @@
 'use client'
 
 import { useState} from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import {  useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import Link from "next/link"
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("")
@@ -16,7 +17,6 @@ export default function ResetPassword() {
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
 
@@ -103,9 +103,9 @@ export default function ResetPassword() {
           )}
         </CardContent>
         <CardFooter className="flex justify-center">
-          <Button variant="link" onClick={() => router.push('/sign-in')}>
+          <Link href={'/sign-in'}>
             Back to Login
-          </Button>
+          </Link>
         </CardFooter>
       </Card>
     </div>
