@@ -2,7 +2,7 @@
 'use client'
 export const dynamic = 'force-dynamic';
 
-import { useState} from "react"
+import { useEffect, useState} from "react"
 import {  useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2 } from 'lucide-react'
 import Link from "next/link"
+import { set } from "react-hook-form";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("")
@@ -18,10 +19,18 @@ export default function ResetPassword() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [token, setToken] = useState<string | null>(null)
 
-  const searchParams = useSearchParams()
-  const token = searchParams.get("token")
+  // const searchParams = useSearchParams()
+  // const token = searchParams.get("token")
 
+  useEffect(() => {
+   const url = new URL(window.location.href)
+    setToken(url.searchParams.get("token"))
+  }, [])
+
+  
+  
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault()
