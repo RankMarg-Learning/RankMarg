@@ -1,9 +1,6 @@
-
 'use client'
-export const dynamic = 'force-dynamic';
 
 import { useEffect, useState} from "react"
-import {  useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,7 +8,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2 } from 'lucide-react'
 import Link from "next/link"
-import { set } from "react-hook-form";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("")
