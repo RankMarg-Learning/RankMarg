@@ -115,6 +115,7 @@ import Link from "next/link"
 
 
 import React from 'react'
+import { set } from "react-hook-form"
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("")
@@ -125,9 +126,12 @@ const ResetPassword = () => {
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
+    setIsLoading(true)
+    setSuccess(false)
     return;
   }
-
+ 
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
