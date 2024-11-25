@@ -1,7 +1,7 @@
 'use client'
 
 import { useState} from "react"
-import {  useSearchParams } from "next/navigation"
+// import {  useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -122,9 +122,10 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-
-  const searchParams = useSearchParams()
-  const token = searchParams.get("token")
+  const [isLoading, setIsLoading] = useState(false)
+  const token = "token"
+  // const searchParams = useSearchParams()
+  // const token = searchParams.get("token")
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -146,6 +147,10 @@ const ResetPassword = () => {
       setError( "Something went wrong.")
       return;
     }
+    finally {
+      setIsLoading(false)
+    }
+
     return;
   }
  
@@ -197,8 +202,8 @@ const ResetPassword = () => {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              <Button className="w-full mt-4" type="submit" >
-                 Reset Password
+              <Button className="w-full mt-4" type="submit" disabled={isLoading}>
+                {isLoading ? "Resetting..." : "Reset Password"}
               </Button>
             </form>
           )}
