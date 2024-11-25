@@ -14,18 +14,12 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const [isReady, setIsReady] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
 
-  useEffect(() => {
-    if (token) {
-      setIsReady(true)
-    }
-  }, [token])
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,13 +47,7 @@ export default function ResetPassword() {
     }
   }
 
-  if (!isReady) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-lg">Loading...</p>
-      </div>
-    )
-  }
+ 
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
