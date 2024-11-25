@@ -1,7 +1,7 @@
 'use client'
 
 import { useState} from "react"
-// import {  useSearchParams } from "next/navigation"
+import {  useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2 } from 'lucide-react'
 import Link from "next/link"
+import axiox from "axios"
 
 // export default function ResetPassword() {
 //   const [password, setPassword] = useState("")
@@ -123,11 +124,33 @@ const ResetPassword = () => {
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
+  const searchParams = useSearchParams()
+  const token = searchParams.get("token")
+
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
-    setIsLoading(true)
-    setSuccess(false)
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.")
+      return
+    }
+    try {
+      const res = await axiox.post("/api/auth/reset-password", 
+      { token, password },
+      { headers: { "Content-Type": "application/json" } }
+      )
+      if(res){
+        setSuccess(true)
+      }
+
+    } catch (error) {
+      console.error(error)
+      setError( "Something went wrong.")
+      return;
+    }
+    finally {
+      setIsLoading(false)
+    }
+
     return;
   }
  
