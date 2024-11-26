@@ -27,6 +27,7 @@ import { generateSlug } from "@/lib/generateSlug";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import {  useRouter } from "next/navigation";
+import { Tags } from "@/constant/tags";
 
 const Contribute = () => {
   const { data: session,status } = useSession();
@@ -40,8 +41,9 @@ const Contribute = () => {
     }
   }, [session, status, router]);
 
+  const [title, setTitle] = useState("");
   const [topicTitle, setTopicTitle] = useState("");
-  const [content, setContent] = useState({});
+  const [content, setContent] = useState("");
   const [options, setOptions] = useState<
     { content: string; isCorrect: boolean }[]
   >([]);
@@ -57,6 +59,7 @@ const Contribute = () => {
   const [isTrueFalse, setIsTrueFalse] = useState<boolean | undefined>(
     undefined
   );
+  const [questionTime, setQuestionTime] = useState(5);
   const [questionType, setQuestionType] = useState("mcq");
 
   const [msg, setMsg] = useState("");
@@ -79,6 +82,7 @@ const Contribute = () => {
 
   const ContributeForm = {
     slug,
+    title,
     topicTitle,
     questionType,
     std,
@@ -88,10 +92,24 @@ const Contribute = () => {
     hint,
     tag,
     content,
+    questionTime,
     options,
     numericalAnswer,
     isTrueFalse,
   };
+
+  if(questionType === "NUM"){
+    delete ContributeForm.options;
+    delete ContributeForm.isTrueFalse;
+  }
+  if(questionType === "TF"){
+    delete ContributeForm.options;
+    delete ContributeForm.numericalAnswer;
+  }
+  if(questionType === "MCQ"){
+    delete ContributeForm.numericalAnswer;
+    delete ContributeForm.isTrueFalse
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -101,6 +119,22 @@ const Contribute = () => {
     } catch (error) {
       console.log(error);
       throw new Error("Failed to submit the form");
+    }
+    finally{
+    setTitle("");
+    setTopicTitle("");
+    setContent("");
+    setOptions([]);
+    setDifficulty("");
+    setSubject("");
+    setStd("");
+    setTag("");
+    setStream("");
+    setHint("");
+    setNumericalAnswer(undefined);
+    setIsTrueFalse(undefined);
+    setQuestionTime(5);
+    setQuestionType("mcq");
     }
   };
   if (status === "authenticated" && session?.user?.Role === "ADMIN") {
@@ -125,6 +159,23 @@ const Contribute = () => {
           // }}
         >
           <div className="flex flex-wrap mx-3 mb-6   ">
+            <div className="w-full  px-3 mb-6 md:mb-0">
+                <label
+                  className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                  htmlFor="grid-last-name"
+                >
+                  Topics Title
+                </label>
+                <Input
+                  required
+                  type="text"
+                  className="mb-2"
+                  placeholder="Title"
+                  value={title}
+                  name="title"
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+            </div>
             <div className="flex flex-wrap  mb-6 w-full">
               <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
                 <label
@@ -194,7 +245,7 @@ const Contribute = () => {
                 <SelectFilter
                   width={"full"}
                   placeholder="Tags"
-                  selectName={["PYQ2019", "PYQ2020", "PYQ2021"]}
+                  selectName={Tags}
                   onChange={(value: string[]) => setTag(value[0])}
                 />
             </div>  
@@ -213,12 +264,22 @@ const Contribute = () => {
                 />
             </div>  
             <div className="w-full m-2">
+              <Label htmlFor="grid-title">Question Time (Min)</Label>
+              <SelectFilter
+                  width={"full"}
+                  placeholder="Question Time"
+                  selectName={["1","2","5","8","10","15","20","30","40","50"]}
+                  onChange={(value: string[]) => setQuestionTime(parseInt(value[0]))}
+                />
+            </div>
+            <div className="w-full m-2">
               <Label htmlFor="grid-title">Hints</Label>
               <Textarea
                 className="min-h-[50px]"
                 id="grid-desc"
                 name="question hints"
                 placeholder="Question Hinits"
+                value={hint}
                 onChange={(e) => setHint(e.target.value)}
               />
             </div>
@@ -228,10 +289,12 @@ const Contribute = () => {
                 className="min-h-[400px]"
                 id="grid-desc"
                 name="questioncontent"
+                value={content}
                 placeholder="Question Content"
                 onChange={(e) => setContent(e.target.value)}
               />
             </div>
+           
             <div className="w-full m-2">
               <Label htmlFor="grid-problem">Question Type</Label>
               <Tabs
@@ -240,7 +303,9 @@ const Contribute = () => {
                 value={questionType}
               >
                 <TabsList>
-                  <TabsTrigger value="MCQ">MCQ</TabsTrigger>
+                  <TabsTrigger value="MCQ" 
+                  
+                  >MCQ</TabsTrigger>
                   <TabsTrigger value="NUM"> Numerical </TabsTrigger>
                   <TabsTrigger value="TF"> True or False</TabsTrigger>
                 </TabsList>
@@ -293,30 +358,6 @@ const Contribute = () => {
                       </span>
                     </Button>
 
-                    {/* <Input
-                      type="text"
-                      className="mb-2"
-                      placeholder="Option 1"
-                      name="options.text[0]"
-                    />
-                    <Input
-                      type="text"
-                      className="mb-2"
-                      placeholder="Option 2"
-                      name="options.text[1]"
-                    />
-                    <Input
-                      type="text"
-                      className="mb-2"
-                      placeholder="Option 3"
-                      name="options.text[2]"
-                    />
-                    <Input
-                      type="text"
-                      className="mb-2"
-                      placeholder="Option 4"
-                      name="options.text[3]"
-                    /> */}
                   </div>
                 </TabsContent>
                 <TabsContent value="NUM">
@@ -326,6 +367,7 @@ const Contribute = () => {
                     className="mb-2"
                     placeholder="Enter Answer"
                     name="numerical"
+                    value={numericalAnswer}
                     onChange={(e) =>
                       setNumericalAnswer(parseFloat(e.target.value))
                     }

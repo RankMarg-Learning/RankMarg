@@ -13,6 +13,7 @@ export async function GET(req:Request) {
           select:{
             id: true,
             slug: true,
+            title: true,
             content: true,
             difficulty: true,
             topic: true,
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
     try {
       if (
         !formState.stream ||
-        !formState.hint ||
+        !formState.title ||
         !formState.slug ||
         !formState.questionType ||
         !formState.content ||
@@ -71,6 +72,7 @@ export async function POST(req: Request) {
       const question = await prisma.question.create({
         data: {
           slug: formState.slug,
+          title: formState.title,
           type: formState.questionType,
           content: formState.content,
           difficulty: formState.difficulty,
@@ -80,6 +82,7 @@ export async function POST(req: Request) {
           stream: formState.stream,
           class: formState.std,
           tag: formState.tag,
+          questionTime: formState.questionTime,
           isnumerical: formState.numericalAnswer,
           isTrueFalse: formState.isTrueFalse,
           options: {
@@ -87,7 +90,7 @@ export async function POST(req: Request) {
               content: option.content,
               isCorrect: option.isCorrect,
             })),
-          },
+        },
           
           createdAt: new Date(),
         },

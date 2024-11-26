@@ -159,7 +159,7 @@ const Questionset = () => {
                     />
                     <SelectFilter
                       width={"[100px]"}
-                      placeholder="Status"
+                      placeholder="PYQ"
                       selectName={Tags}
                       onChange={handleTags}
                     />

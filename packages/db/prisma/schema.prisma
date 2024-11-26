@@ -4,9 +4,10 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model User {
@@ -53,6 +54,7 @@ model Question {
   id                String              @id @default(uuid())
   slug              String              @unique
   type              QuestionType
+  title             String
   content           String
   difficulty        String
   topic             String

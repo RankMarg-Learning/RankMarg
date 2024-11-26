@@ -1,4 +1,6 @@
 export const topics = [
+    "Algebra",
+    "Integral Calculus",
     "Physical world and measurement",
     "Kinematics",
     "Laws of Motion",

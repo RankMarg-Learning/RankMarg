@@ -17,8 +17,7 @@ export default function ResetPassword() {
   const [isLoading, setIsLoading] = useState(false)
   const [token, setToken] = useState<string | null>(null)
 
-  // const searchParams = useSearchParams()
-  // const token = searchParams.get("token")
+
 
   useEffect(() => {
    const url = new URL(window.location.href)

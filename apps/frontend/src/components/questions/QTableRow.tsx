@@ -33,7 +33,7 @@ export const QTableRow = ({ problem }: { problem: QuestionTableProps }) => {
           href={`/questions/${problem.slug}`}
           className="hover:text-yellow-600 flex flex-wrap"
         >
-          <MarkdownRenderer content={problem.content.slice(0,80)} />....
+          <MarkdownRenderer content={problem.title.slice(0,80)} />....
         </Link>
       </TableCell>
      

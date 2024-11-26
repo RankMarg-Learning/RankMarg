@@ -63,6 +63,7 @@ export interface Userprops {
   
   export interface ContributeFormProps {
     slug: string; // Unique slug for the question
+    title: string; // Title or topic of the question
     topicTitle: string; // Title or topic of the question
     questionType: "MCQ" | "NUM" | "TF"; // Type of the question
     std: string; // Class level (e.g., '11th', '12th', 'Foundation')
@@ -71,6 +72,7 @@ export interface Userprops {
     tag?: string; // List of tags related to the question
     content: string; // Content of the question
     options?: Option[]; // Options for MCQ and MultipleOptionCorrect types
+    questionTime?: number; // Time taken to solve the question
     numericalAnswer?: number; // Numerical answer for Numerical type questions
     isTrueFalse?: boolean; // True/False answer for True/False type questions
     stream?: "NEET" | "JEE"; // Stream of the question
@@ -81,11 +83,13 @@ export interface Userprops {
   export interface QuestionTableProps {
     id: string,
     slug: string,
+    title: string,
     content: string,
     difficulty: string,
     topic: string,
     subject: string,
     class: string,
+    questionTime: number,
     tag: string,
     accuracy: string,
     createdAt: string
