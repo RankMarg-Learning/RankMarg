@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import ClientSessionProvider from "@/context/ClientSessionProvider";
+import GoogleAnalytics from "@/lib/GoogleAnalytics";
 
 
 const geistSans = localFont({
@@ -15,6 +16,8 @@ const geistMono = localFont({
   variable: "--font-geist-mono",
   weight: "100 900",
 });
+
+const GA_TRACKING_ID = "G-4R4ZKM8YXN";
 
 export const metadata: Metadata = {
   title: "RankMarg | Learn, Compete, Achieve",
@@ -42,7 +45,9 @@ export default function RootLayout({
       <ClientSessionProvider>
      
     <html lang="en">
-    
+      <head>
+        <GoogleAnalytics trackingId={GA_TRACKING_ID} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >

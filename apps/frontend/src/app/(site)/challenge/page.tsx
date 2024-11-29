@@ -79,7 +79,7 @@ const ChallengePage = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {challengeInfo.recentChallenges.map((challenge) => (
+              {challengeInfo.recentChallenges.length>0?challengeInfo.recentChallenges.map((challenge) => (
                 <div
                   key={challenge.challengeId}
                   className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
@@ -106,7 +106,7 @@ const ChallengePage = () => {
                     </Link>
                   </div>
                 </div>
-              ))}
+              )):<div className="text-center">No recent challenges</div>}
             </div>
           </CardContent>
         </Card>
