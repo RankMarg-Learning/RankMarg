@@ -1,4 +1,3 @@
-import React from "react";
 
 const ranks = [
   "Rookie I", "Rookie II", "Rookie III",
