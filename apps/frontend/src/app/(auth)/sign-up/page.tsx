@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "next-auth/react";
 import { FormEvent, useState } from "react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 
 const SignUpForm = () => {
   const [username, setUsername] = useState("");
@@ -21,6 +21,7 @@ const SignUpForm = () => {
   const [password, setPassword] = useState("");
   const [confirmpassword, setConfirmPassword] = useState("");
   const [msg, setMsg] = useState("");
+  const router = useRouter();
   const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMsg("");
@@ -46,7 +47,7 @@ const SignUpForm = () => {
         });
 
         if(response){
-          redirect('/')
+          router.push("/sign-in");
         }
 
         const data = await response.json();
@@ -67,7 +68,7 @@ const SignUpForm = () => {
           <CardHeader>
             <CardTitle className="text-xl">Sign Up</CardTitle>
             <CardDescription>
-              s Enter your information to create an account
+               Enter your information to create an account
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -118,7 +119,7 @@ const SignUpForm = () => {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => signIn("google")}
+                onClick={() => signIn("google", { callbackUrl: "/questionset" })}
               >
                 Sign up with Google
               </Button>

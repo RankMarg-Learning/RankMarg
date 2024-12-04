@@ -7,7 +7,8 @@ import Link from "next/link"
 import Image from "next/image"
 import {  Brain, Trophy, BarChart2, Gamepad } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useSession } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 const BlobShape = ({ className }: { className?: string }) => (
   <motion.div
@@ -64,6 +65,14 @@ const rankingData = [
     {
       rank: "Luminary",
       subRanks: ["Luminary I", "Luminary II", "Luminary III"],
+    },
+    {
+      rank: "Visionary",
+      subRanks: ["Visionary I", "Visionary II", "Visionary III"],
+    },
+    {
+      rank: "Champion",
+      subRanks: ["Champion I", "Champion II"],
     }
   ]
 
@@ -93,9 +102,21 @@ export default function Home() {
               <Button>Register</Button>
             </Link>
           </div>):(
-             <Link href={`/u/${session.user.username}`}>
-             <p className='hover:underline'> Welcome, {session.user.name}! </p>
-            </Link>
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                <p className='hover:underline cursor-pointer '> Welcome, {session.user.name}! </p>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-full bg-[#f6f6f6]">
+              <Link href={`/u/${session?.user?.username}`}>
+                <DropdownMenuItem>
+                  Profile
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+                 Log Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+            </DropdownMenu>
           )
 
         }

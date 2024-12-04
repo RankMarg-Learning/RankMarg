@@ -173,11 +173,11 @@ const Questionset = () => {
                         <TableHeader>
                           <TableRow>
                             <TableHead className="hidden md:table-cell">Class</TableHead>
-                            <TableHead className="hidden md:table-cell">Subject</TableHead>
-                            <TableHead>Difficulty</TableHead>
-                            <TableHead className="hidden md:table-cell">Question </TableHead>
-                            <TableHead>Topic</TableHead>
-                            <TableHead>Accurcy</TableHead>
+                            <TableHead className="hidden md:table-cell">Difficulty</TableHead>
+                            <TableHead >Question </TableHead>
+                            <TableHead >Subject</TableHead>
+                            <TableHead className="hidden md:table-cell">Topic</TableHead>
+                            <TableHead className="hidden ">Accurcy</TableHead>
                             
                           </TableRow>
                         </TableHeader>
