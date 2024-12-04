@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {  Target, Edit2, CheckCircle2, XCircle, Zap,  Users, Star, Atom, CircleCheckBig, Swords } from "lucide-react"
 import Image from "next/image";
+import RankDisplay from "@/lib/rank";
 
 
 
@@ -89,14 +90,19 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
           <div className="text-center md:text-left">
             <h1 className="text-3xl md:text-4xl font-bold">{profile.basicProfile.name}</h1>
             <p className="text-xl text-muted-foreground">{profile.basicProfile.username}</p>
-            <p className="text-sm text-muted-foreground mt-1">Joined 2 days ago</p>
+            <p className="text-sm text-muted-foreground mt-1 hidden">Joined 2 days ago</p>
             <div className="flex flex-wrap items-center justify-center md:justify-start mt-3 gap-2">
               <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 px-3 py-1">
                 <Star className="w-4 h-4 mr-1" />
                 Rating {profile.challengeStats.rank}
               </Badge>
-              {profile.basicProfile.isSelf && (
               <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 px-3 py-1">
+                {RankDisplay({elo: profile.challengeStats.rank})}
+                
+              </Badge>
+
+              {profile.basicProfile.isSelf && (
+              <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 px-3 py-1 hidden">
                 <Atom className="w-4 h-4 mr-1" />
                 {profile.basicProfile.coins} Atoms
               </Badge>)}

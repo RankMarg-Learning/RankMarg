@@ -23,7 +23,7 @@ const Navbar = () => {
     <header className="sticky z-50 top-0 flex w-full h-16 items-center gap-4 border-b bg-white px-4 md:px-6">
       <nav className="hidden  flex-col gap-8 text-lg font-medium md:flex md:flex-row md:items-center md:gap-8 md:text-sm lg:gap-10">
         <Link
-          href="#"
+          href="/"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
           <Image src={'https://utfs.io/f/DbhgrrAIqRoKWCwFFv4kujRo2cBDzhfSAtQ1p0ZrLwxy9lHG'} alt="Acme Inc" width={290} height={290} priority />
@@ -60,7 +60,7 @@ const Navbar = () => {
               href="#"
               className="flex items-center gap-2 text-lg font-semibold"
             >
-              <Image src={'/logo.svg'} alt="Acme Inc" width={60} height={60} />
+              <Image src={'https://utfs.io/f/DbhgrrAIqRoKWCwFFv4kujRo2cBDzhfSAtQ1p0ZrLwxy9lHG'} alt="Acme Inc" width={60} height={60} />
             </Link>
             <Link
               href="/"
@@ -75,15 +75,13 @@ const Navbar = () => {
               Question
             </Link>
             <Link
-              href="challenge"
+              href="/challenge"
               className="text-muted-foreground hover:text-foreground"
             >
               Challenge
             </Link>
 
-            <Link href="#" className="hover:text-foreground">
-              Profile
-            </Link>
+            
           </nav>
         </SheetContent>
       </Sheet>
@@ -117,13 +115,12 @@ const Navbar = () => {
                  <span className="sr-only">Toggle user menu</span>
                </Button>
              </DropdownMenuTrigger>
-             <DropdownMenuContent align="end">
+             <DropdownMenuContent >
                <DropdownMenuLabel>{session?.user?.name || "User"}</DropdownMenuLabel>
                <DropdownMenuSeparator />
                <DropdownMenuItem>
                  <Link href={`/u/${session?.user?.username}`}>Profile</Link>
                </DropdownMenuItem>
-               <DropdownMenuItem>Support</DropdownMenuItem>
                <DropdownMenuSeparator />
                <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
                  Log Out
