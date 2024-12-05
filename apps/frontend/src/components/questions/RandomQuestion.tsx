@@ -11,6 +11,7 @@ import { CheckIcon, Shuffle } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
+import { set } from "react-hook-form";
 
 
 
@@ -67,20 +68,43 @@ const RandomQuestion = ({ setLoading }) => {
             <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
                 <Combobox
                     onchange={(newTopic: string) => {
-                    setTopicTitle(newTopic);
-                    }}
+                      if(newTopic === 'Default'){
+                        setTopicTitle("");
+                      }
+                      else{
+                        setTopicTitle(newTopic);
+                      }
+                  }}
                 />
                 <SelectFilter
                     width={"full"}
                     placeholder="Difficulty"
                     selectName={["Default","Easy", "Medium", "Hard"]}
-                    onChange={(value: string[]) => setDifficulty(value[0])}
+                    onChange={
+                      (value:string[])=>{
+                        if(value[0]==="Default"){
+                          setDifficulty("");
+                      }
+                      else{
+                        setDifficulty(value[0]);
+                      }
+                    }
+                  }
                 />
                 <SelectFilter
                     width={"full"}
                     placeholder="Subject"
                     selectName={["Default","Physics", "Chemistry", "Mathematics"]}
-                    onChange={(value: string[]) => setSubject(value[0])}
+                    onChange={
+                      (value:string[])=>{
+                        if(value[0]==="Default"){
+                          setSubject("");
+                      }
+                      else{
+                        setSubject(value[0]);
+                      }
+                    }
+                  }
                 />
                 <Button className="w-full md:w-1/3 "
                 onClick={handleRandom}
