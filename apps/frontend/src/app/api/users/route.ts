@@ -5,18 +5,15 @@ import { authOptions } from "../auth/[...nextauth]/options";
 import { getServerSession } from "next-auth";
 
 export async function POST(req: Request) {
- 
   
   const body = await req.json();
-  const { username, email, password  } = body;
+  const {fullname, username, email, password  } = body;
   
-  // Check for missing fields
-  if (!email || !password || !username) {
+  if (!email || !password || !username  || !fullname) {
     return NextResponse.json({ message: "Email, password, and username are required" });
   }
 
   try {
-    // Check if the user already exists
     const user = await prisma.user.findUnique({
       where: {
         email: email,
@@ -27,14 +24,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "User already exists" });
     }
 
-     
-
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create the new user
     const newUser = await prisma.user.create({
       data: {
+        name: fullname,
         username,
         email,
         password: hashedPassword,

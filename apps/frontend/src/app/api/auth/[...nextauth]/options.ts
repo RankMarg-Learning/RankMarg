@@ -138,6 +138,7 @@ export const authOptions: NextAuthOptions = {
               });
             if(userData){
                 session.user.id = userData.id.toString();
+                session.user.name = userData.name;
                 session.user.username = userData.username || session.user.username;
                 session.user.image = userData.avatar || session.user.image;
                 session.user.createdAt = userData.createdAt;
