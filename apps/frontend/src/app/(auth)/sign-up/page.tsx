@@ -17,6 +17,7 @@ import {  useRouter } from "next/navigation";
 
 const SignUpForm = () => {
   const [username, setUsername] = useState("");
+  const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmpassword, setConfirmPassword] = useState("");
@@ -40,6 +41,7 @@ const SignUpForm = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            fullname,
             username,
             email,
             password,
@@ -74,16 +76,26 @@ const SignUpForm = () => {
           <CardContent>
             <div className="grid gap-4">
               <form onSubmit={handleSignUp}>
+                  <div className="grid gap-2 mb-2">
+                    <Label htmlFor="fullname">Name</Label>
+                    <Input
+                      id="fullname"
+                      type="text"
+                      placeholder="Enter Full Name"
+                      onChange={(e) => setFullname(e.target.value)}
+                      required
+                    />
+                  </div>
                 <div className="grid gap-2 mb-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="username"
-                    onChange={(e) => setUsername(e.target.value.toLowerCase())}
-                    required
-                  />
-                </div>
+                    <Label htmlFor="username">Username</Label>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Enter Username"
+                      onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                      required
+                    />
+                  </div>
                 <div className="grid gap-2 mb-2">
                   <Label htmlFor="email">Email</Label>
                   <Input

@@ -25,22 +25,6 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
   
 
   const profileData = {
-    name: "Anonymous",
-    username: "@sudke",
-    avatar: "/placeholder.svg",
-    joinedDate: "4 days ago",
-    rank: 47,
-    coins: 1250,
-    stats: {
-      solvedProblems: 4.5,
-      challenges: 14,
-      accuracy: 0.57,
-    },
-    subjects: [
-      { name: "Physics", completed: 1, color: "bg-blue-500" },
-      { name: "Chemistry", completed: 3, color: "bg-green-500" },
-      { name: "Mathematics", completed: 0, color: "bg-gray-200" },
-    ],
     skills: [
       { name: "Problem Solving", level: 4 },
       { name: "Critical Thinking", level: 3 },
@@ -48,17 +32,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
       { name: "Logical Reasoning", level: 4 },
       { name: "Scientific Method", level: 3 },
     ],
-    ratingHistory: Array.from({ length: 10 }, (_, i) => ({
-      day: i + 1,
-      rating: Math.floor(Math.random() * 20) + 35,
-    })),
-    recentAttempts: [
-      { id: 1, questionName: "Newton's Laws of Motion", isCorrect: true, solvedAt: "2024-11-09T14:30:00Z" },
-      { id: 2, questionName: "Periodic Table Elements", isCorrect: false, solvedAt: "2024-11-08T10:15:00Z" },
-      { id: 3, questionName: "Quadratic Equations", isCorrect: true, solvedAt: "2024-11-07T16:45:00Z" },
-      { id: 4, questionName: "Thermodynamics Principles", isCorrect: true, solvedAt: "2024-11-06T09:00:00Z" },
-      { id: 5, questionName: "Organic Chemistry Nomenclature", isCorrect: false, solvedAt: "2024-11-05T11:20:00Z" },
-    ],
+    
     achievements: [
       { name: "Quick Learner", description: "Completed 10 challenges in a day", icon: Zap },
       { name: "Consistent Performer", description: "Maintained 80% accuracy for a week", icon: Target },
@@ -84,12 +58,12 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
       <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 mb-8">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
           <Avatar className="h-32 w-32 border-4 border-yellow-500 shadow-lg">
-            <Image src={profile.basicProfile.avatar} alt={profile.basicProfile.name} width={130} height={130}/>
+            <Image src={profile.basicProfile.avatar || '/Profile_image.png'} alt={profile.basicProfile.name || "Avatar"} width={130} height={130}/>
             <AvatarFallback>{profile.basicProfile.username.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="text-center md:text-left">
             <h1 className="text-3xl md:text-4xl font-bold">{profile.basicProfile.name}</h1>
-            <p className="text-xl text-muted-foreground">{profile.basicProfile.username}</p>
+            <p className="text-xl text-muted-foreground">@{profile.basicProfile.username}</p>
             <p className="text-sm text-muted-foreground mt-1 hidden">Joined 2 days ago</p>
             <div className="flex flex-wrap items-center justify-center md:justify-start mt-3 gap-2">
               <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 px-3 py-1">
@@ -151,7 +125,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
           </Card>
 
           {/* Skills */}
-          <Card className="border-yellow-500/20">
+          <Card className="border-yellow-500/20 hidden">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Zap className="h-5 w-5 text-yellow-500" />
