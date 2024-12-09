@@ -150,7 +150,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="text-xl text-yellow-700 mb-12 max-w-2xl mx-auto"
             >
-              Learn smarter with our platform made for NEET and JEE students. Practice with topic-wise questions, compete in fun challenges, and track your progress to improve your rank and score better!
+              Learn smarter with our platform made for JEE students. Practice with topic-wise questions, compete in fun challenges, and track your progress to improve your rank and score better!
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -158,7 +158,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.4 }}
             >
               <Link href={'/challenge'}  className="text-lg px-8 py-4 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white">
-                Start Challenging Yourself
+                Let’s Compete!
               </Link>
             </motion.div>
           </div>
@@ -209,7 +209,7 @@ export default function Home() {
               {[
                 {
                   title: "Comprehensive Question Bank",
-                  description: "Access a wide range of expertly curated questions tailored to JEE and NEET. With AI-powered recommendations, our question bank adapts to your progress.",
+                  description: "Access a wide range of expertly curated questions tailored to JEE. With AI-powered our question bank adapts to your progress.",
                   icon: Brain,
                 },
                 {
