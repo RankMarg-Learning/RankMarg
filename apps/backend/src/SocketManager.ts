@@ -42,10 +42,13 @@ class SocketManager {
       user,
     ]);
     this.userRoomMappping.set(user.userId, roomId);
+    console.log("interested", this.interestedSockets);
+    console.log("userRoomMappping", this.userRoomMappping);
   }
 
   broadcast(roomId: string, message: string) {
     const users = this.interestedSockets.get(roomId);
+    console.log("Users in room:", users);
     if (!users) {
       console.error("No users in room? :", roomId);
       return;
