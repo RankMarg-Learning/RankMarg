@@ -226,7 +226,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
       </div>
 
       {/* Contribution Section */}
-      <Card className="mt-8 relative overflow-hidden border-yellow-500/20">
+      <Card className="hidden mt-8 relative overflow-hidden border-yellow-500/20">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-yellow-500 opacity-10" />
         <CardContent className="relative py-8 sm:py-12">
           <div className="text-center space-y-4">
