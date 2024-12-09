@@ -71,7 +71,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
                 Rating {profile.challengeStats.rank}
               </Badge>
               <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 px-3 py-1">
-                {RankDisplay({elo: profile.challengeStats.rank})}
+                {RankDisplay({elo: profile.challengeStats.rank}) || 'Rookie'}
                 
               </Badge>
 
