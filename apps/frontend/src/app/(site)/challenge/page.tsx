@@ -213,21 +213,21 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
             <span className="relative z-10" >Join Challenge </span>
           </Button>
       {/* <DialogTrigger asChild> */}
-        <Button className="relative bg-yellow-600 hover:bg-yellow-500 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-300 transform hover:scale-105 overflow-hidden group"
-        onClick={
-          () => {
-            socket?.send(JSON.stringify({ type: "INIT_CHALLENGE",
-            payload: {
-              invite: true,
-            }
-             }));
-            //  setInvite(true);
-            }
-        }
+        <Link href={'/comingsoon'} className="relative bg-yellow-600 hover:bg-yellow-500 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-300 transform hover:scale-105 overflow-hidden group"
+        // onClick={
+        //   () => {
+        //     socket?.send(JSON.stringify({ type: "INIT_CHALLENGE",
+        //     payload: {
+        //       invite: true,
+        //     }
+        //      }));
+        //     //  setInvite(true);
+        //     }
+        // }
         >
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 transform -translate-x-full group-hover:translate-x-full"></span>
                 <span className="relative z-10">Invite a Friend</span>
-        </Button>
+        </Link>
       {/* </DialogTrigger> */}
       <Dialog open={open} onOpenChange={setOpen}>
       
