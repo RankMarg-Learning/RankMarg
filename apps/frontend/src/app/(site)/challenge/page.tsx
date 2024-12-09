@@ -149,7 +149,7 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
   const router = useRouter();
   const  socket = useSocket();
   const [open, setOpen] = useState(false);
-  const [challengeLink,setChallengeLink] = useState<string>(`http://localhost:3000/challenge/test`);
+  const [challengeLink,setChallengeLink] = useState<string>(`${process.env.NEXTAUTH_URL!}/challenge/test`);
 
 
 
@@ -166,7 +166,7 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
           }
           break;
         case "CHALLENGE_ADD":
-          setChallengeLink(`http://localhost:3000/challenge/${message.challengeId}`);
+          setChallengeLink(`${process.env.NEXTAUTH_URL!}/challenge/${message.challengeId}`);
           // if(invite){setOpen(true);}
           
           break;
