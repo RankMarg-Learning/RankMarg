@@ -2,7 +2,7 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
-const WS_URL = process.env.WS_URL ?? 'wss://lobster-app-45qb5.ondigitalocean.app';
+const WS_URL = process.env.WS_URL ?? 'ws://localhost:8080/';
 
 export const useSocket = () => {
   const { data: session, status } = useSession();

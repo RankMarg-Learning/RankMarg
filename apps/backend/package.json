@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "esbuild ./src/index.ts --bundle --platform=node --outfile=dist/index.js --sourcemap && node dist/index.js",
-    "lint": "eslint . --max-warnings 0",
-    "lint:fix": "eslint --fix ."
+    "start": "node dist/index.js",
+    "dev": "node dist/index.js && npx prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +12,6 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^5.21.0",
-    "@repo/db": "*",
     "@types/ws": "^8.5.12",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.5",
