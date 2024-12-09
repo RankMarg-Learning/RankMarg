@@ -1,80 +1,45 @@
-import { Card } from "../ui/card";
-import { Separator } from "../ui/separator";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
-
-// Skeleton for BasicProfile
-function SkeletonBasicProfile() {
-  return (
-    <div className="p-3 w-full bg-white rounded-r-md border-r-2 border-b-2 md:rounded-none md:border-none">
-      <div className="flex justify-between p-5  h-[27.8px]">
-        <Skeleton className="w-[100px] h-6" />
-      </div>
-      <div className="p-5 flex">
-        <Skeleton className="w-[80px] h-[80px] rounded-md" />
-        <div className="flex flex-col ml-4 mr-1">
-          <Skeleton className="w-[120px] h-6" />
-          <Skeleton className="w-[80px] h-5 mt-2" />
-          <Skeleton className="w-[60px] h-5 mt-2" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Skeleton for AdditionInfo
-function SkeletonAdditionInfo() {
-  return (
-    <div className="flex flex-row w-full bg-white justify-center md:space-x-8 space-x-3">
-      <div className="m-2 text-center">
-        <Skeleton className="md:w-[60px] w-[50px] h-10" />
-        
-      </div>
-      <Separator orientation="vertical" className="h-auto" />
-      <div className="m-2 text-center">
-        <Skeleton className="md:w-[60px] w-[50px] h-10" />
-        
-      </div>
-      <Separator orientation="vertical" className="h-auto" />
-      <div className="m-2 text-center">
-        <Skeleton className="md:w-[60px] w-[50px] h-10" />
-       
-      </div>
-    </div>
-  );
-}
-
-// Skeleton for SubjectStats
-function SkeletonSubjectStats() {
-  return (
-    <div className="w-full md:py-2">
-      <div className="mx-auto aspect-square md:max-h-[170px] max-h-[100px] flex justify-center items-center">
-        <Skeleton className="w-[100px] h-[100px] rounded-full" />
-      </div>
-      <div className="text-center">
-        <Skeleton className="w-[120px] h-6 mx-auto" />
-      </div>
-    </div>
-  );
-}
-
-// Full Profile Skeleton Page
 export default function ProfileSkeleton() {
   return (
-    <div className="md:min-w-[940px] max-w-full mx-auto my-5">
-      <Card className="md:flex justify-center items-center m-1">
-        <SkeletonBasicProfile />
-        <SkeletonAdditionInfo />
-      </Card>
-      <Card className="flex mx-1 my-3">
-        <SkeletonSubjectStats />
-        <SkeletonSubjectStats />
-        <SkeletonSubjectStats />
-      </Card>
-      <div className="w-full">
-        {/* Add Skeleton for Calendar and ContributionBanner if needed */}
-        <Skeleton className="h-[200px] w-full" />
-        <Skeleton className="h-[150px] w-full mt-4" />
+    <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-white dark:from-yellow-900 dark:to-gray-900">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        {/* Profile Header Skeleton */}
+        <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 mb-8">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+            <Skeleton className="h-32 w-32 rounded-full" />
+            <div className="text-center md:text-left">
+              <Skeleton className="h-8 w-48 mb-2" />
+              <Skeleton className="h-6 w-32 mb-2" />
+              <div className="flex flex-wrap items-center justify-center md:justify-start mt-3 gap-2">
+                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-8 w-24" />
+              </div>
+            </div>
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+
+        {/* Main Content Skeleton */}
+        <div className="grid gap-6 md:grid-cols-3">
+          {/* Left Column */}
+          <div className="space-y-6">
+            <Skeleton className="h-48 w-full rounded-lg" />
+            <Skeleton className="h-48 w-full rounded-lg hidden" />
+          </div>
+
+          {/* Middle Column */}
+          <div className="space-y-6 md:col-span-2">
+            <Skeleton className="h-64 w-full rounded-lg" />
+            <Skeleton className="h-48 w-full rounded-lg" />
+            <Skeleton className="h-48 w-full rounded-lg" />
+          </div>
+        </div>
+
+        {/* Contribution Section */}
+        <div className="mt-8 relative">
+          <Skeleton className="h-40 w-full rounded-lg" />
+        </div>
       </div>
     </div>
   );
