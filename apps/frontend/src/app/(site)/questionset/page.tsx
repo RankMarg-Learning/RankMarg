@@ -255,7 +255,8 @@ const Questionset = () => {
                 </TabsContent>
               </Tabs>
             </main>
-          </div>):(<Loading/> ))
+           </div>
+          ):(<Loading/> ))
           
   )
 }
