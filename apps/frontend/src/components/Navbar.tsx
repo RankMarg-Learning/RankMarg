@@ -87,17 +87,7 @@ const Navbar = () => {
       </Sheet>
       <div className="flex w-full items-center justify-end  md:ml-auto md:gap-2 lg:gap-4">
         {
-          status === "loading" ? null: status === "unauthenticated" ? (
-            <div className="flex gap-1 md:gap-2">
-            <Link href={"/sign-in"}>
-              {" "}
-              <Button>Login</Button>
-            </Link>
-            <Link href={"/sign-up"}>
-              {" "}
-              <Button>Register</Button>
-            </Link>
-          </div>):(
+          status === "loading" ? null: status === "authenticated" ? (
              <DropdownMenu>
              <DropdownMenuTrigger asChild>
                <Button variant="secondary" size="icon" className="rounded-full">
@@ -127,7 +117,17 @@ const Navbar = () => {
                </DropdownMenuItem>
              </DropdownMenuContent>
            </DropdownMenu>
-          )
+          ):(
+            <div className="flex gap-1 md:gap-2">
+            <Link href={"/sign-in"}>
+              {" "}
+              <Button>Login</Button>
+            </Link>
+            <Link href={"/sign-up"}>
+              {" "}
+              <Button>Register</Button>
+            </Link>
+          </div>)
 
         }
 
