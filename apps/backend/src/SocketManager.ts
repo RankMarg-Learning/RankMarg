@@ -61,6 +61,8 @@ class SocketManager {
 
   removeUser(user: User) {
     const roomId = this.userRoomMappping.get(user.userId);
+    console.log("Removing user from room:", roomId);
+    console.log(this.interestedSockets);
     if (!roomId) {
       console.error("User was not interested in any room?");
       return;
