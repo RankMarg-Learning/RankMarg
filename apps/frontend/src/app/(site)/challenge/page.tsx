@@ -197,37 +197,37 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
         </p>
         <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
 
-          <Link href={'/comingsoon'} className="relative bg-yellow-700 hover:bg-yellow-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-300 transform hover:scale-105 overflow-hidden group" 
-          // onClick={
-          //   () => {
-          //     socket?.send(JSON.stringify({ type: "INIT_CHALLENGE",
-          //     payload: {
-          //       invite: false,
-          //     }
-          //      }));
-          //   }
-          // }
+          <Button  className="relative bg-yellow-700 hover:bg-yellow-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-300 transform hover:scale-105 overflow-hidden group" 
+          onClick={
+            () => {
+              socket?.send(JSON.stringify({ type: "INIT_CHALLENGE",
+              payload: {
+                invite: false,
+              }
+               }));
+            }
+          }
           
           >
             <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 transform -translate-x-full group-hover:translate-x-full"></span>
             <span className="relative z-10" >Join Challenge </span>
-          </Link>
+          </Button>
       {/* <DialogTrigger asChild> */}
-        <Link href={'/comingsoon'} className="relative bg-yellow-600 hover:bg-yellow-500 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-300 transform hover:scale-105 overflow-hidden group"
-        // onClick={
-        //   () => {
-        //     socket?.send(JSON.stringify({ type: "INIT_CHALLENGE",
-        //     payload: {
-        //       invite: true,
-        //     }
-        //      }));
-        //     //  setInvite(true);
-        //     }
-        // }
+        <Button  className="relative bg-yellow-600 hover:bg-yellow-500 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition duration-300 transform hover:scale-105 overflow-hidden group"
+        onClick={
+          () => {
+            socket?.send(JSON.stringify({ type: "INIT_CHALLENGE",
+            payload: {
+              invite: true,
+            }
+             }));
+            //  setInvite(true);
+            }
+        }
         >
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 transform -translate-x-full group-hover:translate-x-full"></span>
                 <span className="relative z-10">Invite a Friend</span>
-        </Link>
+        </Button>
       {/* </DialogTrigger> */}
       <Dialog open={open} onOpenChange={setOpen}>
       
@@ -257,16 +257,13 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
             <CopyIcon className="h-4 w-4" />
           </Button>
         </div>
-        <DialogFooter className="sm:justify-between gap-2">
+        <DialogFooter className="sm:justify-end gap-2">
           <DialogClose asChild>
             <Button type="button" >
               Close
             </Button>
           </DialogClose>
-          <Button type="submit" 
-           >
-                Start Challenge
-            </Button>
+         
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -56,6 +56,7 @@ export class ChallengeManager {
       const message = JSON.parse(data.toString());
       if (message.type === "INIT_CHALLENGE") {
         if (message.payload.invite) {
+          console.log("Creating challenge");
           this.createChallenge(user);
         } else {
           if (this.pendingChallengeId) {
