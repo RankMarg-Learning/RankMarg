@@ -128,8 +128,12 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
 
 
   }
-
-
+  const receiverEmail = 'support@rankmarg.in'; 
+  const subject = `Report: ${question.id}`;
+  const handleReport = () => {
+    const mailtoLink = `mailto:${receiverEmail}?subject=${encodeURIComponent(subject)}&body=I want to report this question.`;
+    window.location.href = mailtoLink; 
+  };
   
   
   return (
@@ -141,7 +145,7 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
         {/* <form action=""></form> */}
         <div className="w-full md:w-1/2 p-6 border-b md:border-b-0 md:border-r ">
           <h1 className="text-2xl font-bold mb-4 ">Question</h1>
-          <div className=" flex flex-wrap space-x-2 items-center my-3">
+          <div className=" flex flex-wrap space-x-2 items-center my-3 space-y-1 ">
             {/* <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
@@ -175,6 +179,13 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
               <span>Class:</span>
               {question.class}
             </Badge>
+            <Badge
+                  variant="Hard" 
+                  className="cursor-pointer"
+                  onClick={handleReport}
+                >
+                  Report
+            </Badge>
           </div>
           <div className='noselect'>
           <MarkdownRenderer content={question.content} />
@@ -189,20 +200,19 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
             {/* MCQ */}
             { question.type === "MCQ" && (
               <form onSubmit={handleOnSubmit}>
-              <h1 className="md:text-2xl font-bold mb-4">Options</h1>
-              <div className="flex flex-col noselect">
-                  <Select
-                    options={question.options}
-                    selectedOption={selectedOption}
-                    selectedOptions={selectedOptions}
-                    handleOptionChange={handleOptionChange}
-                    isMultiple={isMultiple}
-                  />
-              </div>
-              
-              <Button  className="mt-4 " type="submit">
-                Submit
-              </Button>
+                  <h1 className="md:text-2xl font-bold ">Options</h1>
+                  <div className="flex flex-col noselect">
+                      <Select
+                        options={question.options}
+                        selectedOption={selectedOption}
+                        selectedOptions={selectedOptions}
+                        handleOptionChange={handleOptionChange}
+                        isMultiple={isMultiple}
+                      />
+                  </div>
+                  <Button  className="mt-4 " type="submit">
+                    Submit
+                  </Button>
             </form>)
             }
             {
