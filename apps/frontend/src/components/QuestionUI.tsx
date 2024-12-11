@@ -129,9 +129,24 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
 
   }
   const receiverEmail = 'support@rankmarg.in'; 
-  const subject = `Report: ${question.id}`;
+  const subject = `Report: ${question.slug}`;
+  const body = `Hello,
+
+I would like to report an issue with the following question:
+
+- **Question Id**: ${question.id}
+
+Please look into this issue at your earliest convenience. Here is some additional information (optional):
+
+[Provide details about the issue, such as incorrect information, inappropriate content, etc.]
+
+Thank you for your assistance.
+
+Best regards,
+[Your Name]
+`;
   const handleReport = () => {
-    const mailtoLink = `mailto:${receiverEmail}?subject=${encodeURIComponent(subject)}&body=I want to report this question.`;
+    const mailtoLink = `mailto:${receiverEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailtoLink; 
   };
   
