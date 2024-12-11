@@ -96,8 +96,7 @@ const Questionset = () => {
   
     return (
         (!loading ?(
-          <div className="flex flex-col sm:gap-2 sm:py-4 mx-1   ">
-            <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 ">
+            <main className="flex flex-col  sm:gap-2 items-start gap-4 p-4 sm:px-3 sm:py-0 md:gap-8 ">
               
               <RandomQuestion 
                 setLoading={setLoading}
@@ -255,7 +254,6 @@ const Questionset = () => {
                 </TabsContent>
               </Tabs>
             </main>
-           </div>
           ):(<Loading/> ))
           
   )
