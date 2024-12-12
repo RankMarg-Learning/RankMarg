@@ -65,6 +65,21 @@ const RandomQuestion = ({ setLoading }) => {
             </CardHeader>
             <CardContent>
             <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+              <SelectFilter
+                  width={"full"}
+                  placeholder="Subject"
+                  selectName={["Default","Physics", "Chemistry", "Mathematics"]}
+                  onChange={
+                    (value:string[])=>{
+                      if(value[0]==="Default"){
+                        setSubject("");
+                    }
+                    else{
+                      setSubject(value[0]);
+                    }
+                  }
+                }
+              />
                 <Combobox
                     onchange={(newTopic: string) => {
                       if(newTopic === 'Default'){
@@ -86,21 +101,6 @@ const RandomQuestion = ({ setLoading }) => {
                       }
                       else{
                         setDifficulty(value[0]);
-                      }
-                    }
-                  }
-                />
-                <SelectFilter
-                    width={"full"}
-                    placeholder="Subject"
-                    selectName={["Default","Physics", "Chemistry", "Mathematics"]}
-                    onChange={
-                      (value:string[])=>{
-                        if(value[0]==="Default"){
-                          setSubject("");
-                      }
-                      else{
-                        setSubject(value[0]);
                       }
                     }
                   }

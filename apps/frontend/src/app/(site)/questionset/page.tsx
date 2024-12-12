@@ -1,5 +1,5 @@
 "use client";
-import { Search } from "lucide-react";
+import { Search } from 'lucide-react';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SelectFilter from "@/components/SelectFilter";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { QTableRow } from "@/components/questions/QTableRow";
 import { QTableRowSkeleton } from "@/components/questions/QTableRowSkeleton";
 import axios from "axios";
@@ -38,43 +38,28 @@ const Questionset = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const handleDifficulty = (value: string[]) => {
-    if (value[0] === "Default") {
-      setDifficulty("");
-      return;
-    }
-    setDifficulty(value[0]);
+    setDifficulty(value[0] === "Default" ? "" : value[0]);
+    setCurrentPage(1);
   };
 
   const handleTags = (value: string[]) => {
-    if (value[0] === "Default") {
-      setTags("");
-      return;
-    }
-    setTags(value[0]);
+    setTags(value[0] === "Default" ? "" : value[0]);
+    setCurrentPage(1);
   };
 
-  const { data } = useQuery({
-    queryKey: ["questions", currentPage],
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["questions", currentPage, subject, difficulty, tags, search],
     queryFn: async () => {
       const response = await axios.get<QuestionSetProps>(
-        `/api/question?page=${currentPage}`
+        `/api/question?page=${currentPage}&subject=${subject}&difficulty=${difficulty}&tags=${tags}&search=${search}`
       );
-      const { data } = response;
-      return data;
+      return response.data;
     },
   });
 
-  const questions =
-    data?.questionSet.filter((question: QuestionTableProps) => {
-      const matchesDifficulty = !difficulty || question.difficulty === difficulty;
-      const matchesTags = !tags || (question.tag && question.tag === tags);
-      const matchesSubject = !subject || question.subject === subject;
-      const matchesSearch =
-        !search ||
-        question.content.toLowerCase().includes(search.toLowerCase()) ||
-        question.topic.toLowerCase().includes(search.toLowerCase());
-      return matchesDifficulty && matchesTags && matchesSubject && matchesSearch;
-    }) || [];
+  useEffect(() => {
+    refetch();
+  }, [currentPage, subject, difficulty, tags, search, refetch]);
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
@@ -91,17 +76,20 @@ const Questionset = () => {
   };
 
   return !loading ? (
-      <main className="flex flex-col items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-        <RandomQuestion setLoading={setLoading} />
-        <div className="w-full">
+    <main className="flex flex-col items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+      <RandomQuestion setLoading={setLoading} />
+      <div className="w-full">
         <Tabs defaultValue="all">
           <div className="grid gap-2 sm:flex sm:items-center">
             <TabsList>
               {["All", "Mathematics", "Physics", "Chemistry"].map((sub) => (
                 <TabsTrigger
                   key={sub}
-                  value={sub}
-                  onClick={() => setSubject(sub === "All" ? "" : sub)}
+                  value={sub.toLowerCase()}
+                  onClick={() => {
+                    setSubject(sub === "All" ? "" : sub);
+                    setCurrentPage(1);
+                  }}
                 >
                   {sub}
                 </TabsTrigger>
@@ -113,7 +101,10 @@ const Questionset = () => {
                 type="search"
                 placeholder="Search..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full rounded-lg bg-background pl-8 h-9"
               />
             </div>
@@ -132,33 +123,38 @@ const Questionset = () => {
               />
             </div>
           </div>
-          <TabsContent value={subject || "all"}>
+          <TabsContent value={subject.toLowerCase() || "all"}>
             <Card>
               <CardContent>
                 <div className="overflow-x-auto">
                   <Table className="min-w-full">
-                    <TableHeader>
-                      <TableRow>
-                        {["Class", "Difficulty", "Question", "Subject", "Topic"].map(
-                          (head) => (
-                            <TableHead
-                              key={head}
-                              className="hidden md:table-cell"
-                            >
-                              {head}
-                            </TableHead>
-                          )
-                        )}
-                      </TableRow>
-                    </TableHeader>
+                  <TableHeader>
+                    <TableRow>
+                      {[
+                        { key: "class", label: "Class", hideOnMobile: true },
+                        { key: "difficulty", label: "Difficulty", hideOnMobile: true },
+                        { key: "question", label: "Question", hideOnMobile: false },
+                        { key: "subject", label: "Subject", hideOnMobile: false },
+                        { key: "topic", label: "Topic", hideOnMobile: true },
+                      ].map((column) => (
+                        <TableHead
+                          key={column.key}
+                          className={column.hideOnMobile ? "hidden md:table-cell" : ""}
+                        >
+                          {column.label}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+
                     <TableBody>
-                      {questions.length
-                        ? questions.map((question) => (
-                            <QTableRow key={question.id} problem={question} />
-                          ))
-                        : Array.from({ length: 5 }).map((_, i) => (
+                      {isLoading
+                        ? Array.from({ length: 5 }).map((_, i) => (
                             <QTableRowSkeleton key={i} />
-                          ))}
+                          ))
+                        : data?.questionSet.length >0 ? data?.questionSet.map((question: QuestionTableProps) => (
+                            <QTableRow key={question.id} problem={question} />
+                          )): <TableRow><td colSpan={5} className="text-center">No questions found</td></TableRow>}
                     </TableBody>
                   </Table>
                 </div>
@@ -172,16 +168,17 @@ const Questionset = () => {
                         aria-disabled={currentPage === 1}
                       />
                     </PaginationItem>
-                    {Array.from({ length: data?.totalPages || 1 }).map((_, i) => (
-                      <PaginationItem key={i}>
-                        <PaginationLink
-                          onClick={() => handlePageClick(i + 1)}
-                          className={currentPage === i + 1 ? "font-bold" : ""}
-                        >
-                          {i + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
+                    {data?.totalPages &&
+                      Array.from({ length: data.totalPages }).map((_, i) => (
+                        <PaginationItem key={i}>
+                          <PaginationLink
+                            onClick={() => handlePageClick(i + 1)}
+                            className={currentPage === i + 1 ? "font-bold" : ""}
+                          >
+                            {i + 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
                     <PaginationItem>
                       <PaginationNext
                         onClick={handleNext}
@@ -194,11 +191,12 @@ const Questionset = () => {
             </Card>
           </TabsContent>
         </Tabs>
-        </div>
-      </main>
+      </div>
+    </main>
   ) : (
     <Loading />
   );
 };
 
 export default Questionset;
+
