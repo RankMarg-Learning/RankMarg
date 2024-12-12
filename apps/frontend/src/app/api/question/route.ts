@@ -2,6 +2,13 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { ContributeFormProps } from "@/types";
 
+interface WhereClauseProps {
+  subject?: string;
+  difficulty?: string;
+  tag?: string;
+  OR?: Array<{ content?: { contains: string; mode: "insensitive" } } | { topic?: { contains: string; mode: "insensitive" } }>;
+}
+
 export async function GET(req: Request) {
   const limit = 20;
   const { searchParams } = new URL(req.url);
@@ -14,7 +21,7 @@ export async function GET(req: Request) {
   const skip = (page - 1) * limit;
 
   try {
-    const whereClause: any = {};
+    const whereClause: WhereClauseProps = {};
     if (subject) whereClause.subject = subject;
     if (difficulty) whereClause.difficulty = difficulty;
     if (tags) whereClause.tag = tags;
