@@ -10,7 +10,14 @@ export async function GET(req: Request, { params }: { params: { username: string
   try {
     const user = await prisma.user.findUnique({
       where: { username },
-      include: {
+      select: {
+        rank: true,
+        name: true,
+        username: true,
+        avatar: true,
+        coins: true,
+        createdAt: true,
+        id: true,
         attempts: {
           select: {
             isCorrect: true,
