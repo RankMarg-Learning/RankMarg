@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import ChallengeSkeleton from "@/components/challenge/ChallengeSkelaton";
-import JoinLoader from "@/components/JoinLoader";
+import { Badge } from "@/components/ui/badge";
 
 
 interface ChallengeInfoProps {
@@ -26,6 +26,7 @@ interface ChallengeInfoProps {
     challengeId: string;
     opponentUsername: string;
     result : string | null;
+    status: string;
     userScore: number[] | null;
     opponentScore: number[] | null;
     createdAt: Date;
@@ -42,7 +43,6 @@ const challengeScore = (score: number[] | null) => {
 
 
 const ChallengePage = () => {
-  const [joinLoader, setJoinLoader] = useState(false);
 
   const { data: challengeInfo, isLoading } = useQuery<ChallengeInfoProps>({
     queryKey: ["challenge-info"],
@@ -56,9 +56,7 @@ const ChallengePage = () => {
     return <ChallengeSkeleton />;
   }
   
-  if(joinLoader){
-    return <JoinLoader />
-  }
+  
 
 
   return (
@@ -72,7 +70,7 @@ const ChallengePage = () => {
           </Card>
         </div>
         <div className="col-span-12 md:col-span-9 space-y-4">
-          <Banner setJoinLoader={setJoinLoader}/>
+          <Banner/>
           <Card className="mb-6">
           <CardHeader>
             <CardTitle>Recent Challenges</CardTitle>
@@ -92,6 +90,12 @@ const ChallengePage = () => {
                   </div>
                   
                   <div className="flex flex-row justify-between  items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                    <Badge variant={
+                      challenge.status === 'PENDING' ? 'secondary' :
+                      challenge.status === 'IN_PROGRESS' ? 'default' : 'outline'
+                    }>
+                      {challenge.status}
+                    </Badge>
                     <div className="text-left sm:text-right">
                       <div className={`font-semibold`}>{challengeScore(challenge.userScore)} - {challengeScore(challenge.opponentScore)}</div>
                       <div className="text-xs text-muted-foreground">
@@ -143,12 +147,11 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
   );
 };
 
-  const Banner = (
-    {setJoinLoader}:{setJoinLoader:React.Dispatch<React.SetStateAction<boolean>>}
-  ) => {
+  const Banner = () => {
   const router = useRouter();
   const  socket = useSocket();
   const [open, setOpen] = useState(false);
+  const [join, setJoin] = useState(false);
   const [challengeLink,setChallengeLink] = useState<string>(`${process.env.NEXT_PUBLIC_WEBSITE_URL!}/challenge/test`);
 
 
@@ -161,9 +164,7 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
       switch (message.type) {
         case "INIT_CHALLENGE":
           if(message.payload.invite){setOpen(true);}
-          else{
-            setJoinLoader(true);
-          }
+          setOpen(true);
           break;
         case "CHALLENGE_ADD":
           setChallengeLink(`${process.env.NEXT_PUBLIC_WEBSITE_URL!}/challenge/${message.challengeId}`);
@@ -205,6 +206,7 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
                 invite: false,
               }
                }));
+               setJoin(true);
             }
           }
           
@@ -232,6 +234,26 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
       <Dialog open={open} onOpenChange={setOpen}>
       
       <DialogContent className="sm:max-w-md bg-white" >
+        {
+          join?<>
+          <DialogHeader>
+          <DialogTitle className="text-center">Waiting for an opponent...</DialogTitle>
+          <DialogDescription>
+            Want to speed up? Invite a friend to join the challenge.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="sm:justify-end gap-2">
+          <DialogClose asChild>
+            <Button type="button" onClick={
+              ()=>setJoin(false)
+            } >
+              Close
+            </Button>
+          </DialogClose>
+         
+        </DialogFooter>
+        </>:
+        <>
         <DialogHeader>
           <DialogTitle>Share link</DialogTitle>
           <DialogDescription>
@@ -265,6 +287,9 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
           </DialogClose>
          
         </DialogFooter>
+        </>
+        }
+        
       </DialogContent>
     </Dialog>
          {/* <InviteFriend /> */}
