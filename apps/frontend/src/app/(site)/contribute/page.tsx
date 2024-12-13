@@ -268,7 +268,7 @@ const Contribute = () => {
               <SelectFilter
                   width={"full"}
                   placeholder="Question Time"
-                  selectName={["1","2","5","8","10","15","20","30","40","50"]}
+                  selectName={["1","2","3","4","5","6","8","10","12","15"]}
                   onChange={(value: string[]) => setQuestionTime(parseInt(value[0]))}
                 />
             </div>
