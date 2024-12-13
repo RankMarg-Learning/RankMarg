@@ -112,6 +112,7 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
       toast({
         title: "Correct Answer",
         description: "Your answer was correct.",
+        variant: "success",
       });
     }
     else{
@@ -124,7 +125,8 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
 
   handleAttempt(attemptData);
     
-  
+  setSelectedOption(null);
+  setSelectedOptions([]);
 
 
   }
@@ -233,34 +235,33 @@ Best regards,
             {
               question.type === "NUM" && (
                 <form  onSubmit={handleOnSubmit}>
-                <h1 className="md:text-2xl font-bold mb-4">Numerical </h1>
-                <Input type="number" step={0.01} placeholder="Enter your answer"  
-                className='p-3 m-2  [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-                onChange={(e) => setSelectedOption(parseFloat(e.target.value))}
-                />
-                <Button  className="mt-4 " type="submit">
-                Submit
-                </Button>
+                  <h1 className="md:text-2xl font-bold mb-4">Numerical </h1>
+                  <Input type="number" step={0.01} placeholder="Enter your answer"  
+                  className='p-3 m-2  [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+                  onChange={(e) => setSelectedOption(parseFloat(e.target.value))}
+                  />
+                  <Button  className="mt-4 " type="submit">
+                  Submit
+                  </Button>
                 </form>
               )
             }
             {
               question.type === "TF" && (
                 <form onSubmit={handleOnSubmit}>
-                <h1 className="md:text-2xl font-bold mb-4">True/False </h1>
-                <div className="flex flex-col space-y-2">
-                  <Select
-                    options={TF}
-                    selectedOption={selectedOption}
-                    selectedOptions={selectedOptions}
-                    handleOptionChange={handleOptionChange}
-                    isMultiple={isMultiple}
-                  />
-                </div>
-                <Button  className="mt-4" type="submit">
-                Submit
-                </Button>
-
+                  <h1 className="md:text-2xl font-bold mb-4">True/False </h1>
+                  <div className="flex flex-col space-y-2">
+                    <Select
+                      options={TF}
+                      selectedOption={selectedOption}
+                      selectedOptions={selectedOptions}
+                      handleOptionChange={handleOptionChange}
+                      isMultiple={isMultiple}
+                    />
+                  </div>
+                  <Button  className="mt-4" type="submit">
+                  Submit
+                  </Button>
                 </form>
               )
             }
