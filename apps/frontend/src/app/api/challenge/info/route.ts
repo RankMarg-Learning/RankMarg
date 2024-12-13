@@ -7,6 +7,7 @@ type recentChallenges = {
     challengeId: string;
     opponentUsername: string;
     result : string | null;
+    status: string;
     userScore: number[] | null;
     opponentScore: number[] | null;
     createdAt: Date;
@@ -42,6 +43,7 @@ export async function GET() {
                     orderBy: { createdAt: 'desc' },
                     select: {
                         challengeId: true,
+                        status: true,
                         player2Id: true,
                         result: true,
                         player1Score: true,
@@ -55,6 +57,7 @@ export async function GET() {
                     orderBy: { createdAt: 'desc' },
                     select: {
                         challengeId: true,
+                        status: true,
                         player1Id: true,
                         result: true,
                         player2Score: true,
@@ -76,6 +79,7 @@ export async function GET() {
                 challengeId: challenge.challengeId,
                 opponentUsername: challenge.player2?.username || "Unknown", 
                 result: challenge.result,
+                status: challenge.status,
                 userScore: challenge.attemptByPlayer1, 
                 opponentScore: challenge.attemptByPlayer2,
                 createdAt: challenge.createdAt,
@@ -84,6 +88,7 @@ export async function GET() {
                 challengeId: challenge.challengeId,
                 opponentUsername: challenge.player1?.username || "Unknown", 
                 result: challenge.result,
+                status: challenge.status,
                 userScore: challenge.attemptByPlayer2, 
                 opponentScore: challenge.attemptByPlayer1,
                 createdAt: challenge.createdAt,
