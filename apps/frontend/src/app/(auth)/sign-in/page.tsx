@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,30 +12,50 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "next-auth/react";
-import {  FormEvent, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 
+// Define Zod schema for validation
+const signInSchema = z.object({
+  username: z
+    .string()
+    .min(1, "Email or username is required")
+    .email("Please enter a valid email address."),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters long.")
+    .regex(/[a-zA-Z]/, "Password must contain at least one letter.")
+    .regex(/\d/, "Password must contain at least one number."),
+});
+
 const SignInForm = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(signInSchema),
+  });
+
   const router = useRouter();
 
-  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleLogin = async (data: { username: string; password: string }) => {
     try {
       const result = await signIn("credentials", {
-        email: username,
-        password,
+        email: data.username,
+        password: data.password,
         redirect: false,
       });
       if (result?.error) {
-        setErrorMessage(result.error);
+        alert(result.error);
       } else {
         router.push("/");
       }
     } catch (error) {
-      console.log(error);
+      console.error("Login failed:", error);
+      alert("An unexpected error occurred. Please try again later.");
     }
   };
 
@@ -45,58 +66,64 @@ const SignInForm = () => {
           <CardHeader>
             <CardTitle className="text-2xl">Login</CardTitle>
             <CardDescription>
-              Enter your email below to login to your account
+              Enter your email or username and password to log in to your account
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4">
-              <form onSubmit={handleLogin}>
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email or Username</Label>
-                  <Input
-                    id="email"
-                    type="text"
-                    placeholder="Email or Username"
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
+            <form onSubmit={handleSubmit(handleLogin)}>
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email or Username</Label>
+                <Input
+                  id="email"
+                  type="text"
+                  placeholder="Email or Username"
+                  {...register("username")}
+                />
+                {errors.username && (
+                  <p className="text-red-500 text-sm">{errors.username?.message?.toString()}</p>
+                )}
+              </div>
+
+              <div className="grid gap-2 mt-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm underline hover:text-yellow-500"
+                  >
+                    Forgot your password?
+                  </Link>
                 </div>
-                <div className="grid gap-2">
-                  <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
-                    <Link
-                      href="/forgot-password"
-                      className="ml-auto inline-block text-sm underline"
-                    >
-                      Forgot your password?
-                    </Link>
-                  </div>
-                  <Input
-                    id="password"
-                    type="password"
-                    className="mb-2"
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  {errorMessage && (
-                    <p className="text-red-500 text-sm ">{errorMessage}</p>
-                  )}
-                </div>
-                <Button type="submit" className="w-full">
-                  Login
-                </Button>
-              </form>
+                <Input
+                  id="password"
+                  type="password"
+                  {...register("password")}
+                />
+                {errors.password && (
+                  <p className="text-red-500 text-sm">{errors.password?.message?.toString()}</p>
+                )}
+              </div>
+
               <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => signIn("google", { callbackUrl: "/questionset" })}
+                type="submit"
+                className="w-full mt-4"
+                disabled={isSubmitting}
               >
-                Login with Google
+                {isSubmitting ? "Logging in..." : "Login"}
               </Button>
-            </div>
+            </form>
+
+            <Button
+              variant="outline"
+              className="w-full mt-4"
+              onClick={() => signIn("google", { callbackUrl: "/questionset" })}
+            >
+              Login with Google
+            </Button>
+
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-              <Link href="/sign-up" className="underline">
+              <Link href="/sign-up" className="underline hover:text-yellow-500">
                 Sign up
               </Link>
             </div>
