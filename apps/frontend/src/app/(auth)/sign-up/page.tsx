@@ -45,7 +45,7 @@ const SignUpForm = () => {
   const watchPassword = watch("password");
   const watchConfirmPassword = watch("confirmpassword");
 
-  const handleSignUp = async (data: any) => {
+  const handleSignUp = async (data) => {
     setMsg("");
     if (data.password !== data.confirmpassword) {
       setMsg("Passwords do not match");
