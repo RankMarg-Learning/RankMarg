@@ -10,64 +10,56 @@ import { generateUniqueUsername } from "@/lib/generateUniqueUsername";
 
 export const authOptions: NextAuthOptions = {
 
-    providers:[
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-          }),
-        CredentialsProvider({
-            id:'credentials',
-            name:'Credentials',
-            credentials:{
-                email:{label:'Email',type:'text'},
-                password:{label:'Password',type:'password'}
-            },
-            async authorize(credentials) {
-                
-              if (!credentials?.email || !credentials?.password) {
-                console.log("Missing username or password");
-                return null;
-              }
-        
-              const user = await prisma.user.findFirst({
-                where: {
-                  OR: [
-                    { email: credentials.email },   
-                    { username: credentials.email }
-                  ],
-                },
-              });
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    CredentialsProvider({
+      id: "credentials",
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          console.log("Missing username or password");
+          return null;
+        }
 
-                    if(!user){
-                        console.log("User not found");
-                        return null;
-                    }
+        // Try to find the user by email or username
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [{ email: credentials.email }, { username: credentials.email }],
+          },
+        });
 
-                    
-        
-                
-        
-                const passwordCorrect = await bcrypt.compare(
-                  credentials.password,
-                  user.password
-                );
-        
-                if (!passwordCorrect) {
-                   console.log("Password incorrect");
-                  return null; 
+        if (!user) {
+          console.log("User not found");
+          return null;
+        }
 
-                }
-                return {
-                  id: user?.id,
-                  email: user?.email,
-                  username: user?.username,
-                  image: user?.avatar,
-                };
-        
-                
-              },
-        })
-    ],
+        // Compare password
+        const passwordCorrect = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
+
+        if (!passwordCorrect) {
+          console.log("Password incorrect");
+          return null;
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          image: user.avatar,
+        };
+      },
+    }),
+  ],
     callbacks:{
         async signIn({ user}) {
             try {
