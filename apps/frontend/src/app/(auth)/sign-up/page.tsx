@@ -37,7 +37,6 @@ const SignUpForm = () => {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
     watch,
   } = useForm({
     resolver: zodResolver(signUpSchema),
