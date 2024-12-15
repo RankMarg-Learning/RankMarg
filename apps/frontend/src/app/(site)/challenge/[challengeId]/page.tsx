@@ -6,6 +6,7 @@ import QuestionUI from "@/components/QuestionUI";
 import { useSocket } from "@/hooks/useSocket";
 import { DetailsProps, QuestionProps } from "@/types";
 import axios from "axios";
+import Link from "next/link";
 import {  useEffect, useState } from "react";
 
 interface attempDataProps {
@@ -27,6 +28,7 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
   const [isOver, setIsOver] = useState(false);
   const [overDetails, setOverDetails] = useState<DetailsProps>(); 
   const [questions, setQuestions] = useState<QuestionShowProps[]>([]);
+  const [alert,setAlert] = useState<string | null>(null);
   
 
   useEffect(() => {
@@ -54,7 +56,8 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
           setStart(true);
           setQuestions(message.payload.questions);
           break;
-        case "QUESTION_ANSWERED":
+        case "CHALLENGE_ALERT":
+          setAlert(message.payload.message);
           break;
         case "CHALLENGE_OVER":
           setStart(false);
@@ -145,7 +148,16 @@ const getButtonColor = (index:number) => {
           </div>
         </>
       ) : (
-        <Loading />
+        alert ? (
+          // UI Make it better
+          <div className="text-center flex items-center justify-center h-screen ">
+            <div className="flex flex-col items-center">
+              <h2 className="text-3xl font-bold mb-4">{alert}</h2>
+              <p className="text-base ">Go to <Link className="underline hover:text-yellow-500" href={'/challenge'} >Challenge Page </Link></p>
+            </div> 
+          </div>
+        ) : (
+        <Loading />)
       )
         ):(
           <ChallengeOver details={overDetails} />

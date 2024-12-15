@@ -245,7 +245,9 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
         <DialogFooter className="sm:justify-end gap-2">
           <DialogClose asChild>
             <Button type="button" onClick={
-              ()=>setJoin(false)
+              ()=>{setJoin(false)
+                socket?.send(JSON.stringify({type:"USER_REMOVE"}))
+              }
             } >
               Close
             </Button>
@@ -281,7 +283,8 @@ const UserProfile = ({user}:{user:{name:string,username:string,rank:number}}) =>
         </div>
         <DialogFooter className="sm:justify-end gap-2">
           <DialogClose asChild>
-            <Button type="button" >
+            <Button type="button" 
+            >
               Close
             </Button>
           </DialogClose>
