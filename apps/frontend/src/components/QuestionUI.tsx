@@ -42,7 +42,6 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
 
-  
   const checkIfSelectedIsCorrect = () => {
     if (!question || !question.options) {
       return false; // Safeguard against undefined question or options
@@ -74,10 +73,14 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
   
   useEffect(() => {
     if (!question || !question.options) return;
+
+    // Determine if the question has multiple correct answers
     const correctOptionsCount = question.options.filter(option => option.isCorrect).length;
-    if (correctOptionsCount > 1) {
-      setIsMultiple(true);
-    }
+    setIsMultiple(correctOptionsCount > 1);
+
+    // Reset selection states
+    setSelectedOptions([]);
+    setSelectedOption(null);
   }, [question]);
 
   const handleOptionChange = (content: number) => {
@@ -113,13 +116,16 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
         title: "Correct Answer",
         description: "Your answer was correct.",
         variant: "success",
-      });
+        duration:1000
+      }
+      );
     }
     else{
       toast({
         title: "Incorrect Answer",
         description: "Try Next Time!",
         variant: "destructive",
+        duration:1000
     });
   }
 
@@ -127,7 +133,6 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
     
   setSelectedOption(null);
   setSelectedOptions([]);
-
 
   }
   const receiverEmail = 'support@rankmarg.in'; 
