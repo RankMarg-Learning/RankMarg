@@ -107,12 +107,12 @@ export default function Home() {
                 <p className='hover:underline cursor-pointer '> Welcome, {session.user.name}! </p>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-full bg-[#f6f6f6]">
-              <Link href={`/u/${session?.user?.username}`}>
-                <DropdownMenuItem>
+              <Link  href={`/u/${session?.user?.username}`}>
+                <DropdownMenuItem className="cursor-pointer">
                   Profile
                 </DropdownMenuItem>
               </Link>
-              <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => signOut({ callbackUrl: "/" })}>
                  Log Out
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -142,7 +142,7 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-yellow-900 mb-8"
             >
-              Compete, Learn, Achieve Dream
+              Solve, Learn, Achieve Dream
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -157,8 +157,8 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <Link href={'/challenge'}  className="text-lg px-8 py-4 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white">
-                Let’s Compete!
+              <Link href={'/questionset'}  className="text-lg px-8 py-4 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white">
+              Start Solving!
               </Link>
             </motion.div>
           </div>

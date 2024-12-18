@@ -26,7 +26,7 @@ const QuestionPage = ({ params }: { params: { slug: string } }) => {
       }
       );
       if(question){
-        router.push(`/questions/${question.data.slug}`);
+        router.push(`/question/${question.data.slug}`);
       }
     } catch (error) {
       console.error( error);

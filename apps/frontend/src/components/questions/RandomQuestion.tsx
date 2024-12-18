@@ -45,7 +45,7 @@ const RandomQuestion = ({ setLoading }) => {
       });
 
       if (response.data) {
-        router.push(`/questions/${response.data.slug}`);
+        router.push(`/question/${response.data.slug}`);
       }
     } catch (error) {
       console.error("Error fetching random question:", error);

@@ -10,7 +10,7 @@ interface WhereClauseProps {
 }
 
 export async function GET(req: Request) {
-  const limit = 20;
+  const limit = 30;
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") || "1", 10);
   const subject = searchParams.get("subject");
