@@ -12,11 +12,11 @@ const ChallengeSkeleton = () => {
             <Skeleton className="w-full h-20 rounded-lg" /> 
           </Skeleton>
         </div>
-        
+          
         {/* Skeleton for Recent Challenges */}
         <div className="col-span-12 md:col-span-9 space-y-4">
-          <Skeleton className="relative bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700 py-16 px-6 sm:px-12 md:px-24 lg:px-36 rounded-lg shadow-lg overflow-hidden">
-            <div className="absolute inset-0 bg-white/5 backdrop-blur-lg rounded-lg"></div>
+          <Skeleton className=" h-72 relative bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700 py-16 px-6 sm:px-12 md:px-24 lg:px-36 rounded-lg shadow-lg overflow-hidden">
+            {/* <div className="absolute inset-0 bg-white/5 backdrop-blur-lg rounded-lg"></div>
             <div className="relative z-10 ">
             <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 noselect text-center">
               Join the Ultimate Challenge!
@@ -28,7 +28,7 @@ const ChallengeSkeleton = () => {
                 <Skeleton className="h-12 w-40 rounded-lg mx-auto" />
                 <Skeleton className="h-12 w-40 rounded-lg mx-auto" />
               </div>
-            </div>
+            </div> */}
           </Skeleton>
           <Skeleton className="w-full h-30 rounded-lg" />
           <Card className="p-4 rounded-lg">

@@ -106,8 +106,10 @@ export interface Userprops {
  export type PlayerDetails = {
     id: string;
     username: string;
-    attempt: number;
+    attempt: number[];
     rank: number;
+    avatar: string;
+    playerScore: number;
   };
   
  export type DetailsProps = {
@@ -117,3 +119,42 @@ export interface Userprops {
     player2: PlayerDetails;
     status: string;
   };
+
+  import { Prisma } from '@prisma/client';
+
+export type ChallengeWithDetails = Prisma.ChallengeGetPayload<{
+  select: {
+    challengeId: true;
+    player1Id: true;
+    player2Id: true;
+    status: true;
+    result: true;
+    ChallengeQuestion:{
+      select:{
+          question:true,
+      }
+  },
+    player1: {
+      select: {
+        id: true;
+        username: true;
+        avatar: true;
+        rank: true;
+      };
+    };
+    player2: {
+      select: {
+        id: true;
+        username: true;
+        avatar: true;
+        rank: true;
+      };
+    };
+    player1Score: true;
+    player2Score: true;
+    attemptByPlayer1: true;
+    attemptByPlayer2: true;
+    endedAt: true;
+    createdAt: true;
+  };
+}>;

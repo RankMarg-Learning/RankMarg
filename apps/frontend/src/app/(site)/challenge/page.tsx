@@ -104,7 +104,7 @@ const ChallengePage = () => {
                         {new Date(challenge.createdAt).toLocaleDateString()}
                       </div>
                     </div>
-                    <Link className={`${isScheduleBanner?("hidden"):("")}`} href={`/challenge/${challenge.challengeId}`}>
+                    <Link  href={`/review/${challenge.challengeId}`}>
                       <Button variant="ghost" size="sm" className="ml-auto font-semibold">
                         View 
                         <ChevronRight className="ml-2 h-4 w-4" />

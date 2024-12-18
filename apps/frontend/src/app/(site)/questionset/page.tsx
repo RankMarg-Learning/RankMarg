@@ -23,11 +23,13 @@ import { Tags } from "@/constant/tags";
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { cn } from '@/lib/utils';
 
 const Questionset = () => {
   const [loading, setLoading] = useState(false);
@@ -160,33 +162,81 @@ const Questionset = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Pagination>
+              <Pagination>
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious
+                     className={cn(
+                      "gap-1 pl-2.5",
+                      currentPage === 1 && "cursor-not-allowed opacity-50" 
+                    )}
                         onClick={handlePrevious}
                         aria-disabled={currentPage === 1}
                       />
                     </PaginationItem>
-                    {data?.totalPages &&
-                      Array.from({ length: data.totalPages }).map((_, i) => (
-                        <PaginationItem key={i}>
-                          <PaginationLink
-                            onClick={() => handlePageClick(i + 1)}
-                            className={currentPage === i + 1 ? "font-bold" : ""}
-                          >
-                            {i + 1}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ))}
+                    {data?.totalPages && (
+                      <>
+                        {currentPage > 1 && (
+                          <PaginationItem>
+                            <PaginationLink
+                              onClick={() => handlePageClick(1)}
+                              className={currentPage === 1 ? "font-bold" : ""}
+                            >
+                              1
+                            </PaginationLink>
+                          </PaginationItem>
+                        )}
+
+                        {currentPage > 3 && (
+                          <PaginationEllipsis />
+                        )}
+
+                        {Array.from({ length: 3 }).map((_, index) => {
+                          const pageNumber = currentPage + index;
+                          if (pageNumber <= data.totalPages) {
+                            return (
+                              <PaginationItem key={pageNumber}>
+                                <PaginationLink
+                                  onClick={() => handlePageClick(pageNumber)}
+                                  className={currentPage === pageNumber ? "font-bold" : ""}
+                                >
+                                  {pageNumber}
+                                </PaginationLink>
+                              </PaginationItem>
+                            );
+                          }
+                          return null;
+                        })}
+
+                        {currentPage + 2 < data.totalPages && (
+                          <>
+                            <PaginationEllipsis />
+                            <PaginationItem>
+                              <PaginationLink
+                                onClick={() => handlePageClick(data.totalPages)}
+                                className={currentPage === data.totalPages ? "font-bold" : ""}
+                              >
+                                {data.totalPages}
+                              </PaginationLink>
+                            </PaginationItem>
+                          </>
+                        )}
+                      </>
+                    )}
+
                     <PaginationItem>
-                      <PaginationNext
-                        onClick={handleNext}
-                        aria-disabled={currentPage === data?.totalPages}
-                      />
+                    <PaginationNext
+                      onClick={handleNext}
+                      aria-disabled={currentPage === data?.totalPages}
+                      className={cn(
+                        "gap-1 pr-2.5",
+                        currentPage === data?.totalPages && "cursor-not-allowed opacity-50" 
+                      )}
+                    />
                     </PaginationItem>
                   </PaginationContent>
                 </Pagination>
+
               </CardFooter>
             </Card>
           </TabsContent>
