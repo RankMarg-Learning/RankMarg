@@ -6,10 +6,10 @@ import prisma from "@/lib/prisma";
 export async function GET(req:Request, { params }: { params: { challengeId: string } }){
     const { challengeId } = params;
     try {
-        // const session = await getServerSession(authOptions);
-        // if (!session || !session.user) {
-        //     return new Response("Unauthorized", { status: 401 });
-        // }
+        const session = await getServerSession(authOptions);
+        if (!session || !session.user) {
+            return new Response("Unauthorized", { status: 401 });
+        }
         console.log("Challenge ID: ", challengeId);
         const challenge = await prisma.challenge.findUnique({
             where: { challengeId },
