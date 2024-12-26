@@ -9,16 +9,9 @@ import { useSession } from 'next-auth/react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { QuestionProps } from '@/types';
+import Options from './Options';
 
-//Create True/False options for the question
-const TF = [
-  {
-    content: "True",
-  },
-  {
-    content: "False",
-  },
-];
+
 interface attempDataProps {
   questionId: string;
   userId: string;
@@ -38,18 +31,14 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
   const { data: session } = useSession();
   const router = useRouter();
   const { toast } = useToast()
-  const [isMultiple, setIsMultiple] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
-
+  
   const checkIfSelectedIsCorrect = () => {
-    if (!question || !question.options) {
-      return false; // Safeguard against undefined question or options
+    if (!question.options) {
+      return false; 
     }
-    if (isMultiple) {
-      if (selectedOptions.length === 0) {
-        return false; // No selection
-      }
+    if (selectedOptions.length >0) {
 
       return selectedOptions.every((index) => question.options[index].isCorrect);
     } else {
@@ -69,31 +58,13 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
     }
     
   };
+
   
   
-  useEffect(() => {
-    if (!question || !question.options) return;
+  
+  
 
-    // Determine if the question has multiple correct answers
-    const correctOptionsCount = question.options.filter(option => option.isCorrect).length;
-    setIsMultiple(correctOptionsCount > 1);
-
-    // Reset selection states
-    setSelectedOptions([]);
-    setSelectedOption(null);
-  }, [question]);
-
-  const handleOptionChange = (content: number) => {
-    if (isMultiple) {
-      if (selectedOptions.includes(content)) {
-        setSelectedOptions(selectedOptions.filter(option => option !== content));
-      } else {
-        setSelectedOptions([...selectedOptions, content]);
-      }
-    } else {
-      setSelectedOption(content);
-    }
-  };
+  
  
   const handleOnSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -219,58 +190,15 @@ Best regards,
 
         {/* Right side: Options */}
         <div className="w-full md:w-1/2 p-6 ">
-            {/* MCQ */}
-            { question.type === "MCQ" && (
-              <form onSubmit={handleOnSubmit}>
-                  <h1 className="md:text-2xl font-bold ">Options</h1>
-                  <div className="flex flex-col noselect">
-                      <Select
-                        options={question.options}
-                        selectedOption={selectedOption}
-                        selectedOptions={selectedOptions}
-                        handleOptionChange={handleOptionChange}
-                        isMultiple={isMultiple}
-                      />
-                  </div>
-                  <Button  className="mt-4 " type="submit">
-                    Submit
-                  </Button>
-            </form>)
-            }
-            {
-              question.type === "NUM" && (
-                <form  onSubmit={handleOnSubmit}>
-                  <h1 className="md:text-2xl font-bold mb-4">Numerical </h1>
-                  <Input type="number" step={0.01} placeholder="Enter your answer"  
-                  className='p-3 m-2  [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-                  onChange={(e) => setSelectedOption(parseFloat(e.target.value))}
-                  />
-                  <Button  className="mt-4 " type="submit">
-                  Submit
-                  </Button>
-                </form>
-              )
-            }
-            {
-              question.type === "TF" && (
-                <form onSubmit={handleOnSubmit}>
-                  <h1 className="md:text-2xl font-bold mb-4">True/False </h1>
-                  <div className="flex flex-col space-y-2">
-                    <Select
-                      options={TF}
-                      selectedOption={selectedOption}
-                      selectedOptions={selectedOptions}
-                      handleOptionChange={handleOptionChange}
-                      isMultiple={isMultiple}
-                    />
-                  </div>
-                  <Button  className="mt-4" type="submit">
-                  Submit
-                  </Button>
-                </form>
-              )
-            }
-        
+          <Options type={question.type} options={question.options}
+          selectedOption={selectedOption}
+          selectedOptions={selectedOptions}
+          setSelectedOption={setSelectedOption}
+          setSelectedOptions={setSelectedOptions}
+          />
+          <form onSubmit={handleOnSubmit}>
+            <Button type="submit" className="mt-4">Submit</Button>
+          </form>
        
 
 
