@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react'
 import Select from './Select'
 import { Option } from '@prisma/client';
-import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 interface OptionsProps {
