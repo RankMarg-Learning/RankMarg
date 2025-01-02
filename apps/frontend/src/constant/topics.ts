@@ -22,7 +22,7 @@ export const topics = [
     "Electronic Devices",
     "Communication Systems",
     "Basic Concepts of Chemistry",
-    "Structure of Atom",
+    "Atomic Structure",
     "Classification of Elements and Periodicity in Properties",
     "Chemical Bonding and Molecular Structure",
     "States of Matter",
