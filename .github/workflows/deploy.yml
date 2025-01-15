@@ -3,7 +3,7 @@ name: Deploy and Run Prisma Migrations
 on:
   push:
     branches:
-      - main  # Replace with your production branch
+      - main # Replace with your production branch
 
 jobs:
   deploy:
@@ -14,27 +14,22 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      # Step 2: Set up Node.js (with caching to speed up subsequent builds)
+      # Step 2: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: "16"
 
-      # Step 3: Cache npm dependencies (optional but helpful for faster builds)
-      - name: Cache npm dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      # Step 4: Install dependencies (handles packages/db)
+      # Step 3: Install npm Dependencies
       - name: Install dependencies
         run: |
           cd packages/db
           npm install
           cd ../..
+
+      # Step 4: Install Vercel CLI
+      - name: Install Vercel CLI
+        run: npm install -g vercel
 
       # Step 5: Run Prisma Migrations
       - name: Run Prisma Migrations
