@@ -92,7 +92,7 @@ export default function Questions() {
                 <TableRow key={test.testId}>
                   <TableCell>{test.title}</TableCell>
                   <TableCell>{convertToIST(test.startTime)}</TableCell>
-                  <TableCell>{`http://localhost:3000/test/${test.testId}`}</TableCell>
+                  <TableCell>{`${process.env.NEXTAUTH_URL}/test/${test.testId}`}</TableCell>
                   <TableCell>{test.duration}</TableCell>
                   <TableCell>
                     <Button variant="ghost" size="sm" asChild>
