@@ -142,14 +142,7 @@ const Contribute = () => {
   return (
     <div className="max-w-screen-2xl mx-auto    p-5">
       <div className="grid grid-cols-1 md:grid-cols-12 border">
-        <div className="bg-gray-900 md:col-span-4 p-10 text-white">
-          <h2 className="text-2xl font-bold">Contribute</h2>
-          <p>
-            This is a simple project to demonstrate how to contribute to an open
-            source project. You can contribute to this project by following the
-            steps below.
-          </p>
-        </div>
+        
         <form
           className="md:col-span-8 p-10"
           onSubmit={handleSubmit}

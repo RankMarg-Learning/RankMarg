@@ -23,17 +23,11 @@ const TF = [
   ];
 
 const Options = ({ type,options,selectedOption,selectedOptions,setSelectedOption,setSelectedOptions }: OptionsProps) => {
-    const [isMultiple, setIsMultiple] = useState(false);
-    
-
+    const [isMultiple, setIsMultiple] = useState(false);  
   useEffect(() => {
       if (!options) return;
-  
       const correctOptionsCount = options.filter(option => option.isCorrect).length;
       setIsMultiple(correctOptionsCount > 1);
-  
-      setSelectedOptions([]);
-      setSelectedOption(null);
     }, [options]);
 
  

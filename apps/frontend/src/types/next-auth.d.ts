@@ -8,6 +8,7 @@ declare module 'next-auth' {
         id: string
         username?: string
         createdAt?: string
+        stream?: string
         Role?: "ADMIN" | "USER" | "INSTRUCTOR"
         accessToken?: string
         
@@ -17,6 +18,7 @@ declare module 'next-auth' {
             id: string
             username?: string
             createdAt?: DateTime
+            stream?: string
             Role?: "ADMIN" | "USER" | "INSTRUCTOR"
             accessToken?: string
         } & DefaultSession['user']
@@ -29,6 +31,7 @@ declare module 'next-auth/jwt' {
         username?: string
         createdAt?: string
         Role?: "ADMIN" | "USER" | "INSTRUCTOR"
+        stream?: string
         accessToken?: string
     }
 }
