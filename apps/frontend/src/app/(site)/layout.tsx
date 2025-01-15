@@ -13,7 +13,7 @@ const Layout = ({
   return (
     <ClientSessionProvider>
       <QueryProvider>
-        <div className="m-0 p-0 overflow-x-hidden min-h-screen flex flex-col">
+        <div className="m-0 p-0 min-h-screen flex flex-col">
           <Navbar />
           {children}
           <Toaster />

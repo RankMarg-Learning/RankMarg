@@ -1,40 +1,39 @@
 import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { authOptions } from "../auth/[...nextauth]/options";
-import { getServerSession } from "next-auth";
+import { z } from "zod";
+
+const userSchema = z.object({
+  fullname: z.string().min(1, "Full name is required"),
+  username: z
+    .string()
+    .min(1, "Username is required")
+    .regex(/^[a-zA-Z0-9_]+$/, "Username must contain only letters, numbers, or underscores"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+});
 
 export async function POST(req: Request) {
- 
-  
   const body = await req.json();
-  const { username, email, password  } = body;
-  
-  // Check for missing fields
-  if (!email || !password || !username) {
-    return NextResponse.json({ message: "Email, password, and username are required" });
+  const result = userSchema.safeParse(body);
+
+  if (!result.success) {
+    return NextResponse.json({ message: result.error.errors[0].message }, { status: 400 });
   }
 
-  try {
-    // Check if the user already exists
-    const user = await prisma.user.findUnique({
-      where: {
-        email: email,
-      },
-    });
+  const { fullname, username, email, password } = result.data;
 
-    if (user) {
-      return NextResponse.json({ message: "User already exists" });
+  try {
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return NextResponse.json({ message: "User already exists" }, { status: 400 });
     }
 
-     
-
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create the new user
-    const newUser = await prisma.user.create({
+     await prisma.user.create({
       data: {
+        name: fullname,
         username,
         email,
         password: hashedPassword,
@@ -44,60 +43,27 @@ export async function POST(req: Request) {
       },
     });
 
-    if(!newUser){
-      return NextResponse.json({ message: "User not created" });
-    }
-    
-
     return NextResponse.json({ message: "User created" });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ message: err });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }
 
+// Username availability check
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const username = url.searchParams.get("username");
 
-export async function GET() {
+  if (!username) {
+    return NextResponse.json({ message: "Username is required" }, { status: 400 });
+  }
+
   try {
-    const users = await prisma.user.findMany();
-    return NextResponse.json(users);
-
+    const user = await prisma.user.findUnique({ where: { username } });
+    return NextResponse.json({ available: !user });
   } catch (error) {
-    console.log("[User]:",error);
-
+    console.error(error);
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
-}
-
-export async function PUT(req: Request) {
-  const body = await req.json();
-  const { username ,isCheck} = body;
-  const session = await getServerSession(authOptions);
-  try {
-    const userExists = await prisma.user.findUnique({
-      where: { username },
-  });
-  
-
-  if (!userExists ) {
-
-    if(!isCheck){
-      
-        await prisma.user.update({
-          where: { id: session.user.id }, 
-          data: { username }, // Update username
-      });
-      
-    }
-      return Response.json({
-        msg: 'Username updated',
-        available:true
-      })
-  }
-  return Response.json({ msg: 'Username is already taken',available:false });
-   
-  } catch (error) {
-    console.log("Dynamic-[User]:",error);
-
-  }
-
 }

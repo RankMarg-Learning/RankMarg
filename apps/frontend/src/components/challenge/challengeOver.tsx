@@ -35,7 +35,24 @@ const ChallengeOver = ({ details }: { details: DetailsProps }) => {
             {[player1, player2].map((player, index) => (
               <div key={index} className="text-center px-4 mb-4 sm:mb-0">
                 <h3 className="font-semibold text-lg sm:text-xl text-yellow-900"><Link href={`/u/${player.username}`}>{player.username}</Link></h3>
-                <Badge variant="outline" className="mt-2">Rank: {player.rank}</Badge>
+                
+                <Badge variant="outline" className="mt-2">Rating: {player.rank}
+                {
+                  player.playerScore > 0 ? (
+                    <span className=" ml-1 text-green-500 text-xs">
+                      +{player.playerScore}
+                    </span>
+                  ) : player.playerScore < 0 ? (
+                    <span className="ml-1 text-xs text-red-500">
+                      {player.playerScore}
+                    </span>
+                  ) : (
+                    <span className="text-xs">
+                       0
+                    </span>
+                  )
+                }
+                </Badge>
               </div>
             ))}
           </div>
@@ -46,7 +63,8 @@ const ChallengeOver = ({ details }: { details: DetailsProps }) => {
               <li key={index} className="border-b border-yellow-200 pb-4 last:border-b-0">
                 <div className=" justify-between items-start sm:items-center mb-2">
                   <div className="text-yellow-900 mb-2 sm:mb-0">
-                    <span className="font-semibold">Q{index + 1}: {question.topic}</span>
+                    <span>Q{index + 1}: </span>
+                    <Link href={`/question/${question.slug}`} className="font-semibold cursor-pointer hover:underline">{question.title}</Link>
                     <Badge variant="secondary" className="ml-2">{question.difficulty}</Badge>
                   </div>
                   <div className="flex flex-col justify-between  sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-2">

@@ -104,8 +104,8 @@ const PrivacyPolicy: React.FC = () => {
           If you have questions or concerns about this Privacy Policy, please contact us:
         </p>
         <ul className="list-disc pl-5">
-          <li>Email: <a href="mailto:support@rankmarg.com" className="text-yellow-500 hover:underline">support@rankmarg.com</a></li>
-          <li>Address: [Insert company address]</li>
+          <li>Email: <a href="mailto:support@rankmarg.in" className="text-yellow-500 hover:underline">support@rankmarg.in</a></li>
+          {/* <li>Address: [Insert company address]</li> */}
         </ul>
       </section>
     </div>

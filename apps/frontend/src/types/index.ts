@@ -3,6 +3,10 @@ import { Question } from "@prisma/client";
 export * from "./typeAPI";
 
 
+export type QuestionWithOptions = Question & {
+  options: Option[];
+};
+
 export interface Userprops {
     id: string;
     username: string;
@@ -17,33 +21,34 @@ export interface Userprops {
   export interface QuestionProps {
     id: string;
     slug: string;
-    type: "MCQ" | "NUM" | "TF"; // Use your QuestionType enum values
-    content: string; // Content of the question (e.g., Markdown or text)
-    difficulty: string; // Difficulty level (e.g., 'easy', 'medium', 'hard')
-    topic: string; // Topic of the question
-    subject: string; // Subject of the question
-    class: string; // Class level (e.g., '11th', '12th', 'Foundation')
-    tag?: string; // List of tags related to the question
-    options: Option[]; // Options related to this question
-    isnumerical?: number; // Numerical answer if applicable
-    isTrueFalse?: boolean; // True/False answer if applicable
-    attempts: Attempt[]; // List of attempts related to this question
-    challenge: ChallengeProps[]; // List of challenges related to this question
-    accuracy?: number; // Accuracy of the question
-    questionTime?: number; // Time taken to solve the question
-    createdAt: string; // DateTime in ISO string format
+    type: "MCQ" | "NUM" | "TF"; 
+    content: string; 
+    difficulty: string; 
+    topic: string; 
+    subject: string; 
+    class: string;
+    tag?: string; 
+    options: Option[]; 
+    isnumerical?: number; 
+    isTrueFalse?: boolean;
+    attempts: Attempt[]; 
+    challenge: ChallengeProps[];
+    accuracy?: number; 
+    questionTime?: number; 
+    createdAt: string; 
   }
   export interface Option {
     id: string;
-    content: string; // Content of the option (e.g., Markdown or text)
-    isCorrect: boolean; // Indicates if this option is correct
+    content: string; 
+    isCorrect: boolean; 
+    questionId: string; 
   }
   
   export interface Attempt {
-    userId: string; // ID of the user who attempted the question
-    questionId: string; // ID of the question being attempted
-    isCorrect: boolean; // Whether the user's attempt was correct
-    solvedAt: string; // DateTime in ISO string format
+    userId: string; 
+    questionId: string; 
+    isCorrect: boolean; 
+    solvedAt: string; 
   }
 
   export interface ChallengeProps {
@@ -62,21 +67,21 @@ export interface Userprops {
   }
   
   export interface ContributeFormProps {
-    slug: string; // Unique slug for the question
-    title: string; // Title or topic of the question
-    topicTitle: string; // Title or topic of the question
-    questionType: "MCQ" | "NUM" | "TF"; // Type of the question
-    std: string; // Class level (e.g., '11th', '12th', 'Foundation')
-    difficulty: string; // Difficulty level (e.g., 'easy', 'medium', 'hard')
-    subject: string; // List of subjects related to the question
-    tag?: string; // List of tags related to the question
-    content: string; // Content of the question
-    options?: Option[]; // Options for MCQ and MultipleOptionCorrect types
-    questionTime?: number; // Time taken to solve the question
-    numericalAnswer?: number; // Numerical answer for Numerical type questions
-    isTrueFalse?: boolean; // True/False answer for True/False type questions
-    stream?: "NEET" | "JEE"; // Stream of the question
-    hint: string; // Hint for the question
+    slug: string;
+    title: string;
+    topicTitle: string; 
+    questionType: "MCQ" | "NUM" | "TF"; 
+    std: string; 
+    difficulty: string; 
+    subject: string; 
+    tag?: string; 
+    content: string; 
+    options?: Option[]; 
+    questionTime?: number; 
+    numericalAnswer?: number; 
+    isTrueFalse?: boolean; 
+    stream?: "NEET" | "JEE"; 
+    hint: string; 
   }
  
 
@@ -106,8 +111,10 @@ export interface Userprops {
  export type PlayerDetails = {
     id: string;
     username: string;
-    attempt: number;
+    attempt: number[];
     rank: number;
+    avatar: string;
+    playerScore: number;
   };
   
  export type DetailsProps = {
@@ -117,3 +124,42 @@ export interface Userprops {
     player2: PlayerDetails;
     status: string;
   };
+
+  import { Prisma } from '@prisma/client';
+
+export type ChallengeWithDetails = Prisma.ChallengeGetPayload<{
+  select: {
+    challengeId: true;
+    player1Id: true;
+    player2Id: true;
+    status: true;
+    result: true;
+    ChallengeQuestion:{
+      select:{
+          question:true,
+      }
+  },
+    player1: {
+      select: {
+        id: true;
+        username: true;
+        avatar: true;
+        rank: true;
+      };
+    };
+    player2: {
+      select: {
+        id: true;
+        username: true;
+        avatar: true;
+        rank: true;
+      };
+    };
+    player1Score: true;
+    player2Score: true;
+    attemptByPlayer1: true;
+    attemptByPlayer2: true;
+    endedAt: true;
+    createdAt: true;
+  };
+}>;

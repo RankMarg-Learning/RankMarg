@@ -29,7 +29,7 @@ const SubjectStats = ({
                           <p className="font-medium">{name}</p>
                           <p className="text-sm text-muted-foreground">{subject.AttemptCount} / {subject.TotalQuestion} Questions</p>
                         </div>
-                        <Progress value={(subject.AttemptCount / subject.TotalQuestion) * 100} className="h-2"  />
+                        <Progress value={(subject.AttemptCount / subject.TotalQuestion) * 100} className="h-2" indicatorColor="bg-yellow-400" />
                       </div>
                     ))}
                   </div>
