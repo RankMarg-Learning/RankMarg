@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { TableCell, TableRow } from "@/components/ui/table";
+import { TableCell } from "@/components/ui/table";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import { QuestionTableProps } from "@/types";
 import Link from "next/link";

@@ -19,7 +19,7 @@ export async function POST(req:Request){
             }
         })
         if(!isReJoin){
-            const JoinTest = await prisma.testParticipation.create({
+             await prisma.testParticipation.create({
                 data:{
                   testId: testId,
                   userId:userId  
