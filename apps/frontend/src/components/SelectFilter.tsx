@@ -12,8 +12,8 @@ type FilterSelectProps = {
   width: string;
   placeholder: string;
   selectName: string[];
-  isMultiple?: boolean; // Optional prop to toggle multiple select functionality
-  onChange: (values: string[]) => void; // Callback to notify parent about selected values
+  isMultiple?: boolean; 
+  onChange: (values: string[]) => void; 
 };
 
 const FilterSelect = ({

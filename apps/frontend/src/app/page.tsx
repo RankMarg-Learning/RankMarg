@@ -7,7 +7,8 @@ import Link from "next/link"
 import Image from "next/image"
 import {  Brain, Trophy, BarChart2, Gamepad } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useSession } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 const BlobShape = ({ className }: { className?: string }) => (
   <motion.div
@@ -64,6 +65,14 @@ const rankingData = [
     {
       rank: "Luminary",
       subRanks: ["Luminary I", "Luminary II", "Luminary III"],
+    },
+    {
+      rank: "Visionary",
+      subRanks: ["Visionary I", "Visionary II", "Visionary III"],
+    },
+    {
+      rank: "Champion",
+      subRanks: ["Champion I", "Champion II"],
     }
   ]
 
@@ -93,9 +102,21 @@ export default function Home() {
               <Button>Register</Button>
             </Link>
           </div>):(
-             <Link href={`/u/${session.user.username}`}>
-             <p className='hover:underline'> Welcome, {session.user.name}! </p>
-            </Link>
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                <p className='hover:underline cursor-pointer '> Welcome, {session.user.name}! </p>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-full bg-[#f6f6f6]">
+              <Link  href={`/u/${session?.user?.username}`}>
+                <DropdownMenuItem className="cursor-pointer">
+                  Profile
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => signOut({ callbackUrl: "/" })}>
+                 Log Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+            </DropdownMenu>
           )
 
         }
@@ -121,7 +142,7 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-yellow-900 mb-8"
             >
-              Compete, Learn, Achieve Dream
+              Solve, Learn, Achieve Dream
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -129,15 +150,15 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="text-xl text-yellow-700 mb-12 max-w-2xl mx-auto"
             >
-              Learn smarter with our platform made for NEET and JEE students. Practice with topic-wise questions, compete in fun challenges, and track your progress to improve your rank and score better!
+              Learn smarter with our platform made for JEE students. Practice with topic-wise questions, compete in fun challenges, and track your progress to improve your rank and score better!
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <Link href={'/challenge'}  className="text-lg px-8 py-4 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white">
-                Start Challenging Yourself
+              <Link href={'/questionset'}  className="text-lg px-8 py-4 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white">
+              Start Solving!
               </Link>
             </motion.div>
           </div>
@@ -188,7 +209,7 @@ export default function Home() {
               {[
                 {
                   title: "Comprehensive Question Bank",
-                  description: "Access a wide range of expertly curated questions tailored to JEE and NEET. With AI-powered recommendations, our question bank adapts to your progress.",
+                  description: "Access a wide range of expertly curated questions tailored to JEE. With AI-powered our question bank adapts to your progress.",
                   icon: Brain,
                 },
                 {

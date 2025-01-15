@@ -1,0 +1,37 @@
+name: Deploy and Run Prisma Migrations
+
+on:
+  push:
+    branches:
+      - main # Replace with your production branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+
+      - name: Install dependencies
+        run: |
+          cd packages/db
+          npm install
+          cd ../..
+
+      - name: Run Prisma Migrations
+        run: |
+          cd packages/db
+          npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Deploy to Vercel
+        run: vercel --prod --yes --name "rank-marg-10" --token ${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

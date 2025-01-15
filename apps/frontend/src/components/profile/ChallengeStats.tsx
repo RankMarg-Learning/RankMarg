@@ -10,9 +10,8 @@ type ChallengeStatsProps = {
   stats: UserChallengeStats;  // Use the UserChallengeDetails type here
 };
 
-// Utility function to transform params to chartData
 const transformParamsToChartData = (params) => {
-  let cumulativeRank = 50;
+  let cumulativeRank = 100;
   return params.map((item) => {
     cumulativeRank += item.userScore;
     const correctAttempts = item.attemptScore.filter((score) => score === 1).length;
@@ -31,7 +30,6 @@ export function ChallengeStats({stats}:ChallengeStatsProps) {
   const initialChartData = transformParamsToChartData(stats.recentChallenges);
   const [chartData] = React.useState(initialChartData);
 
-  // Get the date 30 days ago from today
   const lastMonthDate = new Date();
   lastMonthDate.setDate(lastMonthDate.getDate() - 30);
 
