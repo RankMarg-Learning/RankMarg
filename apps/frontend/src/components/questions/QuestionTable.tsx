@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
 import { Tags } from "@/constant/tags";
-import { useSession } from "next-auth/react";
 import { Stream } from "@prisma/client";
 
 interface QuestionsetProps {
