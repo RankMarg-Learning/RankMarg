@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { HelpCircle, Clock } from 'lucide-react'
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export interface Test {
   id: string;
@@ -88,7 +89,13 @@ const SubjectCard = ({ subject, tests }: { subject: string, tests: Test[] }) => 
 );
 
 const SubjectWiseTests = () => {
-  const stream = localStorage.getItem("stream")
+  const [stream, setStream] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setStream(localStorage.getItem("stream"));
+    }
+  }, []);
   const { data: tests, isLoading, error } = useQuery({
     queryKey: ["tests", "subject-wise"],
     queryFn: async () => {
