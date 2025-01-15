@@ -6,21 +6,24 @@ export { default } from "next-auth/middleware";
 
 export async function middleware(request: NextRequest) {
     const token = await getToken({ req: request as unknown as NextApiRequest});
-    
     const url = request.nextUrl;
 
-    if (!token) {
-        return NextResponse.rewrite(new URL('/sign-in', request.url));
-    }
 
     if (token && (
         url.pathname.startsWith('/sign-in') ||
-        url.pathname.startsWith('/sign-up')
+        url.pathname.startsWith('/sign-up') 
     )) {
-        return NextResponse.redirect(new URL('/', request.url));
+        return NextResponse.redirect(new URL('/questionset', request.url));
+    }
+    
+    if(token && token.Role === 'USER' && url.pathname.startsWith('/admin')) {
+        return NextResponse.redirect(new URL('/questionset', request.url));
     }
 
-    if(!token && url.pathname.startsWith('/challenge')) {
+    const test = url.pathname.match(/^\/test\/([^/]+)\/instructions$/) || url.pathname.match(/^\/test\/([^/]+)\$/);
+
+    if(!token && ( url.pathname.startsWith('/challenge') || url.pathname.startsWith('/tests') || test )) {
+
         return NextResponse.redirect(new URL('/sign-in', request.url));
     }
 
@@ -28,5 +31,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/sign-in', '/question/:path*', '/question/:questionId', '/challenge'],
+    matcher: ['/sign-in','/sign-up', '/question/:path*', '/question/:questionId', '/challenge','/admin/:path*','/test/:testId','/test/:testId/:path*','/tests'],
 };

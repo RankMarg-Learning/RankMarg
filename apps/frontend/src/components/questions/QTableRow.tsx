@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export const QTableRow = ({ problem }: { problem: QuestionTableProps }) => {
   return (
-    <TableRow key={problem.id} className="sm:text-sm">
+    <>
      
       <TableCell className="hidden md:table-cell"    >{problem.class}</TableCell>
       
@@ -58,6 +58,6 @@ export const QTableRow = ({ problem }: { problem: QuestionTableProps }) => {
       <TableCell className="hidden">{problem.accuracy}%</TableCell>
      
       
-    </TableRow>
+    </>
   );
 };

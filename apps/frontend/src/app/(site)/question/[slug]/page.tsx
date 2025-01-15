@@ -16,23 +16,7 @@ interface attempDataProps {
 
 const QuestionPage = ({ params }: { params: { slug: string } }) => {
   const router = useRouter();
-  const handleRandom = async() => {
-    const storedFilters = JSON.parse(localStorage.getItem('questionFilters') || '{}');
-    try {
-      const question = await axios.post(`/api/pickRandom`,
-      {
-        topic: storedFilters.topic,
-        difficulty: storedFilters.difficulty,
-      }
-      );
-      if(question){
-        router.push(`/question/${question.data.slug}`);
-      }
-    } catch (error) {
-      console.error( error);
-    }
-
-  }
+  
 
   const { slug } = params;
   const { data: question, isLoading } = useQuery({
@@ -48,6 +32,24 @@ const QuestionPage = ({ params }: { params: { slug: string } }) => {
     } catch (error) {
       console.error(error);
     }
+  }
+
+  const handleRandom = async() => {
+    const storedFilters = JSON.parse(localStorage.getItem('questionFilters') || '{}');
+    try {
+      const res = await axios.post(`/api/pickRandom`,
+      {
+        topic: question.topic || storedFilters.topic,
+        difficulty: storedFilters.difficulty,
+      }
+      );
+      if(res){
+        router.push(`/question/${res.data.slug}`);
+      }
+    } catch (error) {
+      console.error( error);
+    }
+
   }
   
 
@@ -69,7 +71,7 @@ const QuestionPage = ({ params }: { params: { slug: string } }) => {
         onClick={handleRandom}
         >
           <Shuffle className="h-4 w-4" />
-          <span>Pick random</span>
+          <span>Pick random Question</span>
         </Button>
       </div>
     </div>

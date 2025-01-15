@@ -1,11 +1,14 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { ContributeFormProps } from "@/types";
+import { Stream } from "@prisma/client";
 
 interface WhereClauseProps {
   subject?: string;
   difficulty?: string;
   tag?: string;
+  topic?: string;
+  stream?: Stream;
   OR?: Array<{ content?: { contains: string; mode: "insensitive" } } | { topic?: { contains: string; mode: "insensitive" } }>;
 }
 
@@ -17,7 +20,8 @@ export async function GET(req: Request) {
   const difficulty = searchParams.get("difficulty");
   const tags = searchParams.get("tags");
   const search = searchParams.get("search");
-
+  const topic = searchParams.get("topic");
+  const stream = searchParams.get("stream") as Stream;
   const skip = (page - 1) * limit;
 
   try {
@@ -31,6 +35,13 @@ export async function GET(req: Request) {
         { topic: { contains: search, mode: "insensitive" } },
       ];
     }
+    if (topic) {
+      whereClause.topic = topic;
+    }
+    if (stream) {
+      whereClause.stream = stream;
+    }
+
 
     const [questions, total] = await Promise.all([
       prisma.question.findMany({
@@ -75,57 +86,57 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-    const body = await req.json();
-    const formState: ContributeFormProps = body;
-    try {
-      if (
-        !formState.stream ||
-        !formState.title ||
-        !formState.slug ||
-        !formState.questionType ||
-        !formState.content ||
-        !formState.difficulty ||
-        !formState.subject ||
-        !formState.std ||
-        !formState.topicTitle 
-      ) {
-        return NextResponse.json({ error: "Missing required fields" });
-      }
-  
-      const question = await prisma.question.create({
-        data: {
-          slug: formState.slug,
-          title: formState.title,
-          type: formState.questionType,
-          content: formState.content,
-          difficulty: formState.difficulty,
-          topic: formState.topicTitle,
-          subject: formState.subject,
-          hint: formState.hint,
-          stream: formState.stream,
-          class: formState.std,
-          tag: formState.tag,
-          questionTime: formState.questionTime,
-          isnumerical: formState.numericalAnswer,
-          isTrueFalse: formState.isTrueFalse,
-          options: {
-            create: formState.options?.map((option) => ({
-              content: option.content,
-              isCorrect: option.isCorrect,
-            })),
-        },
-          
-          createdAt: new Date(),
-        },
-      });
-      // console.log(question);
-  
-      if (!question) {
-        return NextResponse.json({ error: "Failed to create question" });
-      }
-      return NextResponse.json({ message: "Question created successfully" });
-    } catch (err) {
-      console.error(err);
-      return NextResponse.json({ message: err });
+  const body = await req.json();
+  const formState: ContributeFormProps = body;
+  try {
+    if (
+      !formState.stream ||
+      !formState.title ||
+      !formState.slug ||
+      !formState.questionType ||
+      !formState.content ||
+      !formState.difficulty ||
+      !formState.subject ||
+      !formState.std ||
+      !formState.topicTitle
+    ) {
+      return NextResponse.json({ error: "Missing required fields" });
     }
+
+    const question = await prisma.question.create({
+      data: {
+        slug: formState.slug,
+        title: formState.title,
+        type: formState.questionType,
+        content: formState.content,
+        difficulty: formState.difficulty,
+        topic: formState.topicTitle,
+        subject: formState.subject,
+        hint: formState.hint,
+        stream: formState.stream,
+        class: formState.std,
+        tag: formState.tag,
+        questionTime: formState.questionTime,
+        isnumerical: formState.numericalAnswer,
+        isTrueFalse: formState.isTrueFalse,
+        options: {
+          create: formState.options?.map((option) => ({
+            content: option.content,
+            isCorrect: option.isCorrect,
+          })),
+        },
+
+        createdAt: new Date(),
+      },
+    });
+    // console.log(question);
+
+    if (!question) {
+      return NextResponse.json({ error: "Failed to create question" });
+    }
+    return NextResponse.json({ message: "Question created successfully" });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ message: err });
   }
+}

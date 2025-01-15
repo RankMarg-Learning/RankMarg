@@ -49,7 +49,7 @@ export default function RootLayout({
         <GoogleAnalytics trackingId={GA_TRACKING_ID} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased default-scroll`}
         >
         {children}
       </body>

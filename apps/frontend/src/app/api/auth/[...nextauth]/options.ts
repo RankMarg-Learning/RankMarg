@@ -85,31 +85,28 @@ export const authOptions: NextAuthOptions = {
                         return true;
                         
                     }else{
-                        
                         console.log("User already exists");
-
                     }
 
             } catch (error) {
                 console.log(error);
                 return false;
             }
-
-
-
-            
-      
             return true;
           },
 
 
         async jwt({ token, user }) {
             if(user){
-                token.id = user.id.toString();
+              const userData = await prisma.user.findUnique({
+                where: { email: user.email },
+              });
+                token.id = userData.id.toString();
                 token.username = user.username;
                 token.email = user.email
                 token.image = user.image
-                token.Role = user.Role
+                token.Role = userData.Role || 'USER'
+                token.stream = userData.stream || ""
                 token.accessToken = user.accessToken
                 
             }
@@ -122,6 +119,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.email = token.email;
                 session.user.image = token.picture;
                 session.user.Role = token.Role;
+                session.user.stream = token.stream;
                 session.user.accessToken = token.accessToken;
             }
 
@@ -133,6 +131,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.name = userData.name;
                 session.user.username = userData.username || session.user.username;
                 session.user.image = userData.avatar || session.user.image;
+                session.user.stream = userData.stream || session.user.stream;
                 session.user.createdAt = userData.createdAt;
                 session.user.Role = userData.Role;
                 session.user.accessToken = jwt.sign({id:userData.id,username:userData.username},process.env.NEXTAUTH_SECRET)
