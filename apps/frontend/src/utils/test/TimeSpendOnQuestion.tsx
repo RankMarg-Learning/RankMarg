@@ -43,7 +43,7 @@ const TimeSpendOnQuestion = ({ currentQuestion }: { currentQuestion: number }) =
   };
 
   return (
-    <Badge className="" variant="outline">
+    <Badge className="hidden" variant="outline">
       Question time: {formatTime(timings[currentQuestion] || 0)}
     </Badge>
   );

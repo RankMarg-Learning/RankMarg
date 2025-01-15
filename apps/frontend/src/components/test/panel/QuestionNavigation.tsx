@@ -42,9 +42,9 @@ export function QuestionNavigation() {
     const status = questionsData[questionNumber]?.status || QuestionStatus.NotAnswered;
     const isCurrentQuestion = questionNumber === currentQuestion;
 
-    const baseClass = "h-9 w-9 p-0 text-sm font-medium";
+    const baseClass = "md:h-10 md:w-10 h-9 w-9 p-0 text-sm font-medium";
 
-    return `${baseClass} ${statusClasses[status]} ${isCurrentQuestion ? 'ring-2 ring-offset-2 ring-blue-500' : ''}`;
+    return `${baseClass} ${statusClasses[status]} ${isCurrentQuestion ? 'ring-2 ring-offset-2 ring-yellow-300' : ''}`;
   };
 
 
@@ -55,8 +55,8 @@ export function QuestionNavigation() {
   // }
 
   const NavigationContent = () => (
-    <div className="flex flex-col   h-full md:h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-3.5rem)] ">
-      <div className="p-2 border-b space-y-3">
+    <div className="flex flex-col   h-full md:h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-3.5rem)]  ">
+      <div className="p-2 border-b space-y-3 mt-3">
         {Object.entries(getStatusCounts()).map(([status, count]) => (
           <div key={status} className="flex flex-1 items-center gap-1">
             <div className={`h-5 w-5 text-center text-sm rounded-sm justify-center  ${statusClasses[status as QuestionStatus]}`} >
@@ -75,7 +75,7 @@ export function QuestionNavigation() {
             const isSingleSection = Object.keys(testSection).length === 1;
 
             return (
-              <div key={key} className="mb-4">
+              <div key={key} className="mb-4 ">
                 {!isSingleSection && (
                   <div className="text-left text-xs font-semibold text-gray-700 mb-2">
                     {sectionName} 
@@ -83,7 +83,8 @@ export function QuestionNavigation() {
                   </div>
                 )}
 
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2.5 justify-start items-center"
+                >
                   {Array.from({ length: end - start + 1 }, (_, i) => start + i).map((questionNumber) => (
                     <Button
                       key={questionNumber}
@@ -128,7 +129,7 @@ export function QuestionNavigation() {
             <Menu className="h-4 w-4" />
           </Button>
         </SheetTrigger>
-        <SheetContent  side="right" className="lg:hidden md:hidden w-[280px] sm:w-[300px] p-0 bg-white">
+        <SheetContent  side="right" className="lg:hidden md:hidden w-[252px] sm:w-[280px] p-0 bg-white">
           <SheetHeader className="hidden">
             <SheetTitle>Question Line</SheetTitle>
             <SheetDescription>
