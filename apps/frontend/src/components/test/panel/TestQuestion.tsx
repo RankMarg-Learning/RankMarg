@@ -64,6 +64,8 @@ export function TestQuestion() {
 
 
 
+  
+
   // Handlers
   const onMarkForReview = () => {
     setQuestionsData((prev) => ({
@@ -75,7 +77,7 @@ export function TestQuestion() {
             ? QuestionStatus.AnsweredAndMarked
             : QuestionStatus.MarkedForReview,
         selectedOptions:
-          question?.type === "MCQ" && selectedOption !== null
+            selectedOption !== null 
             ? [selectedOption]
             : selectedOptions,
         type: question?.type === 'MCQ' ? (selectedOption !== null ? 'single' : 'multiple') : question?.type,
@@ -116,7 +118,7 @@ export function TestQuestion() {
               : selectedOptions
             : [selectedOption],
         status:
-          (question?.type === "MCQ" && selectedOption !== null) ||
+          ( selectedOption !== null) ||
             selectedOptions.length > 0
             ? QuestionStatus.Answered
             : QuestionStatus.NotAnswered,
