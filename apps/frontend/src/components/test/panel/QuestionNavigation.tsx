@@ -75,7 +75,7 @@ export function QuestionNavigation() {
             const isSingleSection = Object.keys(testSection).length === 1;
 
             return (
-              <div key={key} className="mb-4 ">
+              <div key={key} className=" mb-4  ">
                 {!isSingleSection && (
                   <div className="text-left text-xs font-semibold text-gray-700 mb-2">
                     {sectionName} 
@@ -83,7 +83,7 @@ export function QuestionNavigation() {
                   </div>
                 )}
 
-                <div className="flex flex-wrap gap-2.5 justify-start items-center"
+                <div className="flex flex-wrap gap-2  items-center"
                 >
                   {Array.from({ length: end - start + 1 }, (_, i) => start + i).map((questionNumber) => (
                     <Button
@@ -129,7 +129,7 @@ export function QuestionNavigation() {
             <Menu className="h-4 w-4" />
           </Button>
         </SheetTrigger>
-        <SheetContent  side="right" className="lg:hidden md:hidden w-[252px] sm:w-[280px] p-0 bg-white">
+        <SheetContent  side="right" className="lg:hidden md:hidden w-[240px] sm:w-[280px] p-0 bg-white">
           <SheetHeader className="hidden">
             <SheetTitle>Question Line</SheetTitle>
             <SheetDescription>
@@ -141,7 +141,7 @@ export function QuestionNavigation() {
         </SheetContent>
       </Sheet>
 
-      <div className="hidden lg:block w-1/5 border-l">
+      <div className="hidden lg:block w-1/6 border-l">
         <NavigationContent />
       </div>
     </>
