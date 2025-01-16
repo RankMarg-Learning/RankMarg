@@ -34,12 +34,14 @@ interface QuestionsetProps {
   selectedQuestions?: string[];
   onSelectedQuestionsChange?: (selected: string[]) => void;
   isCheckBox?: boolean;
+  isPublished?: boolean;
 }
 
 const Questionset: React.FC<QuestionsetProps> = ({
   selectedQuestions = [],
   onSelectedQuestionsChange,
   isCheckBox = false,
+  isPublished = false,
 }) => {
   const [subject, setSubject] = useState("");
   const [difficulty, setDifficulty] = useState("");
@@ -60,10 +62,10 @@ const Questionset: React.FC<QuestionsetProps> = ({
   };
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["questions", currentPage, subject, difficulty, tags, search],
+    queryKey: ["questions", currentPage, subject, difficulty, tags, search,isPublished],
     queryFn: async () => {
       const response = await axios.get<QuestionSetProps>(
-        `/api/question?page=${currentPage}&subject=${subject}&difficulty=${difficulty}&tags=${tags}&search=${search}&stream=${stream}`
+        `/api/question?page=${currentPage}&subject=${subject}&difficulty=${difficulty}&tags=${tags}&search=${search}&stream=${stream}&isPublished=${isPublished}`
       );
       return response.data;
     },

@@ -8,9 +8,9 @@ export const QTableRow = ({ problem }: { problem: QuestionTableProps }) => {
   return (
     <>
      
-      <TableCell className="hidden md:table-cell"    >{problem.class}</TableCell>
+      <TableCell  >{problem.class}</TableCell>
       
-      <TableCell className="hidden md:table-cell">
+      <TableCell >
         <Badge
           variant={
             problem.difficulty as
@@ -31,7 +31,7 @@ export const QTableRow = ({ problem }: { problem: QuestionTableProps }) => {
       <TableCell className="font-medium  md:table-cell ">
         <Link
           href={`/question/${problem.slug}`}
-          className="hover:text-yellow-600 flex flex-wrap"
+          className="hover:text-yellow-600 "
         >
           <MarkdownRenderer content={problem.title.slice(0,80)} />
         </Link>
@@ -46,7 +46,7 @@ export const QTableRow = ({ problem }: { problem: QuestionTableProps }) => {
         </TableCell>
      
       
-      <TableCell className="hidden md:table-cell">
+      <TableCell className=" md:table-cell">
         {/* <Badge
           variant={
             "secondary"

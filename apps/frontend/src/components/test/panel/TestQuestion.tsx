@@ -31,7 +31,8 @@ export function TestQuestion() {
       return { correctMarks: 0, negativeMarks: 0 };
     }
     for (const [key, value] of Object.entries(testSection)) {
-      const [ range] = key.split('_');
+      const range = key.split('_')[1];
+
       const [start, end] = range.split('-').map(Number);
       if (currentQuestionIndex >= start && currentQuestionIndex <= end) {
         return {

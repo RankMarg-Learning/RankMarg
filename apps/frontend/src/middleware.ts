@@ -13,11 +13,11 @@ export async function middleware(request: NextRequest) {
         url.pathname.startsWith('/sign-in') ||
         url.pathname.startsWith('/sign-up') 
     )) {
-        return NextResponse.redirect(new URL('/questionset', request.url));
+        return NextResponse.redirect(new URL('/tests', request.url));
     }
     
     if(token && token.Role === 'USER' && url.pathname.startsWith('/admin')) {
-        return NextResponse.redirect(new URL('/questionset', request.url));
+        return NextResponse.redirect(new URL('/tests', request.url));
     }
 
     const test = url.pathname.match(/^\/test\/([^/]+)\/instructions$/) || url.pathname.match(/^\/test\/([^/]+)\$/);

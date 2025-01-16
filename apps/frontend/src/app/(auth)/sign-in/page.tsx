@@ -50,7 +50,7 @@ const SignInForm = () => {
       if (result?.error) {
         alert(result.error);
       } else {
-        router.push("/");
+        router.push("/tests");
       }
     } catch (error) {
       console.error("Login failed:", error);
@@ -115,7 +115,7 @@ const SignInForm = () => {
             <Button
               variant="outline"
               className="w-full mt-4"
-              onClick={() => signIn("google", { callbackUrl: "/questionset" })}
+              onClick={() => signIn("google", { callbackUrl: "/tests" })}
             >
               Login with Google
             </Button>
