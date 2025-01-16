@@ -13,6 +13,7 @@ export async function GET(req: Request) {
 
         const tests = await prisma.test.findMany({
             where: {
+                isPublished: true,
                 examType: examType ,
                 stream: session?.user?.stream || null
             },
