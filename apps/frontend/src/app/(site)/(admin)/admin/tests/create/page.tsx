@@ -178,7 +178,7 @@ export default function CreateTest() {
                     <Label htmlFor="examType">Exam Type</Label>
                     <SelectFilter
                       width={"full"}
-                      placeholder="Difficulty"
+                      placeholder="Exam Type"
                       selectName={["Default", "Mock-Test", "Topic-wise", "Subject-wise"]}
                       onChange={handleExamType}
                     />
