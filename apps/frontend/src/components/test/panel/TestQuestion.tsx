@@ -6,7 +6,6 @@ import { useTestContext } from "@/context/TestContext";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import TimeSpendOnQuestion from "@/utils/test/TimeSpendOnQuestion";
 import { QuestionStatus } from "@/utils";
-import { get } from "http";
 
 export function TestQuestion() {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
