@@ -178,7 +178,7 @@ export default function CreateTest() {
                     <Label htmlFor="examType">Exam Type</Label>
                     <SelectFilter
                       width={"full"}
-                      placeholder="Difficulty"
+                      placeholder="Exam Type"
                       selectName={["Default", "Mock-Test", "Topic-wise", "Subject-wise"]}
                       onChange={handleExamType}
                     />
@@ -311,6 +311,7 @@ export default function CreateTest() {
                     onSelectedQuestionsChange={handleQuestionSelect}
                     selectedQuestions={selectedQuestions}
                     isCheckBox={true}
+                    isPublished={true}
                   />
                 </div>
                 <Button type="button" onClick={handleAddSection}>Add Section</Button>

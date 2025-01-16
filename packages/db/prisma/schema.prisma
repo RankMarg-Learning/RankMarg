@@ -156,8 +156,8 @@ model TestParticipation {
   accuracy       Float?           @default(0)
   timing         Int?             @default(0)
   status         TestStatus       @default(JOIN)
-  test           Test             @relation(fields: [testId], references: [testId])
-  user           User             @relation(fields: [userId], references: [id])
+  test           Test             @relation(fields: [testId], references: [testId], onDelete: Cascade)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   TestSubmission TestSubmission[]
 
   @@unique([userId, testId])
