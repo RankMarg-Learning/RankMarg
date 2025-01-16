@@ -115,7 +115,7 @@ const SignInForm = () => {
             <Button
               variant="outline"
               className="w-full mt-4"
-              onClick={() => signIn("google", { callbackUrl: "/questionset" })}
+              onClick={() => signIn("google", { callbackUrl: "/tests" })}
             >
               Login with Google
             </Button>
