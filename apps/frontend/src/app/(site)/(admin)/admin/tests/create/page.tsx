@@ -311,6 +311,7 @@ export default function CreateTest() {
                     onSelectedQuestionsChange={handleQuestionSelect}
                     selectedQuestions={selectedQuestions}
                     isCheckBox={true}
+                    isPublished={true}
                   />
                 </div>
                 <Button type="button" onClick={handleAddSection}>Add Section</Button>

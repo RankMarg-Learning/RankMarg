@@ -9,6 +9,7 @@ interface WhereClauseProps {
   tag?: string;
   topic?: string;
   stream?: Stream;
+  isPublished?: boolean;
   OR?: Array<{ content?: { contains: string; mode: "insensitive" } } | { topic?: { contains: string; mode: "insensitive" } }>;
 }
 
@@ -22,6 +23,7 @@ export async function GET(req: Request) {
   const search = searchParams.get("search");
   const topic = searchParams.get("topic");
   const stream = searchParams.get("stream") as Stream;
+  const isPublished = searchParams.get("isPublished") === "true"? false : true;
   const skip = (page - 1) * limit;
 
   try {
@@ -42,6 +44,9 @@ export async function GET(req: Request) {
       whereClause.stream = stream;
     }
 
+    if (isPublished) {
+      whereClause.isPublished = isPublished;
+    }
 
     const [questions, total] = await Promise.all([
       prisma.question.findMany({
