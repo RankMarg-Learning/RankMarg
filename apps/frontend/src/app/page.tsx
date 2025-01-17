@@ -9,7 +9,6 @@ import { Brain, Trophy, BarChart2, Gamepad, ClipboardList, BarChart3, Clock, Tre
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { signOut, useSession } from 'next-auth/react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import TiltedScroll from "@/components/TiltedScroll"
 
 const BlobShape = ({ className }: { className?: string }) => (
   <motion.div
