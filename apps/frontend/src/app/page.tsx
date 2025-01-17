@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import Link from "next/link"
 import Image from "next/image"
-import {  Brain, Trophy, BarChart2, Gamepad } from "lucide-react"
+import { Brain, Trophy, BarChart2, Gamepad, ClipboardList, BarChart3, Clock, TrendingUp } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { signOut, useSession } from 'next-auth/react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import TiltedScroll from "@/components/TiltedScroll"
 
 const BlobShape = ({ className }: { className?: string }) => (
   <motion.div
@@ -46,38 +47,38 @@ const staggerChildren = {
 }
 
 const rankingData = [
-    {
-      rank: "Rookie",
-      subRanks: ["Rookie I", "Rookie II", "Rookie III"],
-    },
-    {
-      rank: "Aspirant",
-      subRanks: ["Aspirant I", "Aspirant II", "Aspirant III"],
-    },
-    {
-      rank: "Contender",
-      subRanks: ["Contender I", "Contender II", "Contender III"],
-    },
-    {
-      rank: "Achiever",
-      subRanks: ["Achiever I", "Achiever II", "Achiever III"],
-    },
-    {
-      rank: "Luminary",
-      subRanks: ["Luminary I", "Luminary II", "Luminary III"],
-    },
-    {
-      rank: "Visionary",
-      subRanks: ["Visionary I", "Visionary II", "Visionary III"],
-    },
-    {
-      rank: "Champion",
-      subRanks: ["Champion I", "Champion II"],
-    }
-  ]
+  {
+    rank: "Rookie",
+    subRanks: ["Rookie I", "Rookie II", "Rookie III"],
+  },
+  {
+    rank: "Aspirant",
+    subRanks: ["Aspirant I", "Aspirant II", "Aspirant III"],
+  },
+  {
+    rank: "Contender",
+    subRanks: ["Contender I", "Contender II", "Contender III"],
+  },
+  {
+    rank: "Achiever",
+    subRanks: ["Achiever I", "Achiever II", "Achiever III"],
+  },
+  {
+    rank: "Luminary",
+    subRanks: ["Luminary I", "Luminary II", "Luminary III"],
+  },
+  {
+    rank: "Visionary",
+    subRanks: ["Visionary I", "Visionary II", "Visionary III"],
+  },
+  {
+    rank: "Champion",
+    subRanks: ["Champion I", "Champion II"],
+  }
+]
 
 export default function Home() {
-  const { data: session,status } = useSession();
+  const { data: session, status } = useSession();
 
   return (
     <div className="min-h-screen bg-yellow-50 overflow-hidden">
@@ -86,41 +87,41 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex-shrink-0">
-            <Image src={'https://utfs.io/f/DbhgrrAIqRoKWCwFFv4kujRo2cBDzhfSAtQ1p0ZrLwxy9lHG'} alt="Acme Inc" width={140} height={140} priority />
+              <Image src={'https://utfs.io/f/DbhgrrAIqRoKWCwFFv4kujRo2cBDzhfSAtQ1p0ZrLwxy9lHG'} alt="Acme Inc" width={140} height={140} priority />
             </div>
-            
-            <div className="flex gap-4">
-            {
-          status === "loading" ? null: status === "unauthenticated" ? (
-            <div className="flex gap-1 md:gap-2">
-            <Link href={"/sign-in"}>
-              {" "}
-              <Button>Login</Button>
-            </Link>
-            <Link href={"/sign-up"}>
-              {" "}
-              <Button>Register</Button>
-            </Link>
-          </div>):(
-             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                <p className='hover:underline cursor-pointer '> Welcome, {session.user.name}! </p>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-full bg-[#f6f6f6]">
-              <Link  href={`/u/${session?.user?.username}`}>
-                <DropdownMenuItem className="cursor-pointer">
-                  Profile
-                </DropdownMenuItem>
-              </Link>
-              <DropdownMenuItem className="cursor-pointer" onClick={() => signOut({ callbackUrl: "/" })}>
-                 Log Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-            </DropdownMenu>
-          )
 
-        }
-              
+            <div className="flex gap-4">
+              {
+                status === "loading" ? null : status === "unauthenticated" ? (
+                  <div className="flex gap-1 md:gap-2">
+                    <Link href={"/sign-in"}>
+                      {" "}
+                      <Button>Login</Button>
+                    </Link>
+                    <Link href={"/sign-up"}>
+                      {" "}
+                      <Button>Register</Button>
+                    </Link>
+                  </div>) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <p className='hover:underline cursor-pointer '> Welcome, {session.user.name}! </p>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-full bg-[#f6f6f6]">
+                      <Link href={`/u/${session?.user?.username}`}>
+                        <DropdownMenuItem className="cursor-pointer">
+                          Profile
+                        </DropdownMenuItem>
+                      </Link>
+                      <DropdownMenuItem className="cursor-pointer" onClick={() => signOut({ callbackUrl: "/" })}>
+                        Log Out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )
+
+              }
+
             </div>
           </div>
         </div>
@@ -128,71 +129,121 @@ export default function Home() {
 
       {/* Hero Section */}
       <main className="pt-16">
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
-          {/* Decorative blobs */}
-          <BlobShape className="absolute top-0 left-0 w-72 h-72 text-yellow-200 -translate-x-1/2 -translate-y-1/2" />
-          <BlobShape className="absolute top-1/2 right-0 w-64 h-64 text-yellow-300 translate-x-1/3" />
-          <BlobShape className="absolute bottom-0 left-1/2 w-80 h-80 text-yellow-100 -translate-x-1/2 translate-y-1/4" />
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <BlobShape className=" hidden md:flex absolute top-1/2 right-0 w-64 h-64 text-yellow-300 translate-x-1/3" />
 
-          {/* Content */}
-          <div className="relative z-10 text-center max-w-3xl mx-auto">
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-yellow-900 mb-8"
-            >
-              Solve, Learn, Achieve Dream
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-xl text-yellow-700 mb-12 max-w-2xl mx-auto"
-            >
-              Learn smarter with our platform made for JEE students. Practice with topic-wise questions, compete in fun challenges, and track your progress to improve your rank and score better!
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-            >
-              <Link href={'/tests'}  className="text-lg px-8 py-4 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white">
-              Start  Mock Test!
-              </Link>
-            </motion.div>
-          </div>
+            <div className="space-y-8 relative">
 
-          {/* Laptop Image */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.6 }}
-            className="relative mt-20 max-w-5xl mx-auto"
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-100 to-yellow-300 rounded-3xl transform rotate-1" />
-              <div className="relative">
-                <Image
-                  src="/Desktop.png"
-                  width={1200}
-                  height={800}
-                  alt="EduTech Platform Dashboard"
-                  className="rounded-3xl shadow-2xl border-2 border-yellow-200"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-yellow-500/20 to-transparent rounded-3xl" />
+
+              {/* Decorative Circle */}
+              <div className="absolute -left-8 -top-8 w-[200px] h-[200px] bg-[#FFF176] rounded-full -z-10" />
+
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="text-5xl lg:text-6xl font-bold text-[#8B4513]">
+                Ace Your{" "}
+                <span className="text-[#F7B614]">JEE &</span>
+                <br />
+                <span className="text-[#F7B614]">NEET</span> Preparation
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 }} className="text-[#B8860B] text-xl">
+
+                Comprehensive practice questions, mock tests, and detailed insights to boost your exam preparation
+              </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="flex flex-wrap gap-4 justify-center md:justify-start items-center">
+                <Link href={'/questionset'}>
+                  <Button className="bg-[#F7B614] hover:bg-[#E5A912] text-white md:text-lg text-base px-8 py-6">
+                    Start Free Practice
+                  </Button>
+                </Link>
+                <Link href={"/tests"}>
+                  <Button variant="outline" className="text-[#8B4513] md:text-lg text-base border-[#8B4513] hover:bg-[#F7B614] hover:text-white hover:border-[#F7B614]  px-10 py-6">
+                    View Mock Tests
+                  </Button>
+                </Link>
+              </motion.div>
+
+              <div className="flex gap-8 text-[#B8860B]">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }} className="flex items-center gap-2">
+                  <div className="text-[#F7B614]">✓</div>
+                  <span>500+ Questions</span>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }} className="flex items-center gap-2">
+                  <div className="text-[#F7B614]">✓</div>
+                  <span>10+ Mock Tests</span>
+                </motion.div>
               </div>
             </div>
-            <div className="absolute -bottom-4 -right-4 bg-yellow-400 text-yellow-900 px-6 py-2 rounded-full font-semibold transform rotate-3">
-              Boost your learning!
+
+            <BlobShape className="absolute bottom-0 left-1/2 w-80 h-80 text-yellow-100 -translate-x-1/2 translate-y-1/4" />
+            <div className="space-y-4 relative">
+              <BlobShape className="hidden md:flex absolute top-0 md:left-1/3 w-72 h-72 text-yellow-200 -translate-x-1/2 -translate-y-1/2" />
+              {/* Decorative Circle */}
+              <div className="absolute -right-3 -bottom-8 w-[150px] h-[150px] bg-[#FFF176] rounded-full -z-10" />
+
+              {/* <TiltedScroll /> */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }} className="md:p-6 p-3 grid md:gap-3 gap-2 backdrop-blur-lg bg-white/40  rounded-xl shadow-lg">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.7 }}
+                  className="md:p-5 p-3 bg-white/50 border-[#F7B614]/20 hover:border-[#F7B614] transition-colors rounded-lg shadow-md ">
+                  <div className="flex gap-4 items-start">
+                    <div className="p-3 bg-[#F7B614] rounded-lg">
+                      <ClipboardList className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg md:text-xl font-semibold text-[#8B4513]">Practice Mock Test</h3>
+                      <p className="text-[#B8860B] text-sm md:text-base">Topic-wise sorted Mock Test</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8 }} className="md:p-5 p-3 bg-white/50 border-[#F7B614]/20 hover:border-[#F7B614] transition-colors rounded-lg shadow-md">
+                  <div className="flex gap-4 items-start">
+                    <div className="p-3 bg-[#F7B614] rounded-lg">
+                      <BarChart3 className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg md:text-xl font-semibold text-[#8B4513]">Performance Analytics</h3>
+                      <p className="text-[#B8860B] text-sm md:text-base">Detailed progress tracking</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+
             </div>
-          </motion.div>
+          </div>
+
         </div>
 
         {/* Features Section */}
         <section id="features" className="py-20 px-4 bg-white">
           <div className="container mx-auto">
-            <motion.h2 
+            <motion.h2
               className="text-3xl font-bold mb-12 text-center text-gray-800"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -200,7 +251,7 @@ export default function Home() {
             >
               Key Features
             </motion.h2>
-            <motion.div 
+            <motion.div
               className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
               variants={staggerChildren}
               initial="initial"
@@ -244,7 +295,7 @@ export default function Home() {
           </div>
         </section>
 
-        
+
 
 
         {/* Testimonials Section */}
@@ -282,9 +333,139 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="bg-yellow-800 py-16 relative">
+      {/* Decorative circles */}
+      <div className="absolute left-0 top-0 w-[200px] h-[200px] bg-[#FFF176] rounded-full opacity-50 -z-10" />
+      <div className="absolute right-0 bottom-0 w-[300px] h-[300px] bg-[#FFF176] rounded-full opacity-50 -z-10" />
+      
+      <div className="container mx-auto px-4">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-white mb-4">
+            Student Performance Analytics
+          </h2>
+          <p className="text-gray-300 text-lg">
+            Track your progress and understand your strengths and weaknesses
+          </p>
+        </div>
+
+        {/* Analytics Grid */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Performance Overview Card */}
+          <Card className="bg-white border-[#F7B614]/20 p-6">
+            <h3 className="text-xl font-semibold text-[#8B4513] mb-6">
+              Performance Overview
+            </h3>
+            <div className="space-y-6">
+              {/* Physics Progress */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-900">Physics</span>
+                  <span className="text-gray-800">85%</span>
+                </div>
+                <div className="h-2 bg-[#FFF9EA] rounded-full overflow-hidden">
+                  <div className="h-full bg-[#8B4513] rounded-full" style={{ width: '85%' }} />
+                </div>
+              </div>
+
+              {/* Chemistry Progress */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-900">Chemistry</span>
+                  <span className="text-gray-800">78%</span>
+                </div>
+                <div className="h-2 bg-[#FFF9EA] rounded-full overflow-hidden">
+                  <div className="h-full bg-[#8B4513] rounded-full" style={{ width: '78%' }} />
+                </div>
+              </div>
+
+              {/* Mathematics Progress */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-900">Mathematics</span>
+                  <span className="text-gray-800">92%</span>
+                </div>
+                <div className="h-2 bg-[#FFF9EA] rounded-full overflow-hidden">
+                  <div className="h-full bg-[#8B4513] rounded-full" style={{ width: '92%' }} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-900">Biology</span>
+                  <span className="text-gray-800">96.67%</span>
+                </div>
+                <div className="h-2 bg-[#FFF9EA] rounded-full overflow-hidden">
+                  <div className="h-full bg-[#8B4513] rounded-full" style={{ width: '96%' }} />
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Metrics Grid */}
+          <div className="grid gap-6 sm:grid-cols-2">
+            {/* Tests Completed */}
+            <Card className="bg-white border-[#F7B614]/20 p-6 hover:border-[#F7B614] transition-colors">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-2 bg-[#F7B614]/10 rounded-lg">
+                  <ClipboardList className="w-5 h-5 text-[#F7B614]" />
+                </div>
+                <h3 className="text-[#8B4513] font-medium">Tests Score</h3>
+              </div>
+              <div className="space-y-1">
+                <div className="text-3xl font-bold text-[#8B4513]">248/300</div>
+                <div className="text-sm text-[#B8860B]">83.67% Score</div>
+              </div>
+            </Card>
+
+            {/* Average Score */}
+            <Card className="bg-white border-[#F7B614]/20 p-6 hover:border-[#F7B614] transition-colors">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-2 bg-[#F7B614]/10 rounded-lg">
+                  <TrendingUp className="w-5 h-5 text-[#F7B614]" />
+                </div>
+                <h3 className="text-[#8B4513] font-medium">Time Taken</h3>
+              </div>
+              <div className="space-y-1">
+                <div className="text-3xl font-bold text-[#8B4513]">2h 45m</div>
+                <div className="text-sm text-[#F7B614]">51 mins saved</div>
+              </div>
+            </Card>
+
+            {/* Average Time */}
+            <Card className="bg-white border-[#F7B614]/20 p-6 hover:border-[#F7B614] transition-colors">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-2 bg-[#F7B614]/10 rounded-lg">
+                  <Clock className="w-5 h-5 text-[#F7B614]" />
+                </div>
+                <h3 className="text-[#8B4513] font-medium">Avg. Time per Question</h3>
+              </div>
+              <div className="space-y-1">
+                <div className="text-3xl font-bold text-[#8B4513]">1.8m</div>
+                <div className="text-sm text-[#B8860B]">Target: 1.5m</div>
+              </div>
+            </Card>
+
+            {/* Accuracy Rate */}
+            <Card className="bg-white border-[#F7B614]/20 p-6 hover:border-[#F7B614] transition-colors">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-2 bg-[#F7B614]/10 rounded-lg">
+                  <BarChart2 className="w-5 h-5 text-[#F7B614]" />
+                </div>
+                <h3 className="text-[#8B4513] font-medium">Accuracy Rate</h3>
+              </div>
+              <div className="space-y-1">
+                <div className="text-3xl font-bold text-[#8B4513]">76%</div>
+                <div className="text-sm text-[#F7B614]">+2.4% from last week</div>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </section>
+
         {/* Rewards & Tiers Section */}
         <section id="ranking" className="min-h-screen bg-yellow-50 text-yellow-900 p-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-2xl mx-auto"
@@ -309,7 +490,7 @@ export default function Home() {
                 >
                   {/* Timeline Node */}
                   <div className="absolute -left-[0.5625rem] w-4 h-4 rounded-full bg-yellow-400" />
-                  
+
                   {/* Content */}
                   <div className="ml-8">
                     <h3 className="text-xl font-semibold mb-1 text-yellow-800">{item.rank}</h3>
@@ -326,15 +507,15 @@ export default function Home() {
             </div>
           </motion.div>
         </section>
-       
-            
-        {/* Qoute Section */}    
+
+
+        {/* Qoute Section */}
         <section className="relative w-full h-52 sm:h-64 md:h-72 lg:h-80 xl:h-96 overflow-hidden flex justify-center items-center my-24 bg-yellow-900">
           <div className="absolute text-3xl sm:text-2xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-yellow-100 tracking-wide text-center px-4">
             COMPETE.LEARN.ACHIEVE
           </div>
         </section>
-        
+
         {/* FAQ Section */}
         <section className="bg-yellow-100 py-24">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -345,7 +526,7 @@ export default function Home() {
                 { question: "What kind of challenges does RankMarg offer?", answer: "Challenges are short (10–15 minutes), real-time quizzes where you compete with others. Questions are tailored to your chosen exam (NEET or JEE)." },
                 { question: "What is the tier system?", answer: "The tier system ranks users into five levels, each with sub-tiers, based on Elo ratings and challenge performance." },
                 { question: "How do I report bugs or suggest features?", answer: "Use the 'Email' section in your profile menu to share suggestions or report issues." },
-                
+
               ].map((faq, index) => (
                 <AccordionItem key={index} value={`item-${index}`}>
                   <AccordionTrigger className="text-yellow-800 hover:text-yellow-600">{faq.question}</AccordionTrigger>
@@ -356,7 +537,7 @@ export default function Home() {
           </div>
         </section>
 
-        
+
 
         {/* Footer */}
         <footer className="bg-yellow-800 text-yellow-100 py-12">
@@ -382,7 +563,7 @@ export default function Home() {
                   <li><a href="/privacy-policy" className="hover:text-yellow-300">Privacy Policy</a></li>
                 </ul>
               </div>
-             
+
             </div>
             <div className="mt-8 pt-8 border-t border-yellow-700 text-center">
               <p>&copy; 2024 RankMarg. All rights reserved.</p>
