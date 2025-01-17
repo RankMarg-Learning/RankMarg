@@ -72,9 +72,19 @@ const config: Config = {
   				to: {
   					height: '0'
   				}
-  			}
+  			},
+			'skew-scroll': {
+            '0%': {
+              transform: 'rotateX(20deg) rotateZ(-20deg) skewX(20deg)',
+            },
+            '100%': {
+              transform: 'rotateX(20deg) rotateZ(-20deg) skewX(20deg) translateY(-100%)',
+            },
+          },
+
   		},
   		animation: {
+			'skew-scroll': 'skew-scroll 20s linear infinite', //1
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out'
   		}
