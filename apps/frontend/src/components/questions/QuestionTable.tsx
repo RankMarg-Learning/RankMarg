@@ -21,6 +21,7 @@ import { QuestionSetProps, QuestionTableProps } from "@/types";
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -202,42 +203,76 @@ const Questionset: React.FC<QuestionsetProps> = ({
               </div>
             </CardContent>
             <CardFooter>
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      className={cn(
-                        "gap-1 pl-2.5",
-                        currentPage === 1 && "cursor-not-allowed opacity-50"
-                      )}
-                      onClick={handlePrevious}
-                    />
-                  </PaginationItem>
-                  {data?.totalPages && (
-                    <>
-                      {[...Array(data.totalPages)].map((_, idx) => (
-                        <PaginationItem key={idx}>
-                          <PaginationLink
-                            onClick={() => handlePageClick(idx + 1)}
-                          >
-                            {idx + 1}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ))}
-                    </>
-                  )}
-                  <PaginationItem>
-                    <PaginationNext
-                      className={cn(
-                        "gap-1 pr-2.5",
-                        currentPage === data?.totalPages &&
-                          "cursor-not-allowed opacity-50"
-                      )}
-                      onClick={handleNext}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+            <Pagination>
+  <PaginationContent>
+    {/* Previous Button */}
+    <PaginationItem>
+      <PaginationPrevious
+        className={cn(
+          "gap-1 pl-2.5",
+          currentPage === 1 && "cursor-not-allowed opacity-50"
+        )}
+        onClick={handlePrevious}
+      />
+    </PaginationItem>
+
+    {/* Page Numbers with Ellipsis */}
+    {data?.totalPages && (
+      <>
+        {/* First page */}
+        {currentPage > 3 && (
+          <>
+            <PaginationItem>
+              <PaginationLink onClick={() => handlePageClick(1)}>1</PaginationLink>
+            </PaginationItem>
+            {currentPage > 4 && <PaginationEllipsis />}
+          </>
+        )}
+
+        {/* Surrounding pages */}
+        {[...Array(data.totalPages)]
+          .map((_, idx) => idx + 1)
+          .filter(
+            (page) =>
+              page === currentPage ||
+              page === currentPage - 1 ||
+              page === currentPage + 1
+          )
+          .map((page) => (
+            <PaginationItem key={page}>
+              <PaginationLink onClick={() => handlePageClick(page)}>
+                {page}
+              </PaginationLink>
+            </PaginationItem>
+          ))}
+
+        {/* Last page */}
+        {currentPage < data.totalPages - 2 && (
+          <>
+            {currentPage < data.totalPages - 3 && <PaginationEllipsis />}
+            <PaginationItem>
+              <PaginationLink onClick={() => handlePageClick(data.totalPages)}>
+                {data.totalPages}
+              </PaginationLink>
+            </PaginationItem>
+          </>
+        )}
+      </>
+    )}
+
+    {/* Next Button */}
+    <PaginationItem>
+      <PaginationNext
+        className={cn(
+          "gap-1 pr-2.5",
+          currentPage === data?.totalPages && "cursor-not-allowed opacity-50"
+        )}
+        onClick={handleNext}
+      />
+    </PaginationItem>
+  </PaginationContent>
+</Pagination>
+
             </CardFooter>
           </Card>
         </TabsContent>
