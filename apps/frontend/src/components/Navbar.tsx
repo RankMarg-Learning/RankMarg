@@ -30,6 +30,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useEffect } from "react";
+import NavSession from "./NavSession";
 
 const Navbar = () => {
   const { data: session, status } = useSession();
@@ -234,7 +235,8 @@ const Navbar = () => {
       
 
       <div className="flex w-full items-center justify-end  md:ml-auto md:gap-2 lg:gap-4">
-        {
+        <NavSession />
+        {/* {
           status === "loading" ? null: status === "authenticated" ? (
              <DropdownMenu>
              <DropdownMenuTrigger asChild>
@@ -273,7 +275,7 @@ const Navbar = () => {
             </Link>
           </div>)
 
-        }
+        } */}
 
 
         
