@@ -63,7 +63,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
   };
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["questions", currentPage, subject, difficulty, tags, search,isPublished],
+    queryKey: ["questions", currentPage, subject, difficulty, tags, search, isPublished],
     queryFn: async () => {
       const response = await axios.get<QuestionSetProps>(
         `/api/question?page=${currentPage}&subject=${subject}&difficulty=${difficulty}&tags=${tags}&search=${search}&stream=${stream}&isPublished=${isPublished}`
@@ -74,7 +74,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
 
   useEffect(() => {
     refetch();
-  }, [currentPage, subject, difficulty, tags, search,stream, refetch]);
+  }, [currentPage, subject, difficulty, tags, search, stream, refetch]);
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
@@ -112,8 +112,8 @@ const Questionset: React.FC<QuestionsetProps> = ({
             {(isLoading
               ? ["All", "Physics", "Chemistry", "Mathematics", "Biology"]
               : stream === "JEE"
-              ? ["All", "Physics", "Chemistry", "Mathematics"]
-              : ["All", "Physics", "Chemistry", "Biology"]
+                ? ["All", "Physics", "Chemistry", "Mathematics"]
+                : ["All", "Physics", "Chemistry", "Biology"]
             ).map((sub) => (
               <TabsTrigger
                 key={sub}
@@ -173,10 +173,10 @@ const Questionset: React.FC<QuestionsetProps> = ({
                   <TableBody>
                     {isLoading
                       ? Array.from({ length: 20 }).map((_, i) => (
-                          <QTableRowSkeleton key={i} />
-                        ))
+                        <QTableRowSkeleton key={i} />
+                      ))
                       : data?.questionSet?.length > 0
-                      ? data?.questionSet.map((question: QuestionTableProps) => (
+                        ? data?.questionSet.map((question: QuestionTableProps) => (
                           <TableRow key={question.id} className="sm:text-sm">
                             {isCheckBox && (
                               <TableCell>
@@ -191,87 +191,93 @@ const Questionset: React.FC<QuestionsetProps> = ({
                             <QTableRow problem={question} />
                           </TableRow>
                         ))
-                      : (
-                        <TableRow>
-                          <td colSpan={5} className="text-center">
-                            No questions found
-                          </td>
-                        </TableRow>
-                      )}
+                        : (
+                          <TableRow>
+                            <td colSpan={5} className="text-center">
+                              No questions found
+                            </td>
+                          </TableRow>
+                        )}
                   </TableBody>
                 </Table>
               </div>
             </CardContent>
             <CardFooter>
-            <Pagination>
-  <PaginationContent>
-    {/* Previous Button */}
-    <PaginationItem>
-      <PaginationPrevious
-        className={cn(
-          "gap-1 pl-2.5",
-          currentPage === 1 && "cursor-not-allowed opacity-50"
-        )}
-        onClick={handlePrevious}
-      />
-    </PaginationItem>
+              <Pagination>
+                <PaginationContent
+                  className="flex flex-wrap items-center justify-center gap-2 sm:gap-4"
+                >
+                  {/* Previous Button */}
+                  <PaginationItem>
+                    <PaginationPrevious
+                      className={cn(
+                        "gap-1 px-2 py-1 text-sm sm:text-base",
+                        currentPage === 1 && "cursor-not-allowed opacity-50"
+                      )}
+                      onClick={handlePrevious}
+                    />
+                  </PaginationItem>
 
-    {/* Page Numbers with Ellipsis */}
-    {data?.totalPages && (
-      <>
-        {/* First page */}
-        {currentPage > 3 && (
-          <>
-            <PaginationItem>
-              <PaginationLink onClick={() => handlePageClick(1)}>1</PaginationLink>
-            </PaginationItem>
-            {currentPage > 4 && <PaginationEllipsis />}
-          </>
-        )}
+                  {data?.totalPages && (
+                    <>
+                      {/* First Page */}
+                      <PaginationItem>
+                        <PaginationLink
+                          className="px-2 py-1 text-sm sm:text-base"
+                          onClick={() => handlePageClick(1)}
+                        >
+                          1
+                        </PaginationLink>
+                      </PaginationItem>
 
-        {/* Surrounding pages */}
-        {[...Array(data.totalPages)]
-          .map((_, idx) => idx + 1)
-          .filter(
-            (page) =>
-              page === currentPage ||
-              page === currentPage - 1 ||
-              page === currentPage + 1
-          )
-          .map((page) => (
-            <PaginationItem key={page}>
-              <PaginationLink onClick={() => handlePageClick(page)}>
-                {page}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
+                      {/* Ellipsis if current page is far from the first page */}
+                      {currentPage > 2 && (
+                        <PaginationEllipsis className="text-gray-500" />
+                      )}
 
-        {/* Last page */}
-        {currentPage < data.totalPages - 2 && (
-          <>
-            {currentPage < data.totalPages - 3 && <PaginationEllipsis />}
-            <PaginationItem>
-              <PaginationLink onClick={() => handlePageClick(data.totalPages)}>
-                {data.totalPages}
-              </PaginationLink>
-            </PaginationItem>
-          </>
-        )}
-      </>
-    )}
+                      {/* Current Page */}
+                      {currentPage !== 1 && currentPage !== data.totalPages && (
+                        <PaginationItem>
+                          <PaginationLink
+                            className="px-2 py-1 text-sm sm:text-base font-semibold"
+                            onClick={() => handlePageClick(currentPage)}
+                          >
+                            {currentPage}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )}
 
-    {/* Next Button */}
-    <PaginationItem>
-      <PaginationNext
-        className={cn(
-          "gap-1 pr-2.5",
-          currentPage === data?.totalPages && "cursor-not-allowed opacity-50"
-        )}
-        onClick={handleNext}
-      />
-    </PaginationItem>
-  </PaginationContent>
-</Pagination>
+                      {/* Ellipsis if current page is far from the last page */}
+                      {currentPage < data.totalPages - 1 && (
+                        <PaginationEllipsis className="text-gray-500" />
+                      )}
+
+                      {/* Last Page */}
+                      <PaginationItem>
+                        <PaginationLink
+                          className={`px-2 py-1 text-sm sm:text-base ${data.totalPages === 1 ? "hidden": ""}`}
+                          onClick={() => handlePageClick(data.totalPages)}
+                        >
+                          {data.totalPages}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </>
+                  )}
+
+                  {/* Next Button */}
+                  <PaginationItem>
+                    <PaginationNext
+                      className={cn(
+                        "gap-1 px-2 py-1 text-sm sm:text-base",
+                        currentPage === data?.totalPages && "cursor-not-allowed opacity-50"
+                      )}
+                      onClick={handleNext}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+
+
 
             </CardFooter>
           </Card>
