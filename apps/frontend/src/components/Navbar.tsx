@@ -1,17 +1,9 @@
 "use client";
 import Link from "next/link";
-import { CircleUser, Menu } from "lucide-react";
+import {  Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { signOut, useSession } from "next-auth/react";
+import {  useSession } from "next-auth/react";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Image from "next/image";
 import { StreamSelector } from "./StreamSelector";
