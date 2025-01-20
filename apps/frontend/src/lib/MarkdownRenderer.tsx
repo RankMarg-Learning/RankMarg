@@ -14,7 +14,6 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
     <ReactMarkdown
       remarkPlugins={[remarkMath]}  // Use remark-math for math equation support
       rehypePlugins={[rehypeKatex]} // Use rehype-katex for math rendering
-        className="overflow-x-auto max-w-full text-sm  md:text-base " // Tailwind for responsive font sizing
       components={{
         img: ({ src, alt, title }) => (
           <Image
