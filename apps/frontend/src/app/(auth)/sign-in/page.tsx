@@ -16,6 +16,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 // Define Zod schema for validation
 const signInSchema = z.object({
@@ -23,16 +25,16 @@ const signInSchema = z.object({
     .string()
     .min(1, "Email or username is required"),
   password: z
-    .string()
-    .min(6, "Password must be at least 6 characters long.")
-    .regex(/[a-zA-Z]/, "Password must contain at least one letter.")
-    .regex(/\d/, "Password must contain at least one number."),
+    .string().min(6, "Password is required"),
 });
 
 const SignInForm = () => {
+  const [msg, setMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(signInSchema),
@@ -48,7 +50,7 @@ const SignInForm = () => {
         redirect: false,
       });
       if (result?.error) {
-        alert(result.error);
+        setMsg("Invalid username or password");
       } else {
         router.push("/tests");
       }
@@ -57,6 +59,11 @@ const SignInForm = () => {
       alert("An unexpected error occurred. Please try again later.");
     }
   };
+  const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const lowercaseUsername = event.target.value.toLowerCase();
+    setValue("username", lowercaseUsername, { shouldValidate: true });
+  };
+  
 
   return (
     <div className="flex items-center justify-center h-screen">
@@ -77,13 +84,14 @@ const SignInForm = () => {
                   type="text"
                   placeholder="Email or Username"
                   {...register("username")}
+                  onChange={handleUsernameChange}
                 />
                 {errors.username && (
                   <p className="text-red-500 text-sm">{errors.username?.message?.toString()}</p>
                 )}
               </div>
 
-              <div className="grid gap-2 mt-4">
+              <div className="grid gap-2 mt-4 relative">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
                   <Link
@@ -95,14 +103,23 @@ const SignInForm = () => {
                 </div>
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter Password"
+
                   {...register("password")}
                 />
+                 <button
+                    type="button"
+                    className="absolute right-2 top-9 text-sm text-gray-500"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? <Eye className="w-5 h-5"/> : <EyeOff className="w-5 h-5"/>}
+                  </button>
                 {errors.password && (
                   <p className="text-red-500 text-sm">{errors.password?.message?.toString()}</p>
                 )}
+              {msg && <div className="text-red-500 text-xs">{msg}</div>}
               </div>
-
               <Button
                 type="submit"
                 className="w-full mt-4"
