@@ -21,6 +21,7 @@ import { QuestionSetProps, QuestionTableProps } from "@/types";
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -62,7 +63,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
   };
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["questions", currentPage, subject, difficulty, tags, search,isPublished],
+    queryKey: ["questions", currentPage, subject, difficulty, tags, search, isPublished],
     queryFn: async () => {
       const response = await axios.get<QuestionSetProps>(
         `/api/question?page=${currentPage}&subject=${subject}&difficulty=${difficulty}&tags=${tags}&search=${search}&stream=${stream}&isPublished=${isPublished}`
@@ -73,7 +74,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
 
   useEffect(() => {
     refetch();
-  }, [currentPage, subject, difficulty, tags, search,stream, refetch]);
+  }, [currentPage, subject, difficulty, tags, search, stream, refetch]);
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
@@ -111,8 +112,8 @@ const Questionset: React.FC<QuestionsetProps> = ({
             {(isLoading
               ? ["All", "Physics", "Chemistry", "Mathematics", "Biology"]
               : stream === "JEE"
-              ? ["All", "Physics", "Chemistry", "Mathematics"]
-              : ["All", "Physics", "Chemistry", "Biology"]
+                ? ["All", "Physics", "Chemistry", "Mathematics"]
+                : ["All", "Physics", "Chemistry", "Biology"]
             ).map((sub) => (
               <TabsTrigger
                 key={sub}
@@ -172,10 +173,10 @@ const Questionset: React.FC<QuestionsetProps> = ({
                   <TableBody>
                     {isLoading
                       ? Array.from({ length: 20 }).map((_, i) => (
-                          <QTableRowSkeleton key={i} />
-                        ))
+                        <QTableRowSkeleton key={i} />
+                      ))
                       : data?.questionSet?.length > 0
-                      ? data?.questionSet.map((question: QuestionTableProps) => (
+                        ? data?.questionSet.map((question: QuestionTableProps) => (
                           <TableRow key={question.id} className="sm:text-sm">
                             {isCheckBox && (
                               <TableCell>
@@ -190,54 +191,94 @@ const Questionset: React.FC<QuestionsetProps> = ({
                             <QTableRow problem={question} />
                           </TableRow>
                         ))
-                      : (
-                        <TableRow>
-                          <td colSpan={5} className="text-center">
-                            No questions found
-                          </td>
-                        </TableRow>
-                      )}
+                        : (
+                          <TableRow>
+                            <td colSpan={5} className="text-center">
+                              No questions found
+                            </td>
+                          </TableRow>
+                        )}
                   </TableBody>
                 </Table>
               </div>
             </CardContent>
             <CardFooter>
               <Pagination>
-                <PaginationContent>
+                <PaginationContent
+                  className="flex flex-wrap items-center justify-center gap-2 sm:gap-4"
+                >
+                  {/* Previous Button */}
                   <PaginationItem>
                     <PaginationPrevious
                       className={cn(
-                        "gap-1 pl-2.5",
+                        "gap-1 px-2 py-1 text-sm sm:text-base",
                         currentPage === 1 && "cursor-not-allowed opacity-50"
                       )}
                       onClick={handlePrevious}
                     />
                   </PaginationItem>
+
                   {data?.totalPages && (
                     <>
-                      {[...Array(data.totalPages)].map((_, idx) => (
-                        <PaginationItem key={idx}>
+                      {/* First Page */}
+                      <PaginationItem>
+                        <PaginationLink
+                          className="px-2 py-1 text-sm sm:text-base"
+                          onClick={() => handlePageClick(1)}
+                        >
+                          1
+                        </PaginationLink>
+                      </PaginationItem>
+
+                      {/* Ellipsis if current page is far from the first page */}
+                      {currentPage > 2 && (
+                        <PaginationEllipsis className="text-gray-500" />
+                      )}
+
+                      {/* Current Page */}
+                      {currentPage !== 1 && currentPage !== data.totalPages && (
+                        <PaginationItem>
                           <PaginationLink
-                            onClick={() => handlePageClick(idx + 1)}
+                            className="px-2 py-1 text-sm sm:text-base font-semibold"
+                            onClick={() => handlePageClick(currentPage)}
                           >
-                            {idx + 1}
+                            {currentPage}
                           </PaginationLink>
                         </PaginationItem>
-                      ))}
+                      )}
+
+                      {/* Ellipsis if current page is far from the last page */}
+                      {currentPage < data.totalPages - 1 && (
+                        <PaginationEllipsis className="text-gray-500" />
+                      )}
+
+                      {/* Last Page */}
+                      <PaginationItem>
+                        <PaginationLink
+                          className={`px-2 py-1 text-sm sm:text-base ${data.totalPages === 1 ? "hidden": ""}`}
+                          onClick={() => handlePageClick(data.totalPages)}
+                        >
+                          {data.totalPages}
+                        </PaginationLink>
+                      </PaginationItem>
                     </>
                   )}
+
+                  {/* Next Button */}
                   <PaginationItem>
                     <PaginationNext
                       className={cn(
-                        "gap-1 pr-2.5",
-                        currentPage === data?.totalPages &&
-                          "cursor-not-allowed opacity-50"
+                        "gap-1 px-2 py-1 text-sm sm:text-base",
+                        currentPage === data?.totalPages && "cursor-not-allowed opacity-50"
                       )}
                       onClick={handleNext}
                     />
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
+
+
+
             </CardFooter>
           </Card>
         </TabsContent>

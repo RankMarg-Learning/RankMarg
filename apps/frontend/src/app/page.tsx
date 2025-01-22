@@ -143,7 +143,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
-                className="text-5xl lg:text-6xl font-bold text-[#8B4513]">
+                className="md:text-5xl text-4xl lg:text-6xl font-bold text-[#8B4513]">
                 Ace Your{" "}
                 <span className="text-[#F7B614]">JEE &</span>
                 <br />
@@ -152,7 +152,7 @@ export default function Home() {
               <motion.p
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8 }} className="text-[#B8860B] text-xl">
+                transition={{ delay: 0.8 }} className="text-[#B8860B] md:text-xl text-base">
 
                 Comprehensive practice questions, mock tests, and detailed insights to boost your exam preparation
               </motion.p>
@@ -160,14 +160,14 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
-                className="flex flex-wrap gap-4 justify-center md:justify-start items-center">
+                className="flex  gap-4 justify-center md:justify-start items-center">
                 <Link href={'/questionset'}>
-                  <Button className="bg-[#F7B614] hover:bg-[#E5A912] text-white md:text-lg text-base px-8 py-6">
+                  <Button className="bg-[#F7B614] hover:bg-[#E5A912] text-white md:text-lg text-base md:px-8 md:py-6 py-3 px-4">
                     Start Free Practice
                   </Button>
                 </Link>
                 <Link href={"/tests"}>
-                  <Button variant="outline" className="text-[#8B4513] md:text-lg text-base border-[#8B4513] hover:bg-[#F7B614] hover:text-white hover:border-[#F7B614]  px-10 py-6">
+                  <Button variant="outline" className="text-[#8B4513] md:text-lg text-base border-[#8B4513] hover:bg-[#F7B614] hover:text-white hover:border-[#F7B614]  md:px-8 md:py-6 py-3 px-4">
                     View Mock Tests
                   </Button>
                 </Link>
