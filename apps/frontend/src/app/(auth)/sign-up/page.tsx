@@ -1,21 +1,16 @@
 "use client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { signIn } from "next-auth/react";
-import {  useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 const signUpSchema = z.object({
   fullname: z.string().min(1, "Full name is required"),
@@ -24,13 +19,20 @@ const signUpSchema = z.object({
     .min(1, "Username is required")
     .regex(/^[a-zA-Z0-9_]+$/, "Username must contain only letters, numbers, or underscores"),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters long"),
-  confirmpassword: z.string().min(6, "Confirm password must be at least 6 characters long"),
+  password: z.string()
+    .min(6, "Password must be at least 6 characters long.")
+    .regex(/[a-zA-Z]/, "Password must contain at least one letter.")
+    .regex(/\d/, "Password must contain at least one number."),
+  confirmpassword: z.string()
+    .min(6, "Password must be at least 6 characters long.")
+    .regex(/[a-zA-Z]/, "Password must contain at least one letter.")
+    .regex(/\d/, "Password must contain at least one number."),
 });
 
 const SignUpForm = () => {
   const [msg, setMsg] = useState("");
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const {
@@ -38,6 +40,7 @@ const SignUpForm = () => {
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm({
     resolver: zodResolver(signUpSchema),
   });
@@ -65,10 +68,10 @@ const SignUpForm = () => {
       setMsg(responseData.message);
 
       if (response.ok) {
-        setMsg("Account created successfully. Redirecting to sign in page...");
+        setMsg("Account created successfully. Redirecting to sign-in page...");
         setTimeout(() => {
           router.push("/sign-in");
-        }, 2000);
+        }, 1500);
       } else {
         setMsg(responseData.message || "Something went wrong!");
       }
@@ -91,6 +94,11 @@ const SignUpForm = () => {
     }
   }, [watch("username")]);
 
+  const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const lowercaseUsername = event.target.value.toLowerCase();
+    setValue("username", lowercaseUsername, { shouldValidate: true });
+  };
+
   return (
     <div className="flex items-center justify-center h-screen">
       <div className="w-full max-w-md">
@@ -112,7 +120,11 @@ const SignUpForm = () => {
                     placeholder="Enter Full Name"
                     {...register("fullname")}
                   />
-                  {errors.fullname?.message && <div className="text-red-500 text-xs">{errors.fullname.message.toString()}</div>}
+                  {errors.fullname?.message && (
+                    <div className="text-red-500 text-xs">
+                      {errors.fullname.message.toString()}
+                    </div>
+                  )}
                 </div>
                 <div className="grid gap-2 mb-2">
                   <Label htmlFor="username">Username</Label>
@@ -121,10 +133,17 @@ const SignUpForm = () => {
                     type="text"
                     placeholder="Enter Username"
                     {...register("username")}
+                    onChange={handleUsernameChange}
                   />
-                  {errors.username && <div className="text-red-500 text-xs">{errors.username.message.toString()}</div>}
+                  {errors.username && (
+                    <div className="text-red-500 text-xs">
+                      {errors.username.message.toString()}
+                    </div>
+                  )}
                   {!isUsernameAvailable && (
-                    <div className="text-red-500 text-xs">Username is already taken</div>
+                    <div className="text-red-500 text-xs">
+                      Username is already taken
+                    </div>
                   )}
                 </div>
                 <div className="grid gap-2 mb-2">
@@ -135,50 +154,80 @@ const SignUpForm = () => {
                     placeholder="m@example.com"
                     {...register("email")}
                   />
-                  {errors.email && <div className="text-red-500 text-xs">{errors.email.message.toString()}</div>}
+                  {errors.email && (
+                    <div className="text-red-500 text-xs">
+                      {errors.email.message.toString()}
+                    </div>
+                  )}
                 </div>
-                <div className="grid gap-2 mb-2">
+                <div className="grid gap-2 mb-2 relative items-center ">
                   <Label htmlFor="password">Password</Label>
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter Password"
                     {...register("password")}
                   />
-                  {errors.password && <div className="text-red-500 text-xs">{errors.password.message.toString()}</div>}
+                  <button
+                    type="button"
+                    className="absolute right-2 top-7 text-sm text-gray-500"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? <Eye className="w-5 h-5"/> : <EyeOff className="w-5 h-5"/>}
+                  </button>
+                  {errors.password && (
+                    <div className="text-red-500 text-xs">
+                      {errors.password.message.toString()}
+                    </div>
+                  )}
                 </div>
-                <div className="grid gap-2 mb-2">
+                <div className="grid gap-2 mb-2 relative">
                   <Label htmlFor="confirmpassword">Confirm Password</Label>
                   <Input
                     id="confirmpassword"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Confirm Password"
                     {...register("confirmpassword")}
                   />
+                 
                   {errors.confirmpassword && (
-                    <div className="text-red-500 text-xs">{errors.confirmpassword.message.toString()}</div>
+                    <div className="text-red-500 text-xs">
+                      {errors.confirmpassword.message.toString()}
+                    </div>
                   )}
-                  {watchPassword && watchConfirmPassword && watchPassword !== watchConfirmPassword && (
-                    <div className="text-red-500 text-xs ">Passwords do not match</div>
-                  )}
+                  {watchPassword &&
+                    watchConfirmPassword &&
+                    watchPassword !== watchConfirmPassword && (
+                      <div className="text-red-500 text-xs">
+                        Passwords do not match
+                      </div>
+                    )}
                 </div>
                 {msg && <div className="text-red-500 text-xs">{msg}</div>}
-
-                <Button type="submit" className="w-full" disabled={!isUsernameAvailable}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={!isUsernameAvailable}
+                >
                   Create an account
                 </Button>
               </form>
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => signIn("google", { callbackUrl: "/questionset" })}
+                onClick={() =>
+                  signIn("google", { callbackUrl: "/questionset" })
+                }
               >
                 Sign up with Google
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <Link href="/sign-in" className="underline hover:text-yellow-500">
+              <Link
+                href="/sign-in"
+                className="underline hover:text-yellow-500"
+              >
                 Sign in
               </Link>
             </div>
