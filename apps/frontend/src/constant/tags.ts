@@ -1,5 +1,6 @@
 export const Tags = [
     "Default",
+    "PYQ-2025",
     "PYQ-2024",
     "PYQ-2023",
     "PYQ-2022",
