@@ -61,6 +61,7 @@ export const filterData = {
       "Mathematical Induction",
       "Binomial Theorem",
       "Sequences and Series",
+      "Co-ordinate Geometry",
       "Straight Lines",
       "Conic Sections",
       "Trigonometry",
