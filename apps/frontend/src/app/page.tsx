@@ -143,7 +143,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
-                className="md:text-5xl text-4xl lg:text-6xl font-bold text-[#8B4513]">
+                className=" text-5xl lg:text-6xl font-bold text-[#8B4513]">
                 Ace Your{" "}
                 <span className="text-[#F7B614]">JEE &</span>
                 <br />
@@ -157,21 +157,26 @@ export default function Home() {
                 Comprehensive practice questions, mock tests, and detailed insights to boost your exam preparation
               </motion.p>
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                className="flex  gap-4 justify-center md:justify-start items-center">
-                <Link href={'/questionset'}>
-                  <Button className="bg-[#F7B614] hover:bg-[#E5A912] text-white md:text-lg text-base md:px-8 md:py-6 py-3 px-4">
-                    Start Free Practice
-                  </Button>
-                </Link>
-                <Link href={"/tests"}>
-                  <Button variant="outline" className="text-[#8B4513] md:text-lg text-base border-[#8B4513] hover:bg-[#F7B614] hover:text-white hover:border-[#F7B614]  md:px-8 md:py-6 py-3 px-4">
-                    View Mock Tests
-                  </Button>
-                </Link>
-              </motion.div>
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.8, delay: 0.4 }}
+  className="flex flex-col md:flex-row gap-4 justify-center md:justify-start items-center md:items-start"
+>
+  <Link href={'/questionset'}>
+    <Button className="w-full md:w-auto bg-[#F7B614] hover:bg-[#E5A912] text-white md:text-lg text-xl px-12 md:px-8 py-6 ">
+      Start Free Practice
+    </Button>
+  </Link>
+  <Link href={"/tests"}>
+    <Button
+      variant="outline"
+      className="w-full md:w-auto text-[#8B4513]  border-[#8B4513] hover:bg-[#F7B614] hover:text-white hover:border-[#F7B614] md:text-lg text-xl px-12 md:px-8 py-6"
+    >
+      View Mock Tests
+    </Button>
+  </Link>
+</motion.div>
+
 
               <div className="flex gap-8 text-[#B8860B]">
                 <motion.div
@@ -206,7 +211,7 @@ export default function Home() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.7 }}
-                  className="md:p-5 p-3 bg-white/50 border-[#F7B614]/20 hover:border-[#F7B614] transition-colors rounded-lg shadow-md ">
+                  className="md:p-5 p-3 bg-white/50 border-[#F7B614]/20  hover:border-[#F7B614] transition-colors rounded-lg shadow-sm ">
                   <div className="flex gap-4 items-start">
                     <div className="p-3 bg-[#F7B614] rounded-lg">
                       <ClipboardList className="w-6 h-6 text-white" />
@@ -221,7 +226,7 @@ export default function Home() {
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8 }} className="md:p-5 p-3 bg-white/50 border-[#F7B614]/20 hover:border-[#F7B614] transition-colors rounded-lg shadow-md">
+                  transition={{ delay: 0.8 }} className="md:p-5 p-3 bg-white/50 border-[#F7B614]/20 hover:border-[#F7B614] transition-colors rounded-lg shadow-sm">
                   <div className="flex gap-4 items-start">
                     <div className="p-3 bg-[#F7B614] rounded-lg">
                       <BarChart3 className="w-6 h-6 text-white" />
