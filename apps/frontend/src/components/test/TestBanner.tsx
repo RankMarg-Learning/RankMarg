@@ -20,10 +20,10 @@ export default function Banner({ testId, title, marks, duration, totalQuestions,
     return (
         <div className="bg-gray-800 text-white py-16 px-4">
             <div className="max-w-6xl mx-auto text-center">
-                <div className="mb-8">
+                {/* <div className="mb-8">
                     <h1 className="text-4xl font-light mb-2">Rank Marg</h1>
                     <p className="text-gray-400">Participate in tests and improve your score!</p>
-                </div>
+                </div> */}
 
                 <div className="grid  gap-6 max-w-4xl mx-auto ">
                     <div className="bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">

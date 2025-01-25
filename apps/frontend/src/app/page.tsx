@@ -170,7 +170,7 @@ export default function Home() {
   <Link href={"/tests"}>
     <Button
       variant="outline"
-      className="w-full md:w-auto text-[#8B4513]  border-[#8B4513] hover:bg-[#F7B614] hover:text-white hover:border-[#F7B614] md:text-lg text-xl px-12 md:px-8 py-6"
+      className="w-full md:w-auto text-[#8B4513]  border-[#8B4513] hover:bg-[#F7B614] hover:text-white hover:border-[#F7B614] md:text-lg text-xl px-14 md:px-8 py-6"
     >
       View Mock Tests
     </Button>
