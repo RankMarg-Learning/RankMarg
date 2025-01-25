@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { ContributeFormProps } from "@/types";
-import { Stream } from "@prisma/client";
+import { QuestionType, Stream } from "@prisma/client";
 
 interface WhereClauseProps {
   subject?: string;
@@ -10,6 +10,7 @@ interface WhereClauseProps {
   topic?: string;
   stream?: Stream;
   isPublished?: boolean;
+  type?: QuestionType;
   OR?: Array<{ content?: { contains: string; mode: "insensitive" } } | { topic?: { contains: string; mode: "insensitive" } }>;
 }
 
@@ -22,6 +23,7 @@ export async function GET(req: Request) {
   const tags = searchParams.get("tags");
   const search = searchParams.get("search");
   const topic = searchParams.get("topic");
+  const type = searchParams.get("type") as QuestionType;
   const stream = searchParams.get("stream") as Stream;
   const isPublished = searchParams.get("isPublished") === "true"? false : true;
   const skip = (page - 1) * limit;
@@ -42,6 +44,9 @@ export async function GET(req: Request) {
     }
     if (stream) {
       whereClause.stream = stream;
+    }
+    if (type) {
+      whereClause.type = type;
     }
 
     if (isPublished) {

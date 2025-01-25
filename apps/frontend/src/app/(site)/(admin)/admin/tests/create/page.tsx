@@ -306,7 +306,7 @@ export default function CreateTest() {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <Label>Select Questions for Section</Label>
+                  <Label>Select Questions for Section ({selectedQuestions.length} Questions)</Label>
                   <Questionset
                     onSelectedQuestionsChange={handleQuestionSelect}
                     selectedQuestions={selectedQuestions}

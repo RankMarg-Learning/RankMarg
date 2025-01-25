@@ -4,7 +4,7 @@ import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import { QuestionTableProps } from "@/types";
 import Link from "next/link";
 
-export const QTableRow = ({ problem }: { problem: QuestionTableProps }) => {
+export const QTableRow = ({ problem ,isPublished}: { problem: QuestionTableProps ,isPublished?:boolean}) => {
   return (
     <>
      
@@ -31,6 +31,7 @@ export const QTableRow = ({ problem }: { problem: QuestionTableProps }) => {
       <TableCell className="font-medium  md:table-cell ">
         <Link
           href={`/question/${problem.slug}`}
+          target={`${isPublished ? "_blank" : "_self"}`}
           className="hover:text-yellow-600 "
         >
           <MarkdownRenderer content={problem.title.slice(0,80)} />

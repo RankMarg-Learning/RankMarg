@@ -85,11 +85,11 @@ const TestDashboard = () => {
           <section className="md:w-3/4">
             <div className='flex justify-between items-center'>
               <h2 className="text-2xl font-semibold mb-6">Available Tests</h2>
-              <div className='space-x-4'>
+              <div className='space-x-4 flex flex-wrap justify-center gap-1'>
                 <Link href="/tests/topic-wise">
-                  <Button variant="outline">Topic-wise Tests</Button>
+                  <Button variant="outline"  >Topic-wise Tests</Button>
                 </Link>
-                <Link href="/tests/chapter-wise">
+                <Link href="/tests/subject-wise">
                   <Button variant="outline">Chapter-wise Tests</Button>
                 </Link>
               </div>
