@@ -49,7 +49,9 @@ const Questionset: React.FC<QuestionsetProps> = ({
   const [tags, setTags] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [type, setType] = useState("");
   const [stream, setStream] = useState<Stream>("JEE");
+
 
 
   const handleDifficulty = (value: string[]) => {
@@ -66,7 +68,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
     queryKey: ["questions", currentPage, subject, difficulty, tags, search, isPublished],
     queryFn: async () => {
       const response = await axios.get<QuestionSetProps>(
-        `/api/question?page=${currentPage}&subject=${subject}&difficulty=${difficulty}&tags=${tags}&search=${search}&stream=${stream}&isPublished=${isPublished}`
+        `/api/question?page=${currentPage}&subject=${subject}&difficulty=${difficulty}&tags=${tags}&search=${search}&type=${type}&stream=${stream}&isPublished=${isPublished}`
       );
       return response.data;
     },
@@ -74,7 +76,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
 
   useEffect(() => {
     refetch();
-  }, [currentPage, subject, difficulty, tags, search, stream, refetch]);
+  }, [currentPage, subject, difficulty, tags, search, stream,type, refetch]);
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
@@ -153,6 +155,13 @@ const Questionset: React.FC<QuestionsetProps> = ({
               selectName={Tags}
               onChange={handleTags}
             />
+            <SelectFilter
+              width={"[100px]"}
+              placeholder="Type"
+              selectName={["MCQ","NUM"]}
+              onChange={(value) => setType(value[0])}
+            />
+            
           </div>
         </div>
         <TabsContent value={subject.toLowerCase() || "all"}>
@@ -188,7 +197,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
                                 />
                               </TableCell>
                             )}
-                            <QTableRow problem={question} />
+                            <QTableRow problem={question} isPublished={isPublished}/>
                           </TableRow>
                         ))
                         : (
