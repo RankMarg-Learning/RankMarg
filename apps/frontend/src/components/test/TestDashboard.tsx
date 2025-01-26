@@ -35,9 +35,10 @@ const TestDashboard = () => {
       testId: "",
       title: "No upcoming test",
       marks: 0,
-      duration: 0,
+      duration: "0",
       totalQuestions: 0,
-      startDate: new Date()
+      startDate: new Date(),
+      isLoading:isLoading
     }
 
     const test = tests.find((test) => test.endTime && new Date(test.endTime) > new Date())
@@ -45,16 +46,18 @@ const TestDashboard = () => {
       testId: test.testId,
       title: test.title,
       marks: test.totalMarks,
-      duration: test.duration,
+      duration: test.duration.toString(),
       totalQuestions: test.totalQuestions,
-      startDate: new Date(test.startTime)
+      startDate: new Date(test.startTime),
+      isLoading:isLoading
     } : {
       testId: "",
       title: "No upcoming test",
       marks: 0,
       duration: 0,
       totalQuestions: 0,
-      startDate: new Date()
+      startDate: new Date(),
+      isLoading:isLoading
     }
   }
 

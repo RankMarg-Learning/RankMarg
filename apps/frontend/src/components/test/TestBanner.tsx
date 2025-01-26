@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { Clock, HelpCircle } from 'lucide-react'
 import Link from 'next/link'
 import Countdown from './TestCounter'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { Skeleton } from '../ui/skeleton'
 
 interface BannerProps {
     testId: string
@@ -11,10 +13,11 @@ interface BannerProps {
     marks: number
     duration: string
     totalQuestions: number
-    startDate: Date
+    startDate: Date,
+    isLoading: boolean
 }
 
-export default function Banner({ testId, title, marks, duration, totalQuestions, startDate }: BannerProps) {
+export default function Banner({ testId, title, marks, duration, totalQuestions, startDate ,isLoading}: BannerProps) {
     const [isLive, setIsLive] = useState(false)
 
     return (
@@ -24,8 +27,9 @@ export default function Banner({ testId, title, marks, duration, totalQuestions,
                     <h1 className="text-4xl font-light mb-2">Rank Marg</h1>
                     <p className="text-gray-400">Participate in tests and improve your score!</p>
                 </div> */}
-
-                <div className="grid  gap-6 max-w-4xl mx-auto ">
+                {
+                    !isLoading ?(
+                        <div className="grid  gap-6 max-w-4xl mx-auto ">
                     <div className="bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
                         <div className="absolute inset-0 opacity-10">
                             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full">
@@ -83,6 +87,46 @@ export default function Banner({ testId, title, marks, duration, totalQuestions,
 
 
                 </div>
+                    ):(
+                        <div className="grid gap-6 max-w-4xl mx-auto">
+      <Card className="bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full">
+            {/* Geometric shapes */}
+            <div className="absolute w-40 h-40 bg-white rounded-lg transform rotate-45 -translate-x-1/2 -translate-y-1/2"></div>
+            <div className="absolute w-40 h-40 bg-white rounded-full transform -translate-x-full -translate-y-1/2 opacity-50"></div>
+          </div>
+        </div>
+        <CardContent className="relative z-10">
+          <CardHeader>
+            <CardTitle>
+              <Skeleton className="h-6 w-1/3 mb-4" />
+            </CardTitle>
+          </CardHeader>
+          <div className="space-y-2 text-left mb-4">
+            <div className="md:flex items-center justify-between">
+              <Skeleton className="h-5 w-2/5" />
+              <Skeleton className="h-5 w-20" />
+            </div>
+            <Skeleton className="h-4 w-1/4" />
+            <div className="flex items-center">
+              <Skeleton className="h-4 w-8 mr-2" />
+              <Skeleton className="h-4 w-1/5" />
+            </div>
+            <div className="flex items-center">
+              <Skeleton className="h-4 w-8 mr-2" />
+              <Skeleton className="h-4 w-1/5" />
+            </div>
+          </div>
+          <div className="text-sm flex justify-center">
+            <Skeleton className="h-8 w-1/3" />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+                    )
+                }
+                
             </div>
         </div>
     )
