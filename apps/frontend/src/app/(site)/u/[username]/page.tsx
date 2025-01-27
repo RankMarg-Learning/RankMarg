@@ -5,16 +5,16 @@ import axios from "axios";
 import Calender from "@/components/profile/Calender";
 import SubjectStats from "@/components/profile/SubjectStats";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
-import { ChallengeStats } from "@/components/profile/ChallengeStats";
+// import { ChallengeStats } from "@/components/profile/ChallengeStats";
 import { UserProfileResponse } from "@/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Target, Edit2, CheckCircle2, XCircle, Zap, Users, Star, Atom, CircleCheckBig, Swords, BookOpenCheck, Car } from "lucide-react"
+import { Target, Edit2,  Zap, Users, Star, Atom, CircleCheckBig, Swords, BookOpenCheck } from "lucide-react" //CheckCircle2, XCircle,, Car
 import Image from "next/image";
-import RankDisplay from "@/lib/rank";
+// import RankDisplay from "@/lib/rank";
 import Link from "next/link";
 
 
