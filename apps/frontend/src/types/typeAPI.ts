@@ -42,17 +42,17 @@ export type UserBasicProfile = {
   export type SubjectStatsMap = Record<string, SubjectStats>;
   
 
-  interface AttemptProps{
+  // interface AttemptProps{
    
-      isCorrect: boolean
-      solvedAt: Date 
-      questionId: string
-      question: {
-        subject: string
-      }
+  //     isCorrect: boolean
+  //     solvedAt: Date 
+  //     questionId: string
+  //     question: {
+  //       subject: string
+  //     }
     
     
-  }
+  // }
   interface RecentTestProps{
     testId: string,
     score: number,
