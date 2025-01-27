@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
-import { UserProfileResponse, UserBasicProfile, UserAdditionalInfo, UserChallengeStats, SubjectStatsMap } from "@/types";
+import { UserProfileResponse, UserBasicProfile, UserAdditionalInfo,  SubjectStatsMap } from "@/types"; 
 
 export async function GET(req: Request, { params }: { params: { username: string } }): Promise<Response> {
   const { username } = params;
