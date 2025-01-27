@@ -13,6 +13,7 @@ export type UserBasicProfile = {
   export type UserAdditionalInfo = {
     totalAttempt: number;
     totalQuestions: number;
+    totalTest: number;
     totalChallenge: number;
     accuracy: number;
   };
@@ -52,13 +53,22 @@ export type UserBasicProfile = {
     
     
   }
+  interface RecentTestProps{
+    testId: string,
+    score: number,
+    test:{
+      title: string,
+      totalMarks: number,
+    }
+  }
   // Complete API response type for user profile
   export type UserProfileResponse = {
     basicProfile: UserBasicProfile;
     additionalInfo: UserAdditionalInfo;
     subjects: SubjectStatsMap;
-    challengeStats: UserChallengeStats;
+    // challengeStats: UserChallengeStats;
     solvedAtValues: Date[];
-    attempts: AttemptProps[];
+    // attempts: AttemptProps[];
+    recentTest:RecentTestProps[];
   };
   
