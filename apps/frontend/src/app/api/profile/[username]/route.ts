@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
-import { UserProfileResponse, UserBasicProfile, UserAdditionalInfo, UserChallengeStats, SubjectStatsMap } from "@/types";
+import { UserProfileResponse, UserBasicProfile, UserAdditionalInfo,  SubjectStatsMap } from "@/types"; 
 
 export async function GET(req: Request, { params }: { params: { username: string } }): Promise<Response> {
   const { username } = params;
@@ -11,6 +11,7 @@ export async function GET(req: Request, { params }: { params: { username: string
     const user = await prisma.user.findUnique({
       where: { username },
       select: {
+        stream: true,
         rank: true,
         name: true,
         username: true,
@@ -18,6 +19,20 @@ export async function GET(req: Request, { params }: { params: { username: string
         coins: true,
         createdAt: true,
         id: true,
+        TestParticipated: {
+          where: { status: "COMPLETED" },
+          select: {
+            testId: true,
+            score: true,
+            test: {
+              select: {
+                title: true,
+                totalMarks: true,
+              },
+            },
+          }
+
+        },
         attempts: {
           select: {
             isCorrect: true,
@@ -45,12 +60,13 @@ export async function GET(req: Request, { params }: { params: { username: string
         },
       },
     });
-
     if (!user) {
       return new Response("User not found", { status: 404 });
     }
 
-    const totalQuestions = await prisma.question.count();
+    const totalQuestions = await prisma.question.count({
+      where: { stream: user.stream },
+    });
 
     const correctQuestionIds = new Set();
 
@@ -62,35 +78,39 @@ export async function GET(req: Request, { params }: { params: { username: string
 
     const totalAttempt = correctQuestionIds.size;
 
-    // const totalAttempt = user.attempts.filter((attempt) => attempt.isCorrect).length;
     const accuracy = totalAttempt / (user.attempts.length || 1);
 
     const totalChallenge = user.player1.length + user.player2.length;
-
     const subjectTotalQuestionMap = (await prisma.question.groupBy({
       by: ["subject"],
       _count: { id: true },
+      where: { stream: user.stream },
     })).reduce((acc, { subject, _count }) => {
       acc[subject] = _count.id;
       return acc;
     }, {} as Record<string, number>);
 
     const subjectCounts = user.attempts
-  .filter((attempt) => attempt.isCorrect)
-  .reduce((acc, attempt) => {
-    const subject = attempt.question.subject;  // Subject is a string
-    const questionId = attempt.questionId;  // Ensure questionId is a string
+      .filter((attempt) => attempt.isCorrect)
+      .reduce((acc, attempt) => {
+        const subject = attempt.question.subject;
+        const questionId = attempt.questionId;
 
-    // Initialize a Set for each subject if not already initialized
-    if (!acc[subject]) {
-      acc[subject] = new Set<string>();  // Initialize as a Set of strings
-    }
 
-    acc[subject].add(questionId);  // Add the questionId (string) to the Set for the subject
-    return acc;
-  }, {} as Record<string, Set<string>>);
+        if (!acc[subject]) {
+          acc[subject] = new Set<string>();
+        }
 
-    const subjects: SubjectStatsMap = ["Physics", "Chemistry", "Mathematics"].reduce((acc, subject) => {
+        acc[subject].add(questionId);
+        return acc;
+      }, {} as Record<string, Set<string>>);
+
+    const availableSubjects =
+      user.stream === "JEE"
+        ? ["Physics", "Chemistry", "Mathematics"]
+        : ["Physics", "Chemistry", "Biology"];
+
+    const subjects: SubjectStatsMap = availableSubjects.reduce((acc, subject) => {
       acc[subject] = {
         AttemptCount: subjectCounts[subject] ? subjectCounts[subject].size : 0,
         TotalQuestion: subjectTotalQuestionMap[subject] || 0,
@@ -98,22 +118,25 @@ export async function GET(req: Request, { params }: { params: { username: string
       return acc;
     }, {} as SubjectStatsMap);
 
-    const recentChallenges = [
-      ...user.player1.map((challenge) => ({
-        challengeId: challenge.challengeId,
-        userScore: challenge.player1Score,
-        createdAt: challenge.createdAt,
-        attemptScore: challenge.attemptByPlayer1,
-      })),
-      ...user.player2.map((challenge) => ({
-        challengeId: challenge.challengeId,
-        userScore: challenge.player2Score,
-        createdAt: challenge.createdAt,
-        attemptScore: challenge.attemptByPlayer2,
-      })),
-    ]
-      .sort((a, b) => (a.createdAt.getTime() || 0) - (b.createdAt.getTime() || 0))
-      .slice(0, 25);
+    // const recentChallenges = [
+    //   ...user.player1.map((challenge) => ({
+    //     challengeId: challenge.challengeId,
+    //     userScore: challenge.player1Score,
+    //     createdAt: challenge.createdAt,
+    //     attemptScore: challenge.attemptByPlayer1,
+    //   })),
+    //   ...user.player2.map((challenge) => ({
+    //     challengeId: challenge.challengeId,
+    //     userScore: challenge.player2Score,
+    //     createdAt: challenge.createdAt,
+    //     attemptScore: challenge.attemptByPlayer2,
+    //   })),
+    // ]
+    //   .sort((a, b) => (a.createdAt.getTime() || 0) - (b.createdAt.getTime() || 0))
+    //   .slice(0, 25);
+
+
+    const recentTest = user.TestParticipated.slice(0, 10);
 
     const basicProfile: UserBasicProfile = {
       name: user.name,
@@ -126,15 +149,16 @@ export async function GET(req: Request, { params }: { params: { username: string
 
     const additionalInfo: UserAdditionalInfo = {
       totalAttempt,
+      totalTest: user.TestParticipated.length,
       totalQuestions,
       totalChallenge,
       accuracy,
     };
 
-    const challengeStats: UserChallengeStats = {
-      rank: user.rank,
-      recentChallenges,
-    };
+    // const challengeStats: UserChallengeStats = {
+    //   rank: user.rank,
+    //   recentChallenges,
+    // };
 
     const solvedAtValues = user.attempts.map((attempt) => attempt.solvedAt);
 
@@ -142,9 +166,10 @@ export async function GET(req: Request, { params }: { params: { username: string
       basicProfile,
       additionalInfo,
       subjects,
-      challengeStats,
+      // challengeStats,
       solvedAtValues,
-      attempts: user.attempts,
+      // attempts: user.attempts,
+      recentTest,
     };
 
     return new Response(JSON.stringify(responseBody), { status: 200, headers: { "Content-Type": "application/json" } });

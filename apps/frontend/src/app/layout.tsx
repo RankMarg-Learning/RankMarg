@@ -32,6 +32,7 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
   },
+  
 };
 
 export default function RootLayout({
@@ -47,6 +48,7 @@ export default function RootLayout({
         <html lang="en">
           <head>
             <GoogleAnalytics trackingId={GA_TRACKING_ID} />
+            <meta name="google-adsense-account" content="ca-pub-6631120605146752"></meta>
           </head>
           <body
             className={`${geistSans.variable} ${geistMono.variable} antialiased default-scroll`}
