@@ -51,8 +51,8 @@ export function StreamSelector() {
             <Label htmlFor="jee">JEE</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="NEET" id="neet" />
-            <Label htmlFor="neet">NEET</Label>
+            <RadioGroupItem value="NEET" id="neet"  disabled />
+            <Label htmlFor="neet">NEET (coming soon)</Label>
           </div>
         </RadioGroup>
         <Button onClick={handleSubmit} disabled={!selectedStream}>
