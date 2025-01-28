@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Target, Edit2,  Zap, Users, Star, Atom, CircleCheckBig, Swords, BookOpenCheck } from "lucide-react" //CheckCircle2, XCircle,, Car
+import { Target, Edit2, Zap, Users, Star, Atom, CircleCheckBig, Swords, BookOpenCheck } from "lucide-react" //CheckCircle2, XCircle,, Car
 import Image from "next/image";
 // import RankDisplay from "@/lib/rank";
 import Link from "next/link";
@@ -231,23 +231,29 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
                 <ul className="space-y-4">
                   {
                     profile.recentTest && profile.recentTest.length > 0 ? (profile.recentTest.map((test) => (
-                      <ul key={test.testId}  className="flex items-center justify-between p-4 bg-muted rounded-lg ">
+                      <ul key={test.testId} className="flex items-center justify-between p-4 bg-muted rounded-lg ">
                         <div className="space-y-1 flex-grow mr-4">
                           <p className="font-medium">{test.test.title}</p>
                           <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">Score</span>
-                          <span className="font-semibold">{test.score}/{test.test.totalMarks}</span>
+                            <span className="text-sm text-muted-foreground">Score</span>
+                            <span className="font-semibold">{test.score}/{test.test.totalMarks}</span>
+                          </div>
                         </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Link href={`/analysis/${test.testId}`} target="_blank">
-                          <Button variant="outline" className="hover:border-yellow-400 hover:text-yellow-400" >View Analysis</Button>
-                          </Link>
-                        </div>
+                        {
+                          profile.basicProfile.isSelf && (
+                            <div className="flex items-center gap-2">
+                              <Link href={`/analysis/${test.testId}`} target="_blank">
+                                <Button variant="outline" className="hover:border-yellow-400 hover:text-yellow-400" >View Analysis</Button>
+                              </Link>
+                            </div>
+                          )
+
+                        }
+
                       </ul>
-                    ))): <p>No test found</p>
+                    ))) : <p>No test found</p>
                   }
-                  
+
                 </ul>
               </CardContent>
             </Card>
@@ -283,7 +289,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
           </div>
         </div>
 
-        
+
       </div>
     </div>
   );
