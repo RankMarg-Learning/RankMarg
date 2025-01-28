@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { signOut, useSession } from 'next-auth/react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { InstagramLogoIcon } from "@radix-ui/react-icons"
+import { TypewriterEffect } from "@/components/ui/typewriter-effect"
 
 const BlobShape = ({ className }: { className?: string }) => (
   <motion.div
@@ -76,6 +77,29 @@ const rankingData = [
     subRanks: ["Champion I", "Champion II"],
   }
 ]
+const words = [
+  {
+    text: "Ace",
+    className: "text-[#8B4513] text-5xl lg:text-6xl",
+  },
+  {
+    text: "Your",
+    className: "text-[#8B4513] text-5xl lg:text-6xl",
+  },
+  {
+    text: "JEE &",
+    className: "text-yellow-500 dark:text-yellow-500 text-5xl lg:text-6xl",
+  },
+  {
+    text: "NEET",
+    className: "text-yellow-500 dark:text-yellow-500 text-5xl lg:text-6xl",
+  },
+  {
+    text: "Preparation",
+    className: "text-[#8B4513] text-5xl lg:text-6xl",
+  },
+  
+];
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -144,11 +168,12 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
-                className=" text-5xl lg:text-6xl font-bold text-[#8B4513]">
-                Ace Your{" "}
+                className=" text-5xl lg:text-6xl font-bold text-[#8B4513] flex flex-wrap">
+                  <TypewriterEffect words={words} /> 
+                {/* Ace Your{" "}
                 <span className="text-[#F7B614]">JEE &</span>
                 <br />
-                <span className="text-[#F7B614]">NEET</span> Preparation
+                <span className="text-[#F7B614]">NEET</span> Preparation */}
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, x: -20 }}
