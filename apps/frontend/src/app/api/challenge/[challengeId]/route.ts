@@ -10,7 +10,6 @@ export async function GET(req:Request, { params }: { params: { challengeId: stri
         if (!session || !session.user) {
             return new Response("Unauthorized", { status: 401 });
         }
-        console.log("Challenge ID: ", challengeId);
         const challenge = await prisma.challenge.findUnique({
             where: { challengeId },
             select:{

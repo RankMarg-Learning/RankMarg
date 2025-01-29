@@ -81,8 +81,7 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
-    const examType = searchParams.get('examType');
-    console.log(examType);
+    searchParams.get('examType');
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {

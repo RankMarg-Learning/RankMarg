@@ -8,6 +8,7 @@ interface OptionsProps {
   type: string;
   options: Option[];
   selectedOption: number | null;
+  correctOptions?: number[];
   selectedOptions: number[];
   setSelectedOption: React.Dispatch<React.SetStateAction<number | null>>;
   setSelectedOptions: React.Dispatch<React.SetStateAction<number[] | []>>;
@@ -22,7 +23,7 @@ const TF = [
   },
 ];
 
-const Options = ({ type, options, selectedOption, selectedOptions, setSelectedOption, setSelectedOptions }: OptionsProps) => {
+const Options = ({ type, options, selectedOption, selectedOptions,correctOptions ,setSelectedOption, setSelectedOptions }: OptionsProps) => {
   const [isMultiple, setIsMultiple] = useState(false);
   useEffect(() => {
     if (!options) return;
@@ -55,6 +56,7 @@ const Options = ({ type, options, selectedOption, selectedOptions, setSelectedOp
               selectedOptions={selectedOptions}
               handleOptionChange={handleOptionChange}
               isMultiple={isMultiple}
+              correctOptions={correctOptions}
             />
           </div>
         </>)
@@ -85,6 +87,7 @@ const Options = ({ type, options, selectedOption, selectedOptions, setSelectedOp
                 selectedOptions={selectedOptions}
                 handleOptionChange={handleOptionChange}
                 isMultiple={isMultiple}
+                correctOptions={correctOptions}
               />
             </div>
           </>

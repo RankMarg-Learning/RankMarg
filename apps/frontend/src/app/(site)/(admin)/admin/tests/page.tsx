@@ -44,9 +44,7 @@ export default function Questions() {
     },
   });
 
-    console.log(tests)
   const handleDelete = async (testId: string) => {
-    console.log(testId)
     const response = await axios.delete(`/api/test/${testId}`)
     if(response.status === 200){
       toast({ title: "Success", description: "Test Deleted Successfully",color:"white" })

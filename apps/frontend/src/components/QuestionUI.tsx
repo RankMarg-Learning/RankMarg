@@ -1,5 +1,5 @@
 "use client";
-import React, {   useState } from 'react'
+import React, { useState } from 'react'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import MarkdownRenderer from '@/lib/MarkdownRenderer'
@@ -17,7 +17,7 @@ interface attempDataProps {
   selectedOptions: number[];
 }
 
-interface QuestionShowProps extends Omit<QuestionProps, "challenge" | "attempts" | "createdAt"> {}
+interface QuestionShowProps extends Omit<QuestionProps, "challenge" | "attempts" | "createdAt"> { }
 
 
 interface QuestionUIProps {
@@ -31,46 +31,50 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
   const { toast } = useToast()
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   
+
   const checkIfSelectedIsCorrect = () => {
     if (!question.options) {
-      return false; 
+      return false;
     }
-    if (selectedOptions.length >0) {
+    if (selectedOptions.length > 0) {
 
       return selectedOptions.every((index) => question.options[index].isCorrect);
     } else {
       if (selectedOption === null) {
         return false; // No selection
       }
-      if(question.type === "TF"){
+      if (question.type === "TF") {
 
         return (question.isTrueFalse === !selectedOption);
       }
 
-      if(question.type === "NUM"){
+      if (question.type === "NUM") {
         return question.isnumerical === selectedOption;
       }
-      
+
       return question.options[selectedOption].isCorrect;
     }
-    
+
   };
 
-  
-  
-  
-  
 
-  
- 
-  const handleOnSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
+
+
+
+
+
+
+  const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if(!session){
+    if (!session) {
       router.push('/sign-in')
       return;
     }
+    setIsSubmitting(true);
 
     const isCorrect = checkIfSelectedIsCorrect();
     const attemptData = {
@@ -78,33 +82,33 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
       userId: session?.user?.id, // Replace with actual user ID
       isCorrect: isCorrect,
       selectedOptions
-      
+
     };
-    if(isCorrect){
+    if (isCorrect) {
       toast({
         title: "Correct Answer",
         description: "Your answer was correct.",
         variant: "success",
-        duration:1000
+        duration: 1000
       }
       );
     }
-    else{
+    else {
       toast({
         title: "Incorrect Answer",
         description: "Try Next Time!",
         variant: "destructive",
-        duration:1000
-    });
-  }
+        duration: 1000
+      });
+    }
 
-  handleAttempt(attemptData);
-    
-  setSelectedOption(null);
-  setSelectedOptions([]);
+    handleAttempt(attemptData);
+
+    // setSelectedOption(null);
+    // setSelectedOptions([]);
 
   }
-  const receiverEmail = 'support@rankmarg.in'; 
+  const receiverEmail = 'support@rankmarg.in';
   const subject = `Report: ${question.slug}`;
   const body = `Hello,
 
@@ -123,14 +127,14 @@ Best regards,
 `;
   const handleReport = () => {
     const mailtoLink = `mailto:${receiverEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoLink; 
+    window.location.href = mailtoLink;
   };
-  
-  
+
+
   return (
     <div className="min-h-[calc(100vh-120px)] flex flex-col bg-gray-100" id="fullscreen">
       {/* Navbar */}
-      
+
       <div className="flex flex-wrap md:flex-row flex-1 p-4 bg-white  rounded-lg overflow-hidden  ">
         {/* Left side: Question */}
         {/* <form action=""></form> */}
@@ -160,52 +164,63 @@ Best regards,
             <Badge variant={"Medium"}>{question.difficulty}</Badge>
             <Badge
               variant="secondary"
-            > 
+            >
               <span>Subject:</span>
               {question.subject}
             </Badge>
             <Badge
               variant="secondary"
-            > 
+            >
               <span>Class:</span>
               {question.class}
             </Badge>
             <Badge
-                  variant="Hard" 
-                  className="cursor-pointer"
-                  onClick={handleReport}
-                >
-                  Report
+              variant="Hard"
+              className="cursor-pointer"
+              onClick={handleReport}
+            >
+              Report
             </Badge>
           </div>
           <div className='noselect'>
-          <MarkdownRenderer content={question.content} />
+            <MarkdownRenderer content={question.content} />
           </div>
 
-          
+
         </div>
-        
+
 
         {/* Right side: Options */}
         <div className="w-full md:w-1/2 p-6 ">
           <Options type={question.type} options={question.options}
-          selectedOption={selectedOption}
-          selectedOptions={selectedOptions}
-          setSelectedOption={setSelectedOption}
-          setSelectedOptions={setSelectedOptions}
+            selectedOption={selectedOption}
+            selectedOptions={selectedOptions}
+            setSelectedOption={setSelectedOption}
+            setSelectedOptions={setSelectedOptions}
+            correctOptions={ isSubmitting ? (question.options
+              ?.map((option, index) => ({ ...option, index })) // Add index to each option
+              .filter((option) => option.isCorrect) // Filter correct options
+              .map((option) => option.index) ): [] }
           />
+          {
+            question.type === "NUM" &&isSubmitting && (
+              <div className={`flex flex-wrap space-x-2 mt-4 ${selectedOption ===question.isnumerical ? 'text-green-500' : 'text-red-500'}`}>
+                Correct Answer: {question.isnumerical}
+              </div>
+            )
+          }
           <form onSubmit={handleOnSubmit}>
             <Button type="submit" className="mt-4">Submit</Button>
           </form>
-       
+
 
 
 
         </div>
         <div className="flex flex-wrap md:flex-1 justify-between">
           {/* <div className={tags ? `` : `hidden`}> */}
-            {/* <div className={tags ? `flex flex-wrap space-x-2 mt-4` : `hidden`}> */}
-            {/* <div className={`flex flex-wrap space-x-2 mt-4`}>
+          {/* <div className={tags ? `flex flex-wrap space-x-2 mt-4` : `hidden`}> */}
+          {/* <div className={`flex flex-wrap space-x-2 mt-4`}>
               {question.tags.map((tag, index) => (
                 <Badge key={index} variant="secondary" className="mb-2">
                   {tag}
@@ -215,7 +230,7 @@ Best regards,
           {/* </div> */}
         </div>
       </div>
-      
+
     </div>
   )
 }
