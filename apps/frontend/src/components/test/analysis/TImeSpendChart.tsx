@@ -49,8 +49,9 @@ export function TimeSpendChart({data}:{data:SectioncQuestionTiming[]}) {
     ) as (keyof typeof chartConfig)[];
   }, [data]);
 
+
   const [activeSubject, setActiveSubject] = React.useState<keyof typeof chartConfig>(
-    availableSubjects[0] || "physics"
+     Object.keys(data[0]).find(key => data[0][key] > 0) as keyof typeof chartConfig
   );
 
   const total = React.useMemo(
@@ -62,7 +63,7 @@ export function TimeSpendChart({data}:{data:SectioncQuestionTiming[]}) {
   );
 
   return (
-    <Card className="rounded-md">
+    <Card className="rounded-md shadow-sm">
       <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
           <CardTitle>Question Time Analysis</CardTitle>
@@ -77,7 +78,7 @@ export function TimeSpendChart({data}:{data:SectioncQuestionTiming[]}) {
               <button
                 key={chart}
                 data-active={activeSubject === chart}
-                className={`relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6 ${total[chart] === 0 ? 'hidden' : ''}`}
+                className={`relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-yellow-300/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6 ${total[chart] === 0 ? 'hidden' : ''}`}
                 onClick={() => setActiveSubject(chart)}
               >
                 <span className="text-sm font-semibold text-muted-foreground">

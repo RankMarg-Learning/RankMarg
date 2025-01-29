@@ -60,7 +60,6 @@ const SetUsername = () => {
             const isCheck = false;
             const response = await axios.put(`/api/users`, { username,isCheck });
 
-            console.log("response",response);
 
             if(
               response 

@@ -135,7 +135,7 @@ const Navbar = () => {
 
           <Link
             href="/challenge"
-            className="flex items-center text-sm p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="hidden items-center text-sm p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
             Challenge
           </Link>
@@ -217,7 +217,7 @@ const Navbar = () => {
             </NavigationMenuItem>
            
             <NavigationMenuItem>
-              <Link href="/challenge" className="text-muted-foreground transition-colors hover:text-foreground inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2">
+              <Link href="/challenge" className="hidden text-muted-foreground transition-colors hover:text-foreground  h-10 w-max items-center justify-center rounded-md px-4 py-2">
                 Challenge
               </Link>
             </NavigationMenuItem>
