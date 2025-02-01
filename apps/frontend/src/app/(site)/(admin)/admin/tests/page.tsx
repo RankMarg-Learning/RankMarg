@@ -79,7 +79,6 @@ export default function Questions() {
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
-                <TableHead>Start Date</TableHead>
                 <TableHead>Test Link</TableHead>
                 <TableHead>Duration (min)</TableHead>
                 <TableHead>Actions</TableHead>
@@ -89,7 +88,6 @@ export default function Questions() {
               {tests ? tests?.map((test) => (
                 <TableRow key={test.testId}>
                   <TableCell>{test.title}</TableCell>
-                  <TableCell>{convertToIST(test.startTime)}</TableCell>
                   <TableCell>{`${process.env.NEXT_PUBLIC_WEBSITE_URL!}/test/${test.testId}`}</TableCell>
                   <TableCell>{test.duration}</TableCell>
                   <TableCell>

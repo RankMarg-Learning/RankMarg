@@ -2,6 +2,8 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { ContributeFormProps } from "@/types";
 import { QuestionType, Stream } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/options";
 
 interface WhereClauseProps {
   subject?: string;
@@ -11,7 +13,7 @@ interface WhereClauseProps {
   stream?: Stream;
   isPublished?: boolean;
   type?: QuestionType;
-  OR?: Array<{ content?: { contains: string; mode: "insensitive" } } | { topic?: { contains: string; mode: "insensitive" } }>;
+  OR?: Array<{ content?: { contains: string; mode: "insensitive" } } | { topic?: { contains: string; mode: "insensitive" } } | { title?: { contains: string; mode: "insensitive" } }>;
 }
 
 export async function GET(req: Request) {
@@ -25,7 +27,7 @@ export async function GET(req: Request) {
   const topic = searchParams.get("topic");
   const type = searchParams.get("type") as QuestionType;
   const stream = searchParams.get("stream") as Stream;
-  const isPublished = searchParams.get("isPublished") === "true"? false : true;
+  const isPublished = searchParams.get("isPublished") === "true" ? false : true;
   const skip = (page - 1) * limit;
 
   try {
@@ -37,6 +39,7 @@ export async function GET(req: Request) {
       whereClause.OR = [
         { content: { contains: search, mode: "insensitive" } },
         { topic: { contains: search, mode: "insensitive" } },
+        { title: { contains: search, mode: "insensitive" } },
       ];
     }
     if (topic) {
@@ -49,7 +52,10 @@ export async function GET(req: Request) {
       whereClause.type = type;
     }
 
+    const session = await getServerSession(authOptions);
+    let userID = session?.user?.id;
     if (isPublished) {
+      userID = "shihsihihi";
       whereClause.isPublished = isPublished;
     }
 
@@ -68,6 +74,12 @@ export async function GET(req: Request) {
           tag: true,
           accuracy: true,
           createdAt: true,
+          attempts: {
+            where: {
+              userId: userID,
+              isCorrect: true
+            },
+          },
         },
         orderBy: {
           createdAt: 'desc',
@@ -113,6 +125,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" });
     }
 
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+
     const question = await prisma.question.create({
       data: {
         slug: formState.slug,
@@ -121,6 +139,7 @@ export async function POST(req: Request) {
         content: formState.content,
         difficulty: formState.difficulty,
         topic: formState.topicTitle,
+        createdBy: session.user.id,
         subject: formState.subject,
         hint: formState.hint,
         stream: formState.stream,
