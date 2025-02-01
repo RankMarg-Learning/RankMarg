@@ -9,26 +9,26 @@ import axios from "axios"
 import { toast } from "@/hooks/use-toast"
 
 
-function convertToIST(utcDateTime: string): string {
-  const utcDate = new Date(utcDateTime);
+// function convertToIST(utcDateTime: string): string {
+//   const utcDate = new Date(utcDateTime);
   
-  // Convert to IST by adding 5 hours and 30 minutes
-  const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30 in milliseconds
-  const istDate = new Date(utcDate.getTime() + istOffset);
+//   // Convert to IST by adding 5 hours and 30 minutes
+//   const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30 in milliseconds
+//   const istDate = new Date(utcDate.getTime() + istOffset);
 
-  // Format the date and time in 12-hour format
-  const options: Intl.DateTimeFormatOptions = {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: "Asia/Kolkata"
-  };
+//   // Format the date and time in 12-hour format
+//   const options: Intl.DateTimeFormatOptions = {
+//       year: "numeric",
+//       month: "2-digit",
+//       day: "2-digit",
+//       hour: "2-digit",
+//       minute: "2-digit",
+//       hour12: true,
+//       timeZone: "Asia/Kolkata"
+//   };
 
-  return istDate.toLocaleString("en-IN", options);
-}
+//   return istDate.toLocaleString("en-IN", options);
+// }
 
 
 export default function Questions() {
