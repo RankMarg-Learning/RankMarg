@@ -89,7 +89,9 @@ export async function GET(req: Request) {
         }
 
         const tests = await prisma.test.findMany({
-           
+           where:{
+                createdBy: session.user.id,
+           },
             orderBy: {
                 createdAt: "desc",
             },
