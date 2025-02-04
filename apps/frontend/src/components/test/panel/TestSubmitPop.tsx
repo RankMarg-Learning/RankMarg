@@ -23,8 +23,9 @@ import { QuestionStatus } from "@/utils"
 import { useTestContext } from "@/context/TestContext"
 
 interface TestSummaryProps {
-    statusCounts: Record<QuestionStatus, number>;
-  }
+  statusCounts: Record<QuestionStatus, number>;
+}
+
 const statusLabels: Record<QuestionStatus, string> = {
   [QuestionStatus.NotAnswered]: "Not Answered",
   [QuestionStatus.Answered]: "Answered",
@@ -33,12 +34,19 @@ const statusLabels: Record<QuestionStatus, string> = {
 }
 
 export function TestSummaryPopup({ statusCounts }: TestSummaryProps) {
-    const {setIsTestComplete} = useTestContext();
+  const { setIsTestComplete } = useTestContext();
   const [isOpen, setIsOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+
+    // Simulate API call delay (replace with real API call if needed)
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     setIsTestComplete(true);
-    setIsOpen(false)
+    setIsSubmitting(false);
+    setIsOpen(false);
   }
 
   const totalQuestions = Object.values(statusCounts).reduce((acc, count) => acc + count, 0)
@@ -47,7 +55,7 @@ export function TestSummaryPopup({ statusCounts }: TestSummaryProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button  className="w-full">Submit Test</Button>
+        <Button className="w-full">Submit Test</Button>
       </DialogTrigger>
       <DialogContent className="w-[90vw] max-w-[700px] bg-white">
         <DialogHeader>
@@ -75,10 +83,15 @@ export function TestSummaryPopup({ statusCounts }: TestSummaryProps) {
           </Table>
         </div>
         <DialogFooter>
-          <Button onClick={handleSubmit} className="w-full">Submit Test</Button>
+          <Button 
+            onClick={handleSubmit} 
+            className="w-full" 
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Submit Test"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   )
 }
-

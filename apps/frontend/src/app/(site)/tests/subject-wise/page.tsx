@@ -109,7 +109,7 @@ const SubjectWiseTests = () => {
   if (!tests) return <div>No tests found</div>;
 
   const subjectTests = tests.map((test) => {
-    const subject = test.title.split(' ')[0].trim();
+    const subject = test?.title?.split(' ')[0]?.trim();
     return { subject, ...test };
   });
 

@@ -30,6 +30,28 @@ import { useRouter } from "next/navigation";
 import { Tags } from "@/constant/tags";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import { Checkbox } from "../ui/checkbox";
+import { z } from "zod";
+
+const QuestionFormSchema = z.object({
+  title: z.string().min(1, { message: "Title is required" }),
+  topicTitle: z.string().min(1, { message: "Topic title is required" }),
+  std: z.string().min(1, { message: "Standard is required" }),
+  difficulty: z.enum(["Easy", "Medium", "Hard"]),
+  subject: z.string().min(1, { message: "Subject is required" }),
+  stream: z.string().min(1, { message: "Stream is required" }),
+  hint: z.string().optional(),
+  tag: z.string().optional(),
+  content: z.string().min(1, { message: "Content is required" }),
+  questionTime: z.number().min(1, { message: "Question time must be at least 1 minute" }),
+  options: z.array(
+    z.object({
+      content: z.string().min(1, { message: "Option content is required" }),
+      isCorrect: z.boolean(),
+    })
+  ).optional(),
+  numericalAnswer: z.number().optional(),
+  isTrueFalse: z.boolean().optional(),
+});
 
 const Contribute = () => {
   const { data: session, status } = useSession();
@@ -46,8 +68,13 @@ const Contribute = () => {
   const [topicTitle, setTopicTitle] = useState("");
   const [content, setContent] = useState("");
   const [options, setOptions] = useState<
-    { content: string; isCorrect: boolean }[]
-  >([]);
+    { content: string; isCorrect: boolean }[
+
+    ]
+  >([{ content: "", isCorrect: false },
+  { content: "", isCorrect: false },
+  { content: "", isCorrect: false },
+  { content: "", isCorrect: false },]);
   const [difficulty, setDifficulty] = useState("");
   const [subject, setSubject] = useState("");
   const [std, setStd] = useState("");
@@ -62,7 +89,7 @@ const Contribute = () => {
     undefined
   );
   const [questionTime, setQuestionTime] = useState(5);
-  const [questionType, setQuestionType] = useState("mcq");
+  const [questionType, setQuestionType] = useState("MCQ");
 
   const [msg, setMsg] = useState("");
 
@@ -124,6 +151,12 @@ const Contribute = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const result = QuestionFormSchema.safeParse(ContributeForm);
+    if (!result.success) {
+      setMsg(result.error.errors.map((err) => err.message).join(", "));
+      return;
+    }
+
     try {
       const respones = await axios.post("/api/question", ContributeForm);
       setMsg(respones.data.message);
@@ -148,226 +181,219 @@ const Contribute = () => {
       setQuestionType("mcq");
     }
   };
-  if (status === "authenticated" && session?.user?.Role === "ADMIN") {
 
-    return (
-      <div className="mx-auto flex">
-        <form
-          className="md:col-span-8 p-4  "
-          onSubmit={handleSubmit}
-        >
-          <div className="flex flex-wrap mx-3 mb-6   ">
-            <div className="w-full  px-3 mb-6 md:mb-0">
+  return (
+    <div className="mx-auto flex">
+      <form
+        className="md:col-span-8 p-4  "
+        onSubmit={handleSubmit}
+      >
+        <div className="flex flex-wrap mx-3 mb-6   ">
+          <div className="w-full  px-3 mb-6 md:mb-0">
+            <label
+              className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="grid-last-name"
+            >
+              Question Title*
+            </label>
+            <Input
+              required
+              type="text"
+              className="mb-2"
+              placeholder="Title"
+              value={title}
+              name="title"
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-wrap  mb-6 w-full">
+            <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
               <label
                 className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
                 htmlFor="grid-last-name"
               >
-                Question Title
-              </label>
-              <Input
-                required
-                type="text"
-                className="mb-2"
-                placeholder="Title"
-                value={title}
-                name="title"
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-wrap  mb-6 w-full">
-              <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                <label
-                  className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                  htmlFor="grid-last-name"
-                >
-                  Stream
-                </label>
-                <SelectFilter
-                  width={"full"}
-                  placeholder="Stream"
-                  selectName={Object.keys(filterData)}
-                  onChange={(value: string[]) => setStream(value[0])}
-                />
-
-              </div>
-              <div className="w-full md:w-1/2 px-3">
-                <label
-                  className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                  htmlFor="grid-last-name"
-                >
-                  Class
-                </label>
-                <SelectFilter
-                  width={"full"}
-                  placeholder="Class"
-                  selectName={["Foundation", "11th", "12th"]}
-                  onChange={(value: string[]) => setStd(value[0])}
-                />
-              </div>
-            </div>
-            <div className="flex flex-wrap  mb-6 w-full">
-              <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                <label
-                  className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                  htmlFor="grid-last-name"
-                >
-                  Subjects
-                </label>
-                <SelectFilter
-                  width={"full"}
-                  placeholder="Subjects"
-                  selectName={Object.keys(filterData[stream] || {})}
-                  onChange={(value: string[]) => setSubject(value[0])}
-                />
-
-              </div>
-              <div className="w-full md:w-1/2 px-3">
-                <label
-                  className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                  htmlFor="grid-last-name"
-                >
-                  Topics Title
-                </label>
-                <Combobox
-                  topics={filteredTopics}
-                  onchange={(newTopic: string) => {
-                    setTopicTitle(newTopic);
-                  }}
-                />
-
-              </div>
-            </div>
-            <div className="flex flex-wrap   px-3 w-full md:w-1/2">
-              <label
-                className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                htmlFor="grid-last-name"
-              >
-                Difficulty
+                Stream*
               </label>
               <SelectFilter
                 width={"full"}
-                placeholder="Difficulty"
-                selectName={["Easy", "Medium", "Hard"]}
-                onChange={(value: string[]) => setDifficulty(value[0])}
+                placeholder="Stream"
+                selectName={Object.keys(filterData)}
+                onChange={(value: string[]) => setStream(value[0])}
               />
 
+            </div>
+            <div className="w-full md:w-1/2 px-3">
+              <label
+                className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                htmlFor="grid-last-name"
+              >
+                Class*
+              </label>
+              <SelectFilter
+                width={"full"}
+                placeholder="Class"
+                selectName={["Foundation", "11th", "12th"]}
+                onChange={(value: string[]) => setStd(value[0])}
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap  mb-6 w-full">
+            <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+              <label
+                className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                htmlFor="grid-last-name"
+              >
+                Subjects*
+              </label>
+              <SelectFilter
+                width={"full"}
+                placeholder="Subjects"
+                selectName={Object.keys(filterData[stream] || {})}
+                onChange={(value: string[]) => setSubject(value[0])}
+              />
+
+            </div>
+            <div className="w-full md:w-1/2 px-3">
+              <label
+                className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                htmlFor="grid-last-name"
+              >
+                Topics Title*
+              </label>
+              <Combobox
+                topics={filteredTopics}
+                onchange={(newTopic: string) => {
+                  setTopicTitle(newTopic);
+                }}
+              />
+
+            </div>
+          </div>
+          <div className="flex flex-wrap   px-3 w-full md:w-1/2">
+            <label
+              className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="grid-last-name"
+            >
+              Difficulty*
+            </label>
+            <SelectFilter
+              width={"full"}
+              placeholder="Difficulty"
+              selectName={["Easy", "Medium", "Hard"]}
+              onChange={(value: string[]) => setDifficulty(value[0])}
+            />
+
+          </div>
+          <div className="flex flex-wrap  px-3 w-full md:w-1/2">
+            <label
+              className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="grid-last-name"
+            >
+              Tags
+            </label>
+            <SelectFilter
+              width={"full"}
+              placeholder="Tags"
+              selectName={Tags}
+              onChange={(value: string[]) => setTag(value[0])}
+            />
+          </div>
+          <div className="w-full m-2">
+            <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="grid-last-name">Question Time (Min)*</Label>
+            <SelectFilter
+              width={"full"}
+              placeholder="Question Time"
+              selectName={["1", "2", "3", "4", "5", "6", "8", "10", "12", "15"]}
+              onChange={(value: string[]) => setQuestionTime(parseInt(value[0]))}
+            />
+          </div>
+          <div className="w-full m-2">
+            <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="grid-last-name">Hints</Label>
+            <Textarea
+              className="min-h-[50px]"
+              id="grid-desc"
+              name="question hints"
+              placeholder="Question Hinits"
+              value={hint}
+              onChange={(e) => setHint(e.target.value)}
+            />
+          </div>
+          <div className="w-full flex  ">
+            <div className="flex flex-wrap  px-3 w-full md:w-1/2">
+              <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                htmlFor="grid-last-name">Question*</Label>
+              <Textarea
+                className="min-h-[260px]"
+                id="grid-desc"
+                name="questioncontent"
+                value={content}
+                placeholder="Question Content"
+                onChange={(e) => setContent(e.target.value)}
+              />
             </div>
             <div className="flex flex-wrap  px-3 w-full md:w-1/2">
-              <label
-                className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                htmlFor="grid-last-name"
-              >
-                Tags
-              </label>
-              <SelectFilter
-                width={"full"}
-                placeholder="Tags"
-                selectName={Tags}
-                onChange={(value: string[]) => setTag(value[0])}
-              />
-            </div>
-            <div className="w-full m-2">
-              <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                htmlFor="grid-last-name">Question Time (Min)</Label>
-              <SelectFilter
-                width={"full"}
-                placeholder="Question Time"
-                selectName={["1", "2", "3", "4", "5", "6", "8", "10", "12", "15"]}
-                onChange={(value: string[]) => setQuestionTime(parseInt(value[0]))}
-              />
-            </div>
-            <div className="w-full m-2">
-              <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                htmlFor="grid-last-name">Hints</Label>
-              <Textarea
-                className="min-h-[50px]"
-                id="grid-desc"
-                name="question hints"
-                placeholder="Question Hinits"
-                value={hint}
-                onChange={(e) => setHint(e.target.value)}
-              />
-            </div>
-            <div className="w-full flex  ">
-              <div className="flex flex-wrap  px-3 w-full md:w-1/2">
+              <div className="w-full m-2 border-2 border-gray-300 p-4 rounded-md">
                 <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                  htmlFor="grid-last-name">Question</Label>
-                <Textarea
-                  className="min-h-[260px]"
-                  id="grid-desc"
-                  name="questioncontent"
-                  value={content}
-                  placeholder="Question Content"
-                  onChange={(e) => setContent(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-wrap  px-3 w-full md:w-1/2">
-                <div className="w-full m-2 border-2 border-gray-300 p-4 rounded-md">
-                  <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                    htmlFor="grid-last-name">Question Preview</Label>
-                  <div className="w-full m-2">
-                    <p>{
-                      <MarkdownRenderer content={content} />
-                    }</p>
+                  htmlFor="grid-last-name">Question Preview</Label>
+                <div className="w-full m-2">
+                  {
+                    <MarkdownRenderer content={content} />
+                  }
 
-                  </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="w-full m-2 flex">
-              <div className="flex flex-wrap  px-3 w-full md:w-1/2">
-                <div className="w-full m-2">
-                  <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                    htmlFor="grid-last-name">Question Type</Label>
-                  <Tabs
-                    defaultValue="MCQ"
-                    onValueChange={setQuestionType}
-                    value={questionType}
-                  >
-                    <TabsList>
-                      <TabsTrigger value="MCQ"
+          <div className="w-full m-2 flex">
+            <div className="flex flex-wrap  px-3 w-full md:w-1/2">
+              <div className="w-full m-2">
+                <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                  htmlFor="grid-last-name">Question Type*</Label>
+                <Tabs
+                  defaultValue="MCQ"
+                  onValueChange={setQuestionType}
+                  value={questionType}
+                >
+                  <TabsList>
+                    <TabsTrigger value="MCQ"
 
-                      >MCQ</TabsTrigger>
-                      <TabsTrigger value="NUM"> Numerical </TabsTrigger>
-                      <TabsTrigger value="TF"> True or False</TabsTrigger>
-                    </TabsList>
+                    >MCQ</TabsTrigger>
+                    <TabsTrigger value="NUM"> Numerical </TabsTrigger>
+                    {/* <TabsTrigger value="TF"> True or False</TabsTrigger> */}
+                  </TabsList>
 
-                    <TabsContent value="MCQ">
-                      {/* MCQ */}
-                      <div>
-                        {options.map((option, index) => (
-                          <div
-                            className="flex items-center  justify-center "
-                            key={index}
-                          >
-                            <label>
-                              <Input
-                                className="h-5 w-5"
-                                type="checkbox"
-                                checked={option.isCorrect}
-                                onChange={(e) =>
-                                  handleOptionChange(
-                                    index,
-                                    "isCorrect",
-                                    e.target.checked
-                                  )
-                                }
-                              />
-                            </label>
-
+                  <TabsContent value="MCQ">
+                    {/* MCQ */}
+                    <div className="flex flex-col gap-2">
+                      {options.map((option, index) => (
+                        <div className="flex items-center justify-center" key={index}>
+                          <label>
                             <Input
-                              type="text"
-                              className="mb-2"
-                              value={option.content}
-                              placeholder={`Option ${index + 1}`}
-                              name={`options.text[${index}]`}
+                              className="h-5 w-5"
+                              type="checkbox"
+                              checked={option.isCorrect}
                               onChange={(e) =>
-                                handleOptionChange(index, "content", e.target.value)
+                                handleOptionChange(index, "isCorrect", e.target.checked)
                               }
                             />
-                          </div>
-                        ))}
+                          </label>
+
+                          <Input
+                            type="text"
+                            value={option.content}
+                            placeholder={`Option ${index + 1}`}
+                            name={`options.text[${index}]`}
+                            onChange={(e) =>
+                              handleOptionChange(index, "content", e.target.value)
+                            }
+                          />
+                        </div>
+                      ))}
+
+                      <div className="flex justify-end">
                         <Button
                           type="button"
                           variant="outline"
@@ -380,62 +406,68 @@ const Contribute = () => {
                             Add Option
                           </span>
                         </Button>
-
                       </div>
-                    </TabsContent>
-                    <TabsContent value="NUM">
-                      {/* NUM */}
-                      <Input
-                        type="text"
-                        className="mb-2"
-                        placeholder="Enter Answer"
-                        name="numerical"
-                        value={numericalAnswer}
-                        onChange={(e) =>
-                          setNumericalAnswer(parseFloat(e.target.value))
-                        }
-                      />
-                    </TabsContent>
-                    <TabsContent value="TF">
-                      {/* TF  */}
-                      <SelectFilter
-                        width={"full"}
-                        placeholder="True or False"
-                        selectName={["True", "False"]}
-                        onChange={(value: string[]) =>
-                          setIsTrueFalse(value[0] === "True" ? true : false)
-                        }
-                      />
-                    </TabsContent>
-                  </Tabs>
-                </div>
-              </div>
-              <div className={`flex flex-wrap  px-3 w-full md:w-1/2 ${options.length > 0 ? "block" : "hidden"}`}>
-                <div className="w-full m-2 border-2 border-gray-300 p-4 rounded-md">
-                  <Label htmlFor="grid-problem">Options Preview</Label>
-                  <div className="w-full m-2 space-y-1">
-                    {options.map((option, index) => (
-                      <div key={index} >
+                    </div>
 
-                        <p className="p-2 w-full rounded-md bg-gray-100 flex items-center gap-2"><Checkbox checked={option.isCorrect} /><MarkdownRenderer content={option.content} /></p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                  </TabsContent>
+                  <TabsContent value="NUM">
+                    {/* NUM */}
+                    <Input
+                      type="text"
+                      className="mb-2"
+                      placeholder="Enter Answer"
+                      name="numerical"
+                      value={numericalAnswer}
+                      onChange={(e) =>
+                        setNumericalAnswer(parseFloat(e.target.value))
+                      }
+                    />
+                  </TabsContent>
+                  <TabsContent value="TF">
+                    {/* TF  */}
+                    <SelectFilter
+                      width={"full"}
+                      placeholder="True or False"
+                      selectName={["True", "False"]}
+                      onChange={(value: string[]) =>
+                        setIsTrueFalse(value[0] === "True" ? true : false)
+                      }
+                    />
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
-
-            {msg && <p className="text-red-500 text-sm ml-4">{msg}</p>}
-            <div className="w-full m-2 flex justify-end">
-              <Button className="px-4">Submit</Button>
+            <div className={`flex flex-wrap  px-3 w-full md:w-1/2 ${options.length > 0 ? "block" : "hidden"}`}>
+              <div className="w-full m-2 border-2 border-gray-300 p-4 rounded-md">
+              <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                  htmlFor="grid-last-name">Options Preview</Label>
+                <div className="w-full m-2 space-y-1">
+                  {options.map(
+                    (option, index) =>
+                      option.content && ( // Check if the content is not empty
+                        <div key={index}>
+                          <div className="p-2 w-full rounded-md bg-gray-100 flex items-center gap-2">
+                            <Checkbox checked={option.isCorrect} />
+                            <MarkdownRenderer content={option.content} />
+                          </div>
+                        </div>
+                      )
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </form>
 
-      </div>
-    );
-  }
-  return null;
+          {msg && <p className="text-red-500 text-sm ml-4">{msg}</p>}
+          <div className="w-full m-2 flex justify-end">
+            <Button className="px-4">Submit</Button>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  );
+
 };
 
 export default Contribute;

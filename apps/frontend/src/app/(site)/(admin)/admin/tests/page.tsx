@@ -9,26 +9,26 @@ import axios from "axios"
 import { toast } from "@/hooks/use-toast"
 
 
-function convertToIST(utcDateTime: string): string {
-  const utcDate = new Date(utcDateTime);
+// function convertToIST(utcDateTime: string): string {
+//   const utcDate = new Date(utcDateTime);
   
-  // Convert to IST by adding 5 hours and 30 minutes
-  const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30 in milliseconds
-  const istDate = new Date(utcDate.getTime() + istOffset);
+//   // Convert to IST by adding 5 hours and 30 minutes
+//   const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30 in milliseconds
+//   const istDate = new Date(utcDate.getTime() + istOffset);
 
-  // Format the date and time in 12-hour format
-  const options: Intl.DateTimeFormatOptions = {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: "Asia/Kolkata"
-  };
+//   // Format the date and time in 12-hour format
+//   const options: Intl.DateTimeFormatOptions = {
+//       year: "numeric",
+//       month: "2-digit",
+//       day: "2-digit",
+//       hour: "2-digit",
+//       minute: "2-digit",
+//       hour12: true,
+//       timeZone: "Asia/Kolkata"
+//   };
 
-  return istDate.toLocaleString("en-IN", options);
-}
+//   return istDate.toLocaleString("en-IN", options);
+// }
 
 
 export default function Questions() {
@@ -44,9 +44,7 @@ export default function Questions() {
     },
   });
 
-    console.log(tests)
   const handleDelete = async (testId: string) => {
-    console.log(testId)
     const response = await axios.delete(`/api/test/${testId}`)
     if(response.status === 200){
       toast({ title: "Success", description: "Test Deleted Successfully",color:"white" })
@@ -81,7 +79,6 @@ export default function Questions() {
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
-                <TableHead>Start Date</TableHead>
                 <TableHead>Test Link</TableHead>
                 <TableHead>Duration (min)</TableHead>
                 <TableHead>Actions</TableHead>
@@ -91,7 +88,6 @@ export default function Questions() {
               {tests ? tests?.map((test) => (
                 <TableRow key={test.testId}>
                   <TableCell>{test.title}</TableCell>
-                  <TableCell>{convertToIST(test.startTime)}</TableCell>
                   <TableCell>{`${process.env.NEXT_PUBLIC_WEBSITE_URL!}/test/${test.testId}`}</TableCell>
                   <TableCell>{test.duration}</TableCell>
                   <TableCell>

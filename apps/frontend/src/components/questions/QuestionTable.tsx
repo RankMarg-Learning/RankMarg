@@ -36,6 +36,7 @@ interface QuestionsetProps {
   onSelectedQuestionsChange?: (selected: string[]) => void;
   isCheckBox?: boolean;
   isPublished?: boolean;
+  IPstream?: Stream;
 }
 
 const Questionset: React.FC<QuestionsetProps> = ({
@@ -43,6 +44,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
   onSelectedQuestionsChange,
   isCheckBox = false,
   isPublished = false,
+  IPstream
 }) => {
   const [subject, setSubject] = useState("");
   const [difficulty, setDifficulty] = useState("");
@@ -50,7 +52,21 @@ const Questionset: React.FC<QuestionsetProps> = ({
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [type, setType] = useState("");
-  const [stream, setStream] = useState<Stream>("JEE");
+  
+  const getInitialStream = () => {
+    return (typeof window !== "undefined" && localStorage.getItem("stream")) || "JEE";
+  };
+
+  const [stream, setStream] = useState<Stream>(getInitialStream() as Stream);
+
+
+  useEffect(() => {
+    if (IPstream) {
+      setStream(IPstream);
+    }
+  }, [IPstream]);
+
+ 
 
 
 
@@ -76,7 +92,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
 
   useEffect(() => {
     refetch();
-  }, [currentPage, subject, difficulty, tags, search, stream,type, refetch]);
+  }, [currentPage, subject, difficulty, tags, search, stream, type, refetch]);
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
@@ -102,9 +118,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
     onSelectedQuestionsChange(updatedSelection);
   };
 
-  useEffect(() => {
-    setStream((localStorage.getItem('stream') as Stream) || "NEET");
-  }, []);
+
 
   return (
     <div className="w-full">
@@ -158,10 +172,10 @@ const Questionset: React.FC<QuestionsetProps> = ({
             <SelectFilter
               width={"[100px]"}
               placeholder="Type"
-              selectName={["MCQ","NUM"]}
+              selectName={["MCQ", "NUM"]}
               onChange={(value) => setType(value[0])}
             />
-            
+
           </div>
         </div>
         <TabsContent value={subject.toLowerCase() || "all"}>
@@ -172,6 +186,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
                   <TableHeader>
                     <TableRow>
                       {isCheckBox && <TableHead>Select</TableHead>}
+                      {!isPublished && <TableHead>Status</TableHead>}
                       <TableHead>Class</TableHead>
                       <TableHead>Difficulty</TableHead>
                       <TableHead>Question</TableHead>
@@ -197,7 +212,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
                                 />
                               </TableCell>
                             )}
-                            <QTableRow problem={question} isPublished={isPublished}/>
+                            <QTableRow problem={question} isPublished={isPublished} />
                           </TableRow>
                         ))
                         : (
@@ -264,7 +279,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
                       {/* Last Page */}
                       <PaginationItem>
                         <PaginationLink
-                          className={`px-2 py-1 text-sm sm:text-base ${data.totalPages === 1 ? "hidden": ""}`}
+                          className={`px-2 py-1 text-sm sm:text-base ${data.totalPages === 1 ? "hidden" : ""}`}
                           onClick={() => handlePageClick(data.totalPages)}
                         >
                           {data.totalPages}

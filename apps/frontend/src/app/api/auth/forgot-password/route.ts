@@ -39,7 +39,7 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
     } as SMTPTransport.Options);
   
    await transporter.sendMail({
-      from: 'no-reply@example.com',
+      from: 'support@rankmarg.in',
       to: email,
       subject: 'Password Reset',
       html: PasswordResetEmail(resetUrl),

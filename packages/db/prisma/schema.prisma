@@ -29,6 +29,7 @@ model User {
   player2          Challenge[]         @relation("U2")
   Test             Test[]
   TestParticipated TestParticipation[]
+  activity         activity[]
 }
 
 model Question {
@@ -48,6 +49,7 @@ model Question {
   accuracy          Float?              @default(0)
   questionTime      Int?                @default(5)
   hint              String?
+  createdBy         String?
   createdAt         DateTime            @default(now())
   isPublished       Boolean?            @default(false)
   attempts          Attempt[]
@@ -180,6 +182,23 @@ model TestSubmission {
   TestParticipation TestParticipation @relation(fields: [participationId], references: [id], onDelete: Cascade)
   Test              Test              @relation(fields: [testId], references: [testId], onDelete: Cascade)
   Question          Question          @relation(fields: [questionId], references: [id])
+}
+
+model activity {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String?
+  message   String?
+  earnCoin  Int?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  email     String?
+  content   String?
+  createdAt DateTime @default(now())
 }
 
 enum isCorrectEnum {

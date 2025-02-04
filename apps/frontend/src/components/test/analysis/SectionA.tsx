@@ -15,7 +15,7 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
 
 
     return (
-        <Card className="space-y-3 md:p-8 p-3 rounded-md">
+        <Card className="space-y-3 md:p-8 p-3 rounded-md shadow-sm">
             <div className="space-y-1">
                 <h1 className="text-2xl font-bold">{analysis?.testTitle}</h1>
                 {
@@ -40,7 +40,7 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
 
             {/* Score Overview */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="rounded-md">
+                <Card className="rounded-md shadow-sm">
                     <CardContent className="p-6">
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -53,7 +53,7 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
                     </CardContent>
                 </Card>
 
-                <Card className="rounded-md">
+                <Card className="rounded-md shadow-sm">
                     <CardContent className="p-6">
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -66,7 +66,7 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
                     </CardContent>
                 </Card>
 
-                <Card className="rounded-md">
+                <Card className="rounded-md shadow-sm">
                     <CardContent className="p-6">
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -106,9 +106,9 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
                             <Card key={index} className="p-3 md:p-4 rounded-sm">
                                 <div className="flex justify-between">
                                     <span>{section.sectionName}</span>
-                                    <span className="text-green-600">{section?.participantScore}/{section?.totalMarks}</span>
+                                    <span className="text-yellow-600">{section?.participantScore}/{section?.totalMarks}</span>
                                 </div>
-                                <Progress value={section?.participantScore/section?.totalMarks*100} className="h-2 bg-gray-100" indicatorColor="bg-blue-300" />
+                                <Progress value={section?.participantScore/section?.totalMarks*100} className="h-2 bg-gray-100" indicatorColor="bg-yellow-300" />
                             </Card>
                         ))
                     }

@@ -7,7 +7,6 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 const SectionE = ({analysis}:{analysis:AnalysisSectionE[]}) => {
-    console.log(analysis)
 
     const getStatusDisplay = (status: string) => {
         switch (status) {
