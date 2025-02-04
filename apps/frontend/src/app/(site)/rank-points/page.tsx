@@ -14,7 +14,7 @@ function convertToIST(utcTimestamp: Date): string {
 
 export default function RankPoints() {
     
-    const { data: activities, isLoading, isError } = useQuery({
+    const { data: activities, isLoading } = useQuery({
         queryKey: ["activity"],
         queryFn: async () => {
             const { data } = await axios.get(`/api/coins`);
