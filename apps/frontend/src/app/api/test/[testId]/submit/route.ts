@@ -1,4 +1,5 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+import { ActivityType, TEST_SUBMIT } from "@/constant/activities";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 
@@ -20,10 +21,10 @@ export async function POST(req: Request, { params }: { params: { testId: string 
             testId: testId,
           },
         },
-        include:{
-          test:{
-            select:{
-              endTime:true
+        include: {
+          test: {
+            select: {
+              endTime: true
             }
           }
         }
@@ -55,8 +56,26 @@ export async function POST(req: Request, { params }: { params: { testId: string 
         timing
       },
     });
+    await prisma.activity.create({
+      data: {
+        userId: session.user.id,
+        type:ActivityType.MISSION,
+        message: TEST_SUBMIT,
+        earnCoin: 5,
+      },
+    })
+    await prisma.user.update({
+      where: {
+        id: session.user.id,
+      },
+      data: {
+        coins: {
+          increment: 5,
+        },
+      },
+    });
 
-    return new Response(JSON.stringify({TestEnd:participation.test.endTime}), { status: 200 });
+    return new Response(JSON.stringify({ TestEnd: participation.test.endTime }), { status: 200 });
   } catch (error) {
     console.log("[Test Submit API Error]:", error);
     return new Response("Internal Server Error", { status: 500 });

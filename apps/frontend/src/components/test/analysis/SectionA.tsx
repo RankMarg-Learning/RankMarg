@@ -106,9 +106,9 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
                             <Card key={index} className="p-3 md:p-4 rounded-sm">
                                 <div className="flex justify-between">
                                     <span>{section.sectionName}</span>
-                                    <span className="text-green-600">{section?.participantScore}/{section?.totalMarks}</span>
+                                    <span className="text-yellow-600">{section?.participantScore}/{section?.totalMarks}</span>
                                 </div>
-                                <Progress value={section?.participantScore/section?.totalMarks*100} className="h-2 bg-gray-100" indicatorColor="bg-blue-300" />
+                                <Progress value={section?.participantScore/section?.totalMarks*100} className="h-2 bg-gray-100" indicatorColor="bg-yellow-300" />
                             </Card>
                         ))
                     }

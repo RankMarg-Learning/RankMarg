@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Target, Edit2, Zap, Users, Star, Atom, CircleCheckBig, Swords, BookOpenCheck } from "lucide-react" //CheckCircle2, XCircle,, Car
+import { Target, Edit2, Zap, Users, Star, Atom, CircleCheckBig, Swords, BookOpenCheck, HandCoins } from "lucide-react" //CheckCircle2, XCircle,, Car
 import Image from "next/image";
 // import RankDisplay from "@/lib/rank";
 import Link from "next/link";
@@ -59,14 +59,21 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
         <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 mb-8">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <Avatar className="h-32 w-32 border-4 border-yellow-500 shadow-lg">
-              <Image src={profile.basicProfile.avatar || '/Profile_image.png'} alt={profile.basicProfile.name || "Avatar"} width={130} height={130} />
-              <AvatarFallback>{profile.basicProfile.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+              <Image src={profile?.basicProfile.avatar || '/Profile_image.png'} alt={profile.basicProfile.name || "Avatar"} width={130} height={130} />
+              <AvatarFallback>{profile?.basicProfile.username.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="text-center md:text-left">
-              <h1 className="text-3xl md:text-4xl font-bold">{profile.basicProfile.name}</h1>
-              <p className="text-xl text-muted-foreground">@{profile.basicProfile.username}</p>
+              <h1 className="text-3xl md:text-4xl font-bold">{profile?.basicProfile.name}</h1>
+              <p className="text-xl text-muted-foreground">@{profile?.basicProfile.username}</p>
               <p className="text-sm text-muted-foreground mt-1 hidden">Joined 2 days ago</p>
               <div className="flex flex-wrap items-center justify-center md:justify-start mt-3 gap-2">
+                  <Link href={'/rank-points'}>
+                 <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 px-3 py-1 cursor-pointer">
+                  <span className="text-xs">Your Coins :</span>
+                  <HandCoins  className="w-4 h-4 mr-1" />
+                   {profile.basicProfile.coins}
+                  </Badge>
+                   </Link>
                 {/* <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 px-3 py-1">
                   <Star className="w-4 h-4 mr-1" />
                   Rating {profile.challengeStats.rank}
@@ -79,12 +86,12 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
                 {profile.basicProfile.isSelf && (
                   <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 px-3 py-1 hidden">
                     <Atom className="w-4 h-4 mr-1" />
-                    {profile.basicProfile.coins} Atoms
+                    {profile?.basicProfile.coins} Atoms
                   </Badge>)}
               </div>
             </div>
           </div>
-          {profile.basicProfile.isSelf && true && (
+          {profile?.basicProfile.isSelf && true && (
             <Button variant="outline" className="gap-2 hidden">
               <Edit2 className="h-4 w-4" />
               Edit Profile

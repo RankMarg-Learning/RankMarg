@@ -20,19 +20,19 @@ const SectionB = ({ analysis }: { analysis: AnalysisSectionB }) => {
                         <CardContent className="space-y-4 md:py-5 py-3">
                             <div className="flex items-center space-x-4">
                                 <span className="text-sm w-20">Correct</span>
-                                <Progress value={analysis?.statistics?.correct / analysis?.statistics?.totalQuestions * 100} className="flex-1 h-4 bg-gray-100" indicatorColor="bg-yellow-200" />
+                                <Progress value={analysis?.statistics?.correct / analysis?.statistics?.totalQuestions * 100} className="flex-1 h-4 bg-gray-100" indicatorColor="bg-yellow-300" />
                                 <span className="text-sm w-16 text-right">{analysis?.statistics?.correct}/{analysis?.statistics?.totalQuestions}</span>
                             </div>
 
                             <div className="flex items-center space-x-4">
                                 <span className="text-sm w-20">Incorrect</span>
-                                <Progress value={analysis?.statistics?.incorrect / analysis?.statistics?.totalQuestions * 100} className="flex-1 h-4 bg-gray-100" indicatorColor="bg-yellow-200" />
+                                <Progress value={analysis?.statistics?.incorrect / analysis?.statistics?.totalQuestions * 100} className="flex-1 h-4 bg-gray-100" indicatorColor="bg-yellow-300" />
                                 <span className="text-sm w-16 text-right">{analysis?.statistics?.incorrect}/{analysis?.statistics?.totalQuestions}</span>
                             </div>
 
                             <div className="flex items-center space-x-4">
                                 <span className="text-sm w-20">Unattempted</span>
-                                <Progress value={analysis?.statistics?.unattempted / analysis?.statistics?.totalQuestions * 100} className="flex-1 h-4 bg-gray-100" indicatorColor="bg-yellow-200" />
+                                <Progress value={analysis?.statistics?.unattempted / analysis?.statistics?.totalQuestions * 100} className="flex-1 h-4 bg-gray-100" indicatorColor="bg-yellow-300" />
                                 <span className="text-sm w-16 text-right">{analysis?.statistics?.unattempted}/{analysis?.statistics?.totalQuestions}</span>
                             </div>
                         </CardContent>

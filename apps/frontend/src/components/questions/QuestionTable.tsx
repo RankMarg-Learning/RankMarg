@@ -36,6 +36,7 @@ interface QuestionsetProps {
   onSelectedQuestionsChange?: (selected: string[]) => void;
   isCheckBox?: boolean;
   isPublished?: boolean;
+  IPstream?: Stream;
 }
 
 const Questionset: React.FC<QuestionsetProps> = ({
@@ -43,6 +44,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
   onSelectedQuestionsChange,
   isCheckBox = false,
   isPublished = false,
+  IPstream
 }) => {
   const [subject, setSubject] = useState("");
   const [difficulty, setDifficulty] = useState("");
@@ -50,7 +52,23 @@ const Questionset: React.FC<QuestionsetProps> = ({
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [type, setType] = useState("");
-  const [stream, setStream] = useState<Stream>("JEE");
+  
+  const isAdmin = IPstream !== undefined;
+
+  const [stream, setStream] = useState<Stream>(() => {
+    return isAdmin ? IPstream : (localStorage.getItem("stream") as Stream) ?? "JEE";
+  });
+
+  useEffect(() => {
+    if (isAdmin) {
+      setStream(IPstream);
+    } else {
+      const storedStream = localStorage.getItem("stream") as Stream | null;
+      if (storedStream) setStream(storedStream);
+    }
+  }, [IPstream, isAdmin]); 
+
+ 
 
 
 
@@ -102,9 +120,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
     onSelectedQuestionsChange(updatedSelection);
   };
 
-  useEffect(() => {
-    setStream((localStorage.getItem('stream') as Stream) || "NEET");
-  }, []);
+
 
   return (
     <div className="w-full">
