@@ -30,6 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Tags } from "@/constant/tags";
 import { Stream } from "@prisma/client";
+import { useSession } from "next-auth/react";
 
 interface QuestionsetProps {
   selectedQuestions?: string[];
@@ -53,20 +54,18 @@ const Questionset: React.FC<QuestionsetProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [type, setType] = useState("");
   
-  const isAdmin = IPstream !== undefined;
+  const getInitialStream = () => {
+    return (typeof window !== "undefined" && localStorage.getItem("stream")) || "JEE";
+  };
 
-  const [stream, setStream] = useState<Stream>(() => {
-    return isAdmin ? IPstream : (localStorage.getItem("stream") as Stream) ?? "JEE";
-  });
+  const [stream, setStream] = useState<Stream>(getInitialStream() as Stream);
+
 
   useEffect(() => {
-    if (isAdmin) {
+    if (IPstream) {
       setStream(IPstream);
-    } else {
-      const storedStream = localStorage.getItem("stream") as Stream | null;
-      if (storedStream) setStream(storedStream);
     }
-  }, [IPstream, isAdmin]); 
+  }, [IPstream]);
 
  
 
