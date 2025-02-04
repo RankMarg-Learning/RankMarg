@@ -187,6 +187,7 @@ model TestSubmission {
 model activity {
   id        String   @id @default(uuid())
   userId    String
+  type      String?
   message   String?
   earnCoin  Int?
   createdAt DateTime @default(now())

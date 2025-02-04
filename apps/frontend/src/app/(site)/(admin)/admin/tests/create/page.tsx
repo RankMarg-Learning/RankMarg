@@ -21,6 +21,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/hooks/use-toast"
 import Questionset from "@/components/questions/QuestionTable"
 import SelectFilter from "@/components/SelectFilter";
+import { Stream } from "@prisma/client"
 // Zod Schemas
 
 
@@ -53,7 +54,7 @@ export default function CreateTest() {
   const [currentSectionCorrectMarks, setCurrentSectionCorrectMarks] = useState(4)
   const [currentSectionIncorrectMarks, setCurrentSectionIncorrectMarks] = useState(1)
   const [examType, setExamType] = useState("")
-  const [stream, setStream] = useState("")
+  const [stream, setStream] = useState<Stream>("JEE")
   const testSchema = z.object({
     title: z.string().min(1, { message: "Test Title is required" }),
     stream: z.enum(["NEET", "JEE"]).optional(),
@@ -118,7 +119,7 @@ export default function CreateTest() {
   }
 
   const handleStream = (value: string[]) => {
-    setStream(value[0] === "Default" ? "" : value[0]);
+    setStream(value[0] === "Default" ? "JEE" : value[0] as Stream);
   };
 
   const handleAddSection = () => {
@@ -325,6 +326,7 @@ export default function CreateTest() {
                     selectedQuestions={selectedQuestions}
                     isCheckBox={true}
                     isPublished={true}
+                    IPstream={stream}
                   />
                 </div>
                 <Button type="button" onClick={handleAddSection}>Add Section</Button>
