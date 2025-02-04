@@ -30,7 +30,6 @@ import {
 import { cn } from "@/lib/utils";
 import { Tags } from "@/constant/tags";
 import { Stream } from "@prisma/client";
-import { useSession } from "next-auth/react";
 
 interface QuestionsetProps {
   selectedQuestions?: string[];
