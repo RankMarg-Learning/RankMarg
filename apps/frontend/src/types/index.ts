@@ -8,124 +8,125 @@ export type QuestionWithOptions = Question & {
 };
 
 export interface Userprops {
-    id: string;
-    username: string;
-    email: string;
-    password?: string;
-    avatarUrl?: string;
-    provider: string;
-    createdAt: Date;
-    updatedAt?: Date;
-  }
+  id: string;
+  username: string;
+  email: string;
+  password?: string;
+  avatarUrl?: string;
+  provider: string;
+  createdAt: Date;
+  updatedAt?: Date;
+}
 
-  export interface QuestionProps {
-    id: string;
-    slug: string;
-    type: "MCQ" | "NUM" | "TF"; 
-    content: string; 
-    difficulty: string; 
-    topic: string; 
-    subject: string; 
-    class: string;
-    tag?: string; 
-    options: Option[]; 
-    isnumerical?: number; 
-    isTrueFalse?: boolean;
-    attempts: Attempt[]; 
-    challenge: ChallengeProps[];
-    accuracy?: number; 
-    questionTime?: number; 
-    createdAt: string; 
-  }
-  export interface Option {
-    id: string;
-    content: string; 
-    isCorrect: boolean; 
-    questionId: string; 
-  }
-  
-  export interface Attempt {
-    userId: string; 
-    questionId: string; 
-    isCorrect: boolean; 
-    solvedAt: string; 
-  }
+export interface QuestionProps {
+  id: string;
+  slug: string;
+  type: "MCQ" | "NUM" | "TF";
+  content: string;
+  difficulty: string;
+  topic: string;
+  subject: string;
+  class: string;
+  tag?: string;
+  options: Option[];
+  isnumerical?: number;
+  isTrueFalse?: boolean;
+  attempts: Attempt[];
+  challenge: ChallengeProps[];
+  accuracy?: number;
+  questionTime?: number;
+  createdAt: string;
+}
+export interface Option {
+  id: string;
+  content: string;
+  isCorrect: boolean;
+  questionId: string;
+}
 
-  export interface ChallengeProps {
-    challengeId: string;
-    player1Id: string;
-    player2Id?: string;
-    status:string;
-    result?: string;
-    questions: QuestionProps[];
-    player1Score: number;
-    player2Score: number;
-    startTime: Date;
-    endedAt: Date;
-    createdAt: Date;
-    updatedAt: Date;
-  }
-  
-  export interface ContributeFormProps {
-    slug: string;
-    title: string;
-    topicTitle: string; 
-    questionType: "MCQ" | "NUM" | "TF"; 
-    std: string; 
-    difficulty: string; 
-    subject: string; 
-    tag?: string; 
-    content: string; 
-    options?: Option[]; 
-    questionTime?: number; 
-    numericalAnswer?: number; 
-    isTrueFalse?: boolean; 
-    stream?: "NEET" | "JEE"; 
-    hint: string; 
-  }
- 
+export interface Attempt {
+  userId: string;
+  questionId: string;
+  isCorrect: boolean;
+  solvedAt: string;
+}
 
-  export interface QuestionTableProps {
-    id: string,
-    slug: string,
-    title: string,
-    content: string,
-    difficulty: string,
-    topic: string,
-    subject: string,
-    class: string,
-    questionTime: number,
-    tag: string,
-    accuracy: string,
-    createdAt: string
-  }
+export interface ChallengeProps {
+  challengeId: string;
+  player1Id: string;
+  player2Id?: string;
+  status: string;
+  result?: string;
+  questions: QuestionProps[];
+  player1Score: number;
+  player2Score: number;
+  startTime: Date;
+  endedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ContributeFormProps {
+  slug: string;
+  title: string;
+  topicTitle: string;
+  questionType: "MCQ" | "NUM" | "TF";
+  std: string;
+  difficulty: string;
+  subject: string;
+  tag?: string;
+  content: string;
+  options?: Option[];
+  questionTime?: number;
+  numericalAnswer?: number;
+  isTrueFalse?: boolean;
+  stream?: "NEET" | "JEE";
+  hint: string;
+}
 
 
-  export interface QuestionSetProps {
-    questionSet: QuestionTableProps[];
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-  }
+export interface QuestionTableProps {
+  id: string,
+  slug: string,
+  title: string,
+  content: string,
+  difficulty: string,
+  topic: string,
+  subject: string,
+  class: string,
+  questionTime: number,
+  tag: string,
+  accuracy: string,
+  createdAt: string,
+  attempts: Attempt[],
+}
 
- export type PlayerDetails = {
-    id: string;
-    username: string;
-    attempt: number[];
-    rank: number;
-    avatar: string;
-    playerScore: number;
-  };
-  
- export type DetailsProps = {
-    result: string;
-    questions: Question[]; 
-    player1: PlayerDetails;
-    player2: PlayerDetails;
-    status: string;
-  };
 
-  import { Prisma } from '@prisma/client';
+export interface QuestionSetProps {
+  questionSet: QuestionTableProps[];
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+}
+
+export type PlayerDetails = {
+  id: string;
+  username: string;
+  attempt: number[];
+  rank: number;
+  avatar: string;
+  playerScore: number;
+};
+
+export type DetailsProps = {
+  result: string;
+  questions: Question[];
+  player1: PlayerDetails;
+  player2: PlayerDetails;
+  status: string;
+};
+
+import { Prisma } from '@prisma/client';
 
 export type ChallengeWithDetails = Prisma.ChallengeGetPayload<{
   select: {
@@ -134,11 +135,11 @@ export type ChallengeWithDetails = Prisma.ChallengeGetPayload<{
     player2Id: true;
     status: true;
     result: true;
-    ChallengeQuestion:{
-      select:{
-          question:true,
+    ChallengeQuestion: {
+      select: {
+        question: true,
       }
-  },
+    },
     player1: {
       select: {
         id: true;

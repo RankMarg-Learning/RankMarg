@@ -21,6 +21,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/hooks/use-toast"
 import Questionset from "@/components/questions/QuestionTable"
 import SelectFilter from "@/components/SelectFilter";
+import { Stream } from "@prisma/client"
 // Zod Schemas
 
 
@@ -53,8 +54,22 @@ export default function CreateTest() {
   const [currentSectionCorrectMarks, setCurrentSectionCorrectMarks] = useState(4)
   const [currentSectionIncorrectMarks, setCurrentSectionIncorrectMarks] = useState(1)
   const [examType, setExamType] = useState("")
-  const [stream, setStream] = useState("")
-
+  const [stream, setStream] = useState<Stream>("JEE")
+  const testSchema = z.object({
+    title: z.string().min(1, { message: "Test Title is required" }),
+    stream: z.enum(["NEET", "JEE"]).optional(),
+    examType: z.enum(["Mock-Test", "Topic-wise", "Subject-wise"]).optional(),
+    duration: z.number().min(1, { message: "Duration must be greater than 0" }),
+    startTime: z.date().refine(date => date > new Date(), {
+      message: "Start time must be in the future",
+    }),
+    sections: z.array(
+      z.object({
+        name: z.string().min(1, { message: "Section Name is required" }),
+        questions: z.array(z.string()).min(1, { message: "At least one question must be selected" }),
+      })
+    ).min(1, { message: "At least one section is required" }),
+  });
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -78,7 +93,7 @@ export default function CreateTest() {
         })),
         examType: examType,
       }
-
+      testSchema.parse(testData);
       const response = await axios.post('/api/test', testData)
 
       if (response.status === 200) {
@@ -104,7 +119,7 @@ export default function CreateTest() {
   }
 
   const handleStream = (value: string[]) => {
-    setStream(value[0] === "Default" ? "" : value[0]);
+    setStream(value[0] === "Default" ? "JEE" : value[0] as Stream);
   };
 
   const handleAddSection = () => {
@@ -144,7 +159,7 @@ export default function CreateTest() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Test Title</Label>
+                  <Label htmlFor="title">Test Title*</Label>
                   <Input
                     id="title"
                     value={title}
@@ -152,7 +167,6 @@ export default function CreateTest() {
                     required
                     placeholder="Enter test title"
                   />
-                  <Label className="text-xs text-gray-500">Test Title</Label>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
@@ -166,7 +180,7 @@ export default function CreateTest() {
                 </div>
                 <div className="flex flex-wrap  mb-6 w-full">
                 <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                    <Label htmlFor="stream">Stream</Label>
+                    <Label htmlFor="stream">Stream*</Label>
                     <SelectFilter
                       width={"full"}
                       placeholder="Stream"
@@ -175,7 +189,7 @@ export default function CreateTest() {
                     />
                   </div>
                   <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                    <Label htmlFor="examType">Exam Type</Label>
+                    <Label htmlFor="examType">Exam Type*</Label>
                     <SelectFilter
                       width={"full"}
                       placeholder="Exam Type"
@@ -188,7 +202,7 @@ export default function CreateTest() {
                 </div>
                 <div className="flex flex-wrap  mb-6 w-full">
                 <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                    <Label htmlFor="duration">Duration (minutes)</Label>
+                    <Label htmlFor="duration">Duration (minutes)*</Label>
                     <Input
                       id="duration"
                       type="number"
@@ -214,7 +228,7 @@ export default function CreateTest() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label>Start Time</Label>
+                      <Label>Start Time*</Label>
                       <DateTimePicker setDate={setStartDate} />
                     </div>
                     {!infiniteTime && (
@@ -312,6 +326,7 @@ export default function CreateTest() {
                     selectedQuestions={selectedQuestions}
                     isCheckBox={true}
                     isPublished={true}
+                    IPstream={stream}
                   />
                 </div>
                 <Button type="button" onClick={handleAddSection}>Add Section</Button>

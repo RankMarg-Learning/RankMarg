@@ -14,7 +14,7 @@ export function Sidebar() {
             </Link>
           </li>
           <li>
-            <Link href="/admin/users" className="flex items-center space-x-2 hover:text-yellow-200">
+            <Link href="/admin/users" className="hidden items-center space-x-2 hover:text-yellow-200">
               <Users className="h-5 w-5" />
               <span>Users</span>
             </Link>
@@ -32,7 +32,7 @@ export function Sidebar() {
             </Link>
           </li>
           <li>
-            <Link href="/admin/settings" className="flex items-center space-x-2 hover:text-yellow-200">
+            <Link href="/admin/settings" className="hidden items-center space-x-2 hover:text-yellow-200">
               <Settings className="h-5 w-5" />
               <span>Settings</span>
             </Link>

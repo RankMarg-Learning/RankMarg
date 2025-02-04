@@ -24,7 +24,6 @@ const TopicList = ({ params }: { params: { subject: string, topic: string } }) =
     queryKey: ['questions', subject, topic],
     queryFn: () => getQuestionsBySubjectAndTopic(subject, topic),
   })
-  console.log(data)
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {

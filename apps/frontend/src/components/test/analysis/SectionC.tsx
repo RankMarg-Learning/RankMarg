@@ -5,14 +5,13 @@ import { TimeSpendChart } from './TImeSpendChart'
 import { AnalysisSectionC } from '@/types/typeTest'
 
 const SectionC = ({analysis}:{analysis:AnalysisSectionC}) => {
-    console.log(analysis)
     return (
-        <Card className="rounded-md p-3">
+        <Card className="rounded-md p-3 shadow-sm">
             <CardHeader>
                 <h2 className="text-xl font-semibold">Time Distribution Analysis</h2>
             </CardHeader>
             <CardContent className='space-y-2'>
-            <Card className="rounded-md ">
+            <Card className="rounded-md shadow-sm ">
                 <CardHeader>
                     <h3 className="text-xl font-semibold">Subject-wise Time Distribution</h3>
                 </CardHeader>
@@ -21,12 +20,12 @@ const SectionC = ({analysis}:{analysis:AnalysisSectionC}) => {
                         {
                             analysis?.sectionTimings.map((section,index)=>(
                                 <>
-                                <Card key={index} className={`space-y-1 rounded-md bg-blue-50 p-2 ${section.totalTime ?"":"hidden"}`}>
+                                <Card key={index} className={`space-y-1 rounded-md shadow-sm p-2 ${section.totalTime ?"":"hidden"}`}>
                                     <div className="flex justify-between">
-                                        <span className="font-medium text-blue-600">{section.name}</span>
+                                        <span className="font-medium text-yellow-600">{section.name}</span>
                                         <span className="text-sm">{(section.totalTime/60).toFixed(1)} minutes</span>
                                     </div>
-                                    <Progress value={(section.totalTime/60)/section.maxTime*100 || 0} className="h-2 bg-gray-100" indicatorColor="bg-blue-500" />
+                                    <Progress value={(section.totalTime/60)/section.maxTime*100 || 0} className="h-2 bg-gray-100" indicatorColor="bg-yellow-300" />
                                     <div className="text-sm text-muted-foreground">Spent {(section.totalTime/60).toFixed(1)}/{section.maxTime} min</div>
                                 </Card>
                                 </>
