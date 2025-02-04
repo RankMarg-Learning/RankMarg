@@ -95,8 +95,8 @@ export const PasswordResetEmail = (resetUrl:string) => {
                     <!-- Footer -->
                     <tr>
                         <td class="email-footer" style="background-color: #f8f9fa; text-align: center; font-size: 14px; padding: 20px;">
-                            <p style="margin: 0;">&copy; 2023 RankMarg. All rights reserved.</p>
-                            <p style="margin: 0;">RankMarg | Powered by Passion for Learning</p>
+                            <p style="margin: 0;">&copy; 2025 RankMarg. All rights reserved.</p>
+                            <p style="margin: 0;">RankMarg | Learn,Solve,Achieve</p>
                         </td>
                     </tr>
                 </table>
