@@ -14,14 +14,7 @@ interface OptionsProps {
   setSelectedOptions: React.Dispatch<React.SetStateAction<number[] | []>>;
 }
 
-const TF = [
-  {
-    content: "True",
-  },
-  {
-    content: "False",
-  },
-];
+
 
 const Options = ({ type, options, selectedOption, selectedOptions,correctOptions ,setSelectedOption, setSelectedOptions }: OptionsProps) => {
   const [isMultiple, setIsMultiple] = useState(false);
@@ -76,23 +69,7 @@ const Options = ({ type, options, selectedOption, selectedOptions,correctOptions
           </>
         )
       }
-      {
-        type === "TF" && (
-          <>
-            <h1 className="md:text-2xl font-bold mb-4">True/False </h1>
-            <div className="flex flex-col space-y-2">
-              <Select
-                options={TF}
-                selectedOption={selectedOption}
-                selectedOptions={selectedOptions}
-                handleOptionChange={handleOptionChange}
-                isMultiple={isMultiple}
-                correctOptions={correctOptions}
-              />
-            </div>
-          </>
-        )
-      }
+      
     </>
   )
 }
