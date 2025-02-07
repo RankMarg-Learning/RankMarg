@@ -32,7 +32,7 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [ActiveCooldown, setActiveCooldown] = useState(question.ActiveCooldown)
+  const [ActiveCooldown, setActiveCooldown] = useState<number>(question?.ActiveCooldown )
 
 
   const checkIfSelectedIsCorrect = () => {
@@ -46,10 +46,7 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
       if (selectedOption === null) {
         return false; // No selection
       }
-      if (question.type === "TF") {
-
-        return (question.isTrueFalse === !selectedOption);
-      }
+     
 
       if (question.type === "NUM") {
         return question.isnumerical === selectedOption;
@@ -88,11 +85,17 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
       return;
     }
     setIsSubmitting(true);
+    setTimeout(() => {
+      setSelectedOption(null)
+      setSelectedOptions([])
+      setIsSubmitting(false)
+      setActiveCooldown(86400)
+    }, 2000);
 
     const isCorrect = checkIfSelectedIsCorrect();
     const attemptData = {
-      questionId: question.id, // Replace with actual question ID
-      userId: session?.user?.id, // Replace with actual user ID
+      questionId: question.id, 
+      userId: session?.user?.id,
       isCorrect: isCorrect,
       selectedOptions
 
@@ -122,12 +125,12 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
 
   }
   const receiverEmail = 'support@rankmarg.in';
-  const subject = `Report: ${question.slug}`;
+  const subject = `Report: ${question?.slug}`;
   const body = `Hello,
 
 I would like to report an issue with the following question:
 
-- **Question Id**: ${question.id}
+- **Question Id**: ${question?.id}
 
 Please look into this issue at your earliest convenience. Here is some additional information (optional):
 
@@ -154,38 +157,19 @@ Best regards,
         <div className="w-full md:w-1/2 p-6 border-b md:border-b-0 md:border-r ">
           <h1 className="text-2xl font-bold mb-4 ">Question</h1>
           <div className=" flex flex-wrap space-x-2 items-center my-3 space-y-1 ">
-            {/* <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <ThumbsUp color="red" size={18} />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Like</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger>
-                  <ThumbsDown size={18} />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Dislike</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider> */}
-
-            {/*!Change Difficulty type to enum <Badge variant={question.difficulty}>{question.difficulty}</Badge> */}
-            <Badge variant={"Medium"}>{question.difficulty}</Badge>
+           
+            <Badge variant={"Medium"}>{question?.difficulty}</Badge>
             <Badge
               variant="secondary"
             >
               <span>Subject:</span>
-              {question.subject}
+              {question?.subject}
             </Badge>
             <Badge
               variant="secondary"
             >
               <span>Class:</span>
-              {question.class}
+              {question?.class}
             </Badge>
             <Badge
               variant="Hard"
@@ -196,7 +180,7 @@ Best regards,
             </Badge>
           </div>
           <div className='noselect'>
-            <MarkdownRenderer content={question.content} />
+            <MarkdownRenderer content={question?.content} />
           </div>
 
 
@@ -219,21 +203,21 @@ Best regards,
 
           <div className={ActiveCooldown > 0 ? "blur-sm  pointer-events-none" : ""}>
             <Options
-              type={question.type}
-              options={question.options}
+              type={question?.type}
+              options={question?.options}
               selectedOption={selectedOption}
               selectedOptions={selectedOptions}
               setSelectedOption={setSelectedOption}
               setSelectedOptions={setSelectedOptions}
-              correctOptions={isSubmitting ? (question.options
+              correctOptions={isSubmitting ? (question?.options
                 ?.map((option, index) => ({ ...option, index })) // Add index to each option
                 .filter((option) => option.isCorrect) // Filter correct options
                 .map((option) => option.index)) : []}
             />
 
-            {question.type === "NUM" && isSubmitting && (
-              <div className={`flex flex-wrap space-x-2 mt-4 ${selectedOption === question.isnumerical ? 'text-green-500' : 'text-red-500'}`}>
-                Correct Answer: {question.isnumerical}
+            {question?.type === "NUM" && isSubmitting && (
+              <div className={`flex flex-wrap space-x-2 mt-4 ${selectedOption === question?.isnumerical ? 'text-green-500' : 'text-red-500'}`}>
+                Correct Answer: {question?.isnumerical}
               </div>
             )}
 
