@@ -50,7 +50,6 @@ const QuestionFormSchema = z.object({
     })
   ).optional(),
   numericalAnswer: z.number().optional(),
-  isTrueFalse: z.boolean().optional(),
 });
 
 const Contribute = () => {
@@ -83,9 +82,6 @@ const Contribute = () => {
   const [hint, setHint] = useState("");
   const [filteredTopics, setFilteredTopics] = useState([]);
   const [numericalAnswer, setNumericalAnswer] = useState<number | undefined>(
-    undefined
-  );
-  const [isTrueFalse, setIsTrueFalse] = useState<boolean | undefined>(
     undefined
   );
   const [questionTime, setQuestionTime] = useState(5);
@@ -133,20 +129,14 @@ const Contribute = () => {
     questionTime,
     options,
     numericalAnswer,
-    isTrueFalse,
   };
 
   if (questionType === "NUM") {
     delete ContributeForm.options;
-    delete ContributeForm.isTrueFalse;
   }
-  if (questionType === "TF") {
-    delete ContributeForm.options;
-    delete ContributeForm.numericalAnswer;
-  }
+  
   if (questionType === "MCQ") {
     delete ContributeForm.numericalAnswer;
-    delete ContributeForm.isTrueFalse
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -176,7 +166,6 @@ const Contribute = () => {
       setStream("");
       setHint("");
       setNumericalAnswer(undefined);
-      setIsTrueFalse(undefined);
       setQuestionTime(5);
       setQuestionType("mcq");
     }
@@ -362,7 +351,6 @@ const Contribute = () => {
 
                     >MCQ</TabsTrigger>
                     <TabsTrigger value="NUM"> Numerical </TabsTrigger>
-                    {/* <TabsTrigger value="TF"> True or False</TabsTrigger> */}
                   </TabsList>
 
                   <TabsContent value="MCQ">
@@ -423,17 +411,7 @@ const Contribute = () => {
                       }
                     />
                   </TabsContent>
-                  <TabsContent value="TF">
-                    {/* TF  */}
-                    <SelectFilter
-                      width={"full"}
-                      placeholder="True or False"
-                      selectName={["True", "False"]}
-                      onChange={(value: string[]) =>
-                        setIsTrueFalse(value[0] === "True" ? true : false)
-                      }
-                    />
-                  </TabsContent>
+                 
                 </Tabs>
               </div>
             </div>

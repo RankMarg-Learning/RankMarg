@@ -6,7 +6,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
-export type QuestionType = 'single' | 'multiple' | 'NUM' | 'TF';
+export type QuestionType = 'single' | 'multiple' | 'NUM' ;
 export type TestStatus = 'JOIN' | 'STARTED' | 'COMPLETED';
 
 interface SubmissionProps {

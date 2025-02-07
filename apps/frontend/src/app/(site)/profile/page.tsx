@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast"
 import axios from "axios"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
+import ProfileSkeleton from "@/components/skeleton/skel_profile"
 
 type ProfileField = "name" | "username" | "phone" | "standard" | "Location" | "avatar"
 
@@ -260,7 +261,7 @@ export default function ProfileUpdate() {
     )
   }
 
-  if (isLoading) return <p>Loading...</p>
+  if (isLoading) return <ProfileSkeleton/>
 
   return (
     <Card className="w-full ">
