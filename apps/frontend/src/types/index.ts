@@ -21,7 +21,7 @@ export interface Userprops {
 export interface QuestionProps {
   id: string;
   slug: string;
-  type: "MCQ" | "NUM" | "TF";
+  type: "MCQ" | "NUM" ;
   content: string;
   difficulty: string;
   topic: string;
@@ -30,8 +30,8 @@ export interface QuestionProps {
   tag?: string;
   options: Option[];
   isnumerical?: number;
-  isTrueFalse?: boolean;
   attempts: Attempt[];
+  solution?:string;
   challenge: ChallengeProps[];
   accuracy?: number;
   questionTime?: number;
@@ -71,7 +71,7 @@ export interface ContributeFormProps {
   slug: string;
   title: string;
   topicTitle: string;
-  questionType: "MCQ" | "NUM" | "TF";
+  questionType: "MCQ" | "NUM" ;
   std: string;
   difficulty: string;
   subject: string;
@@ -80,7 +80,7 @@ export interface ContributeFormProps {
   options?: Option[];
   questionTime?: number;
   numericalAnswer?: number;
-  isTrueFalse?: boolean;
+  solution?: string;
   stream?: "NEET" | "JEE";
   hint: string;
 }

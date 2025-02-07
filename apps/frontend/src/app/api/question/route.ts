@@ -147,7 +147,6 @@ export async function POST(req: Request) {
         tag: formState.tag,
         questionTime: formState.questionTime,
         isnumerical: formState.numericalAnswer,
-        isTrueFalse: formState.isTrueFalse,
         options: {
           create: formState.options?.map((option) => ({
             content: option.content,

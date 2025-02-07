@@ -45,7 +45,7 @@ model Question {
   stream            Stream?
   tag               String?
   isnumerical       Float?
-  isTrueFalse       Boolean?
+  solution          String?
   accuracy          Float?              @default(0)
   questionTime      Int?                @default(5)
   hint              String?
@@ -226,5 +226,4 @@ enum Provider {
 enum QuestionType {
   MCQ
   NUM
-  TF
 }
