@@ -89,6 +89,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
       return response.data;
     },
   });
+  console.log(data)
 
   useEffect(() => {
     refetch();

@@ -6,7 +6,7 @@ dotenv.config({ path: '../../.env' });
 const nextConfig = {
     reactStrictMode: false,
     images: {
-        domains: ["lh3.googleusercontent.com","cdn.rareblocks.xyz","utfs.io"],
+        domains: ["lh3.googleusercontent.com","cdn.rareblocks.xyz","utfs.io","res.cloudinary.com"],
       },
     env:{
       NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
@@ -20,6 +20,9 @@ const nextConfig = {
       SMTP_PORT: process.env.SMTP_PORT,
       SMTP_USER: process.env.SMTP_USER,
       SMTP_PASSWORD: process.env.SMTP_PASSWORD,
+      CLOUDINARY_CLOUD_NAME:process.env.CLOUDINARY_CLOUD_NAME,
+      CLOUDINARY_API_KEY:process.env.CLOUDINARY_API_KEY,
+      CLOUDINARY_API_SECRET:process.env.CLOUDINARY_API_SECRET
     }
 };
 
