@@ -36,6 +36,7 @@ export interface QuestionProps {
   accuracy?: number;
   questionTime?: number;
   createdAt: string;
+  ActiveCooldown:number;
 }
 export interface Option {
   id: string;

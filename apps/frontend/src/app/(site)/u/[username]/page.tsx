@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Target, Edit2, Zap, Users, Star, Atom, CircleCheckBig, Swords, BookOpenCheck, HandCoins } from "lucide-react" //CheckCircle2, XCircle,, Car
+import { Target, Edit2, Zap, Users, Star,  CircleCheckBig, Swords, BookOpenCheck, HandCoins } from "lucide-react" //CheckCircle2, XCircle,, Car
 import Image from "next/image";
 // import RankDisplay from "@/lib/rank";
 import Link from "next/link";
@@ -67,13 +67,14 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
               <p className="text-xl text-muted-foreground">@{profile?.basicProfile.username}</p>
               <p className="text-sm text-muted-foreground mt-1 hidden">Joined 2 days ago</p>
               <div className="flex flex-wrap items-center justify-center md:justify-start mt-3 gap-2">
-                  <Link href={'/rank-points'}>
+                 {profile?.basicProfile.isSelf && <Link href={'/rank-points'} >
                  <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 px-3 py-1 cursor-pointer">
                   <span className="text-xs">Your Coins :</span>
                   <HandCoins  className="w-4 h-4 mr-1" />
                    {profile.basicProfile.coins}
                   </Badge>
                    </Link>
+}
                 {/* <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 px-3 py-1">
                   <Star className="w-4 h-4 mr-1" />
                   Rating {profile.challengeStats.rank}
@@ -83,19 +84,18 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
 
                 </Badge> */}
 
-                {profile.basicProfile.isSelf && (
-                  <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 px-3 py-1 hidden">
-                    <Atom className="w-4 h-4 mr-1" />
-                    {profile?.basicProfile.coins} Atoms
-                  </Badge>)}
+                
               </div>
             </div>
           </div>
-          {profile?.basicProfile.isSelf && true && (
-            <Button variant="outline" className="gap-2 hidden">
+          {profile?.basicProfile.isSelf  && (
+            <Link href={'/profile'}>
+            <Button variant="outline" className="gap-2 ">
               <Edit2 className="h-4 w-4" />
               Edit Profile
-            </Button>)}
+            </Button>
+            </Link>
+            )}
         </div>
 
         {/* Main Content */}

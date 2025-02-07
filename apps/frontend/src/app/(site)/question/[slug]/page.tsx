@@ -71,7 +71,7 @@ const QuestionPage = ({ params }: { params: { slug: string } }) => {
         onClick={handleRandom}
         >
           <Shuffle className="h-4 w-4" />
-          <span>Pick random Question</span>
+          <span>Pick next Question</span>
         </Button>
       </div>
     </div>
