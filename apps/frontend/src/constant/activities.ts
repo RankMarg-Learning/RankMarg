@@ -1,5 +1,6 @@
 export enum ActivityType {
     MISSION = "Mission",
+    PROFILE = "Profile",
     SPEND = "Spend",
 }
 

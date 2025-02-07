@@ -53,9 +53,9 @@ export async function GET(req: Request) {
     }
 
     const session = await getServerSession(authOptions);
-    let userID = session?.user?.id;
+    let userID =  "shihsihihi";
     if (isPublished) {
-      userID = "shihsihihi";
+      userID = session?.user?.id;
       whereClause.isPublished = isPublished;
     }
 

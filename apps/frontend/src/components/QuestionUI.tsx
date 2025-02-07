@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import MarkdownRenderer from '@/lib/MarkdownRenderer'
@@ -32,8 +32,8 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ActiveCooldown, setActiveCooldown] = useState(question.ActiveCooldown)
 
-  
 
   const checkIfSelectedIsCorrect = () => {
     if (!question.options) {
@@ -61,9 +61,22 @@ const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
   };
 
 
+  useEffect(() => {
+    if (ActiveCooldown > 0) {
+      const timer = setTimeout(() => {
+        setActiveCooldown(ActiveCooldown - 1);
+      }, 1000);
 
+      return () => clearTimeout(timer);
+    }
+  }, [ActiveCooldown]);
 
-
+  const formatTime = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
 
 
 
@@ -191,32 +204,45 @@ Best regards,
 
 
         {/* Right side: Options */}
-        <div className="w-full md:w-1/2 p-6 ">
-          <Options type={question.type} options={question.options}
-            selectedOption={selectedOption}
-            selectedOptions={selectedOptions}
-            setSelectedOption={setSelectedOption}
-            setSelectedOptions={setSelectedOptions}
-            correctOptions={ isSubmitting ? (question.options
-              ?.map((option, index) => ({ ...option, index })) // Add index to each option
-              .filter((option) => option.isCorrect) // Filter correct options
-              .map((option) => option.index) ): [] }
-          />
-          {
-            question.type === "NUM" &&isSubmitting && (
-              <div className={`flex flex-wrap space-x-2 mt-4 ${selectedOption ===question.isnumerical ? 'text-green-500' : 'text-red-500'}`}>
+        <div className="w-full md:w-1/2 p-6 relative noselect">
+          {ActiveCooldown > 0 && (
+            <div className="absolute inset-0 flex items-center justify-center text-yellow-600  bg-opacity-80  font-bold z-10">
+              <div className='flex flex-col justify-center items-center'>
+                Cooldown: {formatTime(ActiveCooldown)}
+
+                <div className="text-red-400 text-center text-sm">
+                  ⚠️ You must wait until the cooldown ends before answering again.
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className={ActiveCooldown > 0 ? "blur-sm  pointer-events-none" : ""}>
+            <Options
+              type={question.type}
+              options={question.options}
+              selectedOption={selectedOption}
+              selectedOptions={selectedOptions}
+              setSelectedOption={setSelectedOption}
+              setSelectedOptions={setSelectedOptions}
+              correctOptions={isSubmitting ? (question.options
+                ?.map((option, index) => ({ ...option, index })) // Add index to each option
+                .filter((option) => option.isCorrect) // Filter correct options
+                .map((option) => option.index)) : []}
+            />
+
+            {question.type === "NUM" && isSubmitting && (
+              <div className={`flex flex-wrap space-x-2 mt-4 ${selectedOption === question.isnumerical ? 'text-green-500' : 'text-red-500'}`}>
                 Correct Answer: {question.isnumerical}
               </div>
-            )
-          }
-          <form onSubmit={handleOnSubmit}>
-            <Button type="submit" className="mt-4">Submit</Button>
-          </form>
+            )}
 
-
-
-
+            <form onSubmit={handleOnSubmit}>
+              <Button type="submit" className="mt-4">Submit</Button>
+            </form>
+          </div>
         </div>
+
         <div className="flex flex-wrap md:flex-1 justify-between">
           {/* <div className={tags ? `` : `hidden`}> */}
           {/* <div className={tags ? `flex flex-wrap space-x-2 mt-4` : `hidden`}> */}
