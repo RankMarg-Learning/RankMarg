@@ -52,7 +52,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [type, setType] = useState("");
-  
+
   const getInitialStream = () => {
     return (typeof window !== "undefined" && localStorage.getItem("stream")) || "JEE";
   };
@@ -66,7 +66,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
     }
   }, [IPstream]);
 
- 
+
 
 
 
