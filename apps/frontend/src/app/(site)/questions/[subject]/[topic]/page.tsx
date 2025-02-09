@@ -116,78 +116,78 @@ const TopicList = ({ params }: { params: { subject: string, topic: string } }) =
           </Table>
         </div>
         <Pagination>
-                <PaginationContent
-                  className="flex flex-wrap items-center justify-center gap-2 sm:gap-4"
-                >
-                  {/* Previous Button */}
+          <PaginationContent
+            className="flex flex-wrap items-center justify-center gap-2 sm:gap-4"
+          >
+            {/* Previous Button */}
+            <PaginationItem>
+              <PaginationPrevious
+                className={cn(
+                  "gap-1 px-2 py-1 text-sm sm:text-base",
+                  currentPage === 1 && "cursor-not-allowed opacity-50"
+                )}
+                onClick={handlePrevious}
+              />
+            </PaginationItem>
+
+            {data?.totalPages && (
+              <>
+                {/* First Page */}
+                <PaginationItem>
+                  <PaginationLink
+                    className="px-2 py-1 text-sm sm:text-base"
+                    onClick={() => handlePageClick(1)}
+                  >
+                    1
+                  </PaginationLink>
+                </PaginationItem>
+
+                {/* Ellipsis if current page is far from the first page */}
+                {currentPage > 2 && (
+                  <PaginationEllipsis className="text-gray-500" />
+                )}
+
+                {/* Current Page */}
+                {currentPage !== 1 && currentPage !== data.totalPages && (
                   <PaginationItem>
-                    <PaginationPrevious
-                      className={cn(
-                        "gap-1 px-2 py-1 text-sm sm:text-base",
-                        currentPage === 1 && "cursor-not-allowed opacity-50"
-                      )}
-                      onClick={handlePrevious}
-                    />
+                    <PaginationLink
+                      className="px-2 py-1 text-sm sm:text-base font-semibold"
+                      onClick={() => handlePageClick(currentPage)}
+                    >
+                      {currentPage}
+                    </PaginationLink>
                   </PaginationItem>
+                )}
 
-                  {data?.totalPages && (
-                    <>
-                      {/* First Page */}
-                      <PaginationItem>
-                        <PaginationLink
-                          className="px-2 py-1 text-sm sm:text-base"
-                          onClick={() => handlePageClick(1)}
-                        >
-                          1
-                        </PaginationLink>
-                      </PaginationItem>
+                {/* Ellipsis if current page is far from the last page */}
+                {currentPage < data.totalPages - 1 && (
+                  <PaginationEllipsis className="text-gray-500" />
+                )}
 
-                      {/* Ellipsis if current page is far from the first page */}
-                      {currentPage > 2 && (
-                        <PaginationEllipsis className="text-gray-500" />
-                      )}
+                {/* Last Page */}
+                <PaginationItem>
+                  <PaginationLink
+                    className={`px-2 py-1 text-sm sm:text-base ${data.totalPages === 1 ? "hidden" : ""}`}
+                    onClick={() => handlePageClick(data.totalPages)}
+                  >
+                    {data.totalPages}
+                  </PaginationLink>
+                </PaginationItem>
+              </>
+            )}
 
-                      {/* Current Page */}
-                      {currentPage !== 1 && currentPage !== data.totalPages && (
-                        <PaginationItem>
-                          <PaginationLink
-                            className="px-2 py-1 text-sm sm:text-base font-semibold"
-                            onClick={() => handlePageClick(currentPage)}
-                          >
-                            {currentPage}
-                          </PaginationLink>
-                        </PaginationItem>
-                      )}
-
-                      {/* Ellipsis if current page is far from the last page */}
-                      {currentPage < data.totalPages - 1 && (
-                        <PaginationEllipsis className="text-gray-500" />
-                      )}
-
-                      {/* Last Page */}
-                      <PaginationItem>
-                        <PaginationLink
-                          className={`px-2 py-1 text-sm sm:text-base ${data.totalPages === 1 ? "hidden" : ""}`}
-                          onClick={() => handlePageClick(data.totalPages)}
-                        >
-                          {data.totalPages}
-                        </PaginationLink>
-                      </PaginationItem>
-                    </>
-                  )}
-
-                  {/* Next Button */}
-                  <PaginationItem>
-                    <PaginationNext
-                      className={cn(
-                        "gap-1 px-2 py-1 text-sm sm:text-base",
-                        currentPage === data?.totalPages && "cursor-not-allowed opacity-50"
-                      )}
-                      onClick={handleNext}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+            {/* Next Button */}
+            <PaginationItem>
+              <PaginationNext
+                className={cn(
+                  "gap-1 px-2 py-1 text-sm sm:text-base",
+                  currentPage === data?.totalPages && "cursor-not-allowed opacity-50"
+                )}
+                onClick={handleNext}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </main>
   )

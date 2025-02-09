@@ -17,7 +17,7 @@ interface BannerProps {
     isLoading: boolean
 }
 
-export default function Banner({ testId, title, marks, duration, totalQuestions, startDate ,isLoading}: BannerProps) {
+export default function Banner({ testId, title, marks, duration, totalQuestions, startDate, isLoading }: BannerProps) {
     const [isLive, setIsLive] = useState(false)
 
     return (
@@ -28,105 +28,105 @@ export default function Banner({ testId, title, marks, duration, totalQuestions,
                     <p className="text-gray-400">Participate in tests and improve your score!</p>
                 </div> */}
                 {
-                    !isLoading ?(
+                    !isLoading ? (
                         <div className="grid  gap-6 max-w-4xl mx-auto ">
-                    <div className="bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-                        <div className="absolute inset-0 opacity-10">
-                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full">
-                                {/* Geometric shapes */}
-                                <div className="absolute w-40 h-40 bg-white rounded-lg transform rotate-45 -translate-x-1/2 -translate-y-1/2"></div>
-                                <div className="absolute w-40 h-40 bg-white rounded-full transform -translate-x-full -translate-y-1/2 opacity-50"></div>
+                            <div className="bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                                <div className="absolute inset-0 opacity-10">
+                                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full">
+                                        {/* Geometric shapes */}
+                                        <div className="absolute w-40 h-40 bg-white rounded-lg transform rotate-45 -translate-x-1/2 -translate-y-1/2"></div>
+                                        <div className="absolute w-40 h-40 bg-white rounded-full transform -translate-x-full -translate-y-1/2 opacity-50"></div>
+                                    </div>
+                                </div>
+                                <div className="relative z-10">
+                                    <h2 className="text-3xl font-semibold mb-4">Upcoming Test</h2>
+                                    {
+                                        title === "No upcoming test" ? <div className='justify-center items-center flex text-center'>No upcoming test</div> :
+                                            <>
+                                                <div className="space-y-2 text-left mb-4">
+                                                    <div className='md:flex items-center justify-center md:justify-between '>
+                                                        <h1 className='text-2xl font-semibold'> {title}</h1>
+
+                                                        <p><span className="text-white">Total Marks:</span> {marks}</p>
+                                                    </div>
+                                                    <span className='text-sm text-gray-50 text-center'>
+                                                        {startDate.toLocaleString('en-US', {
+                                                            weekday: 'long',
+                                                            hour: 'numeric',
+                                                            hour12: true,
+                                                        })}
+                                                    </span>
+                                                    <div className="flex items-center text-white">
+                                                        <Clock className="w-4 h-4 mr-2" />
+                                                        <span>Duration: {duration} mins</span>
+                                                    </div>
+                                                    <div className="flex items-center text-white">
+                                                        <HelpCircle className="w-4 h-4 mr-2" />
+                                                        <span>{totalQuestions} Questions</span>
+                                                    </div>
+
+
+                                                </div>
+                                                {isLive ? (
+                                                    <Link
+                                                        href={`/test/${testId}/instructions`}
+                                                        className="inline-block bg-white text-yellow-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-300"
+                                                    >
+                                                        Start Test
+                                                    </Link>
+                                                ) : (
+                                                    <div className="text-sm flex justify-center">
+                                                        <Countdown targetDate={startDate} onComplete={() => setIsLive(true)} />
+                                                    </div>
+                                                )}
+                                            </>
+                                    }
+
+                                </div>
                             </div>
+
+
                         </div>
-                        <div className="relative z-10">
-                            <h2 className="text-3xl font-semibold mb-4">Upcoming Test</h2>
-                            {
-                                title === "No upcoming test" ? <div className='justify-center items-center flex text-center'>No upcoming test</div> :
-                                <>
-                                <div className="space-y-2 text-left mb-4">
-                                <div className='md:flex items-center justify-center md:justify-between '>
-                                    <h1 className='text-2xl font-semibold'> {title}</h1>
-
-                                    <p><span className="text-white">Total Marks:</span> {marks}</p>
-                                </div>
-                                <span className='text-sm text-gray-50 text-center'>
-                                    {startDate.toLocaleString('en-US', {
-                                        weekday: 'long', 
-                                        hour: 'numeric', 
-                                        hour12: true,    
-                                    })}
-                                </span>
-                                <div className="flex items-center text-white">
-                                    <Clock className="w-4 h-4 mr-2" />
-                                    <span>Duration: {duration} mins</span>
-                                </div>
-                                <div className="flex items-center text-white">
-                                    <HelpCircle className="w-4 h-4 mr-2" />
-                                    <span>{totalQuestions} Questions</span>
-                                </div>
-
-
-                            </div>
-                            {isLive ? (
-                                <Link
-                                    href={`/test/${testId}/instructions`}
-                                    className="inline-block bg-white text-yellow-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-300"
-                                >
-                                    Start Test
-                                </Link>
-                            ) : (
-                                <div className="text-sm flex justify-center">
-                                    <Countdown targetDate={startDate} onComplete={() => setIsLive(true)} />
-                                </div>
-                            )}
-                            </>
-                            }
-                            
-                        </div>
-                    </div>
-
-
-                </div>
-                    ):(
+                    ) : (
                         <div className="grid gap-6 max-w-4xl mx-auto">
-      <Card className="bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full">
-            {/* Geometric shapes */}
-            <div className="absolute w-40 h-40 bg-white rounded-lg transform rotate-45 -translate-x-1/2 -translate-y-1/2"></div>
-            <div className="absolute w-40 h-40 bg-white rounded-full transform -translate-x-full -translate-y-1/2 opacity-50"></div>
-          </div>
-        </div>
-        <CardContent className="relative z-10">
-          <CardHeader>
-            <CardTitle>
-              <Skeleton className="h-6 w-1/3 mb-4" />
-            </CardTitle>
-          </CardHeader>
-          <div className="space-y-2 text-left mb-4">
-            <div className="md:flex items-center justify-between">
-              <Skeleton className="h-5 w-2/5" />
-              <Skeleton className="h-5 w-20" />
-            </div>
-            <Skeleton className="h-4 w-1/4" />
-            <div className="flex items-center">
-              <Skeleton className="h-4 w-8 mr-2" />
-              <Skeleton className="h-4 w-1/5" />
-            </div>
-            <div className="flex items-center">
-              <Skeleton className="h-4 w-8 mr-2" />
-              <Skeleton className="h-4 w-1/5" />
-            </div>
-          </div>
-          <div className="text-sm flex justify-center">
-            <Skeleton className="h-8 w-1/3" />
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+                            <Card className="bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                                <div className="absolute inset-0 opacity-10">
+                                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full">
+                                        {/* Geometric shapes */}
+                                        <div className="absolute w-40 h-40 bg-white rounded-lg transform rotate-45 -translate-x-1/2 -translate-y-1/2"></div>
+                                        <div className="absolute w-40 h-40 bg-white rounded-full transform -translate-x-full -translate-y-1/2 opacity-50"></div>
+                                    </div>
+                                </div>
+                                <CardContent className="relative z-10">
+                                    <CardHeader>
+                                        <CardTitle>
+                                            <Skeleton className="h-6 w-1/3 mb-4" />
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <div className="space-y-2 text-left mb-4">
+                                        <div className="md:flex items-center justify-between">
+                                            <Skeleton className="h-5 w-2/5" />
+                                            <Skeleton className="h-5 w-20" />
+                                        </div>
+                                        <Skeleton className="h-4 w-1/4" />
+                                        <div className="flex items-center">
+                                            <Skeleton className="h-4 w-8 mr-2" />
+                                            <Skeleton className="h-4 w-1/5" />
+                                        </div>
+                                        <div className="flex items-center">
+                                            <Skeleton className="h-4 w-8 mr-2" />
+                                            <Skeleton className="h-4 w-1/5" />
+                                        </div>
+                                    </div>
+                                    <div className="text-sm flex justify-center">
+                                        <Skeleton className="h-8 w-1/3" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
                     )
                 }
-                
+
             </div>
         </div>
     )

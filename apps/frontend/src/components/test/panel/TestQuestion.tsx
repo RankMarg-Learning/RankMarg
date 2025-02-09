@@ -163,7 +163,7 @@ export function TestQuestion() {
       <div className="flex-1 overflow-auto default-scroll">
         <div className="flex flex-col lg:flex-row h-full">
           {/* Question Text */}
-          <div className="flex-1 lg:w-1/2 p-4 sm:p-6 border-b lg:border-b-0 lg:border-r noselect">
+          <div className="lg:flex-1 lg:w-1/2 p-4 sm:p-6 pb-8 border-b lg:border-b-0 lg:border-r noselect">
             <MarkdownRenderer content={question?.content || ""} />
           </div>
 
@@ -182,19 +182,19 @@ export function TestQuestion() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center p-3 sm:p-4 bg-[#F5F5F5] border-t gap-3">
-        <div className="flex flex-row  gap-1 sm:gap-1">
+      <div className="sticky bottom-0 left-0 right-0 flex flex-col sm:flex-row justify-between items-stretch sm:items-center p-2 sm:p-4 bg-[#F5F5F5] border-t gap-3 z-10">
+        <div className="flex flex-row gap-1 sm:gap-1">
           <Button
             variant="outline"
             onClick={onMarkForReview}
-            className=" w-full sm:w-auto hover:border-yellow-500 hover:text-yellow-500 "
+            className="w-full sm:w-auto hover:border-yellow-500 hover:text-yellow-500"
           >
             Mark for Review
           </Button>
           <Button
             variant="outline"
             onClick={onClearResponse}
-            className=" w-full sm:w-auto hover:border-yellow-500 hover:text-yellow-500"
+            className="w-full sm:w-auto hover:border-yellow-500 hover:text-yellow-500"
           >
             Clear Response
           </Button>
@@ -206,7 +206,6 @@ export function TestQuestion() {
           >
             {`Save ${!isLastQuestion ? "and Next" : ""}`}
           </Button>
-
         </div>
       </div>
     </div>

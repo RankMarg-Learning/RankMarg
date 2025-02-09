@@ -33,7 +33,11 @@ export async function POST(req: Request, { params }: { params: { testId: string 
     if (!participation) {
       return new Response("Unauthorized", { status: 401 });
     }
-
+    const answeredQuestions = submission.filter(q => q.isCorrect !== "NOT_ANSWERED");
+    const correctAnswers = submission.filter(q => q.isCorrect === "TRUE");
+    const accuracy = answeredQuestions.length > 0 
+      ? (correctAnswers.length / answeredQuestions.length) * 100 
+      : 0;
     const submissionsToStore = submission.map((answer) => ({
       participationId: participation.id,
       testId: participation.testId,
@@ -53,7 +57,8 @@ export async function POST(req: Request, { params }: { params: { testId: string 
       data: {
         status: "COMPLETED",
         score: marks,
-        timing
+        timing,
+        accuracy
       },
     });
     await prisma.activity.create({
