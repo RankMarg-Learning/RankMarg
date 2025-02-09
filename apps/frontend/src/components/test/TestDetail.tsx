@@ -112,7 +112,7 @@ export default function TestDetail({ testId }: { testId: string }) {
         </nav>
       </header>
       <div>
-        <Card className='px-2'>
+        <Card className='px-2 mb-16'>
           {step === "instructions" ? (
             <>
               <CardHeader>
@@ -200,7 +200,7 @@ export default function TestDetail({ testId }: { testId: string }) {
                   <span>Total Marks: {test.totalMarks}</span>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 rounded-none">
                 <ScrollArea className="h-[calc(100vh-1.5rem)]space-y-4" >
                   <h2 className="font-medium">Read the following instructions carefully.</h2>
                   <ol className="list-decimal pl-5 space-y-2">
@@ -290,78 +290,52 @@ export default function TestDetail({ testId }: { testId: string }) {
               </CardContent>
             </div>
           )}
-          <footer className="sticky bottom-0 bg-white shadow-md border-t p-4">
-            <>
-              {step === 'details' ? (
-                <div className="flex justify-between">
-                  <Button variant="outline" onClick={() => setStep('instructions')}>
-                    Previous
-                  </Button>
-                  <>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button disabled={!agreed} >I am ready to begin</Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-md bg-white">
-                        <DialogHeader>
-                          <DialogTitle>Important Notice</DialogTitle>
-                          <DialogDescription>
-                            Please ensure that your device's display timeout is set to at least
-                            30 minutes to avoid interruptions during the test.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter className="sm:justify-between gap-2">
-                          <DialogClose asChild>
-                            <Button type="button" variant="secondary">
-                              Close
-                            </Button>
-
-                          </DialogClose>
-                          <Button onClick={() => {
-                            handleTestStart()
-                          }}>
-                            Start
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                    {/* <Button disabled={!agreed} onClick={handleTestStart}>
-        I am ready to begin
-      </Button>
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}  >
-        <DialogContent className='bg-white '>
-          <DialogHeader>
-            <DialogTitle>Important Notice</DialogTitle>
-            <DialogDescription>
-            Please ensure that your device's display timeout is set to at least
-            30 minutes to avoid interruptions during the test.            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setOpenDialog(false)
-            }}>
-              End Test
-            </Button>
-            <Button onClick={() => {
-              handleTestStart()
-            }}>
-              Continue in Full Screen
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      */}
-                  </>
-                </div>
-              ) : (
-                <div className="flex justify-end">
-                  <Button className='w-20' onClick={() => setStep("details")}>Next</Button>
-                </div>
-              )}
-            </>
-          </footer>
         </Card>
       </div>
+      <footer className="fixed bottom-0 left-0 right-0 bg-white shadow-md border-t p-4 z-50">
+        <>
+          {step === 'details' ? (
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setStep('instructions')}>
+                Previous
+              </Button>
+              <>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button disabled={!agreed} >I am ready to begin</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md bg-white">
+                    <DialogHeader>
+                      <DialogTitle>Important Notice</DialogTitle>
+                      <DialogDescription>
+                        Please ensure that your device's display timeout is set to at least
+                        30 minutes to avoid interruptions during the test.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="sm:justify-between gap-2">
+                      <DialogClose asChild>
+                        <Button type="button" variant="secondary">
+                          Close
+                        </Button>
+
+                      </DialogClose>
+                      <Button onClick={() => {
+                        handleTestStart()
+                      }}>
+                        Start
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </>
+            </div>
+          ) : (
+            <div className="flex justify-end">
+              <Button className='w-20' onClick={() => setStep("details")}>Next</Button>
+            </div>
+          )}
+        </>
+      </footer>
     </div>
   )
 }
