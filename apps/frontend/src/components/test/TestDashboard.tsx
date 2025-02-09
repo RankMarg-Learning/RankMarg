@@ -90,10 +90,10 @@ const TestDashboard = () => {
               <h2 className="text-2xl font-semibold mb-6">Available Tests</h2>
               <div className='space-x-4 flex flex-wrap justify-center gap-1'>
                 <Link href="/tests/topic-wise">
-                  <Button variant="outline"  >Topic-wise Tests</Button>
+                  <Button>Topic-wise Tests</Button>
                 </Link>
                 <Link href="/tests/subject-wise">
-                  <Button variant="outline">Chapter-wise Tests</Button>
+                  <Button >Chapter-wise Tests</Button>
                 </Link>
               </div>
               
