@@ -29,6 +29,8 @@ const Navbar = () => {
   const currentStream = session?.user?.stream || "JEE";
 
   useEffect(() => {
+    localStorage.setItem("username",session?.user?.username)
+    localStorage.setItem("userId",session?.user?.id)
     localStorage.setItem("stream", currentStream)
   }, [currentStream, session])
 

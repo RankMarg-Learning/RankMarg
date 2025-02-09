@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from 'lucide-react';
+import {  ChevronLeft } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTestContext } from "@/context/TestContext";
 import { QuestionStatus } from "@/utils";
@@ -124,9 +124,9 @@ export function QuestionNavigation() {
           <Button
             variant="outline"
             size="icon"
-            className="fixed bottom-4 right-4 z-50 lg:hidden bg-yellow-400 shadow-lg border-yellow-600"
+            className="fixed top-1/2 -translate-y-1/2 -right-1 z-50 lg:hidden bg-yellow-400 shadow-lg border-yellow-600 h-24 w-6 rounded-l-lg rounded-r-none"
           >
-            <Menu className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4" />
           </Button>
         </SheetTrigger>
         <SheetContent  side="right" className="lg:hidden md:hidden w-[240px] sm:w-[280px] p-0 bg-white">
