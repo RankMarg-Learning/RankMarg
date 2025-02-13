@@ -87,7 +87,7 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
                                 <span className="text-sm text-muted-foreground">Accuracy</span>
                             </div>
                             <div className="text-2xl font-bold">{analysis?.accuracy?.toFixed(2)}%</div>
-                            <div className="text-sm text-orange-600">Above Average</div>
+                            <div className="text-sm text-orange-600 hidden">Above Average</div>
                         </div>
                     </CardContent>
                 </Card>

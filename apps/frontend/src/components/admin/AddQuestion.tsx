@@ -31,6 +31,7 @@ import { Tags } from "@/constant/tags";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import { Checkbox } from "../ui/checkbox";
 import { z } from "zod";
+import { Switch } from "@/components/ui/switch";
 
 const QuestionFormSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -50,6 +51,7 @@ const QuestionFormSchema = z.object({
     })
   ).optional(),
   numericalAnswer: z.number().optional(),
+  solution: z.string().optional(),
 });
 
 const Contribute = () => {
@@ -58,7 +60,7 @@ const Contribute = () => {
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.Role !== "ADMIN") {
+    if (status === "authenticated" && session?.user?.Role === "USER") {
       router.replace("/"); // Redirect to home page
     }
   }, [session, status, router]);
@@ -86,8 +88,9 @@ const Contribute = () => {
   );
   const [questionTime, setQuestionTime] = useState(5);
   const [questionType, setQuestionType] = useState("MCQ");
-
+  const [solution, setSolution] = useState("");
   const [msg, setMsg] = useState("");
+  const [showSolution, setShowSolution] = useState(false);
 
   const handleOptionChange = (
     index: number,
@@ -129,12 +132,13 @@ const Contribute = () => {
     questionTime,
     options,
     numericalAnswer,
+    solution,
   };
 
   if (questionType === "NUM") {
     delete ContributeForm.options;
   }
-  
+
   if (questionType === "MCQ") {
     delete ContributeForm.numericalAnswer;
   }
@@ -168,6 +172,7 @@ const Contribute = () => {
       setNumericalAnswer(undefined);
       setQuestionTime(5);
       setQuestionType("mcq");
+      setSolution("");
     }
   };
 
@@ -411,13 +416,13 @@ const Contribute = () => {
                       }
                     />
                   </TabsContent>
-                 
+
                 </Tabs>
               </div>
             </div>
             <div className={`flex flex-wrap  px-3 w-full md:w-1/2 ${options.length > 0 ? "block" : "hidden"}`}>
               <div className="w-full m-2 border-2 border-gray-300 p-4 rounded-md">
-              <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
                   htmlFor="grid-last-name">Options Preview</Label>
                 <div className="w-full m-2 space-y-1">
                   {options.map(
@@ -435,6 +440,44 @@ const Contribute = () => {
               </div>
             </div>
           </div>
+          <div className="w-full flex">
+            <div className="flex flex-wrap  px-3 w-full md:w-1/2">
+              <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                htmlFor="grid-last-name">Add Solution</Label>
+              <Switch
+                checked={showSolution}
+                onCheckedChange={setShowSolution}
+              />
+            </div>
+          </div>
+
+          {showSolution && (
+            <div className="w-full flex">
+              <div className="flex flex-wrap  px-3 w-full md:w-1/2">
+                <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                  htmlFor="grid-last-name">Solution</Label>
+                <Textarea
+                  className="min-h-[260px]"
+                  id="grid-desc"
+                  name="questionsolution"
+                  value={solution}
+                  placeholder="Question Solution"
+                  onChange={(e) => setSolution(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-wrap  px-3 w-full md:w-1/2">
+                <div className="w-full m-2 border-2 border-gray-300 p-4 rounded-md">
+                  <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                    htmlFor="grid-last-name">Solution Preview</Label>
+                  <div className="w-full m-2">
+                    {
+                      <MarkdownRenderer content={solution} />
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {msg && <p className="text-red-500 text-sm ml-4">{msg}</p>}
           <div className="w-full m-2 flex justify-end">

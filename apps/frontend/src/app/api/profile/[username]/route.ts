@@ -21,9 +21,13 @@ export async function GET(req: Request, { params }: { params: { username: string
         id: true,
         TestParticipated: {
           where: { status: "COMPLETED" },
+          orderBy:{
+            joinedAt:"desc"
+          },
           select: {
             testId: true,
             score: true,
+            joinedAt: true,
             test: {
               select: {
                 title: true,
