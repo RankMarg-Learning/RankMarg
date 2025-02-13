@@ -1,11 +1,16 @@
 import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function GET( req:Request,{params} : { params: { slug: string } }) {
 
     const { slug } = params;
 
     try {
-        
+        const session = await getServerSession(authOptions);
+        if(!session){
+            return new Response("User not found", { status: 404 });
+        }
         const question = await prisma.question.findUnique({
             where: {
                 slug
@@ -14,7 +19,7 @@ export async function GET( req:Request,{params} : { params: { slug: string } }) 
                 options:true,
                 attempts:{
                     where:{
-                        userId:"e24574c6-1162-43b8-8bdf-99d30669c5ca"
+                        userId:session?.user?.id
                     },
                     orderBy:{
                         solvedAt:'desc'
@@ -31,7 +36,7 @@ export async function GET( req:Request,{params} : { params: { slug: string } }) 
         let ActiveCooldown = 0;
         if (question.attempts.length > 0) {
             const lastAttempt = question.attempts[0];
-            const cooldownEnds = new Date(lastAttempt.solvedAt.getTime() + ( 86400* 1000)); //24 hours Cooldown
+            const cooldownEnds = new Date(lastAttempt.solvedAt.getTime() + ( 43200* 1000)); //24 hours Cooldown
             const now = new Date();
 
             if (cooldownEnds > now) {

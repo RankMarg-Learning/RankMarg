@@ -30,7 +30,10 @@ const Select: React.FC<SelectProps> = ({ options, selectedOption, selectedOption
             className={`flex items-center m-2 p-3 rounded-md cursor-pointer
               ${isCorrect ? 'bg-green-500' : isSelected ? 'bg-yellow-500' : 'bg-muted hover:bg-yellow-100'}
             `}
-            onClick={() => handleOptionChange(index)}
+            onClick={() => {
+              if (correctOptions?.length > 0) return;
+              handleOptionChange(index);
+            }}
           >
             <div className="inline-flex items-center pr-2">
               <label className="flex items-center cursor-pointer relative">
