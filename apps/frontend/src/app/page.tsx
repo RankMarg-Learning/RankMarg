@@ -495,7 +495,7 @@ export default function Home() {
         </section>
 
         {/* Rewards & Tiers Section */}
-        <section id="ranking" className="min-h-screen bg-yellow-50 text-yellow-900 p-8">
+        <section id="ranking" className="min-h-screen bg-yellow-50 text-yellow-900 p-8 hidden">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
