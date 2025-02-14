@@ -16,7 +16,8 @@ interface attempDataProps {
 
 const QuestionPage = ({ params }: { params: { slug: string } }) => {
   const router = useRouter();
-  
+  const searchParams = new URLSearchParams(window.location.search);
+  const isSolutionShow = searchParams.get("solution")
 
   const { slug } = params;
   const { data: question, isLoading } = useQuery({
@@ -62,11 +63,12 @@ const QuestionPage = ({ params }: { params: { slug: string } }) => {
         ) : (
           <QuestionUI question={question}
           handleAttempt={handleAttempt} 
+          isSolutionShow={isSolutionShow}
            />
         )
 
       }
-      <div className="flex flex-wrap justify-center items-center p-2 bg-white border-b-2">
+      <div className={`${isSolutionShow ? "hidden":"flex"}  flex-wrap justify-center items-center p-2 bg-white border-b-2`}>
         <Button size="sm" className="h-9 w-40 gap-1"
         onClick={handleRandom}
         >

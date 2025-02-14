@@ -22,17 +22,18 @@ interface QuestionShowProps extends Omit<QuestionProps, "challenge" | "attempts"
 
 interface QuestionUIProps {
   question: QuestionShowProps;
+  isSolutionShow?: string;
   handleAttempt: (attemptData: attempDataProps) => void;
 }
 
-const QuestionUI = ({ question, handleAttempt }: QuestionUIProps) => {
+const QuestionUI = ({ question, handleAttempt,isSolutionShow }: QuestionUIProps) => {
   const { data: session } = useSession();
   const router = useRouter();
   const { toast } = useToast()
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [ActiveCooldown, setActiveCooldown] = useState<number>(question?.ActiveCooldown )
+  const [ActiveCooldown, setActiveCooldown] = useState<number>(isSolutionShow ? 0 : question?.ActiveCooldown);
 
 
   const checkIfSelectedIsCorrect = () => {
@@ -148,10 +149,10 @@ Best regards,
 
 
   return (
-    <div className="min-h-[calc(100vh-120px)] flex flex-col bg-gray-100" id="fullscreen">
+    <div className="min-h-[calc(100vh-120px)] flex flex-col bg-white" id="fullscreen">
       {/* Navbar */}
 
-      <div className="flex flex-wrap md:flex-row flex-1 p-4 bg-white  rounded-lg overflow-hidden  ">
+      <div className="flex flex-wrap md:flex-row flex-1 p-4   rounded-lg overflow-hidden  ">
         {/* Left side: Question */}
         {/* <form action=""></form> */}
         <div className="w-full md:w-1/2 p-6 border-b md:border-b-0 md:border-r ">
@@ -209,36 +210,41 @@ Best regards,
               selectedOptions={selectedOptions}
               setSelectedOption={setSelectedOption}
               setSelectedOptions={setSelectedOptions}
-              correctOptions={isSubmitting ? (question?.options
+              correctOptions={isSolutionShow ? (question?.options
                 ?.map((option, index) => ({ ...option, index })) // Add index to each option
                 .filter((option) => option.isCorrect) // Filter correct options
-                .map((option) => option.index)) : []}
+                .map((option) => option.index)) : (isSubmitting ? (question?.options
+                ?.map((option, index) => ({ ...option, index })) // Add index to each option
+                .filter((option) => option.isCorrect) // Filter correct options
+                .map((option) => option.index)) : [])}
             />
 
-            {question?.type === "NUM" && isSubmitting && (
+            {question?.type === "NUM" && (isSubmitting || isSolutionShow)  && (
               <div className={`flex flex-wrap space-x-2 mt-4 ${selectedOption === question?.isnumerical ? 'text-green-500' : 'text-red-500'}`}>
                 Correct Answer: {question?.isnumerical}
               </div>
             )}
 
-            <form onSubmit={handleOnSubmit}>
+            <form onSubmit={handleOnSubmit} className={`${isSolutionShow ? `hidden` : `block`} mt-4`}>
               <Button type="submit" className="mt-4">Submit</Button>
             </form>
           </div>
         </div>
 
         <div className="flex flex-wrap md:flex-1 justify-between">
-          {/* <div className={tags ? `` : `hidden`}> */}
-          {/* <div className={tags ? `flex flex-wrap space-x-2 mt-4` : `hidden`}> */}
-          {/* <div className={`flex flex-wrap space-x-2 mt-4`}>
-              {question.tags.map((tag, index) => (
-                <Badge key={index} variant="secondary" className="mb-2">
-                  {tag}
-                </Badge>
-              ))}
-            </div> */}
-          {/* </div> */}
+          
         </div>
+        {isSolutionShow && (question?.solution ? (
+           <div className="w-full p-6 border-t mt-4">
+           <h2 className="text-xl font-bold mb-2">Solution</h2>
+           <MarkdownRenderer content={question?.solution} />
+         </div>
+          
+        ): (
+          <div className="w-full p-6 border-t mt-4">
+            <span>Solution is not available</span>
+          </div>
+        ))}
       </div>
 
     </div>

@@ -63,7 +63,7 @@ const SectionE = ({analysis}:{analysis:AnalysisSectionE[]}) => {
                                     <TableCell>{getStatusDisplay(question?.status)}</TableCell>
                                     <TableCell>{(question?.timeTaken/60).toFixed(1)} min</TableCell>
                                     <TableCell>
-                                        <Link href={`/question/${question?.slug}`} target="_blank">
+                                        <Link href={`/question/${question?.slug}?solution=true`} target="_blank">
                                         <Button variant="outline">
                                             View
                                         </Button>

@@ -282,7 +282,7 @@ export default function Home() {
               Key Features
             </motion.h2>
             <motion.div
-              className="grid md:grid-cols-2 lg:grid-cols-3 gap-20  "
+              className="grid md:grid-cols-3 lg:grid-cols-4 gap-8  "
               variants={staggerChildren}
               initial="initial"
               animate="animate"
@@ -293,11 +293,12 @@ export default function Home() {
                   description: "Access a wide range of expertly curated questions tailored to JEE. With AI-powered our question bank adapts to your progress.",
                   icon: Brain,
                 },
-                // {
-                //   title: "Compete with Peers in Real-Time",
-                //   description: "Join live challenges and compete with friends or fellow students. The first to solve the problem wins, creating excitement and healthy competition.",
-                //   icon: Trophy,
-                // },
+                {
+                  title: "12-Hour Cooldown",
+                  description: "Maintain a fair learning experience with our 12-hour cooldown. After viewing correct answers, retry the question the next day to ensure true understanding.",
+                  icon: Clock,
+                }
+,                
                 {
                   title: "Track Your Progress",
                   description: "Detailed performance analytics give you insights into your strengths and areas for improvement. Stay on track to reach your full potential.",
@@ -494,7 +495,7 @@ export default function Home() {
         </section>
 
         {/* Rewards & Tiers Section */}
-        <section id="ranking" className="min-h-screen bg-yellow-50 text-yellow-900 p-8">
+        <section id="ranking" className="min-h-screen bg-yellow-50 text-yellow-900 p-8 hidden">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
