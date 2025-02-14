@@ -144,6 +144,7 @@ export async function POST(req: Request) {
         hint: formState.hint,
         stream: formState.stream,
         class: formState.std,
+        solution: formState.solution,
         tag: formState.tag,
         questionTime: formState.questionTime,
         isnumerical: formState.numericalAnswer,

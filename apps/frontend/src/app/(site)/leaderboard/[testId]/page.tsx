@@ -34,7 +34,7 @@ const LeaderboardPage = ({ params }: { params: { testId: string } }) => {
     return `${hrs > 0 ? `${hrs}h ` : ""}${mins > 0 ? `${mins}m ` : ""}${secs}s`;
   }
 
-  const userIndex = entries[0]?.TestParticipation.findIndex(
+  const userIndex = entries[0]?.TestParticipation?.findIndex(
     (entry) => entry.user.username === localStorage.getItem("username")
   );
   const currentUser = userIndex !== -1 ? entries[0]?.TestParticipation[userIndex] : null;
@@ -60,10 +60,10 @@ const LeaderboardPage = ({ params }: { params: { testId: string } }) => {
                 <TableRow className='bg-yellow-300 rounded-md'>
                   <TableCell className='font-medium'>{userIndex + 1}</TableCell>
                   <TableCell>
-                    <Link href={`/u/${currentUser.user.username}`} className="flex items-center gap-2 hover:underline" target='_blank'>
+                    <Link href={`/u/${currentUser?.user?.username}`} className="flex items-center gap-2 hover:underline" target='_blank'>
                       <Image
-                        src={currentUser.user.avatar}
-                        alt={`${currentUser.user.name}'s avatar`}
+                        src={currentUser?.user?.avatar || '/Profile_image.png'}
+                        alt={`${currentUser?.user?.name}'s avatar`}
                         width={32}
                         height={32}
                         className="bg-muted rounded-full"
@@ -71,9 +71,9 @@ const LeaderboardPage = ({ params }: { params: { testId: string } }) => {
                       {currentUser.user.name}
                     </Link>
                   </TableCell>
-                  <TableCell>{currentUser.score}/{entries[0].totalMarks}</TableCell>
-                  <TableCell>{formatTime(currentUser.timing)}</TableCell>
-                  <TableCell>{currentUser.accuracy}</TableCell>
+                  <TableCell>{currentUser.score}/{entries[0]?.totalMarks}</TableCell>
+                  <TableCell>{formatTime(currentUser?.timing)}</TableCell>
+                  <TableCell>{currentUser?.accuracy}</TableCell>
                 </TableRow>
               )
             }
@@ -82,20 +82,20 @@ const LeaderboardPage = ({ params }: { params: { testId: string } }) => {
                 <TableRow key={idx + 1} className={`${entry.user.username === localStorage.getItem("username") ? 'hidden' : ""}`}>
                   <TableCell className="font-medium ">{idx + 1}</TableCell>
                   <TableCell>
-                    <Link href={`/u/${entry.user.username}`} className="flex items-center gap-2 hover:underline" target='_blank'>
+                    <Link href={`/u/${entry?.user?.username}`} className="flex items-center gap-2 hover:underline" target='_blank'>
                       <Image
-                        src={entry.user.avatar}
-                        alt={`${entry.user.name}'s avatar`}
+                        src={entry?.user?.avatar}
+                        alt={`${entry?.user?.name}'s avatar`}
                         width={32}
                         height={32}
                         className="bg-muted rounded-full"
                       />
-                      {entry.user.name}
+                      {entry?.user?.name}
                     </Link>
                   </TableCell>
-                  <TableCell>{entry.score}/{entries[0].totalMarks}</TableCell>
-                  <TableCell>{formatTime(entry.timing)}</TableCell>
-                  <TableCell>{entry.accuracy}</TableCell>
+                  <TableCell>{entry?.score}/{entries[0]?.totalMarks}</TableCell>
+                  <TableCell>{formatTime(entry?.timing)}</TableCell>
+                  <TableCell>{entry?.accuracy}</TableCell>
                 </TableRow>
               ))
             ) : (
