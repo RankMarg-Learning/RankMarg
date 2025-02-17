@@ -5,6 +5,7 @@ const page = ({ params }: { params: { slugs: string } }) => {
     const { slugs } = params; 
     return (
         <div className="grid grid-cols-12 min-h-screen">
+            
             {/* Left Ads */}
             <div className="hidden lg:block col-span-2  p-4">
                 <div className="sticky top-4 space-y-6 hidden">
