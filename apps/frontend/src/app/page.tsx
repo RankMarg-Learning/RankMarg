@@ -79,26 +79,50 @@ const rankingData = [
 ]
 const words = [
   {
-    text: "Ace",
-    className: "text-[#8B4513] text-5xl lg:text-6xl",
+    text: "Every",
+    className: "text-[#8B4513] text-4xl lg:text-5xl",
   },
   {
-    text: "Your",
-    className: "text-[#8B4513] text-5xl lg:text-6xl",
+    text: "Mistake",
+    className: "text-yellow-500 text-4xl lg:text-5xl",
   },
   {
-    text: "JEE &",
-    className: "text-yellow-500 dark:text-yellow-500 text-5xl lg:text-6xl",
+    text: "Has ",
+    className: " text-[#8B4513] dark:text-yellow-500 text-4xl lg:text-5xl",
   },
   {
-    text: "NEET",
-    className: "text-yellow-500 dark:text-yellow-500 text-5xl lg:text-6xl",
+    text: "a ",
+    className: "text-[#8B4513] dark:text-yellow-500 text-4xl lg:text-5xl",
   },
   {
-    text: "Preparation",
-    className: "text-[#8B4513] text-5xl lg:text-6xl",
+    text: "Lesson",
+    className: "text-[#8B4513] dark:text-yellow-500 text-4xl lg:text-5xl",
   },
-  
+  {
+    text: "—",
+    className: "text-[#8B4513] text-4xl lg:text-5xl",
+  },
+  {
+    text: "Let’s",
+    className: "text-[#8B4513] text-4xl lg:text-5xl",
+  },
+  {
+    text: "Turn",
+    className: "text-[#8B4513] text-4xl lg:text-5xl",
+  },
+  {
+    text: "Them",
+    className: "text-[#8B4513] text-4xl lg:text-5xl",
+  },
+  {
+    text: "into",
+    className: "text-[#8B4513] text-4xl lg:text-5xl",
+  },
+  {
+    text: "Marks!",
+    className: "text-yellow-500 text-4xl lg:text-5xl",
+  },
+
 ];
 
 export default function Home() {
@@ -154,11 +178,11 @@ export default function Home() {
       {/* Hero Section */}
       <main className="pt-16">
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
+        <div className="relative max-w-7xl mx-auto  sm:px-6 lg:px-8 pt-20 pb-32">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <BlobShape className=" hidden md:flex absolute top-1/2 right-0 w-64 h-64 text-yellow-300 translate-x-1/3" />
 
-            <div className="space-y-8 relative">
+            <div className="space-y-5 relative">
 
 
               {/* Decorative Circle */}
@@ -168,8 +192,8 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
-                className=" text-5xl lg:text-6xl font-bold text-[#8B4513] flex flex-wrap">
-                  <TypewriterEffect words={words} /> 
+                className=" ">
+                <TypewriterEffect words={words} />
                 {/* Ace Your{" "}
                 <span className="text-[#F7B614]">JEE &</span>
                 <br />
@@ -178,7 +202,7 @@ export default function Home() {
               <motion.p
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8 }} className="text-[#B8860B] md:text-xl text-base">
+                transition={{ delay: 0.8 }} className="text-[#B8860B] md:text-lg text-base text-center md:text-left">
 
                 Comprehensive practice questions, mock tests, and detailed insights to boost your exam preparation
               </motion.p>
@@ -210,14 +234,14 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }} className="flex items-center gap-2">
                   <div className="text-[#F7B614]">✓</div>
-                  <span>500+ Questions</span>
+                  <span>1000+ Questions</span>
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }} className="flex items-center gap-2">
                   <div className="text-[#F7B614]">✓</div>
-                  <span>10+ Mock Tests</span>
+                  <span>50+ Mock Tests</span>
                 </motion.div>
               </div>
             </div>
@@ -298,7 +322,7 @@ export default function Home() {
                   description: "Maintain a fair learning experience with our 12-hour cooldown. After viewing correct answers, retry the question the next day to ensure true understanding.",
                   icon: Clock,
                 }
-,                
+                ,
                 {
                   title: "Track Your Progress",
                   description: "Detailed performance analytics give you insights into your strengths and areas for improvement. Stay on track to reach your full potential.",
@@ -627,7 +651,7 @@ export default function Home() {
 
             </div>
             <div className="mt-8 pt-8 border-t border-yellow-700 text-center">
-              <p>&copy; 2024 RankMarg. All rights reserved.</p>
+              <p>&copy; 2025 RankMarg. All rights reserved.</p>
             </div>
           </div>
         </footer>
