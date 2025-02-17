@@ -1,21 +1,12 @@
 
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Inter } from "next/font/google"
 import "./globals.css";
 import ClientSessionProvider from "@/context/ClientSessionProvider";
 import GoogleAnalytics from "@/lib/GoogleAnalytics";
 
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+const inter = Inter({ subsets: ["latin"] })
 
 const GA_TRACKING_ID = "G-4R4ZKM8YXN";
 
@@ -50,7 +41,7 @@ export default function RootLayout({
             <GoogleAnalytics trackingId={GA_TRACKING_ID} />
           </head>
           <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased default-scroll`}
+            className={`${inter.className}  antialiased default-scroll`}
           >
             {children}
           </body>

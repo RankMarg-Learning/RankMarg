@@ -22,6 +22,7 @@ export default function BlogPost({slug}:{slug:string}) {
     
     return (
         <Card>
+            
             <div className="p-6 ">
                 <div className="flex items-center justify-between mb-4">
                     <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">{blog?.category}</span>

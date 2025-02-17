@@ -1,6 +1,10 @@
-export async function GET() {
+export async function GET(
+   
+ ) {
+    
+    
     try {
-        const api = 'https://rankmarg-blog.vercel.app/api/blog';
+        const api = `https://rankmarg-blog.vercel.app/api/blog`;
         const response = await fetch(api,
             {
                 method: "GET",
