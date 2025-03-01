@@ -25,12 +25,6 @@ interface TestInfo {
   totalMarks: number;
 }
 
-type QuestionCounts = {
-  cntMarkForReview: number;
-  cntNotAnswered: number;
-  cntAnswered: number;
-  cntAnsweredMark: number;
-};
 
 interface TestContextType {
   testId: string;
