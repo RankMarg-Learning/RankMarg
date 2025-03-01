@@ -141,7 +141,6 @@ model TestParticipation {
   id               String           @id @default(uuid())
   userId           String
   testId           String
-  joinedAt         DateTime         @default(now())
   cntMarkForReview Int?             @default(0)
   cntNotAnswered   Int?             @default(0)
   cntAnswered      Int?             @default(0)
@@ -149,10 +148,14 @@ model TestParticipation {
   score            Int?             @default(0)
   accuracy         Float?           @default(0)
   timing           Int?             @default(0)
+  cntMinmize       Int?             @default(0)
   status           TestStatus       @default(JOIN)
   test             Test             @relation(fields: [testId], references: [testId], onDelete: Cascade)
   user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   TestSubmission   TestSubmission[]
+
+  startTime DateTime @default(now())
+  endTime   DateTime @default(now())
 
   @@unique([userId, testId])
 }
@@ -169,7 +172,7 @@ model TestSubmission {
   testId            String
   questionId        String
   timing            Int?              @default(0)
-  answer            Json?
+  answer            String?
   status            SubmitStatus      @default(NOT_ANSWERED)
   submittedAt       DateTime          @default(now())
   TestParticipation TestParticipation @relation(fields: [participationId], references: [id], onDelete: Cascade)

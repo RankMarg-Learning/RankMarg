@@ -55,7 +55,8 @@ export async function GET(req:Request,{ params }: { params: { testId: string } }
             create:{
                 testId:testId,
                 userId:session.user.id,
-                status:"STARTED"
+                status:"STARTED",
+                startTime:new Date(),
             }
         })
         if (!participant) {

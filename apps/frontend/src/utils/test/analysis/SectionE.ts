@@ -1,5 +1,5 @@
 import { AnalysisSectionE,  TestWithIncludes } from "@/types/typeTest"
-import { isCorrectEnum } from "@prisma/client"
+import { SubmitStatus } from "@prisma/client"
 
 
 
@@ -13,7 +13,7 @@ export const SectionE = (test: TestWithIncludes):AnalysisSectionE[] => {
         test.TestSubmission.map(submission => [
             submission.Question.id,
             {
-                isCorrect: submission.isCorrect,
+                isCorrect: submission.status,
                 timing: submission.timing || 0
             }
         ])
@@ -28,11 +28,10 @@ export const SectionE = (test: TestWithIncludes):AnalysisSectionE[] => {
         difficulty: string;
     }) => {
         const submission = submissionMap.get(question.id)
-        
         let status: 'correct' | 'incorrect' | 'unattempted' = 'unattempted'
         if (submission) {
-            status = submission.isCorrect === isCorrectEnum.TRUE ? 'correct' : 
-                     submission.isCorrect === isCorrectEnum.FALSE ? 'incorrect' : 
+            status = submission.isCorrect === SubmitStatus.TRUE ? 'correct' : 
+                     submission.isCorrect === SubmitStatus.FALSE ? 'incorrect' : 
                      'unattempted'
         }
 

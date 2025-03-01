@@ -2,7 +2,7 @@ import { SubmitStatus } from "@prisma/client";
 
 export interface SubmissionProps {
     questionId: string;
-    isCorrect: SubmitStatus;
+    status: SubmitStatus;
     timing: number;
   }
   
@@ -35,8 +35,8 @@ export interface SubmissionProps {
       const sectionSubmissions = submissions.slice(start - 1, end);
   
       // Count correct and incorrect answers
-      const correctAnswers = sectionSubmissions.filter((s) => s.isCorrect === "TRUE").length;
-      const incorrectAnswers = sectionSubmissions.filter((s) => s.isCorrect === "FALSE").length;
+      const correctAnswers = sectionSubmissions.filter((s) => s.status === "TRUE").length;
+      const incorrectAnswers = sectionSubmissions.filter((s) => s.status === "FALSE").length;
   
       // Apply maxQuestions rule if the section is optional
       const effectiveCorrectAnswers = isOptional

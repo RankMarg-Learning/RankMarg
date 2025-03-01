@@ -13,9 +13,9 @@ export const SectionD = (test: TestWithIncludes):AnalysisSectionD => {
         if (difficulty in difficultyAnalysis) {
             difficultyAnalysis[difficulty].total++;
             
-            if (submission.isCorrect === 'TRUE') {
+            if (submission.status === 'TRUE') {
                 difficultyAnalysis[difficulty].correct++;
-            } else if (submission.isCorrect === 'FALSE') {
+            } else if (submission.status === 'FALSE') {
                 difficultyAnalysis[difficulty].incorrect++;
             }
         }

@@ -22,12 +22,12 @@ export async function GET(req: Request, { params }: { params: { username: string
         TestParticipated: {
           where: { status: "COMPLETED" },
           orderBy:{
-            joinedAt:"desc"
+            endTime: "desc"
           },
           select: {
             testId: true,
             score: true,
-            joinedAt: true,
+            endTime: true,
             test: {
               select: {
                 title: true,
