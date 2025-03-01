@@ -143,6 +143,8 @@ export async function POST(req: Request) {
         subject: formState.subject,
         hint: formState.hint,
         stream: formState.stream,
+        category:formState.category,
+        subtopic:formState.subTopic,
         class: formState.std,
         solution: formState.solution,
         tag: formState.tag,

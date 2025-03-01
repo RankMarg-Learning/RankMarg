@@ -2,6 +2,7 @@
 import { QuestionWithOptions } from '@/types';
 import { QuestionStatus } from '@/utils';
 import { calculateMarks } from '@/utils/test/calculateMarks';
+import { SubmitStatus } from '@prisma/client';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -11,8 +12,9 @@ export type TestStatus = 'JOIN' | 'STARTED' | 'COMPLETED';
 
 interface SubmissionProps {
   questionId: string;
-  isCorrect: "TRUE" | "FALSE" | "NOT_ANSWERED";
+  isCorrect: SubmitStatus;
   timing: number;
+  answer?: string;
 }
 
 interface TestInfo {
@@ -21,6 +23,13 @@ interface TestInfo {
   duration: number;
   totalMarks: number;
 }
+
+type QuestionCounts = {
+  cntMarkForReview: number;
+  cntNotAnswered: number;
+  cntAnswered: number;
+  cntAnsweredMark: number;
+};
 
 interface TestContextType {
   testId: string;
@@ -65,7 +74,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
   const [isLoaded, setIsLoaded] = useState(true);
   const [questions, setQuestions] = useState<QuestionWithOptions[]>([]);
   const [questionsData, setQuestionsData] = useState<
-    Record<number, { selectedOptions: number[] | null; status: QuestionStatus; type: QuestionType; }>
+    Record<number, { selectedOptions: number[] | null; status: QuestionStatus; type: QuestionType;submittedAt?:Date }>
   >({});
   const [currentQuestion, setCurrentQuestion] = useState(1);
   const [isTestComplete, setIsTestComplete] = useState(false);
@@ -77,7 +86,12 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
     maxQuestions: number
   }>>({})
   const [testStatus, setTestStatus] = useState<TestStatus>("JOIN")
-
+  const [counts, setCounts] = useState<QuestionCounts>({
+    cntMarkForReview: 0,
+    cntNotAnswered: 0,
+    cntAnswered: 0,
+    cntAnsweredMark: 0
+  });
 
 
   useEffect(() => {
@@ -101,6 +115,22 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
 
         const remainingTimer = testInfo.duration * 60 - remainTimer?.leftTime;
 
+        const mapQuestionStatusToSubmitStatus = (status: QuestionStatus): SubmitStatus => {
+          switch (status) {
+            case QuestionStatus.NotAnswered:
+              setCounts((prev) => ({ ...prev, cntNotAnswered: prev.cntNotAnswered + 1 }));
+              return SubmitStatus.NOT_ANSWERED;
+            case QuestionStatus.MarkedForReview:
+              setCounts((prev) => ({ ...prev, cntMarkForReview: prev.cntMarkForReview + 1 }));
+              return SubmitStatus.MARK_FOR_REVIEW;
+            case QuestionStatus.AnsweredAndMarked:
+              setCounts((prev) => ({ ...prev, cntAnsweredMark: prev.cntAnsweredMark + 1 }));
+              return SubmitStatus.ANSWERED_MARK;
+            default:
+              throw new Error(`Invalid status: ${status}`);
+          }
+        };
+        
         const submission: SubmissionProps[] = questions.map((question, idx) => {
           const {
             selectedOptions = [],
@@ -108,30 +138,31 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
             type = question.type,
           } = questionsData[idx + 1] || {};
           const timing = timings[idx + 1] || 0;
-
+        
           if (status === QuestionStatus.Answered) {
-            const isCorrectEnum = (() => {
+            setCounts((prev) => ({ ...prev, cntAnswered: prev.cntAnswered + 1 }));
+            const isCorrectEnum: SubmitStatus = (() => {
               if (type === "single" || type === "multiple") {
                 const isCorrect = selectedOptions.every(
                   (index) => question.options[index]?.isCorrect
                 );
-                return isCorrect ? "TRUE" : "FALSE";
+                return isCorrect ? SubmitStatus.TRUE : SubmitStatus.FALSE;
               }
               if (type === "NUM") {
                 const isCorrect = question.isnumerical === selectedOptions[0];
-                return isCorrect ? "TRUE" : "FALSE";
+                return isCorrect ? SubmitStatus.TRUE : SubmitStatus.FALSE;
               }
-              return "FALSE";
+              return SubmitStatus.FALSE;
             })();
-
-            return { questionId: question.id, isCorrect: isCorrectEnum, timing };
+        
+            return { questionId: question.id, isCorrect: isCorrectEnum, timing ,answer:JSON.stringify(selectedOptions)};
           }
-
-          return { questionId: question.id, isCorrect: "NOT_ANSWERED", timing };
+        
+          return { questionId: question.id, isCorrect: mapQuestionStatusToSubmitStatus(status), timing };
         });
 
         const marks = calculateMarks(submission, testSection);
-        const response = await axios.post(`/api/test/${testInfo.testId}/submit`, { submission, marks, timing: remainingTimer });
+        const response = await axios.post(`/api/test/${testInfo.testId}/submit`, { submission, marks, timing: remainingTimer,counts });
         if (response.status === 200) {
           const testEndTime = new Date(response.data.TestEnd);
             const currentTime = new Date();
@@ -196,7 +227,8 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
         questionsData,
         testSection,
         setTestSection,
-        isTestComplete
+        isTestComplete,
+        
       }}
     >
       {children}

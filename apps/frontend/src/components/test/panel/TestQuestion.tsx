@@ -82,6 +82,7 @@ export function TestQuestion() {
             ? [selectedOption]
             : selectedOptions,
         type: question?.type === 'MCQ' ? (selectedOption !== null ? 'single' : 'multiple') : question?.type,
+        submittedAt: new Date(),
       },
     }));
 
@@ -99,6 +100,7 @@ export function TestQuestion() {
         ...prev[currentQuestion],
         status: QuestionStatus.NotAnswered,
         selectedOptions: null,
+        submittedAt: new Date(),
       },
     }));
 
@@ -124,6 +126,7 @@ export function TestQuestion() {
             ? QuestionStatus.Answered
             : QuestionStatus.NotAnswered,
         type: question?.type === 'MCQ' ? (selectedOption !== null ? 'single' : 'multiple') : question?.type,
+        submittedAt: new Date(),
       },
     }));
 

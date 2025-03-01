@@ -15,7 +15,7 @@ interface TestSection {
 
 export async function POST(req: Request) {
     const body = await req.json();
-    const { title, description, stream, duration, testKey, sections, startTime, endTime, examType } = body;
+    const { title, description, stream, duration, testKey, sections, startTime, endTime, examType,difficulty } = body;
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
@@ -51,6 +51,7 @@ export async function POST(req: Request) {
                 endTime: endTime,
                 duration: parseInt(duration),
                 testKey,
+                difficulty,
                 totalMarks,
                 totalQuestions,
                 examType,

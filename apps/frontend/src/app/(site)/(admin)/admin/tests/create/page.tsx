@@ -54,11 +54,13 @@ export default function CreateTest() {
   const [currentSectionCorrectMarks, setCurrentSectionCorrectMarks] = useState(4)
   const [currentSectionIncorrectMarks, setCurrentSectionIncorrectMarks] = useState(1)
   const [examType, setExamType] = useState("")
+  const [difficulty, setDifficulty] = useState("")
   const [stream, setStream] = useState<Stream>("JEE")
   const testSchema = z.object({
     title: z.string().min(1, { message: "Test Title is required" }),
     stream: z.enum(["NEET", "JEE"]).optional(),
     examType: z.enum(["Mock-Test", "Topic-wise", "Subject-wise"]).optional(),
+    difficulty: z.enum(["EASY", "MEDIUM", "HARD"]).optional(),
     duration: z.number().min(1, { message: "Duration must be greater than 0" }),
     startTime: z.date().refine(date => date > new Date(), {
       message: "Start time must be in the future",
@@ -69,6 +71,7 @@ export default function CreateTest() {
         questions: z.array(z.string()).min(1, { message: "At least one question must be selected" }),
       })
     ).min(1, { message: "At least one section is required" }),
+
   });
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,6 +81,7 @@ export default function CreateTest() {
         description,
         testKey: testKey || null,
         stream: stream || null,
+        difficulty: difficulty || "MEDIUM",
         duration: parseInt(duration),
         startTime: startDate || null,
         endTime: endDate || null,
@@ -112,6 +116,9 @@ export default function CreateTest() {
   }
   const handleExamType = (value: string[]) => {
     setExamType(value[0] === "Default" ? "" : value[0]);
+  };
+  const handleDifficulty = (value: string[]) => {
+    setDifficulty(value[0] === "Default" ? "" : value[0]);
   };
 
   const handleQuestionSelect = (questions: string[]) => {
@@ -201,6 +208,15 @@ export default function CreateTest() {
 
             </div>
             <div className="flex flex-wrap  mb-6 w-full">
+              <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                <Label htmlFor="duration">Difficulty*</Label>
+                <SelectFilter
+                  width={"full"}
+                  placeholder="Difficulty"
+                  selectName={["Default", "EASY", "MEDIUM", "HARD"]}
+                  onChange={handleDifficulty}
+                />
+              </div>
               <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
                 <Label htmlFor="duration">Duration (minutes)*</Label>
                 <Input

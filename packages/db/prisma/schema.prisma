@@ -8,101 +8,88 @@ datasource db {
 }
 
 model User {
-  id               String              @id @default(uuid())
-  name             String?
-  username         String              @unique
-  email            String              @unique
-  password         String?
-  phone            String?
-  standard         String?
-  avatar           String?
-  stream           Stream?
-  rank             Int                 @default(100)
-  coins            Int                 @default(0)
-  Role             Role?               @default(USER)
-  provider         Provider
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime?           @updatedAt
-  Location         String?
+  id       String   @id @default(uuid())
+  name     String?
+  username String   @unique
+  email    String   @unique
+  password String?
+  phone    String?
+  standard String?
+  avatar   String?
+  stream   Stream?
+  rank     Int      @default(100)
+  coins    Int      @default(0)
+  Role     Role?    @default(USER)
+  provider Provider
+  Location String?
+
   attempts         Attempt[]
   player1          Challenge[]         @relation("U1")
   player2          Challenge[]         @relation("U2")
   Test             Test[]
   TestParticipated TestParticipation[]
   activity         activity[]
+
+  updatedAt DateTime? @updatedAt
+  createdAt DateTime  @default(now())
 }
 
 model Question {
-  id                String              @id @default(uuid())
-  slug              String              @unique
-  type              QuestionType
-  title             String
-  content           String
-  difficulty        String
-  topic             String
-  subject           String
-  class             String
-  stream            Stream?
-  tag               String?
-  isnumerical       Float?
-  solution          String?
-  accuracy          Float?              @default(0)
-  questionTime      Int?                @default(5)
-  hint              String?
-  createdBy         String?
-  createdAt         DateTime            @default(now())
-  isPublished       Boolean?            @default(false)
+  id           String       @id @default(uuid())
+  slug         String       @unique
+  title        String
+  type         QuestionType
+  category     String?
+  subtopic     String?
+  content      String
+  difficulty   String
+  topic        String
+  subject      String
+  class        String
+  stream       Stream?
+  tag          String?
+  isnumerical  Float?
+  solution     String?
+  accuracy     Float?       @default(0)
+  questionTime Int?         @default(5)
+  hint         String?
+  isPublished  Boolean?     @default(false)
+
   attempts          Attempt[]
   ChallengeQuestion ChallengeQuestion[]
   options           Option[]
   TestSubmission    TestSubmission[]
   TestQuestion      TestQuestion[]
+
+  createdBy String?
+  createdAt DateTime @default(now())
+}
+
+enum QuestionType {
+  MCQ
+  NUM
 }
 
 model Option {
-  id         String   @id @default(uuid())
+  id         String  @id @default(uuid())
   content    String
-  isCorrect  Boolean  @default(false)
+  isCorrect  Boolean @default(false)
   questionId String
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model Attempt {
   userId     String
   questionId String
+  timing     Int?     @default(0) //added
   isCorrect  Boolean  @default(false)
   solvedAt   DateTime @default(now())
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, questionId, solvedAt])
-}
-
-model Challenge {
-  challengeId       String              @id @unique
-  player1Id         String
-  player2Id         String?
-  status            String              @default("PENDING")
-  result            String?
-  player1Score      Int?                @default(0)
-  player2Score      Int?                @default(0)
-  attemptByPlayer1  Int[]               @default([])
-  attemptByPlayer2  Int[]               @default([])
-  endedAt           DateTime?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime?           @updatedAt
-  player1           User                @relation("U1", fields: [player1Id], references: [id], onDelete: Cascade)
-  player2           User?               @relation("U2", fields: [player2Id], references: [id], onDelete: Cascade)
-  ChallengeQuestion ChallengeQuestion[]
-}
-
-model ChallengeQuestion {
-  challengeId String
-  questionId  String
-  challenge   Challenge @relation(fields: [challengeId], references: [challengeId], onDelete: Cascade)
-  question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  @@id([challengeId, questionId])
 }
 
 model Test {
@@ -113,6 +100,7 @@ model Test {
   totalMarks        Int?
   totalQuestions    Int?
   testKey           String?
+  difficulty        String?             @default("MEDIUM")
   duration          Int
   isPublished       Boolean?            @default(false)
   examType          String?
@@ -150,17 +138,21 @@ model TestQuestion {
 }
 
 model TestParticipation {
-  id             String           @id @default(uuid())
-  userId         String
-  testId         String
-  joinedAt       DateTime         @default(now())
-  score          Int?             @default(0)
-  accuracy       Float?           @default(0)
-  timing         Int?             @default(0)
-  status         TestStatus       @default(JOIN)
-  test           Test             @relation(fields: [testId], references: [testId], onDelete: Cascade)
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  TestSubmission TestSubmission[]
+  id               String           @id @default(uuid())
+  userId           String
+  testId           String
+  joinedAt         DateTime         @default(now())
+  cntMarkForReview Int?             @default(0)
+  cntNotAnswered   Int?             @default(0)
+  cntAnswered      Int?             @default(0)
+  cntAnsweredMark  Int?             @default(0)
+  score            Int?             @default(0)
+  accuracy         Float?           @default(0)
+  timing           Int?             @default(0)
+  status           TestStatus       @default(JOIN)
+  test             Test             @relation(fields: [testId], references: [testId], onDelete: Cascade)
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  TestSubmission   TestSubmission[]
 
   @@unique([userId, testId])
 }
@@ -177,11 +169,20 @@ model TestSubmission {
   testId            String
   questionId        String
   timing            Int?              @default(0)
-  isCorrect         isCorrectEnum     @default(NOT_ANSWERED)
+  answer            Json?
+  status            SubmitStatus      @default(NOT_ANSWERED)
   submittedAt       DateTime          @default(now())
   TestParticipation TestParticipation @relation(fields: [participationId], references: [id], onDelete: Cascade)
   Test              Test              @relation(fields: [testId], references: [testId], onDelete: Cascade)
   Question          Question          @relation(fields: [questionId], references: [id])
+}
+
+enum SubmitStatus {
+  TRUE
+  FALSE
+  MARK_FOR_REVIEW
+  ANSWERED_MARK
+  NOT_ANSWERED
 }
 
 model activity {
@@ -201,12 +202,6 @@ model Feedback {
   createdAt DateTime @default(now())
 }
 
-enum isCorrectEnum {
-  TRUE
-  FALSE
-  NOT_ANSWERED
-}
-
 enum Stream {
   JEE
   NEET
@@ -223,7 +218,29 @@ enum Provider {
   credentials
 }
 
-enum QuestionType {
-  MCQ
-  NUM
+model Challenge {
+  challengeId       String              @id @unique
+  player1Id         String
+  player2Id         String?
+  status            String              @default("PENDING")
+  result            String?
+  player1Score      Int?                @default(0)
+  player2Score      Int?                @default(0)
+  attemptByPlayer1  Int[]               @default([])
+  attemptByPlayer2  Int[]               @default([])
+  endedAt           DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime?           @updatedAt
+  player1           User                @relation("U1", fields: [player1Id], references: [id], onDelete: Cascade)
+  player2           User?               @relation("U2", fields: [player2Id], references: [id], onDelete: Cascade)
+  ChallengeQuestion ChallengeQuestion[]
+}
+
+model ChallengeQuestion {
+  challengeId String
+  questionId  String
+  challenge   Challenge @relation(fields: [challengeId], references: [challengeId], onDelete: Cascade)
+  question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([challengeId, questionId])
 }

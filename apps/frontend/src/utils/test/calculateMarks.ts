@@ -1,6 +1,8 @@
+import { SubmitStatus } from "@prisma/client";
+
 export interface SubmissionProps {
     questionId: string;
-    isCorrect: "TRUE" | "FALSE"| "NOT_ANSWERED";
+    isCorrect: SubmitStatus;
     timing: number;
   }
   
