@@ -17,7 +17,7 @@ import {
 import { Button } from "../ui/button";
 
 const TestPage = ({ testId }: { testId: string }) => {
-  const { setTestId, isLoaded, setIsTestComplete, isTestComplete,setMinimizeCount } = useTestContext();
+  const { setTestId, isLoaded, setIsTestComplete,setMinimizeCount } = useTestContext();
   const [showExitWarning, setShowExitWarning] = useState(false);
 
 
