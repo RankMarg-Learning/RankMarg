@@ -1,5 +1,23 @@
 
 import BlogPost from '@/components/BlogPost';
+import { Metadata } from 'next';
+
+export async function generateMetadata({ params }: { params: { slugs: string } }): Promise<Metadata> {
+    const { slugs } = params;
+
+    const metadata = {
+        title: ` ${slugs.replace("-", " ")} | RankMarg`,
+        description: `Read our latest blog on ${slugs.replace("-", " ")}, covering insights and expert opinions.`,
+        openGraph: {
+            title: `${slugs.replace("-", " ")} | RankMarg`,
+            description: `Explore insights on ${slugs.replace("-", " ")}`,
+            url: `${process.env.NEXT_PUBLIC_WEBSITE_URL!}/post/${slugs}`,
+            type: "article",
+        },
+    };
+
+    return metadata;
+}
 
 const page = ({ params }: { params: { slugs: string } }) => {   
     const { slugs } = params; 

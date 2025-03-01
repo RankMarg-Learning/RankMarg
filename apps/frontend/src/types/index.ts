@@ -83,6 +83,8 @@ export interface ContributeFormProps {
   solution?: string;
   stream?: "NEET" | "JEE";
   hint: string;
+  subTopic: string;
+  category: string;
 }
 
 

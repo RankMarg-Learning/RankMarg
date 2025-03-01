@@ -7,7 +7,7 @@ import { getServerSession } from "next-auth";
 
 export async function POST(req: Request, { params }: { params: { testId: string } }) {
   const { testId } = params;
-  const { submission, marks, timing } = await req.json();
+  const { submission, marks, timing,counts } = await req.json();
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
@@ -58,7 +58,11 @@ export async function POST(req: Request, { params }: { params: { testId: string 
         status: "COMPLETED",
         score: marks,
         timing,
-        accuracy
+        accuracy,
+        cntAnswered: counts.cntAnswered,
+        cntNotAnswered: counts.cntNotAnswered,
+        cntMarkForReview: counts.cntMarkForReview,
+        cntAnsweredMark: counts.cnt
       },
     });
     await prisma.activity.create({

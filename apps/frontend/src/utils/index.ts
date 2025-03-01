@@ -1,7 +1,7 @@
 
 export enum QuestionStatus {
     Answered = "answered",
-    NotAnswered = "not-answered",
-    MarkedForReview = "marked-for-review",
-    AnsweredAndMarked = "answered-and-marked",
+    NotAnswered = "not_answered",
+    MarkedForReview = "marked_for_review",
+    AnsweredAndMarked = "answered_mark",
   }

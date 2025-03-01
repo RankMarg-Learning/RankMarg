@@ -1,0 +1,16 @@
+export const QuestionCategory = [
+    "Default",
+    "Conceptual",
+    "Application-Based",
+    "Calculation-Based",
+    "Theory-Based",
+    "Memory-Based",
+    "Assertion-Reason",
+    "Graph-Based",
+    "Matrix Match",
+    "Paragraph-Based",
+    "True/False",
+    "Order-Based",
+    "Observation-Based",
+    "Case Study",
+]
