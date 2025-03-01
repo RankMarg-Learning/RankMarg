@@ -66,7 +66,6 @@ export async function GET(req:Request,{ params }: { params: { testId: string } }
         if(!test){
             return new Response("Test Not Found", { status: 404 });
         }
-
         const sectionA = SectionA(test)
         const sectionB = SectionB(test)
         const sectionC = SectionC(test)

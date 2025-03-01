@@ -5,10 +5,10 @@ import { AnalysisSectionA, TestWithIncludes } from "@/types/typeTest";
 export const SectionA = (test: TestWithIncludes): AnalysisSectionA => {
 
   // Filter out submissions that are not attempted
-  const attemptedSubmissions = test.TestSubmission.filter((sub) => sub.isCorrect !== 'NOT_ANSWERED');
+  const attemptedSubmissions = test.TestSubmission.filter((sub) => sub.status !== 'NOT_ANSWERED');
 
   // Calculate accuracy
-  const correctSubmissions = attemptedSubmissions.filter((sub) => sub.isCorrect === 'TRUE').length;
+  const correctSubmissions = attemptedSubmissions.filter((sub) => sub.status === 'TRUE').length;
   const accuracy = (correctSubmissions / attemptedSubmissions.length)*100 || 0.0;
 
   // Calculate section-wise performance
@@ -25,8 +25,8 @@ export const SectionA = (test: TestWithIncludes): AnalysisSectionA => {
 
     
     const sectionScore = sectionSubmissions.reduce((acc: number, sub) => 
-      acc + (sub.isCorrect === 'TRUE' ? (section.correctMarks || 0) : 
-             sub.isCorrect === 'FALSE' ? -(section.negativeMarks || 0) : 0), 0);
+      acc + (sub.status === 'TRUE' ? (section.correctMarks || 0) : 
+             sub.status === 'FALSE' ? -(section.negativeMarks || 0) : 0), 0);
 
     return {
       sectionName: section.name,

@@ -12,9 +12,10 @@ export type TestStatus = 'JOIN' | 'STARTED' | 'COMPLETED';
 
 interface SubmissionProps {
   questionId: string;
-  isCorrect: SubmitStatus;
+  status: SubmitStatus;
   timing: number;
   answer?: string;
+  submittedAt?: Date;
 }
 
 interface TestInfo {
@@ -61,6 +62,7 @@ interface TestContextType {
   setIsLoaded: React.Dispatch<React.SetStateAction<boolean>>;
   setTestStatus: React.Dispatch<React.SetStateAction<TestStatus>>;
   testStatus: TestStatus;
+  setMinimizeCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const TestContext = createContext<TestContextType | undefined>(undefined);
@@ -79,6 +81,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
   const [currentQuestion, setCurrentQuestion] = useState(1);
   const [isTestComplete, setIsTestComplete] = useState(false);
   const totalQuestions = questions?.length || 0;
+  const [minimizeCount, setMinimizeCount] = useState(0);
   const [testSection, setTestSection] = useState<Record<string, {
     correctMarks: number,
     negativeMarks: number,
@@ -86,13 +89,8 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
     maxQuestions: number
   }>>({})
   const [testStatus, setTestStatus] = useState<TestStatus>("JOIN")
-  const [counts, setCounts] = useState<QuestionCounts>({
-    cntMarkForReview: 0,
-    cntNotAnswered: 0,
-    cntAnswered: 0,
-    cntAnsweredMark: 0
-  });
-
+  
+  console.log("Minimize",minimizeCount)
 
   useEffect(() => {
     if (!testInfo || !questions || !testId || !testSection) {
@@ -114,17 +112,23 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
         const remainTimer = JSON.parse(sessionStorage.getItem(`test_timer_${testInfo.testId}`) || "{}");
 
         const remainingTimer = testInfo.duration * 60 - remainTimer?.leftTime;
-
+        const counts = {
+          cntMarkForReview: 0,
+          cntNotAnswered: 0,
+          cntAnswered: 0,
+          cntAnsweredMark: 0,
+        };
         const mapQuestionStatusToSubmitStatus = (status: QuestionStatus): SubmitStatus => {
+          
           switch (status) {
             case QuestionStatus.NotAnswered:
-              setCounts((prev) => ({ ...prev, cntNotAnswered: prev.cntNotAnswered + 1 }));
+              counts.cntNotAnswered++;
               return SubmitStatus.NOT_ANSWERED;
             case QuestionStatus.MarkedForReview:
-              setCounts((prev) => ({ ...prev, cntMarkForReview: prev.cntMarkForReview + 1 }));
+              counts.cntMarkForReview++;
               return SubmitStatus.MARK_FOR_REVIEW;
             case QuestionStatus.AnsweredAndMarked:
-              setCounts((prev) => ({ ...prev, cntAnsweredMark: prev.cntAnsweredMark + 1 }));
+              counts.cntAnsweredMark++;
               return SubmitStatus.ANSWERED_MARK;
             default:
               throw new Error(`Invalid status: ${status}`);
@@ -136,17 +140,18 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
             selectedOptions = [],
             status = QuestionStatus.NotAnswered,
             type = question.type,
+            submittedAt
           } = questionsData[idx + 1] || {};
           const timing = timings[idx + 1] || 0;
         
           if (status === QuestionStatus.Answered) {
-            setCounts((prev) => ({ ...prev, cntAnswered: prev.cntAnswered + 1 }));
+            counts.cntAnswered++;
             const isCorrectEnum: SubmitStatus = (() => {
               if (type === "single" || type === "multiple") {
-                const isCorrect = selectedOptions.every(
+                const status = selectedOptions.every(
                   (index) => question.options[index]?.isCorrect
                 );
-                return isCorrect ? SubmitStatus.TRUE : SubmitStatus.FALSE;
+                return status ? SubmitStatus.TRUE : SubmitStatus.FALSE;
               }
               if (type === "NUM") {
                 const isCorrect = question.isnumerical === selectedOptions[0];
@@ -155,14 +160,15 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
               return SubmitStatus.FALSE;
             })();
         
-            return { questionId: question.id, isCorrect: isCorrectEnum, timing ,answer:JSON.stringify(selectedOptions)};
+            return { questionId: question.id, status: isCorrectEnum, timing ,answer:JSON.stringify(selectedOptions),submittedAt };
           }
         
-          return { questionId: question.id, isCorrect: mapQuestionStatusToSubmitStatus(status), timing };
+          return { questionId: question.id, status: mapQuestionStatusToSubmitStatus(status), timing,answer:JSON.stringify(selectedOptions),submittedAt };
         });
 
         const marks = calculateMarks(submission, testSection);
-        const response = await axios.post(`/api/test/${testInfo.testId}/submit`, { submission, marks, timing: remainingTimer,counts });
+        
+        const response = await axios.post(`/api/test/${testInfo.testId}/submit`, { submission, marks, timing: remainingTimer,counts,minimizeCount });
         if (response.status === 200) {
           const testEndTime = new Date(response.data.TestEnd);
             const currentTime = new Date();
@@ -171,6 +177,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
                 
             }
             else{
+              document.exitFullscreen();
               router.push(`/analysis/${testId}`)
             }
           sessionStorage.clear();
@@ -213,6 +220,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
         isLoaded,
         testStatus,
         setTestStatus,
+        setMinimizeCount,
         setIsLoaded,
         setTestId,
         testInfo,
