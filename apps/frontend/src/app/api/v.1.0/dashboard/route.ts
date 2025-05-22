@@ -117,7 +117,7 @@ import { startOfDay, endOfDay } from 'date-fns';
 import { jsonResponse } from '@/utils/api-response';
 import { AttemptsDashaboadProps, PerformanceDashboardProps } from '@/types/dashboard.types';
 
-export async function getTopUsedSubtopicsToday(userId: string, count: number): Promise<string[]> {
+async function getTopUsedSubtopicsToday(userId: string, count: number): Promise<string[]> {
     const todayStart = startOfDay(new Date());
     const todayEnd = endOfDay(new Date());
 
