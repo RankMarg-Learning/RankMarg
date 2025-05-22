@@ -66,10 +66,9 @@ export class QuestionSelector {
                 });
 
                 const filteredQuestionsForDifficulty = await this.filterRecentlyAttemptedQuestions(questionsForDifficulty);
-                const prioritizedQuestionsForDifficulty = this.prioritizeQuestions(filteredQuestionsForDifficulty);
                 selectedQuestions = [
                     ...selectedQuestions,
-                    ...prioritizedQuestionsForDifficulty.slice(0, questionsNeededForThisDifficulty)
+                    ...filteredQuestionsForDifficulty.slice(0, questionsNeededForThisDifficulty)
                 ];
             }
             if (selectedQuestions.length < count) {
@@ -102,11 +101,10 @@ export class QuestionSelector {
                 });
 
                 const filteredAdditional = await this.filterRecentlyAttemptedQuestions(additionalQuestions);
-                const prioritizedAdditional = this.prioritizeQuestions(filteredAdditional);
 
                 selectedQuestions = [
                     ...selectedQuestions,
-                    ...prioritizedAdditional.slice(0, count - selectedQuestions.length)
+                    ...filteredAdditional.slice(0, count - selectedQuestions.length)
                 ];
             }
             return selectedQuestions.slice(0, count);
@@ -179,12 +177,11 @@ export class QuestionSelector {
 
                 // Filter and select questions for this difficulty level
                 const filteredQuestionsForDifficulty = await this.filterRecentlyAttemptedQuestions(questionsForDifficulty);
-                const prioritizedQuestionsForDifficulty = this.prioritizeQuestions(filteredQuestionsForDifficulty);
 
                 // Add questions up to the required count for this difficulty
                 selectedQuestions = [
                     ...selectedQuestions,
-                    ...prioritizedQuestionsForDifficulty.slice(0, questionsNeededForThisDifficulty)
+                    ...filteredQuestionsForDifficulty.slice(0, questionsNeededForThisDifficulty)
                 ];
             }
 
@@ -217,11 +214,10 @@ export class QuestionSelector {
                 });
 
                 const filteredAdditional = await this.filterRecentlyAttemptedQuestions(additionalQuestions);
-                const prioritizedAdditional = this.prioritizeQuestions(filteredAdditional);
 
                 selectedQuestions = [
                     ...selectedQuestions,
-                    ...prioritizedAdditional.slice(0, count - selectedQuestions.length)
+                    ...filteredAdditional.slice(0, count - selectedQuestions.length)
                 ];
             }
 
@@ -308,12 +304,11 @@ export class QuestionSelector {
 
                 // Filter and select questions for this difficulty level
                 const filteredQuestionsForDifficulty = await this.filterRecentlyAttemptedQuestions(questionsForDifficulty);
-                const prioritizedQuestionsForDifficulty = this.prioritizeQuestions(filteredQuestionsForDifficulty);
 
                 // Add questions up to the required count for this difficulty
                 selectedQuestions = [
                     ...selectedQuestions,
-                    ...prioritizedQuestionsForDifficulty.slice(0, questionsNeededForThisDifficulty)
+                    ...filteredQuestionsForDifficulty.slice(0, questionsNeededForThisDifficulty)
                 ];
             }
 
@@ -346,11 +341,10 @@ export class QuestionSelector {
                 });
 
                 const filteredAdditional = await this.filterRecentlyAttemptedQuestions(additionalQuestions);
-                const prioritizedAdditional = this.prioritizeQuestions(filteredAdditional);
 
                 selectedQuestions = [
                     ...selectedQuestions,
-                    ...prioritizedAdditional.slice(0, count - selectedQuestions.length)
+                    ...filteredAdditional.slice(0, count - selectedQuestions.length)
                 ];
             }
 
@@ -399,11 +393,10 @@ export class QuestionSelector {
                 });
 
                 const filteredQuestionsForDifficulty = await this.filterRecentlyAttemptedQuestions(questionsForDifficulty);
-                const prioritizedQuestionsForDifficulty = this.prioritizeQuestions(filteredQuestionsForDifficulty);
 
                 selectedQuestions = [
                     ...selectedQuestions,
-                    ...prioritizedQuestionsForDifficulty.slice(0, questionsNeededForThisDifficulty)
+                    ...filteredQuestionsForDifficulty.slice(0, questionsNeededForThisDifficulty)
                 ];
             }
 
@@ -436,11 +429,10 @@ export class QuestionSelector {
                 });
 
                 const filteredAdditional = await this.filterRecentlyAttemptedQuestions(additionalQuestions);
-                const prioritizedAdditional = this.prioritizeQuestions(filteredAdditional);
 
                 selectedQuestions = [
                     ...selectedQuestions,
-                    ...prioritizedAdditional.slice(0, count - selectedQuestions.length)
+                    ...filteredAdditional.slice(0, count - selectedQuestions.length)
                 ];
             }
 
@@ -486,89 +478,89 @@ export class QuestionSelector {
     }
 
     
-    private prioritizeQuestions(questions: Question[]): Question[] {
-        // Clone the array to avoid modifying the original
-        const prioritizedQuestions = [...questions];
+    // private prioritizeQuestions(questions: Question[]): Question[] {
+    //     // Clone the array to avoid modifying the original
+    //     const prioritizedQuestions = [...questions];
 
-        // Sort by multiple criteria
-        prioritizedQuestions.sort((a, b) => {
-            // First priority: Calculate score based on question attributes
-            const scoreA = this.calculateQuestionScore(a);
-            const scoreB = this.calculateQuestionScore(b);
+    //     // Sort by multiple criteria
+    //     prioritizedQuestions.sort((a, b) => {
+    //         // First priority: Calculate score based on question attributes
+    //         const scoreA = this.calculateQuestionScore(a);
+    //         const scoreB = this.calculateQuestionScore(b);
 
-            // Higher score should come first
-            return scoreB - scoreA;
-        });
+    //         // Higher score should come first
+    //         return scoreB - scoreA;
+    //     });
 
-        return prioritizedQuestions;
-    }
+    //     return prioritizedQuestions;
+    // }
 
     /**
      * Calculate a score for each question to determine its priority
      */
-    private calculateQuestionScore(question: Question): number {
-        let score = 0;
+    // private calculateQuestionScore(question: Question): number {
+    //     let score = 0;
 
-        // Base score from difficulty (weighted by student's grade)
-        const difficultyFactor = this.getDifficultyFactor(question.difficulty);
-        score += difficultyFactor * 10;
+    //     // Base score from difficulty (weighted by student's grade)
+    //     const difficultyFactor = this.getDifficultyFactor(question.difficulty);
+    //     score += difficultyFactor * 10;
 
-        // Bonus for high accuracy questions (if student's grade is low)
-        if (this.grade === 'D' || this.grade === 'C') {
-            score += (question.accuracy || 0) * 5;
-        }
+    //     // Bonus for high accuracy questions (if student's grade is low)
+    //     if (this.grade === 'D' || this.grade === 'C') {
+    //         score += (question. || 0) * 5;
+    //     }
 
-        // Penalty for high accuracy questions (if student's grade is high)
-        if (this.grade === 'A+' || this.grade === 'A') {
-            score -= (question.accuracy || 0) * 3;
-        }
+    //     // Penalty for high accuracy questions (if student's grade is high)
+    //     if (this.grade === 'A+' || this.grade === 'A') {
+    //         score -= (question.accuracy || 0) * 3;
+    //     }
 
-        // Bonus for PYQs
-        if (question.pyqYear) {
-            score += 5;
-        }
+    //     // Bonus for PYQs
+    //     if (question.pyqYear) {
+    //         score += 5;
+    //     }
 
-        // Bonus for questions with hints (for lower grades)
-        if (question.hint && (this.grade === 'D' || this.grade === 'C')) {
-            score += 3;
-        }
+    //     // Bonus for questions with hints (for lower grades)
+    //     if (question.hint && (this.grade === 'D' || this.grade === 'C')) {
+    //         score += 3;
+    //     }
 
-        // Random factor to ensure diversity (±2 points)
-        score += (Math.random() * 4) - 2;
+    //     // Random factor to ensure diversity (±2 points)
+    //     score += (Math.random() * 4) - 2;
 
-        return score;
-    }
+    //     return score;
+    // }
 
     /**
      * Calculate difficulty factor based on student's grade
      */
-    private getDifficultyFactor(questionDifficulty: number): number {
+    // private getDifficultyFactor(questionDifficulty: number): number {
 
-        const gradeMap: Record<string, number[]> = {
-            'A+': [2, 3], // Medium to Hard
-            'A': [2, 3],  // Medium to Hard
-            'B': [1, 2],  // Easy to Medium
-            'C': [1, 2],  // Easy to Medium
-            'D': [1, 1]   // Easy
-        };
+    //     const gradeMap: Record<string, number[]> = {
+    //         'A+': [2, 3], // Medium to Hard
+    //         'A': [2, 3],  // Medium to Hard
+    //         'B': [1, 2],  // Easy to Medium
+    //         'C': [1, 2],  // Easy to Medium
+    //         'D': [1, 1]   // Easy
+    //     };
 
-        const optimalRange = gradeMap[this.grade] || [1, 2]; // Default to Easy-Medium
+    //     const optimalRange = gradeMap[this.grade] || [1, 2]; // Default to Easy-Medium
 
-        // Calculate how close the question difficulty is to the optimal range
-        if (questionDifficulty >= optimalRange[0] && questionDifficulty <= optimalRange[1]) {
-            return 1.0; // Perfect match
-        } else {
-            // Penalty for being outside the optimal range
-            return 1.0 - (0.2 * Math.min(
-                Math.abs(questionDifficulty - optimalRange[0]),
-                Math.abs(questionDifficulty - optimalRange[1])
-            ));
-        }
-    }
+    //     // Calculate how close the question difficulty is to the optimal range
+    //     if (questionDifficulty >= optimalRange[0] && questionDifficulty <= optimalRange[1]) {
+    //         return 1.0; // Perfect match
+    //     } else {
+    //         // Penalty for being outside the optimal range
+    //         return 1.0 - (0.2 * Math.min(
+    //             Math.abs(questionDifficulty - optimalRange[0]),
+    //             Math.abs(questionDifficulty - optimalRange[1])
+    //         ));
+    //     }
+    // }
 
-    /**
-     * Get difficulty levels and categories based on student's grade
-     */
+    // /**
+    //  * Get difficulty levels and categories based on student's grade
+    //  */
     private getSelectionParameters(count: number): { difficulty: number[], categories: QCategory[] } {
 
         const { difficulty } = getDifficultyDistributionByGrade(this.grade, count);
