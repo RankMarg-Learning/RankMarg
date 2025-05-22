@@ -3,7 +3,6 @@ import QuestionUI from '@/components/QuestionUI';
 import { useQuery } from '@tanstack/react-query';
 import QuestionUISkeleton from '@/components/QuestionUISkeleton';
 import { attempDataProps } from '@/types';
-import { useSearchParams } from 'next/navigation';
 import { getQuestionBySlug } from '@/services/question.service';
 import { addAttempt } from '@/services';
 
