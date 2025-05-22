@@ -1,11 +1,14 @@
 'use client';
-export const dynamic = "force-dynamic";
 import { ArrowLeftCircle } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function UnauthorizedPage() {
-  const searchParams = useSearchParams();
-  const from = searchParams.get("from") || "/";
+  const [from, setFrom] = useState("/");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setFrom(params.get("from") || "/");
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white text-center px-4">
