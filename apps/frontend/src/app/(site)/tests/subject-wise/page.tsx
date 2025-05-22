@@ -24,7 +24,7 @@ export interface Test {
 
 const SubjectCard = ({ subject, tests }: { subject: string, tests: Test[] }) => (
   <div className="space-y-4">
-    <h3 className="text-2xl font-semibold">{subject}</h3>
+    <h3 className="text-lg font-semibold">{subject}</h3>
     <div className="space-y-4">
       {tests.length > 0 ? tests.map((test,idx) => (
         <Card key={test.id} className="hover:shadow-lg transition-shadow duration-300 w-full">
@@ -35,7 +35,7 @@ const SubjectCard = ({ subject, tests }: { subject: string, tests: Test[] }) => 
             'bg-purple-100/80'
           } rounded-t-lg p-4 space-y-2`}>
             <div className="flex flex-col space-y-2">
-              <CardTitle className={`text-lg ${
+              <CardTitle className={`text-base ${
                 subject === 'Mathematics' ? 'text-green-800' :
                 subject === 'Physics' ? 'text-blue-800' :
                 subject === 'Biology' ? 'text-red-800' :
@@ -63,7 +63,6 @@ const SubjectCard = ({ subject, tests }: { subject: string, tests: Test[] }) => 
             </div>
             {
               test.hasAttempted ? (
-                //! TODO: change analytics to analysis rename
                 <Link href={`/analysis/${test.testId}`}>
                     <Button className={`w-full bg-gray-600 hover:bg-gray-700 text-white mt-4`}>
                     View Analysis
@@ -76,14 +75,14 @@ const SubjectCard = ({ subject, tests }: { subject: string, tests: Test[] }) => 
               subject === 'Physics' ? 'bg-blue-600 hover:bg-blue-700' :
               subject === 'Biology' ? 'bg-red-600 hover:bg-red-700' :
               'bg-purple-600 hover:bg-purple-700'
-            } text-white mt-4`}>
+            } text-white mt-4 text-sm`}>
               Start Test
             </Button>
               </Link>
             )}
           </CardContent>
         </Card>
-      )) : <div className='text-center text-muted-foreground'>No tests found</div>}
+      )) : <div className='text-center text-muted-foreground text-sm'>No tests found</div>}
     </div>
   </div>
 );
@@ -97,9 +96,9 @@ const SubjectWiseTests = () => {
     }
   }, []);
   const { data: tests, isLoading, error } = useQuery({
-    queryKey: ["tests", "subject-wise"],
+    queryKey: ["tests", "CHAPTER_WISE"],
     queryFn: async () => {
-      const { data } = await axios.get("/api/test/examtype", { params: { examType: "Subject-wise" } });
+      const { data } = await axios.get("/api/test/examtype", { params: { examType: "SUBJECT_WISE" } });
       return data;
     },
   });
@@ -120,7 +119,7 @@ const SubjectWiseTests = () => {
 
   return (
     <div className='min-h-screen mx-auto p-6 max-w-7xl'>
-      <h2 className="text-3xl font-bold mb-8">Subject-wise Tests</h2>
+      <h2 className="text-xl font-bold mb-8">Subject-wise Tests</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="bg-blue-50/50 rounded-lg p-6">
           <SubjectCard key={ 1} subject="Physics" tests={physicsTests} />

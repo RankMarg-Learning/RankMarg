@@ -5,10 +5,17 @@ import { calculateMarks } from '@/utils/test/calculateMarks';
 import { SubmitStatus } from '@prisma/client';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback } from 'react';
 
-export type QuestionType = 'single' | 'multiple' | 'NUM' ;
+export type QuestionType = 'single' | 'multiple' | 'integer';
 export type TestStatus = 'JOIN' | 'STARTED' | 'COMPLETED';
+
+interface SectionConfig {
+  correctMarks: number;
+  negativeMarks: number;
+  isOptional: boolean;
+  maxQuestions: number;
+}
 
 interface SubmissionProps {
   questionId: string;
@@ -24,6 +31,12 @@ interface TestInfo {
   duration: number;
   totalMarks: number;
 }
+interface QuestionData {
+  selectedOptions: number[] | null;
+  status: QuestionStatus;
+  type: QuestionType;
+  submittedAt?: Date;
+}
 
 
 interface TestContextType {
@@ -37,20 +50,10 @@ interface TestContextType {
   currentQuestion: number;
   setCurrentQuestion: (questionNumber: number) => void;
   totalQuestions: number;
-  setQuestionsData: React.Dispatch<React.SetStateAction<Record<number, { selectedOptions: number[] | null; status: QuestionStatus; type: QuestionType; }>>>;
-  questionsData: Record<number, { selectedOptions: number[] | null; status: QuestionStatus; type: QuestionType; }>;
-  testSection: Record<string, {
-    correctMarks: number,
-    negativeMarks: number,
-    isOptional: boolean,
-    maxQuestions: number
-  }>;
-  setTestSection: React.Dispatch<React.SetStateAction<Record<string, {
-    correctMarks: number,
-    negativeMarks: number,
-    isOptional: boolean,
-    maxQuestions: number
-  }>>>;
+  setQuestionsData: React.Dispatch<React.SetStateAction<Record<number, QuestionData>>>;
+  questionsData: Record<number,QuestionData>;
+  testSection: Record<string, SectionConfig>;
+  setTestSection: React.Dispatch<React.SetStateAction<Record<string, SectionConfig>>>;
   isTestComplete: boolean;
   isLoaded: boolean;
   setIsLoaded: React.Dispatch<React.SetStateAction<boolean>>;
@@ -68,26 +71,22 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
   const [testId, setTestId] = useState<string>("");
   const [testInfo, setTestInfo] = useState<TestInfo | null>(null)
   const [isLoaded, setIsLoaded] = useState(true);
-  const [questions, setQuestions] = useState<QuestionWithOptions[]>([]);
-  const [questionsData, setQuestionsData] = useState<
-    Record<number, { selectedOptions: number[] | null; status: QuestionStatus; type: QuestionType;submittedAt?:Date }>
-  >({});
+  const [questions, setQuestionsState] = useState<QuestionWithOptions[]>([]);
+  const [questionsData, setQuestionsData] = useState<Record<number, QuestionData>>({});
   const [currentQuestion, setCurrentQuestion] = useState(1);
   const [isTestComplete, setIsTestComplete] = useState(false);
-  const totalQuestions = questions?.length || 0;
   const [minimizeCount, setMinimizeCount] = useState(0);
-  const [testSection, setTestSection] = useState<Record<string, {
-    correctMarks: number,
-    negativeMarks: number,
-    isOptional: boolean,
-    maxQuestions: number
-  }>>({})
+  const [testSection, setTestSection] = useState<Record<string, SectionConfig>>({})
   const [testStatus, setTestStatus] = useState<TestStatus>("JOIN")
-  
-  console.log("Minimize",minimizeCount)
+
+  const totalQuestions = useMemo(() => questions?.length || 0, [questions]);
+
+  const setQuestions = useCallback((newQuestions: QuestionWithOptions[]) => {
+    setQuestionsState(newQuestions);
+  }, []);
 
   useEffect(() => {
-    if (!testInfo || !questions || !testId || !testSection) {
+    if (!testInfo || !questions.length || !testId || !Object.keys(testSection).length) {
       if (testId) {
         router.push(`/test/${testId}/instructions`);
       } else {
@@ -96,87 +95,152 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [testInfo, questions, testId, testSection, router]);
 
+  useEffect(() => {
+    if (!testInfo?.testId) return;
+    
+    const storedData = sessionStorage.getItem(`questionsData-${testInfo.testId}`);
+    if (storedData) {
+      try {
+        setQuestionsData(JSON.parse(storedData));
+      } catch (error) {
+        console.error("Error parsing stored questions data:", error);
+      }
+    }
+  }, [testInfo?.testId]);
+
+  useEffect(() => {
+    if (!testInfo?.testId || Object.keys(questionsData).length === 0) return;
+    try {
+      sessionStorage.setItem(`questionsData-${testInfo.testId}`, JSON.stringify(questionsData));
+    } catch (error) {
+      console.error("Error saving questions data to sessionStorage:", error);
+      
+    }
+  }, [questionsData, testInfo?.testId]);
+
 
   useEffect(() => {
     if (!isTestComplete) return;
 
     const submitTest = async () => {
       try {
-        const timings = JSON.parse(sessionStorage.getItem(`question_timer_${testInfo.testId}`) || "{}");
-        const remainTimer = JSON.parse(sessionStorage.getItem(`test_timer_${testInfo.testId}`) || "{}");
+        if (!testInfo || !questions.length) {
+          console.error("Missing required data for submission");
+          return;
+        }
 
-        const remainingTimer = testInfo.duration * 60 - remainTimer?.leftTime;
+        let timings = {} as Record<number, number>;
+        let remainTimer: { leftTime?: number } = {};
+        try {
+           timings = JSON.parse(sessionStorage.getItem(`question_timer_${testInfo.testId}`) || "{}");
+           remainTimer = JSON.parse(sessionStorage.getItem(`test_timer_${testInfo.testId}`) || "{}");
+          
+        } catch (error) {
+          console.error("Error parsing sessionStorage data:", error);
+          
+        }
+        const remainingTimer = testInfo.duration * 60 - (remainTimer?.leftTime || 0);
+        
         const counts = {
           cntMarkForReview: 0,
           cntNotAnswered: 0,
           cntAnswered: 0,
           cntAnsweredMark: 0,
         };
-        const mapQuestionStatusToSubmitStatus = (status: QuestionStatus): SubmitStatus => {
+
+        // Create submission data
+        const submissions: SubmissionProps[] = questions.map((question, idx) => {
+          const questionIndex = idx + 1;
+          const questionData = questionsData[questionIndex] || {
+            selectedOptions: null,
+            status: QuestionStatus.NotAnswered,
+            type: question.type,
+            submittedAt: new Date(),
+          };
           
-          switch (status) {
+          const timing = timings[questionIndex] || 0;
+          const answer = JSON.stringify(questionData.selectedOptions);
+          
+          // Track counts and determine submission status
+          if (questionData.status === QuestionStatus.Answered) {
+            counts.cntAnswered++;
+            
+            // Determine if answer is correct
+            let isCorrect = false;
+            if (question.type === "INTEGER") {
+              isCorrect = question.isNumerical === questionData.selectedOptions?.[0];
+            } else {
+              // For single and multiple choice questions
+              isCorrect = questionData.selectedOptions?.every(
+                (index) => question.options[index]?.isCorrect
+              ) || false;
+            }
+            
+            return {
+              questionId: question.id,
+              status: isCorrect ? SubmitStatus.CORRECT : SubmitStatus.INCORRECT,
+              timing,
+              answer,
+              submittedAt: questionData.submittedAt,
+            };
+          }
+          
+          // Handle other question statuses
+          let status: SubmitStatus;
+          switch (questionData.status) {
             case QuestionStatus.NotAnswered:
               counts.cntNotAnswered++;
-              return SubmitStatus.NOT_ANSWERED;
+              status = SubmitStatus.NOT_ANSWERED;
+              break;
             case QuestionStatus.MarkedForReview:
               counts.cntMarkForReview++;
-              return SubmitStatus.MARK_FOR_REVIEW;
+              status = SubmitStatus.MARK_FOR_REVIEW;
+              break;
             case QuestionStatus.AnsweredAndMarked:
               counts.cntAnsweredMark++;
-              return SubmitStatus.ANSWERED_MARK;
+              status = SubmitStatus.ANSWERED_MARK;
+              break;
             default:
-              throw new Error(`Invalid status: ${status}`);
+              status = SubmitStatus.NOT_ANSWERED;
           }
-        };
-        
-        const submission: SubmissionProps[] = questions.map((question, idx) => {
-          const {
-            selectedOptions = [],
-            status = QuestionStatus.NotAnswered,
-            type = question.type,
-            submittedAt
-          } = questionsData[idx + 1] || {};
-          const timing = timings[idx + 1] || 0;
-        
-          if (status === QuestionStatus.Answered) {
-            counts.cntAnswered++;
-            const isCorrectEnum: SubmitStatus = (() => {
-              if (type === "single" || type === "multiple") {
-                const status = selectedOptions.every(
-                  (index) => question.options[index]?.isCorrect
-                );
-                return status ? SubmitStatus.TRUE : SubmitStatus.FALSE;
-              }
-              if (type === "NUM") {
-                const isCorrect = question.isnumerical === selectedOptions[0];
-                return isCorrect ? SubmitStatus.TRUE : SubmitStatus.FALSE;
-              }
-              return SubmitStatus.FALSE;
-            })();
-        
-            return { questionId: question.id, status: isCorrectEnum, timing ,answer:JSON.stringify(selectedOptions),submittedAt };
-          }
-        
-          return { questionId: question.id, status: mapQuestionStatusToSubmitStatus(status), timing,answer:JSON.stringify(selectedOptions),submittedAt };
+          
+          return {
+            questionId: question.id,
+            status,
+            timing,
+            answer,
+            submittedAt: questionData.submittedAt,
+          };
         });
 
-        const marks = calculateMarks(submission, testSection);
+        const marks = calculateMarks(submissions, testSection);
         
-        const response = await axios.post(`/api/test/${testInfo.testId}/submit`, { submission, marks, timing: remainingTimer,counts,minimizeCount });
+        const response = await axios.post(`/api/test/${testInfo.testId}/submit`, {
+          submissions,
+          marks,
+          timing: remainingTimer,
+          counts,
+          minimizeCount
+        });
+
         if (response.status === 200) {
+          // Handle test completion
           const testEndTime = new Date(response.data.TestEnd);
-            const currentTime = new Date();
-            if (currentTime < testEndTime) {
-              router.push(`/tests/thank-you`)
-                
+          const currentTime = new Date();
+          
+          if (currentTime < testEndTime) {
+            router.push(`/tests/thank-you`);
+          } else {
+            try {
+              await document.exitFullscreen();
+            } catch (error) {
+              console.log("Could not exit fullscreen:", error);
             }
-            else{
-              document.exitFullscreen();
-              router.push(`/analysis/${testId}`)
-            }
+            router.push(`/analysis/${testId}`);
+          }
+          
           sessionStorage.clear();
         }
-
       } catch (error) {
         console.error("Error submitting test:", error);
         if (error.response) {
@@ -230,7 +294,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
         testSection,
         setTestSection,
         isTestComplete,
-        
+
       }}
     >
       {children}

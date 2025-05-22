@@ -1,13 +1,13 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "../../auth/[...nextauth]/options"
+
 import prisma from "@/lib/prisma"
 import { ActivityType } from "@/constant/activities";
+import { getAuthSession } from "@/utils/session";
 
 
 
 export async function GET(){
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getAuthSession()
     if (!session) {
       return new Response("User not found", { status: 404 });
     }
@@ -15,7 +15,7 @@ export async function GET(){
   const userEmail = session.user?.email
     const user = await prisma.user.findUnique({
       where: { email: userEmail },
-      select: { id: true, name: true, username: true, phone: true, standard: true, Location: true, avatar: true },
+      select: { id: true, name: true, username: true, phone: true, standard: true, location: true, avatar: true,targetYear:true,email:true, studyHoursPerDay:true },
     })
     return new Response(JSON.stringify(user),{status:200})
   } catch (error) {
@@ -25,13 +25,14 @@ export async function GET(){
 }
 
 export async function PUT(req: Request) {
+  const updates = await req.json();
+  console.log(updates)
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getAuthSession()
     if (!session) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const updates = await req.json();
     const userEmail = session.user?.email
     
     // Get current user data to check for empty fields
@@ -88,7 +89,7 @@ export async function PUT(req: Request) {
     
     return new Response(JSON.stringify({ ...user, coinsAwarded: coinsToAdd }), { status: 200 })
   } catch (error) {
-    console.error("[Profile-Update] :", error);
+    console.error("[Profile-Update] :", error.message);
     return new Response("Internal Server Error", { status: 500 });
   }
 }

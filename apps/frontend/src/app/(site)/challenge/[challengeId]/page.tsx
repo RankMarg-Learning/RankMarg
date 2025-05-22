@@ -2,7 +2,7 @@
 
 import ChallengeOver from "@/components/challenge/challengeOver";
 import Loading from "@/components/Loading";
-import QuestionUI from "@/components/QuestionUI";
+// import QuestionUI from "@/components/QuestionUI";
 import { useSocket } from "@/hooks/useSocket";
 import { DetailsProps, QuestionProps } from "@/types";
 import axios from "axios";
@@ -82,7 +82,7 @@ const ChallengePage = ({params}:{params:{challengeId:string}}) => {
  const [attempts, setAttempts] = useState([]);
  const question = questions[currentQuestionIndex];
 
- const handleAttempt = async(attemptData:attempDataProps) => {
+  async(attemptData:attempDataProps) => {
   try {
      await axios.post('/api/attempts', attemptData);
      
@@ -132,7 +132,7 @@ const getButtonColor = (index:number) => {
         !isOver ? (
       question && start ? (
         <>
-          <QuestionUI question={question} handleAttempt={handleAttempt} />
+          {/* <QuestionUI question={question} handleAttempt={handleAttempt} /> */}
           <div className="sticky bottom-0 bg-white p-4 flex justify-center space-x-4">
             {/* Map question numbers */}
             {questions.map((_, index) => (

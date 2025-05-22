@@ -6,16 +6,18 @@ const QuestionUISkeleton = () => {
       {/* Navbar */}
       
 
-      <div className="flex flex-wrap md:flex-row flex-1 p-4 bg-white shadow-lg rounded-lg overflow-hidden">
+      <div className="flex flex-wrap md:flex-row flex-1 p-4  rounded-lg overflow-hidden">
         {/* Left side: Question */}
         <div className="w-full md:w-1/2 p-6 border-b md:border-b-0 md:border-r">
           <h1 className="text-2xl font-bold mb-4">
             <Skeleton className="h-8 w-32" /> {/* Skeleton for question title */}
           </h1>
-          <div className="flex flex-wrap space-x-2 items-center my-3">
+          <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
             <Skeleton className="h-6 w-16" /> {/* Skeleton for difficulty badge */}
+            <div className="flex items-center gap-2">
             <Skeleton className="h-6 w-32" /> {/* Skeleton for subject badge */}
             <Skeleton className="h-6 w-24" /> {/* Skeleton for class badge */}
+            </div>
           </div>
           <Skeleton className="h-52 w-full" /> {/* Skeleton for question content */}
         </div>

@@ -1,5 +1,3 @@
-import ClientSessionProvider from "@/context/ClientSessionProvider"
-import QueryProvider from "@/context/QueryContext"
 import { TestProvider } from "@/context/TestContext"
 
 export const metadata = {
@@ -13,13 +11,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <ClientSessionProvider>
-      <QueryProvider> 
         <TestProvider>   
         {children}
         </TestProvider>
-      </QueryProvider>
-    </ClientSessionProvider>
   )
 }
 

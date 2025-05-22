@@ -1,14 +1,13 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
-import { ActivityType, TEST_SUBMIT } from "@/constant/activities";
 import prisma from "@/lib/prisma";
-import { SubmitStatus } from "@prisma/client";
+import { AttemptType, SubmitStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 
 
 
 export async function POST(req: Request, { params }: { params: { testId: string } }) {
   const { testId } = params;
-  const { submission, marks, timing,counts,minimizeCount } = await req.json();
+  const { submissions, marks, timing,counts,minimizeCount } = await req.json();
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
@@ -34,24 +33,27 @@ export async function POST(req: Request, { params }: { params: { testId: string 
     if (!participation) {
       return new Response("Unauthorized", { status: 401 });
     }
-    const answeredQuestions = submission.filter(q => 
-      q.status === SubmitStatus.TRUE || q.status === SubmitStatus.FALSE
+    const answeredQuestions = submissions.filter(q => 
+      q.status === SubmitStatus.CORRECT || q.status === SubmitStatus.INCORRECT
     );
-    const correctAnswers = submission.filter(q => q.status === SubmitStatus.TRUE);
+    const correctAnswers = submissions.filter(q => q.status === SubmitStatus.CORRECT);
     const accuracy = answeredQuestions.length > 0 
       ? (correctAnswers.length / answeredQuestions.length) * 100 
       : 0;
-    const submissionsToStore = submission.map((answer) => ({
-      participationId: participation.id,
-      testId: participation.testId,
-      questionId: answer.questionId,
-      timing: answer.timing,
-      status: answer.status,
+    const submissionsToStore = submissions.map((submission) => ({
+      userId: session.user.id,
+      testParticipationId: participation.id,
+      questionId: submission.questionId,
+      type: AttemptType.TEST,
+      answer: submission.answer,
+      timing: submission.timing || 0,
+      reactionTime: submission.timing ? submission.timing * 0.8 : 0,
+      solvedAt: submission.submittedAt,
+      status: submission.status,
     }));
 
-    
 
-    await prisma.testSubmission.createMany({
+    await prisma.attempt.createMany({
       data: submissionsToStore,
     });
 
@@ -72,14 +74,7 @@ export async function POST(req: Request, { params }: { params: { testId: string 
         cntMinmize: minimizeCount
       },
     });
-    await prisma.activity.create({
-      data: {
-        userId: session.user.id,
-        type:ActivityType.MISSION,
-        message: TEST_SUBMIT,
-        earnCoin: 5,
-      },
-    })
+    
     await prisma.user.update({
       where: {
         id: session.user.id,

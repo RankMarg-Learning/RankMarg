@@ -5,9 +5,9 @@ export type TestWithIncludes = Prisma.TestParticipationGetPayload<{
     include: {
         test: {
             include: {
-                TestSection: {
+                testSection: {
                     include: {
-                        TestQuestion: {
+                        testQuestion: {
                             include: {
                                 question: {
                                     select: {
@@ -24,9 +24,9 @@ export type TestWithIncludes = Prisma.TestParticipationGetPayload<{
                 }
             }
         }
-        TestSubmission: {
+        attempt: {
             include: {
-                Question: {
+                question: {
                     select: {
                         id: true
                         slug: true
@@ -123,6 +123,11 @@ export interface SectionCTiming {
         correct:number
         incorrect:number
     }
+    very_hard:{
+        total:number
+        correct:number
+        incorrect:number
+    }
   }
   
   export interface AnalysisSectionD {
@@ -136,7 +141,7 @@ export interface SectionCTiming {
     slug:string
     subject:string
     topic:string
-    difficulty:string
+    difficulty:number
     status:'correct' | 'incorrect' | 'unattempted'
     timeTaken:number
   }

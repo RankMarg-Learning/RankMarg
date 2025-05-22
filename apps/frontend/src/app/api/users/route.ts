@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
-import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
+import { jsonResponse } from "@/utils/api-response";
 
 const userSchema = z.object({
   fullname: z.string().min(1, "Full name is required"),
@@ -18,15 +18,14 @@ export async function POST(req: Request) {
   const result = userSchema.safeParse(body);
 
   if (!result.success) {
-    return NextResponse.json({ message: result.error.errors[0].message }, { status: 400 });
+    return jsonResponse(null, { success: false, message: result.error.errors[0].message, status: 400 });
   }
-
   const { fullname, username, email, password } = result.data;
 
   try {
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return NextResponse.json({ message: "User already exists" }, { status: 400 });
+      return jsonResponse(null, { success: false, message: "Email already exists", status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -43,27 +42,19 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ message: "User created" });
+    return jsonResponse(null, { success: true, message: "User created successfully", status: 201 });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
+    return jsonResponse(null, { success: false, message: "Internal Server Error", status: 500 });
   }
 }
 
-// Username availability check
-export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const username = url.searchParams.get("username");
-
-  if (!username) {
-    return NextResponse.json({ message: "Username is required" }, { status: 400 });
-  }
-
+export async function GET() {
   try {
-    const user = await prisma.user.findUnique({ where: { username } });
-    return NextResponse.json({ available: !user });
+    const user = await prisma.user.findMany()
+    return jsonResponse(user, { success: true, message: "User fetched successfully", status: 200 });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
+    return jsonResponse(null, { success: false, message: "Internal Server Error", status: 500 });
   }
 }

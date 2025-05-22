@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CircleCheck } from 'lucide-react';
 import axios from 'axios';
-import { QuestionSetProps } from '@/types';
 import {
   Pagination,
   PaginationContent,
@@ -18,10 +17,11 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { getDifficultyLabel } from '@/utils/getDifficultyLabel';
 
 const getQuestionsBySubjectAndTopic = async (subject: string, topic: string) => {
   const decodedTopic = decodeURLParam(topic);
-  const response = await axios.get<QuestionSetProps>(`/api/question?subject=${subject.charAt(0).toUpperCase() + subject.slice(1)}&topic=${decodedTopic}`);
+  const response = await axios.get(`/api/question?subject=${subject.charAt(0).toUpperCase() + subject.slice(1)}&topic=${decodedTopic}`);
   if (!response) {
     throw new Error('Network response was not ok');
   }
@@ -32,7 +32,7 @@ const TopicList = ({ params }: { params: { subject: string, topic: string } }) =
   const { subject, topic } = params
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
-  const { data, isLoading, error } = useQuery({
+  const { data:questions, isLoading, error } = useQuery({
     queryKey: ['questions', subject, topic],
     queryFn: () => getQuestionsBySubjectAndTopic(subject, topic),
   })
@@ -46,16 +46,16 @@ const TopicList = ({ params }: { params: { subject: string, topic: string } }) =
   };
 
   const handleNext = () => {
-    if (data?.totalPages && currentPage < data.totalPages) {
+    if (questions?.data?.totalPages && currentPage < questions?.data.totalPages) {
       setCurrentPage((prev) => prev + 1);
     }
   };
   if (error) return <div>Error loading questions</div>
 
   return (
-    <main className="min-h-screen bg-gray-100 py-12 px-4 sm:px-2 lg:px-8">
+    <main className="min-h-screen  py-3 px-4 sm:px-2 lg:px-8">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">
+        <h1 className="text-lg font-semibold text-center text-gray-900 mb-8">
           {decodeURLParam(topic)}
         </h1>
         <div className="overflow-x-auto">
@@ -78,19 +78,19 @@ const TopicList = ({ params }: { params: { subject: string, topic: string } }) =
                     </TableRow>
                   ))
                   :
-                  data?.questionSet.length > 0 ?
-                    data?.questionSet.map((question) => (
+                  questions?.data?.questions.length > 0 ?
+                  questions?.data?.questions.map((question) => (
                       <TableRow
                         key={question.id}
                         className="cursor-pointer hover:bg-gray-100 transition-colors hover:text-gray-900"
                         onClick={() => router.push(`/question/${question.slug}`)}
                       >
                         <TableCell className="font-medium">{question.attempts.length > 0 ? (<CircleCheck className="text-green-400" />) : ("")}</TableCell>
-                        <TableCell>{question.title}</TableCell>
+                        <TableCell className='truncate'>{question.title}</TableCell>
                         <TableCell>
                           <Badge
                             variant={
-                              question.difficulty as
+                              getDifficultyLabel(question?.difficulty) as
                               | "default"
                               | "Easy"
                               | "Medium"
@@ -102,7 +102,7 @@ const TopicList = ({ params }: { params: { subject: string, topic: string } }) =
                               | undefined
                             }
                           >
-                            {question.difficulty}
+                            {getDifficultyLabel(question?.difficulty)}
                           </Badge>
                         </TableCell>
                       </TableRow>
@@ -123,19 +123,19 @@ const TopicList = ({ params }: { params: { subject: string, topic: string } }) =
             <PaginationItem>
               <PaginationPrevious
                 className={cn(
-                  "gap-1 px-2 py-1 text-sm sm:text-base",
+                  "gap-1 px-2 py-1 text-sm ",
                   currentPage === 1 && "cursor-not-allowed opacity-50"
                 )}
                 onClick={handlePrevious}
               />
             </PaginationItem>
 
-            {data?.totalPages && (
+            {questions?.data?.totalPages && (
               <>
                 {/* First Page */}
                 <PaginationItem>
                   <PaginationLink
-                    className="px-2 py-1 text-sm sm:text-base"
+                    className="px-2 py-1 text-sm "
                     onClick={() => handlePageClick(1)}
                   >
                     1
@@ -148,10 +148,10 @@ const TopicList = ({ params }: { params: { subject: string, topic: string } }) =
                 )}
 
                 {/* Current Page */}
-                {currentPage !== 1 && currentPage !== data.totalPages && (
+                {currentPage !== 1 && currentPage !== questions?.data.totalPages && (
                   <PaginationItem>
                     <PaginationLink
-                      className="px-2 py-1 text-sm sm:text-base font-semibold"
+                      className="px-2 py-1 text-sm  font-semibold"
                       onClick={() => handlePageClick(currentPage)}
                     >
                       {currentPage}
@@ -160,17 +160,17 @@ const TopicList = ({ params }: { params: { subject: string, topic: string } }) =
                 )}
 
                 {/* Ellipsis if current page is far from the last page */}
-                {currentPage < data.totalPages - 1 && (
+                {currentPage < questions?.data.totalPages - 1 && (
                   <PaginationEllipsis className="text-gray-500" />
                 )}
 
                 {/* Last Page */}
                 <PaginationItem>
                   <PaginationLink
-                    className={`px-2 py-1 text-sm sm:text-base ${data.totalPages === 1 ? "hidden" : ""}`}
-                    onClick={() => handlePageClick(data.totalPages)}
+                    className={`px-2 py-1 text-sm  ${questions?.data.totalPages === 1 ? "hidden" : ""}`}
+                    onClick={() => handlePageClick(questions?.data.totalPages)}
                   >
-                    {data.totalPages}
+                    {questions?.data.totalPages}
                   </PaginationLink>
                 </PaginationItem>
               </>
@@ -180,8 +180,8 @@ const TopicList = ({ params }: { params: { subject: string, topic: string } }) =
             <PaginationItem>
               <PaginationNext
                 className={cn(
-                  "gap-1 px-2 py-1 text-sm sm:text-base",
-                  currentPage === data?.totalPages && "cursor-not-allowed opacity-50"
+                  "gap-1 px-2 py-1 text-sm ",
+                  currentPage === questions?.data?.totalPages && "cursor-not-allowed opacity-50"
                 )}
                 onClick={handleNext}
               />

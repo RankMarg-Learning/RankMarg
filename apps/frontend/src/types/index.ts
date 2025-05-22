@@ -1,6 +1,9 @@
-import { Question } from "@prisma/client";
+import { ClassEnum, Question, QuestionFormat, QuestionType, Stream } from "@prisma/client";
 
 export * from "./typeAPI";
+export * from "./mastery.api.types"
+export * from "./test.types";
+export * from "./performance.types";
 
 
 export type QuestionWithOptions = Question & {
@@ -21,15 +24,16 @@ export interface Userprops {
 export interface QuestionProps {
   id: string;
   slug: string;
-  type: "MCQ" | "NUM" ;
+  type: QuestionType;
   content: string;
-  difficulty: string;
-  topic: string;
+  difficulty: number;
+  topic: {id:string,name:string};
   subject: string;
-  class: string;
+  class: ClassEnum;
   tag?: string;
+  hint?:string;
   options: Option[];
-  isnumerical?: number;
+  isNumerical?: number;
   attempts: Attempt[];
   solution?:string;
   challenge: ChallengeProps[];
@@ -67,6 +71,7 @@ export interface ChallengeProps {
   updatedAt: Date;
 }
 
+//===NOT IN USE ===//
 export interface ContributeFormProps {
   slug: string;
   title: string;
@@ -89,28 +94,37 @@ export interface ContributeFormProps {
 
 
 export interface QuestionTableProps {
-  id: string,
-  slug: string,
-  title: string,
-  content: string,
-  difficulty: string,
-  topic: string,
-  subject: string,
-  class: string,
-  questionTime: number,
-  tag: string,
-  accuracy: string,
-  createdAt: string,
-  attempts: Attempt[],
+  id: string;
+  title:string;
+  slug: string;
+  type: QuestionType;
+  format: QuestionFormat
+  content: string;
+  difficulty: number;
+  class: ClassEnum;
+  stream: Stream
+  pyqYear: string;
+  createdBy: string;
+  createdAt: string;
+  attempts: { id: string }[]; 
+  topic: {
+    name: string;
+  };
+  subTopic: {
+    name: string;
+  };
+  subject: {
+    name: string;
+  };
 }
 
 
-export interface QuestionSetProps {
-  questionSet: QuestionTableProps[];
-  currentPage: number;
-  totalPages: number;
-  totalItems: number;
-}
+// export interface QuestionSetProps {
+//   questionSet: QuestionTableProps[];
+//   currentPage: number;
+//   totalPages: number;
+//   totalItems: number;
+// }
 
 export type PlayerDetails = {
   id: string;
@@ -129,41 +143,50 @@ export type DetailsProps = {
   status: string;
 };
 
-import { Prisma } from '@prisma/client';
+//====IN USE====//
+export interface attempDataProps {
+  questionId: string;
+  answer:string;
+  timing: number;
+  isCorrect: boolean;
+  reactionTime?:number;
+  isHintUsed:boolean;
+}
 
-export type ChallengeWithDetails = Prisma.ChallengeGetPayload<{
-  select: {
-    challengeId: true;
-    player1Id: true;
-    player2Id: true;
-    status: true;
-    result: true;
-    ChallengeQuestion: {
-      select: {
-        question: true,
-      }
-    },
-    player1: {
-      select: {
-        id: true;
-        username: true;
-        avatar: true;
-        rank: true;
-      };
-    };
-    player2: {
-      select: {
-        id: true;
-        username: true;
-        avatar: true;
-        rank: true;
-      };
-    };
-    player1Score: true;
-    player2Score: true;
-    attemptByPlayer1: true;
-    attemptByPlayer2: true;
-    endedAt: true;
-    createdAt: true;
-  };
-}>;
+
+// export type ChallengeWithDetails = Prisma.ChallengeGetPayload<{
+//   select: {
+//     challengeId: true;
+//     player1Id: true;
+//     player2Id: true;
+//     status: true;
+//     result: true;
+//     ChallengeQuestion: {
+//       select: {
+//         question: true,
+//       }
+//     },
+//     player1: {
+//       select: {
+//         id: true;
+//         username: true;
+//         avatar: true;
+//         rank: true;
+//       };
+//     };
+//     player2: {
+//       select: {
+//         id: true;
+//         username: true;
+//         avatar: true;
+//         rank: true;
+//       };
+//     };
+//     player1Score: true;
+//     player2Score: true;
+//     attemptByPlayer1: true;
+//     attemptByPlayer2: true;
+//     endedAt: true;
+//     createdAt: true;
+//   };
+// }>;

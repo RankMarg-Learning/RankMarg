@@ -9,8 +9,8 @@ export async function generateMetadata({ params }: { params: { testId: string } 
   };
 }
 
-const TestAnalytics = ({params}:{params:{testId:string}}) => {
-    const {testId} = params
+const TestAnalytics = ({ params }: { params: { testId: string } }) => {
+  const { testId } = params
   return (
     <TestAnalysisPage testId={testId} />
   )

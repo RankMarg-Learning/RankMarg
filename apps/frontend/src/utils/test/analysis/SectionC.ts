@@ -18,14 +18,13 @@ export const SectionC = (test: TestWithIncludes): AnalysisSectionC => {
           ];
 
     const questionTimings: SectioncQuestionTiming[] = [];
+    
 
-    // Process each submission
-    test.TestSubmission.forEach((submission, index) => {
+    test.attempt.forEach((submission, index) => {
         const questionNumber = `Q${index + 1}`;
         const timing = submission.timing || 0;
-        const subject = submission.Question.subject.toLowerCase();
+        const subject = submission.question.subject.name.toLowerCase();
 
-        // Add to section total
         const sectionIndex = sectionTimings.findIndex(
             section => section.name.toLowerCase() === subject
         );

@@ -35,10 +35,10 @@ const LeaderboardPage = ({ params }: { params: { testId: string } }) => {
     return `${hrs > 0 ? `${hrs}h ` : ""}${mins > 0 ? `${mins}m ` : ""}${secs}s`;
   }
 
-  const userIndex = entries[0]?.TestParticipation?.findIndex(
+  const userIndex = entries[0]?.testParticipation?.findIndex(
     (entry) => entry.user.username === localStorage.getItem("username")
   );
-  const currentUser = userIndex !== -1 ? entries[0]?.TestParticipation[userIndex] : null;
+  const currentUser = userIndex !== -1 ? entries[0]?.testParticipation[userIndex] : null;
 
   return (
     <div className="md:p-8 p-2 py-10 bg-background min-h-screen">
@@ -76,7 +76,7 @@ const LeaderboardPage = ({ params }: { params: { testId: string } }) => {
               </TableRow>
             )}
             {!isLoading ? (
-              entries[0]?.TestParticipation.map((entry, idx) => (
+              entries[0]?.testParticipation.map((entry, idx) => (
                 <TableRow key={idx + 1} className={`${entry.user.username === localStorage.getItem("username") ? 'hidden' : ''}`}>
                   <TableCell className="sticky left-0 bg-white font-medium">{idx + 1}</TableCell>
                   <TableCell className="sticky left-[100px] bg-white">

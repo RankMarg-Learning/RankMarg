@@ -6,7 +6,7 @@ export interface SubmissionProps {
     timing: number;
   }
   
-  export interface TestSection {
+  export interface testSection {
     correctMarks: number;
     negativeMarks: number;
     isOptional: boolean;
@@ -15,7 +15,7 @@ export interface SubmissionProps {
   
   export const calculateMarks = (
     submissions: SubmissionProps[],
-    testSections: Record<string, TestSection>
+    testSections: Record<string, testSection>
   ): number => {
     let totalMarks = 0;
   
@@ -35,8 +35,8 @@ export interface SubmissionProps {
       const sectionSubmissions = submissions.slice(start - 1, end);
   
       // Count correct and incorrect answers
-      const correctAnswers = sectionSubmissions.filter((s) => s.status === "TRUE").length;
-      const incorrectAnswers = sectionSubmissions.filter((s) => s.status === "FALSE").length;
+      const correctAnswers = sectionSubmissions.filter((s) => s.status === "CORRECT").length;
+      const incorrectAnswers = sectionSubmissions.filter((s) => s.status === "INCORRECT").length;
   
       // Apply maxQuestions rule if the section is optional
       const effectiveCorrectAnswers = isOptional

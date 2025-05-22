@@ -1,5 +1,6 @@
 import { PasswordResetEmail } from '@/constant/passwordResetEmail';
 import prisma from '@/lib/prisma';
+import { jsonResponse } from '@/utils/api-response';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
@@ -12,13 +13,13 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
       const body = await req.json();
       const { email } = body;
       if (!email) {
-        return Response.json({ msg: 'Email is required.' });
+        return jsonResponse(null, { success: false, message: "Email is required", status: 400 });
       }
 
   
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user) {
-        return Response.json({ msg: 'No user found with this email.' });
+        return jsonResponse(null, { success: false, message: "No user found", status: 404 });
       }
 
     
@@ -44,9 +45,9 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
       subject: 'Password Reset',
       html: PasswordResetEmail(resetUrl),
     });
-    return Response.json({ msg: 'Password reset email sent.' });
+    return jsonResponse(null, { success: true, message: "Ok", status: 200 });
   } catch (error) {
     console.error(error);
-    return Response.json({ msg: 'Internal server error.' });
+    return jsonResponse(null, { success: false, message: "Internal Server Error", status: 500 });
   }
 }
