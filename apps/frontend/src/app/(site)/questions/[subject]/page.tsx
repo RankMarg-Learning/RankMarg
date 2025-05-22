@@ -1,3 +1,4 @@
+import { SubjectCardColor } from '@/constant/SubjectColorCode'
 import { filterData } from '@/constant/topics'
 import Link from 'next/link'
 import React from 'react'
@@ -21,12 +22,32 @@ const SubjectList = ({ params }: { params: { subject: string } }) => {
 
     return (
         <div className="py-10 m-auto">
-            <h1 className="text-3xl sm:text-4xl font-bold mb-6 mx-2">{capitalizedSubject} Topics</h1>
+            <h1 className="text-lg  font-medium mb-6 mx-2">{capitalizedSubject} Topics</h1>
             <div className='grid md:grid-cols-3 gap-3 mx-2' >
                 {topics.map((topic) => (
-                    <Link href={`/questions/${subject}/${topic}`} key={topic} className="cursor-pointer ">
-                        <div className="flex justify-between items-center border border-gray-300 rounded-md p-4 hover:bg-yellow-100 transition">
-                            <span className="text-sm sm:text-base">{topic}</span>
+                    <Link href={`/questions/${subject}/${topic}`} key={topic} className="cursor-pointer">
+                        <div
+                            className={`
+                                flex justify-between items-center border rounded-md p-2 transition-all duration-300
+                                hover:ring-1 hover:ring-offset-1 
+                                ${
+                                  SubjectCardColor[subject as keyof typeof SubjectCardColor] || SubjectCardColor.default
+                                }
+                                ${
+                                  subject === "physics"
+                                    ? "hover:ring-purple-400"
+                                    : subject === "chemistry"
+                                    ? "hover:ring-amber-400"
+                                    : subject === "mathematics"
+                                    ? "hover:ring-blue-400"
+                                    : subject === "biology"
+                                    ? "hover:ring-green-400"
+                                    : "hover:ring-gray-300"
+                                }
+                              `}
+                                
+                        >
+                            <span className="text-sm ">{topic}</span>
                         </div>
                     </Link>
                 ))}

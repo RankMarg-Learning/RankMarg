@@ -10,9 +10,10 @@ export const metadata: Metadata = {
 
 const QuestionSet = () => {
   return (
-    <main className="flex flex-col items-start gap-4 p-4 my-2 sm:px-6 sm:py-0 md:gap-8">
+    <main >
       {/* <RandomQuestion  /> */}
-      <Questionset />
+      <Questionset 
+      />
     </main>
   )
 }

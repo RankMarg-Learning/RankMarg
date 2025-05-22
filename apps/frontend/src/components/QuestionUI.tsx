@@ -1,133 +1,171 @@
 "use client";
-import React, { useEffect, useState } from 'react'
-import { Badge } from './ui/badge'
+import React, { useEffect, useState, useMemo } from 'react'
 import { Button } from './ui/button'
 import MarkdownRenderer from '@/lib/MarkdownRenderer'
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { QuestionProps } from '@/types';
+import { attempDataProps, QuestionProps } from '@/types';
 import Options from './Options';
+import { BookOpen } from 'lucide-react';
+import { getDifficultyLabel } from '@/utils/getDifficultyLabel';
+import Motion from './ui/motion';
+import Timer from './Timer';
 
-
-interface attempDataProps {
-  questionId: string;
-  userId: string;
-  isCorrect: boolean;
-  selectedOptions: number[];
-}
-
-interface QuestionShowProps extends Omit<QuestionProps, "challenge" | "attempts" | "createdAt"> { }
-
+interface QuestionShowProps extends Omit<QuestionProps, "attempts" | "createdAt"> { }
 
 interface QuestionUIProps {
   question: QuestionShowProps;
-  isSolutionShow?: string;
+  isSolutionShow?: boolean;
   handleAttempt: (attemptData: attempDataProps) => void;
+  answer?: string | null; 
 }
-
-const QuestionUI = ({ question, handleAttempt,isSolutionShow }: QuestionUIProps) => {
+const QuestionUI = ({ 
+  question, 
+  handleAttempt, 
+  isSolutionShow = false, 
+  answer 
+}: QuestionUIProps) => {
   const { data: session } = useSession();
   const router = useRouter();
-  const { toast } = useToast()
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
+  const { toast } = useToast();
+  
+  // Check if question is already answered
+  const isAnswered = useMemo(() => Boolean(answer) || isSolutionShow, [answer, isSolutionShow]);
+  
+  // Parse previous answer if available
+  const initialSelectedValues = useMemo(() => {
+    if (!answer) return [];
+    if (question.type === "INTEGER") return [];
+    return answer.split(',').map(Number).filter(n => !isNaN(n));
+  }, [answer, question.type]);
+  
+  const initialNumericalValue = useMemo(() => {
+    if (!answer || question.type !== "INTEGER") return null;
+    const num = Number(answer);
+    return isNaN(num) ? null : num;
+  }, [answer, question.type]);
+  
+  // State management
+  const [selectedValues, setSelectedValues] = useState<number[]>(initialSelectedValues);
+  const [numericalValue, setNumericalValue] = useState<number | null>(initialNumericalValue);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [ActiveCooldown, setActiveCooldown] = useState<number>(isSolutionShow ? 0 : question?.ActiveCooldown);
+  const [isHintUsed, setIsHintUsed] = useState(false);
+  const [isRunning, setIsRunning] = useState(!isAnswered);
+  const [time, setTime] = useState(0);
+  const [reactionTime, setReactionTime] = useState(0);
 
+  // Reset state when question or answer changes
+  useEffect(() => {
+    if (question.type === "INTEGER") {
+      if (answer) {
+        const num = Number(answer);
+        setNumericalValue(!isNaN(num) ? num : null);
+      } else {
+        setNumericalValue(null);
+      }
+      setSelectedValues([]);
+    } else {
+      if (answer) {
+        setSelectedValues(answer.split(',').map(Number).filter(n => !isNaN(n)));
+      } else {
+        setSelectedValues([]);
+      }
+      setNumericalValue(null);
+    }
+    
+    setIsHintUsed(false);
+    setIsRunning(!isAnswered);
+    setTime(0);
+    setReactionTime(0);
+    setIsSubmitting(false);
+  }, [question.id, question.type, answer, isAnswered]);
+
+  // Compute correct options only once
+  const correctOptions = useMemo(() => {
+    if (!isAnswered || !question.options) return [];
+    return question.options
+      .map((option, index) => ({ ...option, index }))
+      .filter((option) => option.isCorrect)
+      .map((option) => option.index);
+  }, [isAnswered, question.options]);
+
+  // Track reaction time
+  useEffect(() => {
+    if (!isAnswered && selectedValues.length === 0 && numericalValue === null) {
+      setReactionTime(time);
+    }
+  }, [time, selectedValues, numericalValue, isAnswered]);
+
+  // Handlers
+  const handleSelectionChange = (values: number[]) => {
+    if (isAnswered) return;
+    setSelectedValues(values);
+  };
+
+  const handleNumericalChange = (value: number | null) => {
+    if (isAnswered) return;
+    setNumericalValue(value);
+  };
+
+  const handleShowHint = () => {
+    setIsHintUsed(true);
+  };
 
   const checkIfSelectedIsCorrect = () => {
-    if (!question.options) {
-      return false;
+    if (!question.options) return false;
+    
+    if (question.type === "INTEGER") {
+      return question.isNumerical === numericalValue;
     }
-    if (selectedOptions.length > 0) {
-
-      return selectedOptions.every((index) => question.options[index].isCorrect);
-    } else {
-      if (selectedOption === null) {
-        return false; // No selection
-      }
-     
-
-      if (question.type === "NUM") {
-        return question.isnumerical === selectedOption;
-      }
-
-      return question.options[selectedOption].isCorrect;
-    }
-
+    
+    const correctIndices = question.options
+      .map((opt, idx) => (opt.isCorrect ? idx : null))
+      .filter((idx) => idx !== null) as number[];
+      
+    return selectedValues.length === correctIndices.length &&
+      selectedValues.every((index) => correctIndices.includes(index));
   };
-
-
-  useEffect(() => {
-    if (ActiveCooldown > 0) {
-      const timer = setTimeout(() => {
-        setActiveCooldown(ActiveCooldown - 1);
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [ActiveCooldown]);
-
-  const formatTime = (seconds: number) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
-
-
 
   const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!session) {
-      router.push('/sign-in')
+      router.push('/sign-in');
       return;
     }
+    
+    setIsRunning(false);
     setIsSubmitting(true);
-    setTimeout(() => {
-      setSelectedOption(null)
-      setSelectedOptions([])
-      setIsSubmitting(false)
-      setActiveCooldown(86400)
-    }, 2000);
 
     const isCorrect = checkIfSelectedIsCorrect();
+    const answerStr = question.type === "INTEGER" 
+      ? numericalValue?.toString() || "" 
+      : selectedValues.toString();
+      
     const attemptData = {
-      questionId: question.id, 
-      userId: session?.user?.id,
-      isCorrect: isCorrect,
-      selectedOptions
-
+      questionId: question.id,
+      isCorrect,
+      answer: answerStr,
+      timing: time,
+      isHintUsed,
+      reactionTime
     };
-    if (isCorrect) {
-      toast({
-        title: "Correct Answer",
-        description: "Your answer was correct.",
-        variant: "success",
-        duration: 1000
-      }
-      );
-    }
-    else {
-      toast({
-        title: "Incorrect Answer",
-        description: "Try Next Time!",
-        variant: "destructive",
-        duration: 1000
-      });
-    }
+    
+    toast({
+      title: isCorrect ? "Correct Answer" : "Incorrect Answer",
+      description: isCorrect ? "Your answer was correct." : "Try Next Time!",
+      variant: isCorrect ? "success" : "destructive",
+      duration: 1000
+    });
 
     handleAttempt(attemptData);
+  };
 
-    // setSelectedOption(null);
-    // setSelectedOptions([]);
-
-  }
-  const receiverEmail = 'support@rankmarg.in';
-  const subject = `Report: ${question?.slug}`;
-  const body = `Hello,
+  // Memoize report email data
+  const reportData = useMemo(() => ({
+    email: 'support@rankmarg.in',
+    subject: `Report: ${question?.slug}`,
+    body: `Hello,
 
 I would like to report an issue with the following question:
 
@@ -141,116 +179,136 @@ Thank you for your assistance.
 
 Best regards,
 [Your Name]
-`;
+`
+  }), [question?.id, question?.slug]);
+
   const handleReport = () => {
-    const mailtoLink = `mailto:${receiverEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const mailtoLink = `mailto:${reportData.email}?subject=${encodeURIComponent(reportData.subject)}&body=${encodeURIComponent(reportData.body)}`;
     window.location.href = mailtoLink;
   };
 
-
   return (
     <div className="min-h-[calc(100vh-120px)] flex flex-col bg-white" id="fullscreen">
-      {/* Navbar */}
-
-      <div className="flex flex-wrap md:flex-row flex-1 p-4   rounded-lg overflow-hidden  ">
+      <div className="flex flex-wrap md:flex-row flex-1 p-4 rounded-lg overflow-hidden border-b">
         {/* Left side: Question */}
-        {/* <form action=""></form> */}
-        <div className="w-full md:w-1/2 p-6 border-b md:border-b-0 md:border-r ">
-          <h1 className="text-2xl font-bold mb-4 ">Question</h1>
-          <div className=" flex flex-wrap space-x-2 items-center my-3 space-y-1 ">
-           
-            <Badge variant={"Medium"}>{question?.difficulty}</Badge>
-            <Badge
-              variant="secondary"
-            >
-              <span>Subject:</span>
-              {question?.subject}
-            </Badge>
-            <Badge
-              variant="secondary"
-            >
-              <span>Class:</span>
-              {question?.class}
-            </Badge>
-            <Badge
-              variant="Hard"
-              className="cursor-pointer"
-              onClick={handleReport}
-            >
-              Report
-            </Badge>
-          </div>
-          <div className='noselect'>
-            <MarkdownRenderer content={question?.content} />
-          </div>
+        <div className="w-full md:w-1/2 p-6 border-b md:border-b-0 md:border-r">
+          <h1 className="text-xl font-bold mb-4">Question</h1>
 
-
-        </div>
-
-
-        {/* Right side: Options */}
-        <div className="w-full md:w-1/2 p-6 relative noselect">
-          {ActiveCooldown > 0 && (
-            <div className="absolute inset-0 flex items-center justify-center text-yellow-600  bg-opacity-80  font-bold z-10">
-              <div className='flex flex-col justify-center items-center'>
-                Cooldown: {formatTime(ActiveCooldown)}
-
-                <div className="text-red-400 text-center text-sm">
-                  ⚠️ You must wait until the cooldown ends before answering again.
-                </div>
-              </div>
-            </div>
+          {/* Timer - Hidden when answered */}
+          {!isAnswered && (
+            <Timer 
+              time={time}
+              isRunning={isRunning}
+              onTimeChange={setTime}
+              className="bg-blue-500 text-white text-base hidden" 
+            />
           )}
 
-          <div className={ActiveCooldown > 0 ? "blur-sm  pointer-events-none" : ""}>
-            <Options
-              type={question?.type}
-              options={question?.options}
-              selectedOption={selectedOption}
-              selectedOptions={selectedOptions}
-              setSelectedOption={setSelectedOption}
-              setSelectedOptions={setSelectedOptions}
-              correctOptions={isSolutionShow ? (question?.options
-                ?.map((option, index) => ({ ...option, index })) // Add index to each option
-                .filter((option) => option.isCorrect) // Filter correct options
-                .map((option) => option.index)) : (isSubmitting ? (question?.options
-                ?.map((option, index) => ({ ...option, index })) // Add index to each option
-                .filter((option) => option.isCorrect) // Filter correct options
-                .map((option) => option.index)) : [])}
-            />
-
-            {question?.type === "NUM" && (isSubmitting || isSolutionShow)  && (
-              <div className={`flex flex-wrap space-x-2 mt-4 ${selectedOption === question?.isnumerical ? 'text-green-500' : 'text-red-500'}`}>
-                Correct Answer: {question?.isnumerical}
-              </div>
-            )}
-
-            <form onSubmit={handleOnSubmit} className={`${isSolutionShow ? `hidden` : `block`} mt-4`}>
-              <Button type="submit" className="mt-4">Submit</Button>
-            </form>
+          {/* Question metadata */}
+          <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
+            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+              {question?.topic?.name}
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">
+                {getDifficultyLabel(question?.difficulty)}
+              </span>
+              <span 
+                className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium flex items-center gap-1 hover:underline cursor-pointer"
+                onClick={handleReport}
+              >
+                Report
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div className="flex flex-wrap md:flex-1 justify-between">
-          
-        </div>
-        {isSolutionShow && (question?.solution ? (
-           <div className="w-full p-6 border-t mt-4">
-           <h2 className="text-xl font-bold mb-2">Solution</h2>
-           <MarkdownRenderer content={question?.solution} />
-         </div>
-          
-        ): (
-          <div className="w-full p-6 border-t mt-4">
-            <span>Solution is not available</span>
+          {/* Question content */}
+          <div className='noselect'>
+            <MarkdownRenderer content={question?.content} className='text-base' />
           </div>
-        ))}
+
+          {/* Hint button - only shown when not answered and hint not used */}
+          {!isAnswered && !isHintUsed && (
+            <Button 
+              variant="link" 
+              className="text-sm mt-2" 
+              onClick={handleShowHint}
+            >
+              Show Hint
+            </Button>
+          )}
+        </div>
+        
+        {/* Right side: Options */}
+        <div className="w-full md:w-1/2 p-6 relative noselect">
+          <Options 
+            isAnswered={isAnswered || isSubmitting}
+            type={question.type} 
+            options={question.options || []} 
+            selectedValues={selectedValues} 
+            onSelectionChange={handleSelectionChange} 
+            numericalValue={numericalValue} 
+            onNumericalChange={handleNumericalChange} 
+            correctOptions={correctOptions} 
+            correctNumericalValue={question.isNumerical}
+          />
+
+          {/* Submit button - only when not answered */}
+          {!isAnswered && (
+            <div className="flex justify-center mt-4 gap-2">
+              <form onSubmit={handleOnSubmit}>
+                <Button 
+                  type="submit"
+                  disabled={(question.type === "INTEGER" ? numericalValue === null : selectedValues.length === 0) || isSubmitting}
+                >
+                  Submit Answer
+                </Button>
+              </form>
+            </div>
+          )}
+        </div>
       </div>
+      
+      {/* Hint section */}
+      {!isAnswered && isHintUsed && (
+        <Motion animation='fade-in' className="w-full p-2">
+          <div className="mt-4 p-3 sm:p-4 bg-yellow-50 rounded-lg border border-yellow-100">
+            <div className="flex items-start gap-2 mb-1">
+              <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 mt-0.5" />
+              <h3 className="font-medium text-yellow-900 text-sm sm:text-base">Hint</h3>
+            </div>
+            <div className="text-xs sm:text-sm text-yellow-800">
+              {question?.hint ? (
+                <MarkdownRenderer content={question?.hint} className='text-sm' />
+              ) : (
+                <span className='text-sm'>Hint is not available</span>
+              )}
+            </div>
+          </div>
+        </Motion>
+      )}
 
+      {/* Solution section - only when answered */}
+      {isAnswered && (
+        <Motion animation='fade-in' className="w-full p-2">
+          <div className="mt-4 p-3 sm:p-4 bg-purple-50 rounded-lg border border-purple-100">
+            <div className="flex items-start gap-2 mb-1">
+              <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 mt-0.5" />
+              <h3 className="font-medium text-purple-900 text-sm sm:text-base">Detailed Solution</h3>
+            </div>
+            <div className="text-xs sm:text-sm text-purple-800">
+              <h4 className="font-medium mt-2 mb-2">Step-by-Step Analysis</h4>
+              {question?.solution ? (
+                <MarkdownRenderer content={question?.solution} className='text-sm' />
+              ) : (
+                <span className='text-sm'>Solution is not available</span>
+              )}
+            </div>
+          </div>
+        </Motion>
+      )}
     </div>
-  )
-}
+  );
+};
 
-
-
-export default QuestionUI
+export default React.memo(QuestionUI);

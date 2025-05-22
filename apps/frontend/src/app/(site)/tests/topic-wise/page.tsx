@@ -3,6 +3,7 @@ import TypeWiseTestsSkeleton from '@/components/test/TypeWiseTestsSkeleton';
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { ExamType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { HelpCircle, Clock } from 'lucide-react'
@@ -26,7 +27,7 @@ export interface Test {
 
 const SubjectCard = ({ subject, tests }: { subject: string, tests: Test[] }) => (
   <div className="space-y-4">
-    <h3 className="text-2xl font-semibold">{subject}</h3>
+    <h3 className="text-lg font-semibold">{subject}</h3>
     <div className="space-y-4">
       {tests.length > 0 ? tests.map((test,idx) => (
         <Card key={idx} className="hover:shadow-lg transition-shadow duration-300 w-full">
@@ -37,7 +38,7 @@ const SubjectCard = ({ subject, tests }: { subject: string, tests: Test[] }) => 
             'bg-purple-100/80'
           } rounded-t-lg p-4 space-y-2`}>
             <div className="flex flex-col space-y-2">
-              <CardTitle className={`text-lg ${
+              <CardTitle className={`text-base ${
                 subject === 'Mathematics' ? 'text-green-800' :
                 subject === 'Physics' ? 'text-blue-800' :
                 subject === 'Biology' ? 'text-red-800' :
@@ -99,9 +100,9 @@ const TopicWiseTests = () => {
     }
   }, []);
   const { data: tests, isLoading, error } = useQuery({
-    queryKey: ["tests", "topic-wise"],
+    queryKey: ["tests", "CHAPTER_WISE"],
     queryFn: async () => {
-      const { data } = await axios.get("/api/test/examtype", { params: { examType: "Topic-wise" } });
+      const { data } = await axios.get("/api/test/examtype", { params: { examType: ExamType.CHAPTER_WISE } });
       return data;
     },
   });
@@ -123,7 +124,7 @@ const TopicWiseTests = () => {
 
   return (
     <div className='min-h-screen mx-auto p-6 max-w-7xl'>
-      <h2 className="text-3xl font-bold mb-8">Topic-wise Tests</h2>
+      <h2 className="text-lg font-bold mb-8">Topic-wise Tests</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="bg-blue-50/50 rounded-lg p-6">
           <SubjectCard subject="Physics" tests={physicsTests} />

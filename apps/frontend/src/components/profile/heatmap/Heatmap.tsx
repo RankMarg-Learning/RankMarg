@@ -25,7 +25,7 @@ function Heatmap({ attempts }: { attempts: Date[] }) {
     };
 
     const allDays = generateDateRange(daysToShow);
-    attempts.forEach((attempt) => {
+    attempts?.forEach((attempt) => {
       const date = new Date(attempt).toISOString().split("T")[0];
       allDays[date] = (allDays[date] || 0) + 1;
     });

@@ -9,6 +9,7 @@ import Link from 'next/link';
 
 interface MarkdownRendererProps {
   content: string;
+  className?: string;
 }
 
 function extractDimensions(url: string) {
@@ -22,9 +23,9 @@ function extractDimensions(url: string) {
   };
 }
 
-const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
+const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content,className }) => {
   return (
-    <div className="prose max-w-none">
+    <div className={`prose max-w-none ${className} prose-p:m-0 prose-ul:m-0 prose-li:m-0 prose-pre:m-0 prose-blockquote:m-0`}>
       <ReactMarkdown
         remarkPlugins={[remarkMath,remarkGfm]}
         rehypePlugins={[rehypeKatex]}

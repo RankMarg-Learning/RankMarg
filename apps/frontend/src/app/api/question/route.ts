@@ -1,61 +1,73 @@
 import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
-import { ContributeFormProps } from "@/types";
-import { QuestionType, Stream } from "@prisma/client";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/options";
+import { ClassEnum, Prisma, QuestionType, Stream } from "@prisma/client";
+import { QCategory, Question } from "@/types/typeAdmin";
+import { jsonResponse } from "@/utils/api-response";
+import { SubmitStatus } from "@prisma/client";
+import { getAuthSession } from "@/utils/session";
 
 interface WhereClauseProps {
-  subject?: string;
-  difficulty?: string;
-  tag?: string;
-  topic?: string;
+  subjectId?: string;
+  topicId?: string;
+  subtopicId?: string;
+  difficulty?: number;
+  category?: Prisma.QuestionCategoryListRelationFilter;
   stream?: Stream;
+  class?: ClassEnum;
+  pyqYear?: string;
   isPublished?: boolean;
   type?: QuestionType;
-  OR?: Array<{ content?: { contains: string; mode: "insensitive" } } | { topic?: { contains: string; mode: "insensitive" } } | { title?: { contains: string; mode: "insensitive" } }>;
+  OR?: Array<Prisma.QuestionWhereInput>;
 }
 
 export async function GET(req: Request) {
   const limit = 25;
   const { searchParams } = new URL(req.url);
-  const page = parseInt(searchParams.get("page") || "1", 10);
-  const subject = searchParams.get("subject");
-  const difficulty = searchParams.get("difficulty");
-  const tags = searchParams.get("tags");
-  const search = searchParams.get("search");
-  const topic = searchParams.get("topic");
-  const type = searchParams.get("type") as QuestionType;
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+  const subjectId = searchParams.get("subjectId");
+  const topicId = searchParams.get("topicId");
+  const subtopicId = searchParams.get("subtopicId");
+  const difficulty = parseInt(searchParams.get("difficulty") , 10);
+  const category = searchParams.get("category") as QCategory;
+  const className = searchParams.get("class") as ClassEnum;
+  const pyqYear = searchParams.get("pyqYear");
   const stream = searchParams.get("stream") as Stream;
-  const isPublished = searchParams.get("isPublished") === "true" ? false : true;
+  const type = searchParams.get("type") as QuestionType;
+  const search = searchParams.get("search");
+  const isPublished = searchParams.get("isPublished") === "true";
   const skip = (page - 1) * limit;
 
   try {
     const whereClause: WhereClauseProps = {};
-    if (subject) whereClause.subject = subject;
+
+    
+    if (subjectId) whereClause.subjectId = subjectId;
+    if (topicId) whereClause.topicId = topicId;
+    if (subtopicId) whereClause.subtopicId = subtopicId;
     if (difficulty) whereClause.difficulty = difficulty;
-    if (tags) whereClause.tag = tags;
+    if (category) {
+      whereClause.category = {
+        some: {
+          category: category, 
+        },
+      };
+    }
+    if (className) whereClause.class = className;
+    if (pyqYear) whereClause.pyqYear = pyqYear;
+    if (stream) whereClause.stream = stream;
+    if (type) whereClause.type = type;
+    
     if (search) {
       whereClause.OR = [
         { content: { contains: search, mode: "insensitive" } },
-        { topic: { contains: search, mode: "insensitive" } },
-        { title: { contains: search, mode: "insensitive" } },
+        { topic: { name: { contains: search, mode: "insensitive" } } },
+        { subTopic: { name: { contains: search, mode: "insensitive" } } },
       ];
     }
-    if (topic) {
-      whereClause.topic = topic;
-    }
-    if (stream) {
-      whereClause.stream = stream;
-    }
-    if (type) {
-      whereClause.type = type;
-    }
+    
+    const session = await getAuthSession()
+    let userID = session?.user?.id || "default-user-id";
 
-    const session = await getServerSession(authOptions);
-    let userID =  "shihsihihi";
-    if (isPublished) {
-      userID = session?.user?.id;
+    if (isPublished !== undefined) {
       whereClause.isPublished = isPublished;
     }
 
@@ -64,110 +76,128 @@ export async function GET(req: Request) {
         where: whereClause,
         select: {
           id: true,
-          slug: true,
           title: true,
+          slug: true,
+          type: true,
+          format: true,
           content: true,
           difficulty: true,
-          topic: true,
-          subject: true,
+          isPublished:true,
           class: true,
-          tag: true,
-          accuracy: true,
+          stream: true,
+          
+          pyqYear: true,
+          createdBy: true,
           createdAt: true,
           attempts: {
-            where: {
-              userId: userID,
-              isCorrect: true
-            },
+            where: { userId: userID, status: SubmitStatus.CORRECT }, // TODO: WATCHDOG 
+            select: { id: true },
+          },
+          topic: {
+            select: {  name: true },
+          },
+          subTopic: {
+            select: {  name: true },
+          },
+          subject: {
+            select: {  name: true },
           },
         },
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),
       prisma.question.count({ where: whereClause }),
     ]);
 
-    const totalPages = Math.ceil(total / limit);
+    const currentPage = Math.ceil(total / limit);
 
-    return NextResponse.json(
-      {
-        questionSet: questions,
-        currentPage: page,
-        totalPages,
-        totalItems: total,
-      },
-      { status: 200 }
-    );
+    return jsonResponse(
+      { questions, currentPage, totalPages:total },
+      { success: true, message: "Ok", status: 200 }
+    )
   } catch (error) {
     console.error("[Question]:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return jsonResponse(null, {
+      success: false,
+      message: "Internal Server Error",
+      status: 500,
+    });
+    
   }
 }
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const formState: ContributeFormProps = body;
+  const questionData: Question = body;
   try {
     if (
-      !formState.stream ||
-      !formState.title ||
-      !formState.slug ||
-      !formState.questionType ||
-      !formState.content ||
-      !formState.difficulty ||
-      !formState.subject ||
-      !formState.std ||
-      !formState.topicTitle
+      !questionData.stream ||
+      !questionData.slug ||
+      !questionData.type ||
+      !questionData.content ||
+      !questionData.difficulty ||
+      !questionData.subjectId ||
+      !questionData.class ||
+      !questionData.topicId
     ) {
-      return NextResponse.json({ error: "Missing required fields" });
+      return jsonResponse(
+        null,
+        { success: false, message: "Missing required fields", status: 400 }
+      )
     }
 
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return new Response("Unauthorized", { status: 401 });
-    }
+    
+    // if (!session?.user?.id) {
+    //   return new Response("Unauthorized", { status: 401 });
+    // }
 
 
     const question = await prisma.question.create({
       data: {
-        slug: formState.slug,
-        title: formState.title,
-        type: formState.questionType,
-        content: formState.content,
-        difficulty: formState.difficulty,
-        topic: formState.topicTitle,
-        createdBy: session.user.id,
-        subject: formState.subject,
-        hint: formState.hint,
-        stream: formState.stream,
-        category:formState.category,
-        subtopic:formState.subTopic,
-        class: formState.std,
-        solution: formState.solution,
-        tag: formState.tag,
-        questionTime: formState.questionTime,
-        isnumerical: formState.numericalAnswer,
+        slug: questionData.slug, 
+        title:questionData.title,
+        content: questionData.content,
+        type: questionData.type,
+        format: questionData.format,
+        difficulty: questionData.difficulty,
+        class: questionData.class,
+        stream: questionData.stream,
+        subjectId: questionData.subjectId,
+        topicId: questionData.topicId,
+        subtopicId:questionData.subtopicId as string | undefined,
+        category:{
+          create: questionData.category.map((category: QCategory) => ({
+            category: category,})),
+          },
+        
+        pyqYear: questionData.pyqYear,
+        book:questionData.book,
+        hint: questionData.hint,
+        solution: questionData.solution,
+        commonMistake:questionData.commonMistake,
+        questionTime: questionData.questionTime,
+        isNumerical: questionData.isNumerical,
+        isPublished:questionData.isPublished,
+        createdBy: "session.user.id", //!session.user.id ? "default-user-id" : session.user.id,
         options: {
-          create: formState.options?.map((option) => ({
+          create: questionData.options?.map((option) => ({
             content: option.content,
             isCorrect: option.isCorrect,
           })),
         },
 
         createdAt: new Date(),
-      },
+      }  as Prisma.QuestionUncheckedCreateInput,
     });
     // console.log(question);
 
     if (!question) {
-      return NextResponse.json({ error: "Failed to create question" });
+      return jsonResponse(null,{status:500,message:"Question not created",success:false})
     }
-    return NextResponse.json({ message: "Question created successfully" });
+    return jsonResponse(null,{status:200,message:"Ok",success:true})
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ message: err });
+    return jsonResponse(null, {success:false,message:"Internal Server Error",status:500})
   }
 }

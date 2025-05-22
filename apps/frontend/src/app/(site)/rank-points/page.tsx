@@ -25,17 +25,10 @@ export default function RankPoints() {
     const totalPoints = activities?.reduce((sum, activity) => sum + activity.earnCoin, 0)
 
     return (
-        <div className="w-full h-screen">
             <div className="flex flex-col md:flex-row">
-                {/* Left Ad Space */}
-                <div className="hidden md:block md:w-1/5 p-4 ">
-                    <div className="bg-gray-200 h-full rounded-lg  items-center justify-center hidden">
-                        <span className="text-gray-500">Ad Space</span>
-                    </div>
-                </div>
 
                 {/* Main Content */}
-                <div className="w-full md:w-3/5 p-6 space-y-6">
+                <div className="w-full  p-6 space-y-6">
                     <div className="flex justify-end items-center gap-2 text-sm text-gray-600">
                         <Badge variant="outline" className="text-yellow-600  py-1">
                             Your Points:
@@ -75,14 +68,7 @@ export default function RankPoints() {
                     </div>
                 </div>
 
-                {/* Right Ad Space */}
-                <div className="hidden md:block md:w-1/5 p-4">
-                    <div className="bg-gray-200 h-full rounded-lg hidden items-center justify-center">
-                        <span className="text-gray-500">Ad Space</span>
-                    </div>
-                </div>
             </div>
-        </div>
     )
 }
 

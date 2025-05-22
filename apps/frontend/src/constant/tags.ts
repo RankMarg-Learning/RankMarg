@@ -1,4 +1,4 @@
-export const Tags = [
+export const PYQ_Year = [
     "Default",
     "PYQ-2025",
     "PYQ-2024",

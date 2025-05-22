@@ -4,18 +4,18 @@ export const SectionB = (test: TestWithIncludes): AnalysisSectionB => {
 
     const totalQuestions = test.test.totalQuestions
 
-    const submissions = test.TestSubmission;
-    const correct = submissions.filter(sub => sub.status === 'TRUE').length;
-    const incorrect = submissions.filter(sub => sub.status === 'FALSE').length;
+    const submissions = test.attempt;
+    const correct = submissions.filter(sub => sub.status === 'CORRECT').length;
+    const incorrect = submissions.filter(sub => sub.status === 'INCORRECT').length;
     const unattempted = totalQuestions - (correct + incorrect);
 
     const difficultyAnalysis = submissions.reduce((acc: Record<"Easy" | "Medium" | "Hard", { total: number, correct: number }>, sub) => {
-        const difficulty = sub.Question.difficulty;
+        const difficulty = sub.question.difficulty;
         if (!acc[difficulty]) {
             acc[difficulty] = { total: 0, correct: 0 };
         }
         acc[difficulty].total++;
-        if (sub.status === 'TRUE') {
+        if (sub.status === 'CORRECT') {
             acc[difficulty].correct++;
         }
         return acc;

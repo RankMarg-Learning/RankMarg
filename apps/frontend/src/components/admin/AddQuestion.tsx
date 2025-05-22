@@ -2,7 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import React, {  useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SelectFilter from "@/components/SelectFilter";
 import { Button } from "@/components/ui/button";
@@ -27,12 +27,11 @@ import { generateSlug } from "@/lib/generateSlug";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Tags } from "@/constant/tags";
+import { PYQ_Year } from "@/constant/tags";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import { Checkbox } from "../ui/checkbox";
 import { z } from "zod";
 import { Switch } from "@/components/ui/switch";
-import { QuestionCategory } from "@/constant/QuestionCategory";
 
 const QuestionFormSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -62,7 +61,7 @@ const Contribute = () => {
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.Role === "USER") {
+    if (status === "authenticated" && session?.user?.role === "USER") {
       router.replace("/"); // Redirect to home page
     }
   }, [session, status, router]);
@@ -91,7 +90,7 @@ const Contribute = () => {
   const [category, setCategory] = useState("");
   const [questionType, setQuestionType] = useState("MCQ");
   const [solution, setSolution] = useState("");
-  const [subTopic,setSubTopic] = useState("");
+  const [subTopic, setSubTopic] = useState("");
   const [msg, setMsg] = useState("");
   const [showSolution, setShowSolution] = useState(false);
 
@@ -254,56 +253,56 @@ const Contribute = () => {
             </div>
           </div>
           <div className="flex flex-wrap  mb-3 w-full">
-          <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-          <label
-              className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-              htmlFor="grid-last-name"
-            >
-              Sub Topic*
-            </label>
-            <Input
-              required
-              type="text"
-              className="mb-2"
-              placeholder="Sub Topic"
-              value={subTopic}
-              name="Sub Topic"
-              onChange={(e) => setSubTopic(e.target.value)}
-            />
-          </div>
-          <div className="w-full md:w-1/2 px-3">
-            
-            <SelectFilter
-              label="Category*"
-              width={"full"}
-              placeholder="Category"
-              selectName={QuestionCategory}
-              onChange={(value: string[]) => setCategory(value[0])}
-            />
-          </div>
+            <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+              <label
+                className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                htmlFor="grid-last-name"
+              >
+                Sub Topic*
+              </label>
+              <Input
+                required
+                type="text"
+                className="mb-2"
+                placeholder="Sub Topic"
+                value={subTopic}
+                name="Sub Topic"
+                onChange={(e) => setSubTopic(e.target.value)}
+              />
+            </div>
+            <div className="w-full md:w-1/2 px-3">
+
+              <SelectFilter
+                label="Category*"
+                width={"full"}
+                placeholder="Category"
+                selectName={["Physics", "Chemistry", "Mathematics", "Biology"]}
+                onChange={(value: string[]) => setCategory(value[0])}
+              />
+            </div>
           </div>
           <div className="flex flex-wrap  mb-3 w-full">
-          <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-            <SelectFilter
-              label="Difficulty*"
-              width={"full"}
-              placeholder="Difficulty"
-              selectName={["Easy", "Medium", "Hard"]}
-              onChange={(value: string[]) => setDifficulty(value[0])}
-            />
+            <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+              <SelectFilter
+                label="Difficulty*"
+                width={"full"}
+                placeholder="Difficulty"
+                selectName={["Easy", "Medium", "Hard"]}
+                onChange={(value: string[]) => setDifficulty(value[0])}
+              />
 
+            </div>
+            <div className="w-full md:w-1/2 px-3">
+              <SelectFilter
+                label="Tags"
+                width={"full"}
+                placeholder="Tags"
+                selectName={PYQ_Year}
+                onChange={(value: string[]) => setTag(value[0])}
+              />
+            </div>
           </div>
-          <div className="w-full md:w-1/2 px-3">
-            <SelectFilter
-              label="Tags"
-              width={"full"}
-              placeholder="Tags"
-              selectName={Tags}
-              onChange={(value: string[]) => setTag(value[0])}
-            />
-          </div>
-          </div>
-          
+
           <div className="w-full m-2">
             <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
               htmlFor="grid-last-name">Hints</Label>
