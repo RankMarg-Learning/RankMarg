@@ -1,9 +1,6 @@
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
-import { getAuthSession } from "@/utils/session";
 import { endOfDay, startOfDay } from "date-fns";
-import { NextApiRequest } from "next";
-import jwt from "jsonwebtoken";
 
 // Improved type definitions
 export type SessionType = "all" | "individual" | "today";
@@ -40,7 +37,7 @@ function calculateAccuracy(correct: number, total: number): number {
     return total > 0 ? Math.round((correct / total) * 100) : 0;
 }
 
-export async function GET(req: NextApiRequest) {
+export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const type = (searchParams.get("_type") || "all") as SessionType;
     const userId = searchParams.get("id");
@@ -50,10 +47,7 @@ export async function GET(req: NextApiRequest) {
     const subtopicLimit = searchParams.get("_subtopic_limit") ? parseInt(searchParams.get("_subtopic_limit")!) : 3;
 
     try {
-        const token = req.cookies["next-auth.session-token"];
-        const secret = process.env.NEXTAUTH_SECRET;
-        const jwtoken = jwt.verify(token, secret);
-        console.log("Decoded JWT:", jwtoken);
+        
 
         // // Authentication check
         // const session = await getAuthSession();
