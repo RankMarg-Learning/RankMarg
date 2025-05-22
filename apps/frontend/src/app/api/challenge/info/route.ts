@@ -22,6 +22,8 @@ type ResponseData = {
     userStats: UserStats;
     // recentChallenges: recentChallenges[];
 };
+export const dynamic = "force-dynamic";
+
 
 export async function GET() {
     try {
