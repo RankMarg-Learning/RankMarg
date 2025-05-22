@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
