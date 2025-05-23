@@ -6,6 +6,7 @@ import QuestionUI from './QuestionUI';
 import { attempDataProps } from '@/types';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
+import Loading from './Loading';
 
 const AiPracticeSession = ({ sessionId }: { sessionId: string }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -20,20 +21,17 @@ const AiPracticeSession = ({ sessionId }: { sessionId: string }) => {
         if (session?.data?.attempts) {
             const attemptedIds = session.data.attempts.map(attempt => attempt.questionId);
             setAttemptedQuestions(attemptedIds);
+            
+            const questions = session.data.questions || [];
+            const firstUnattemptedIndex = questions.findIndex(
+                q => !attemptedIds.includes(q.question.id)
+            );
+            
+            if (firstUnattemptedIndex !== -1) {
+                setCurrentQuestionIndex(firstUnattemptedIndex);
+            }
         }
     }, [session]);
-
-    if (!session?.success) {
-        return (
-            <div className="flex justify-center items-center h-screen">
-                <h1 className="text-2xl font-bold text-red-500">{session?.message}</h1>
-            </div>
-        )
-    }
-
-    if (isLoading) {
-        return <div className="flex justify-center items-center h-screen">Loading......</div>
-    }
 
     const questions = session?.data?.questions || [];
     const currentQuestion = questions[currentQuestionIndex]?.question;
@@ -75,6 +73,18 @@ const AiPracticeSession = ({ sessionId }: { sessionId: string }) => {
             console.error(error);
         }
     };
+
+    if (isLoading) {
+        return <Loading/>
+    }
+
+    if (!session?.success) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <h1 className="text-2xl font-bold text-red-500">{session?.message}</h1>
+            </div>
+        )
+    }
 
     return (
         <div className="container mx-auto ">

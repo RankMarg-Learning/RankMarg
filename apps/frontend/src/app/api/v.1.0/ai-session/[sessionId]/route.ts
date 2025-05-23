@@ -11,7 +11,6 @@ export async function GET(req: Request, { params }: { params: { sessionId: strin
             return jsonResponse(null, { success: false, message: "Unauthorized", status: 401 });
         }
         
-
         const practiceSession = await prisma.practiceSession.findUnique({
             where: {
                 id: sessionId,
@@ -41,14 +40,35 @@ export async function GET(req: Request, { params }: { params: { sessionId: strin
                 attempts: true,
             }
         });
+
         if (!practiceSession) {
             return jsonResponse(null, { success: false, message: "Practice session not found", status: 404 });
         }
-        return jsonResponse(practiceSession, { success: true, message: "Practice session retrieved successfully", status: 200 });
+
+        // Get attempted question IDs
+        const attemptedQuestionIds = practiceSession.attempts.map(attempt => attempt.questionId);
+        
+        // Separate unattempted and attempted questions
+        const unattemptedQuestions = practiceSession.questions.filter(
+            q => !attemptedQuestionIds.includes(q.question.id)
+        );
+        const attemptedQuestions = practiceSession.questions.filter(
+            q => attemptedQuestionIds.includes(q.question.id)
+        );
+        
+        // Arrange questions: unattempted first, then attempted
+        const arrangedQuestions = [...unattemptedQuestions, ...attemptedQuestions];
+        
+        // Update the practice session object with arranged questions
+        const arrangedPracticeSession = {
+            ...practiceSession,
+            questions: arrangedQuestions
+        };
+
+        return jsonResponse(arrangedPracticeSession, { success: true, message: "Ok", status: 200 });
 
     } catch (error) {
         console.log("[AiPracticeSession-Dynamic] :", error);
         return jsonResponse(error, { success: false, message: "Internal Server Error", status: 500 });
-
     }
 }

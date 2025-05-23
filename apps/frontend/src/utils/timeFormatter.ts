@@ -9,9 +9,9 @@ interface FormatTimeOptions {
  * Converts time from one unit to a composite format like [hr, min] or [min, sec]
  * @param value Numeric input (e.g., 90)
  * @param options { from: 'min', to: ['hr', 'min'] }
- * @returns string like "1 hr 30 min"
+ * @returns string like "1 hr 30 min", skips 0 values
  */
-export function formatTimeToCompositeUnits(value: number, options: FormatTimeOptions): string {
+export function timeFormator(value: number, options: FormatTimeOptions): string {
     const inSeconds = {
         sec: 1,
         min: 60,
@@ -27,7 +27,6 @@ export function formatTimeToCompositeUnits(value: number, options: FormatTimeOpt
     // Convert input to seconds
     let totalSeconds = value * inSeconds[from];
 
-    // Extract higher unit
     const firstUnitSeconds = inSeconds[to[0]];
     const secondUnitSeconds = inSeconds[to[1]];
 
@@ -36,5 +35,9 @@ export function formatTimeToCompositeUnits(value: number, options: FormatTimeOpt
 
     const secondValue = Math.floor(totalSeconds / secondUnitSeconds);
 
-    return `${firstValue} ${to[0]} ${secondValue} ${to[1]}`;
+    const parts: string[] = [];
+    if (firstValue > 0) parts.push(`${firstValue} ${to[0]}`);
+    if (secondValue > 0) parts.push(`${secondValue} ${to[1]}`);
+
+    return parts.join(' ') || `0 ${to[1]}`;
 }
