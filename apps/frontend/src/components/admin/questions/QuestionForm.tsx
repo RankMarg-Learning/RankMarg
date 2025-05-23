@@ -44,7 +44,7 @@ interface QuestionFormProps {
 }
 export const questionSchema = z.object({
   slug: z.string().optional(),
-  title:z.string().min(5, "Title must be at least 5 characters long"),
+  title: z.string().min(5, "Title must be at least 5 characters long"),
   content: z.string().min(10, "Question content must be at least 10 characters long"),
   type: z.enum(Object.values(QuestionType) as [string, ...string[]]),
   format: z.enum(
@@ -56,16 +56,16 @@ export const questionSchema = z.object({
   topicId: z.string().min(1, "Topic is required"),
   subtopicId: z.string().min(1, "Subtopic is required"),
   category: z
-  .array(z.nativeEnum(QCategory))
-  .min(1, "At least one category is required"),
+    .array(z.nativeEnum(QCategory))
+    .min(1, "At least one category is required"),
   pyqYear: z.string().optional(),
   book: z.string().optional(),
   hint: z.string().optional(),
   solution: z.string().min(1, "Solution is required"),
   commonMistake: z.string().optional(),
   questionTime: z.number().min(1, "Time to answer must be at least 1 minute"),
-  isNumerical:  z.preprocess(
-    (val) => (val === "" || val === undefined ? undefined : Number(val)), 
+  isNumerical: z.preprocess(
+    (val) => (val === "" || val === undefined ? undefined : Number(val)),
     z.number().optional()
   ),
   isPublished: z.boolean().default(false),
@@ -129,9 +129,8 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
     }
   }, [initialQuestion, reset]);
 
- 
 
- 
+
   useEffect(() => {
     const title = watch("title");
     const stream = watch("stream");
@@ -173,7 +172,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
   const { subjects } = useSubjects(watch("stream"))
   const { topics } = useTopics(watch("subjectId"))
   const { subtopics } = useSubtopics(watch("topicId"))
-  
+
   return (
     <Card className="w-full">
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -187,17 +186,17 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
         </CardHeader>
         <CardContent className="space-y-4">
 
-            <div className="space-y-2">
-              <Label htmlFor="title">Question Title <span className="text-red-500">*</span></Label>
-              <Input
-                id="title"
-                {...register("title")}
-                placeholder="Enter the question title"
-                className={`border ${errors.title ? "border-red-500" : "border-gray-300"}`}
-              />
-              {errors.title && <p className="text-red-500 text-xs">{errors.title.message}</p>}
-            </div>
-            
+          <div className="space-y-2">
+            <Label htmlFor="title">Question Title <span className="text-red-500">*</span></Label>
+            <Input
+              id="title"
+              {...register("title")}
+              placeholder="Enter the question title"
+              className={`border ${errors.title ? "border-red-500" : "border-gray-300"}`}
+            />
+            {errors.title && <p className="text-red-500 text-xs">{errors.title.message}</p>}
+          </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
@@ -252,7 +251,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                   <Select onValueChange={(val) => field.onChange(Number(val))} value={field.value?.toString()}>
                     <SelectTrigger><SelectValue placeholder="Select Difficulty" /></SelectTrigger>
                     <SelectContent>
-                    <SelectItem value="1">Easy</SelectItem>
+                      <SelectItem value="1">Easy</SelectItem>
                       <SelectItem value="2">Medium</SelectItem>
                       <SelectItem value="3">Hard</SelectItem>
                       <SelectItem value="4">Very Hard</SelectItem>
@@ -266,74 +265,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* <Controller
-  control={control}
-  name="category"
-  render={({ field }) => {
-    const selectedValues = Array.isArray(field.value) ? field.value : [];
-
-    return (
-      <div className="space-y-2">
-        <label className="text-sm font-medium leading-none">
-          Categories <span className="text-red-500">*</span>
-        </label>
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              className="w-full justify-between"
-            >
-              {selectedValues.length > 0
-                ? selectedValues.map(TextFormator).join(", ")
-                : "Select Categories"}
-            </Button>
-          </PopoverTrigger>
-
-          <PopoverContent className="w-full p-0">
-            <Command>
-              <CommandGroup>
-                {categoryOptions.map((cat) => {
-                  const isChecked = selectedValues.includes(cat);
-                  return (
-                    <CommandItem
-                      key={cat}
-                      onSelect={() => {
-                        if (isChecked) {
-                          field.onChange(selectedValues.filter((c) => c !== cat));
-                        } else {
-                          field.onChange([...selectedValues, cat]);
-                        }
-                      }}
-                    >
-                      <div
-                        className={cn(
-                          "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                          {
-                            "bg-primary text-primary-foreground": isChecked,
-                          }
-                        )}
-                      >
-                        {isChecked && <CheckIcon className="h-4 w-4" />}
-                      </div>
-                      {TextFormator(cat)}
-                    </CommandItem>
-                  );
-                })}
-              </CommandGroup>
-            </Command>
-          </PopoverContent>
-        </Popover>
-
-        {errors.category && (
-          <p className="text-red-500 text-xs">{errors.category.message}</p>
-        )}
-      </div>
-    );
-  }}
-/> */}
-<CategoryMultiSelect control={control} errors={errors} />
+            <CategoryMultiSelect control={control} errors={errors} />
             <div className="space-y-2">
               <Label htmlFor="class">Class <span className="text-red-500">*</span></Label>
               <Controller
@@ -343,7 +275,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                   <Select onValueChange={field.onChange} value={field.value?.toString()}>
                     <SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger>
                     <SelectContent>
-                    {Object.values(StandardEnum).map((class1) => (
+                      {Object.values(StandardEnum).map((class1) => (
                         <SelectItem key={class1} value={class1}>
                           {TextFormator(class1)}
                         </SelectItem>
@@ -369,7 +301,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                     placeholder="Time in minutes"
                     onChange={(e) => {
                       const value = parseInt(e.target.value, 10);
-                      field.onChange(isNaN(value) ? 2 : value); 
+                      field.onChange(isNaN(value) ? 2 : value);
                     }}
                   />
                 )}
@@ -577,7 +509,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
               <Input
                 id="isNumerical"
                 {...register("isNumerical", {
-                  setValueAs: (value) => (value === "" ? undefined : Number(value)), 
+                  setValueAs: (value) => (value === "" ? undefined : Number(value)),
                 })}
                 type="number"
                 step="any"
@@ -628,7 +560,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
               {errors.commonMistake && <p className="text-red-500 text-xs">{errors.commonMistake.message}</p>}
             </div>
 
-            
+
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -636,29 +568,29 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
             <div className="space-y-2">
               <Label htmlFor="tag">PYQ Year</Label>
               <Controller
-    name="pyqYear"
-    control={control}
-    render={({ field }) => (
-      <Select onValueChange={field.onChange} value={field.value}>
-        <SelectTrigger className={`border ${errors.pyqYear ? "border-red-500" : "border-gray-300"}`}>
-          <SelectValue placeholder="Select PYQ Year" />
-        </SelectTrigger>
-        <SelectContent>
-          {PYQ_Year?.length > 0 ? (
-            PYQ_Year.map((year) => (
-              <SelectItem key={year} value={year}>
-                {year}
-              </SelectItem>
-            ))
-          ) : (
-            <SelectItem disabled value="none">
-              No Years Available
-            </SelectItem>
-          )}
-        </SelectContent>
-      </Select>
-    )}
-  />
+                name="pyqYear"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger className={`border ${errors.pyqYear ? "border-red-500" : "border-gray-300"}`}>
+                      <SelectValue placeholder="Select PYQ Year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PYQ_Year?.length > 0 ? (
+                        PYQ_Year.map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem disabled value="none">
+                          No Years Available
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.pyqYear && <p className="text-red-500 text-xs">{errors.pyqYear.message}</p>}
             </div>
 
@@ -791,3 +723,71 @@ export default QuestionForm;
 
 //   onSave(question);
 // };
+
+{/* <Controller
+  control={control}
+  name="category"
+  render={({ field }) => {
+    const selectedValues = Array.isArray(field.value) ? field.value : [];
+
+    return (
+      <div className="space-y-2">
+        <label className="text-sm font-medium leading-none">
+          Categories <span className="text-red-500">*</span>
+        </label>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              className="w-full justify-between"
+            >
+              {selectedValues.length > 0
+                ? selectedValues.map(TextFormator).join(", ")
+                : "Select Categories"}
+            </Button>
+          </PopoverTrigger>
+
+          <PopoverContent className="w-full p-0">
+            <Command>
+              <CommandGroup>
+                {categoryOptions.map((cat) => {
+                  const isChecked = selectedValues.includes(cat);
+                  return (
+                    <CommandItem
+                      key={cat}
+                      onSelect={() => {
+                        if (isChecked) {
+                          field.onChange(selectedValues.filter((c) => c !== cat));
+                        } else {
+                          field.onChange([...selectedValues, cat]);
+                        }
+                      }}
+                    >
+                      <div
+                        className={cn(
+                          "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                          {
+                            "bg-primary text-primary-foreground": isChecked,
+                          }
+                        )}
+                      >
+                        {isChecked && <CheckIcon className="h-4 w-4" />}
+                      </div>
+                      {TextFormator(cat)}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </Command>
+          </PopoverContent>
+        </Popover>
+
+        {errors.category && (
+          <p className="text-red-500 text-xs">{errors.category.message}</p>
+        )}
+      </div>
+    );
+  }}
+/> */}
