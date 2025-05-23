@@ -61,7 +61,7 @@ export async function GET(request: Request) {
         });
 
         const todaysMinutesStudied = calculateTodayStudyTime(attempts);
-        const dailyGoalMinutes = user.studyHoursPerDay ? (user.studyHoursPerDay * 60) / 3 : 60;
+        const dailyGoalMinutes = user.studyHoursPerDay ? (user.studyHoursPerDay * 60*60) / 4 : 60*60;
 
 
         const revisionSubtopics = await getTopUsedSubtopicsToday(userId, subtopicsCount);

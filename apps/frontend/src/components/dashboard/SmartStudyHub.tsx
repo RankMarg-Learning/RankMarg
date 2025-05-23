@@ -8,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import CurrentTopicCard from "./CurrentTopicCard";
 import { SmartStudyHubProps } from "@/types/dashboard.types";
 import { useMemo } from "react";
+import { timeFormator } from "@/utils/timeFormatter";
 
 // Extract reusable components for better organization and maintainability
 const TodaysProgressCard = ({ 
@@ -24,8 +25,8 @@ const TodaysProgressCard = ({
         indicatorColor="bg-primary-400" 
       />
       <div className="flex items-center justify-between text-sm">
-        <span>{minutesStudied} min</span>
-        <span className="text-muted-foreground">Goal: {goalMinutes} min</span>
+        <span>{timeFormator(minutesStudied,{from:'sec',to:['min','sec']})} </span>
+        <span className="text-muted-foreground">Goal: {timeFormator(goalMinutes,{from:'sec',to:['min','sec']})}</span>
       </div>
     </CardContent>
   </Card>

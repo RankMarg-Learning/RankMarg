@@ -1,15 +1,11 @@
+export const dynamic = "force-dynamic";
+
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
 import { getAuthSession } from "@/utils/session";
 import { endOfDay, startOfDay } from "date-fns";
 
 export type SessionType = "all" | "individual" | "today";
-
-function formatDuration(duration: number): string {
-    const minutes = Math.floor(duration / 60);
-    const seconds = duration % 60;
-    return `${minutes}m ${seconds}s`;
-}
 
 
 export async function GET(req: Request) {
@@ -222,7 +218,7 @@ export async function GET(req: Request) {
                 totalQuestions: totalQuestions,
                 score,
                 accuracy,
-                duration: formatDuration(session.duration || 0),
+                duration: session.duration ,
                 isCompleted: session.isCompleted
             };
 
@@ -234,7 +230,7 @@ export async function GET(req: Request) {
                     startTime: session.startTime?.toISOString() || null,
                     lastAttempt: session.id in lastAttemptMap ? lastAttemptMap[session.id].toISOString() : null,
                     keySubtopics: sortedSubtopics.map(st => st.name),
-                    timeRequired: formatDuration((session.duration || 0) / (questionsSolved || 1) * totalQuestions)
+                    timeRequired: session?.duration
                 };
             } else {
                 // "all" or other types
@@ -246,7 +242,7 @@ export async function GET(req: Request) {
             }
         });
 
-        return jsonResponse(formatted, { success: true, message: "Success", status: 200 });
+        return jsonResponse(formatted, { success: true, message: "Ok", status: 200 });
     } catch (error) {
         console.error("Error fetching practice sessions:", error);
         return jsonResponse(null, { success: false, message: "Internal Server Error", status: 500 });

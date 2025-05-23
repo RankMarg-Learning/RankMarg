@@ -30,10 +30,8 @@ const QuestionUI = ({
   const router = useRouter();
   const { toast } = useToast();
   
-  // Check if question is already answered
   const isAnswered = useMemo(() => Boolean(answer) || isSolutionShow, [answer, isSolutionShow]);
   
-  // Parse previous answer if available
   const initialSelectedValues = useMemo(() => {
     if (!answer) return [];
     if (question.type === "INTEGER") return [];
@@ -46,7 +44,6 @@ const QuestionUI = ({
     return isNaN(num) ? null : num;
   }, [answer, question.type]);
   
-  // State management
   const [selectedValues, setSelectedValues] = useState<number[]>(initialSelectedValues);
   const [numericalValue, setNumericalValue] = useState<number | null>(initialNumericalValue);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,7 +52,6 @@ const QuestionUI = ({
   const [time, setTime] = useState(0);
   const [reactionTime, setReactionTime] = useState(0);
 
-  // Reset state when question or answer changes
   useEffect(() => {
     if (question.type === "INTEGER") {
       if (answer) {
@@ -81,7 +77,6 @@ const QuestionUI = ({
     setIsSubmitting(false);
   }, [question.id, question.type, answer, isAnswered]);
 
-  // Compute correct options only once
   const correctOptions = useMemo(() => {
     if (!isAnswered || !question.options) return [];
     return question.options
@@ -196,13 +191,14 @@ Best regards,
 
           {/* Timer - Hidden when answered */}
           {!isAnswered && (
-            <Timer 
-              time={time}
+            <Timer
+              questionId={question.id}
+              defaultTime={time}
               isRunning={isRunning}
               onTimeChange={setTime}
-              className="bg-blue-500 text-white text-base hidden" 
+              className="bg-blue-500 text-white text-base " 
             />
-          )}
+          )} 
 
           {/* Question metadata */}
           <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
