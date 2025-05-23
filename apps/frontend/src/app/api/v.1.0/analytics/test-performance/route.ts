@@ -8,22 +8,14 @@ export async function GET() {
     try {
         const session = await getAuthSession()
 
-        if (!session?.user?.email) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const user = await prisma.user.findUnique({
-            where: { email: session.user.email },
-        });
-
-        if (!user) {
+        if (!session?.user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
         // Get all test participations for the user, ordered by date
         const testParticipations = await prisma.testParticipation.findMany({
             where: {
-                userId: user.id,
+                userId: session?.user.id,
                 status: 'COMPLETED',
             },
             include: {

@@ -12,13 +12,13 @@ export const getTests = async () => {
       message: "Error fetching tests",
     };
   }
-  
+
 };
 
 export const getTestById = async (testId: string) => {
   try {
     const response = await api.get(`/test/${testId}`);
-  return response.data;
+    return response.data;
   } catch (error) {
     console.error("Error fetching test by ID:", error);
     return {
@@ -26,7 +26,7 @@ export const getTestById = async (testId: string) => {
       message: "Error fetching test",
     };
   }
-  
+
 };
 
 export const addTest = async (test: Partial<test>) => {
@@ -40,7 +40,7 @@ export const addTest = async (test: Partial<test>) => {
       message: "Error adding test",
     };
   }
- 
+
 };
 
 export const updateTest = async (id: string, test: Partial<test>) => {
@@ -54,7 +54,7 @@ export const updateTest = async (id: string, test: Partial<test>) => {
       message: "Error updating test",
     };
   }
- 
+
 };
 
 export const deleteTest = async (id: string) => {
@@ -71,7 +71,7 @@ export const deleteTest = async (id: string) => {
 };
 
 
-export const getTestResults = async(resultsLimit:number)=>{
+export const getTestResults = async (resultsLimit: number) => {
   const version = process.env.VERSION || '/v.1.0';
   try {
     const response = await api.get(`${version}/tests/results?limit=${resultsLimit}`);

@@ -176,7 +176,7 @@ export async function POST(req: Request) {
         hint: questionData.hint,
         solution: questionData.solution,
         commonMistake:questionData.commonMistake,
-        questionTime: questionData.questionTime,
+        questionTime: (questionData.questionTime)*60,
         isNumerical: questionData.isNumerical,
         isPublished:questionData.isPublished,
         createdBy: "session.user.id", //!session.user.id ? "default-user-id" : session.user.id,

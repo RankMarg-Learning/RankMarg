@@ -8,30 +8,30 @@ import React, { useState } from 'react'
 
 const TestAdd = () => {
     const route = useRouter();
-      const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleSave = async (testData: Partial<test>) => {
         setLoading(true);
         try {
             const response = await addTest(testData)
-            
+
             if (response && response.success) {
                 toast({
-                    title:'Test Added',
-                    description:'Test has been added successfully',
+                    title: 'Test Added',
+                    description: 'Test has been added successfully',
                 })
                 route.push('/admin/tests');
             }
             else {
                 toast({
-                    title:'Failed',
-                    description:'Failed to add test',
+                    title: 'Failed',
+                    description: 'Failed to add test',
                 })
             }
         } catch (error) {
             console.error(error)
         }
-        finally{
+        finally {
             setLoading(false);
         }
 
@@ -44,8 +44,8 @@ const TestAdd = () => {
             </div>
             <TestForm
                 onSave={handleSave}
-                onCancel={() => { 
-                    route.push('/admin/tests'); 
+                onCancel={() => {
+                    route.push('/admin/tests');
                 }}
                 loading={loading}
             />

@@ -55,10 +55,10 @@ const AdminSidebar = () => {
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         {!collapsed && (
           <Link href="/admin" className="flex items-center gap-2">
-            <div className="bg-edu-blue text-primary-800 p-1 rounded">
+            <div className="bg-edu-blue text-primary-500 p-1 rounded">
               <Brain className="h-6 w-6" />
             </div>
-            <span className="font-bold text-xl text-gray-900">EduAdmin</span>
+            <span className="font-bold text-xl text-primary-500">RankAdmin</span>
           </Link>
         )}
         {collapsed && (
