@@ -10,13 +10,10 @@ import prisma from "@/lib/prisma";
 import { RecentTestScoresProps } from "@/types";
 import { jsonResponse } from "@/utils/api-response";
 
-// Cache durations
-const CACHE_TTL = 60 * 5; // 5 minutes in seconds
-const CACHE_REVALIDATE_SECONDS = 60 * 60; // 1 hour
+const CACHE_TTL = 60 * 5;
+const CACHE_REVALIDATE_SECONDS = 60 * 60;
 
-/**
- * Cached user metrics fetcher
- */
+
 const getUserMetrics = cache(async (userId: string) => {
     return prisma.metric.findMany({
         where: { userId },
@@ -29,9 +26,7 @@ const getUserMetrics = cache(async (userId: string) => {
     });
 });
 
-/**
- * Cached user performance fetcher
- */
+
 const getUserPerformance = cache(async (userId: string) => {
     return prisma.userPerformance.findUnique({
         where: { userId },
@@ -43,11 +38,8 @@ const getUserPerformance = cache(async (userId: string) => {
     });
 });
 
-/**
- * Get questions solved by difficulty level with caching
- */
+
 const getQuestionsByDifficultyBreakdown = cache(async (userId: string) => {
-    // Define default result structure
     const result = {
         easy: 0,
         medium: 0,
@@ -55,23 +47,21 @@ const getQuestionsByDifficultyBreakdown = cache(async (userId: string) => {
         veryHard: 0
     };
 
-    // Use a single efficient query that joins tables instead of multiple queries
     const difficultyData = await prisma.$queryRaw`
-    SELECT 
-      q.difficulty, 
-      COUNT(DISTINCT a."questionId") as count
+    SELECT
+        q.difficulty, 
+        COUNT(DISTINCT a."questionId") as count
     FROM 
-      "Attempt" a
+        "Attempt" a
     JOIN 
-      "Question" q ON a."questionId" = q.id
+        "Question" q ON a."questionId" = q.id
     WHERE 
-      a."userId" = ${userId}
-      AND a.status = 'CORRECT'
+        a."userId" = ${userId}
+        AND a.status = 'CORRECT'
     GROUP BY 
-      q.difficulty
-  `;
+        q.difficulty
+    `;
 
-    // Map difficulty levels to their respective keys
     const difficultyMap = {
         1: 'easy',
         2: 'medium',
@@ -79,10 +69,8 @@ const getQuestionsByDifficultyBreakdown = cache(async (userId: string) => {
         4: 'veryHard'
     };
 
-    // Type assertion for TypeScript
     const typedData = difficultyData as Array<{ difficulty: number, count: bigint }>;
 
-    // Populate result with actual data
     for (const item of typedData) {
         const key = difficultyMap[item.difficulty];
         if (key) {
@@ -93,9 +81,7 @@ const getQuestionsByDifficultyBreakdown = cache(async (userId: string) => {
     return result;
 });
 
-/**
- * Get average timing by difficulty level with caching
- */
+
 const getAvgTimingByDifficulty = cache(async (userId: string) => {
     const result = {
         easy: 0,
@@ -106,20 +92,20 @@ const getAvgTimingByDifficulty = cache(async (userId: string) => {
 
     const timingData = await prisma.$queryRaw`
     SELECT 
-      q.difficulty,
-      ROUND(AVG(a."timing")::numeric) AS "avgTime"
+        q.difficulty,
+        ROUND(AVG(a."timing")::numeric) AS "avgTime"
     FROM 
-      "Attempt" a
+        "Attempt" a
     JOIN 
-      "Question" q ON a."questionId" = q."id"
+        "Question" q ON a."questionId" = q."id"
     WHERE 
-      a."userId" = ${userId}
-      AND a."status" = 'CORRECT'
+        a."userId" = ${userId}
+        AND a."status" = 'CORRECT'
     GROUP BY 
-      q.difficulty
+        q.difficulty
     ORDER BY 
-      q.difficulty
-  `;
+        q.difficulty
+    `;
 
     const difficultyMap = {
         1: 'easy',
@@ -146,7 +132,6 @@ export async function GET(req: NextRequest) {
         const userId = searchParams.get("id");
         const skipCache = searchParams.get("skipCache") === "true";
 
-        // Validate user ID
         if (!userId) {
             return jsonResponse(null, {
                 success: false,
@@ -155,13 +140,9 @@ export async function GET(req: NextRequest) {
             });
         }
 
-        // Check for cached response if not skipping cache
         if (!skipCache) {
-            // In a real implementation, you would check an external cache like Redis here
-            // For Next.js, we're using the built-in React cache() function
         }
 
-        // Fetch all data in parallel for better performance
         const [metrics, performance, questionsByDifficulty, avgTimingByDifficulty] = await Promise.all([
             getUserMetrics(userId),
             getUserPerformance(userId),
@@ -169,7 +150,6 @@ export async function GET(req: NextRequest) {
             getAvgTimingByDifficulty(userId)
         ]);
 
-        // Process the data
         const overview = getMetricCardData(metrics);
         const testSuggestion = generateWeeklyTestSuggestion(
             performance?.recentTestScores as RecentTestScoresProps[] || []
@@ -177,13 +157,12 @@ export async function GET(req: NextRequest) {
         const difficultyLabel = getDifficultySuggestion(questionsByDifficulty);
         const timeLabel = getStreamTimingSuggestion("JEE", avgTimingByDifficulty);
 
-        // Prepare response data with proper grouping
         const responseData = {
             overview: {
                 metrics: overview,
                 performance: {
                     ...performance,
-                    recommendation:testSuggestion
+                    recommendation: testSuggestion
                 }
             },
             difficulty: {
@@ -196,21 +175,19 @@ export async function GET(req: NextRequest) {
             }
         };
 
-        // Return response with cache headers
         return jsonResponse(responseData, {
             success: true,
             message: "OK",
             status: 200,
             headers: {
                 'Cache-Control': `public, max-age=${CACHE_TTL}, s-maxage=${CACHE_REVALIDATE_SECONDS}, stale-while-revalidate=${CACHE_REVALIDATE_SECONDS}`,
-                'ETag': `"analytics-${userId}-${Date.now()}"` // Simple ETag generation
+                'ETag': `"analytics-${userId}-${Date.now()}"` 
             }
         });
 
     } catch (error) {
         console.error("[ANALYTICS_API] Error fetching analytics data:", error);
 
-        // Return a proper error response
         return jsonResponse(null, {
             success: false,
             message: "Failed to fetch analytics data",

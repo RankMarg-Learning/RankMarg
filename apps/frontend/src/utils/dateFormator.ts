@@ -6,7 +6,7 @@ type TimeFormatType = "date" | "time" | "both";
  * @param type - Format type: "date", "time", or "both" (default: "both")
  * @returns A formatted string like "11 May 2025", "14:15:57", or "11 May 2025, 14:15:57"
  */
-export function TimeFormator(
+export function DateFormator(
     utcTimestamp: string,
     type: TimeFormatType = "both"
 ): string {

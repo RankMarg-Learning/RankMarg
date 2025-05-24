@@ -19,14 +19,19 @@ export function useAnalyticsDashboard({ id }: QueryParams = {}) {
                 queryKey: ['analytics', id],
                 queryFn: fetchTests(`${version}/analytics?loc=analytics_page&id=${id}`),
                 enabled: !!id,
+            },
+            {
+                queryKey: ['attempts', id],
+                queryFn: fetchTests(`${version}/attempts?loc=attempts_page&type=calendar&userId=${id}`),
             }
             
         ],
     })
 
-    const [analytics] = queries
+    const [analytics,attempts] = queries
 
     return {
+        attempts:attempts.data,
         analytics: analytics.data,
         isLoading: queries.some(q => q.isLoading),
         isError: queries.some(q => q.isError),
