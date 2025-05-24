@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, FileText, Calendar, Info } from 'lucide-react';
 import { TextFormator } from '@/utils/textFormator';
-import { TimeFormator } from '@/utils/dateFormator';
+import { DateFormator } from '@/utils/dateFormator';
 import { AvailableTestsProps, TestCardProps } from '@/types';
 
 
@@ -48,7 +48,7 @@ const TestCard: React.FC<TestCardProps> = ({ test, onStartTest }) => {
           </div>
           <div className="flex items-center">
             <Calendar size={16} className="mr-2 flex-shrink-0" />
-            Last updated: {TimeFormator(test.updatedAt, 'date')}
+            Last updated: {DateFormator(test.updatedAt, 'date')}
           </div>
         </div>
 

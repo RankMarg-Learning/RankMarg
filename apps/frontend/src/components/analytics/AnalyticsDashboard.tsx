@@ -7,10 +7,11 @@ import TimeDistribution from './TimeDistribution'
 import StatsSection from './StatsSection'
 import { useAnalyticsDashboard } from '@/hooks/useAnalyticsDashboard'
 import AnalyticsDashboardSkeleton from '../skeleton/analytics.dashboard.skeleton'
+import Calender from '../profile/Calender'
 
 const AnalyticsDashboard = () => {
-    const { analytics, isLoading, isError } = useAnalyticsDashboard({ id: '0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5' })
-    if (isLoading) return (<AnalyticsDashboardSkeleton/>)
+    const { analytics, attempts, isLoading, isError } = useAnalyticsDashboard({ id: '0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5' })
+    if (isLoading) return (<AnalyticsDashboardSkeleton />)
     if (isError) return <div>Error loading data</div>
 
 
@@ -20,7 +21,7 @@ const AnalyticsDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-8" id="el-z33dzxua">
                 <div className="col-span-2 ">
                     <TestPerformance txScore={analytics?.data?.overview?.performance?.recentTestScores} recommendation={analytics?.data?.overview?.performance?.recommendation} />
-                    
+                    <Calender attempts={attempts?.data} />
                     {/* <SubjectPerformance /> */}
                 </div>
                 <div className="col-span-1">
@@ -36,6 +37,15 @@ const AnalyticsDashboard = () => {
 
 export default AnalyticsDashboard
 
+
+//  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+//                         <div className="lg:col-span-1 border border-gray-100 rounded-lg">
+//                             <AttemptDistributionChart />
+//                         </div>
+//                         <div className="lg:col-span-2 border border-gray-100 rounded-md">
+//                             <TestPerformance txScore={analytics?.data?.overview?.performance?.recentTestScores} recommendation={analytics?.data?.overview?.performance?.recommendation} />
+//                         </div>
+//                     </div>
 
 
 {/* <div className="border-t border-gray-200 pt-4" id="el-y5zijbiw">
