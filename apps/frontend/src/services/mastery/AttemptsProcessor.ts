@@ -1,10 +1,7 @@
 import prisma from "@/lib/prisma";
 import { MasteryAttempt } from "@/types";
 
-
 export class AttemptsProcessor {
-
-
   async attempts(userId: string, cutoffDate: Date): Promise<MasteryAttempt[]> {
     return await prisma.attempt.findMany({
       where: {
@@ -33,7 +30,6 @@ export class AttemptsProcessor {
       orderBy: { solvedAt: 'desc' },
     });
   }
-
   organizeAttempts(attempts: MasteryAttempt[]) {
     const subtopicAttempts = new Map<string, MasteryAttempt[]>();
     const subtopicIds = new Set<string>();

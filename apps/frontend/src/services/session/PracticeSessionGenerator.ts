@@ -18,12 +18,8 @@ export class PracticeSessionGenerator {
         private readonly config: SessionConfig
     ) { }
 
-    /**
-     * Generate a complete practice session for a user
-     */
     async generate(userId: string, subjects: Subject[], grade: string): Promise<void> {
         try {
-            // Initialize question selector once
             this.questionSelector = new QuestionSelector(
                 this.prisma,
                 userId,
@@ -31,7 +27,6 @@ export class PracticeSessionGenerator {
                 this.config
             );
 
-            // Process each subject in parallel for better performance
             await Promise.all(
                 subjects.map(subject => this.generateSubjectSession(userId, subject))
             );
@@ -41,20 +36,13 @@ export class PracticeSessionGenerator {
         }
     }
 
-    /**
-     * Generate a practice session for a single subject
-     */
     private async generateSubjectSession(userId: string, subject: Subject): Promise<void> {
         const totalQuestionsForSubject = this.config.totalQuestions;
         const questionMap = new Map<string, Question>();
 
-        // Calculate distribution based on configuration
         const distributions = this.calculateDistribution(totalQuestionsForSubject);
-
-        // Fetch questions for each distribution category
         const questionsWithPriority = await this.fetchAllCategoryQuestions(subject, distributions);
 
-        // Sort by priority and add to map to ensure uniqueness
         questionsWithPriority.sort((a, b) => a.priority - b.priority);
         for (const { question } of questionsWithPriority) {
             if (!questionMap.has(question.id)) {
@@ -62,7 +50,6 @@ export class PracticeSessionGenerator {
             }
         }
 
-        // Handle shortfall of questions if needed
         const uniqueQuestions = Array.from(questionMap.values());
         const shortfall = totalQuestionsForSubject - uniqueQuestions.length;
 
@@ -84,14 +71,10 @@ export class PracticeSessionGenerator {
             );
         }
 
-        // Shuffle and add to session
         const shuffledQuestions = this.shuffleArray(finalQuestions);
         await this.createPracticeSession(userId, shuffledQuestions, subject.id);
     }
 
-    /**
-     * Calculate distribution of questions across categories
-     */
     private calculateDistribution(totalQuestions: number): QuestionDistribution[] {
         return [
             {
@@ -117,16 +100,12 @@ export class PracticeSessionGenerator {
         ];
     }
 
-    /**
-     * Fetch questions for all categories based on distribution
-     */
+
     private async fetchAllCategoryQuestions(
         subject: Subject,
         distributions: QuestionDistribution[]
     ): Promise<Array<{ question: Question; priority: number }>> {
-        // const allQuestions: Array<{ question: Question; priority: number }> = [];
 
-        // Use Promise.all to fetch questions for all categories in parallel
         const questionPromises = distributions.map(async ({ source, count, priority }) => {
             let questions: Question[] = [];
 
@@ -152,9 +131,7 @@ export class PracticeSessionGenerator {
         return results.flat();
     }
 
-    /**
-     * Backfill questions if there weren't enough from the primary selection
-     */
+
     private async backfillQuestions(
         subject: Subject,
         count: number,
@@ -163,23 +140,19 @@ export class PracticeSessionGenerator {
         const existingIds = new Set(existingQuestions.map(q => q.id));
         const backfilledQuestions: Question[] = [];
 
-        // Calculate distribution for backfill
         const distributions = this.calculateDistribution(count);
 
-        // Fetch additional questions for each category in parallel
         const additionalQuestionsPromises = distributions.map(({ source, count }) =>
             this.getAdditionalQuestions(subject, source, count, existingIds)
         );
 
         const additionalQuestionsArrays = await Promise.all(additionalQuestionsPromises);
 
-        // Update existingIds as we go to avoid duplicates across categories
         for (const questions of additionalQuestionsArrays) {
             backfilledQuestions.push(...questions);
             questions.forEach(q => existingIds.add(q.id));
         }
 
-        // If we still need more questions, get general backfill
         const stillNeeded = count - backfilledQuestions.length;
         if (stillNeeded > 0) {
             const generalBackfill = await this.getGeneralBackfillQuestions(subject, stillNeeded, existingIds);
@@ -189,9 +162,6 @@ export class PracticeSessionGenerator {
         return backfilledQuestions;
     }
 
-    /**
-     * Get additional questions for a specific category
-     */
     private async getAdditionalQuestions(
         subject: Subject,
         source: QuestionSource,
@@ -202,9 +172,7 @@ export class PracticeSessionGenerator {
 
         try {
             let questions: Question[] = [];
-            const fetchFactor = 2; // Fetch more than needed to increase chances of finding unique questions
-
-            // Get additional questions from the specified source
+            const fetchFactor = 2; 
             switch (source) {
                 case 'currentTopic':
                     questions = await this.questionSelector.selectCurrentTopicQuestions(subject, count * fetchFactor);
@@ -220,7 +188,6 @@ export class PracticeSessionGenerator {
                     break;
             }
 
-            // Filter out questions that are already in the existing set
             return questions
                 .filter(q => !existingIds.has(q.id))
                 .slice(0, count);
@@ -230,9 +197,7 @@ export class PracticeSessionGenerator {
         }
     }
 
-    /**
-     * Get random questions as a last resort
-     */
+    
     private async getGeneralBackfillQuestions(
         subject: Subject,
         count: number,
@@ -258,9 +223,6 @@ export class PracticeSessionGenerator {
         }
     }
 
-    /**
-     * Create practice session in the database
-     */
     private async createPracticeSession(
         userId: string,
         questions: Question[],
@@ -287,9 +249,6 @@ export class PracticeSessionGenerator {
         }
     }
 
-    /**
-     * Shuffle array using Fisher-Yates algorithm
-     */
     private shuffleArray<T>(array: T[]): T[] {
         const shuffled = [...array];
         for (let i = shuffled.length - 1; i > 0; i--) {
@@ -300,13 +259,10 @@ export class PracticeSessionGenerator {
     }
 }
 
-/**
- * Calculate estimated duration based on question difficulty and time
- */
+
 function calculateEstimatedDuration(questions: Question[]): number {
-    // Use reduce for cleaner calculation
+
     const totalBaseTime = questions.reduce((total, question) => {
-        // Use nullish coalescing to handle undefined questionTime
         const questionTime = question.questionTime ?? (
             question.difficulty === 1 ? 1 :
                 question.difficulty === 2 ? 2 : 3
@@ -314,6 +270,5 @@ function calculateEstimatedDuration(questions: Question[]): number {
         return total + questionTime;
     }, 0);
 
-    // Add buffer time and round up
     return Math.ceil(totalBaseTime * 1.1);
 }

@@ -2,13 +2,13 @@ import { SessionConfig } from "@/types/session.api.types";
 import { QCategory, Stream } from "@prisma/client";
 
 export function createDefaultSessionConfig(stream: Stream, grade: string, totalQuestions: number): SessionConfig {
-    // Default configuration
+
     const config: SessionConfig = {
         distribution: {
-            currentTopic: 0.4, // 40%
-            weakConcepts: 0.2, // 20%
-            revisionTopics: 0.3, // 30%
-            pyq: 0.1 // 10%
+            currentTopic: 0.4, 
+            weakConcepts: 0.2, 
+            revisionTopics: 0.3, 
+            pyq: 0.1
         },
         stream: stream,
         totalQuestions: totalQuestions,
@@ -48,12 +48,10 @@ export function getDifficultyDistributionByGrade(
 
     const percentages = percentMap[grade] || percentMap['C'];
 
-    // Step 1: Calculate raw allocations and keep track of decimal parts
     const raw = percentages.map(p => p * totalQuestions);
     const base = raw.map(Math.floor);
     const remainder = totalQuestions - base.reduce((sum, val) => sum + val, 0);
 
-    // Step 2: Distribute remainder based on largest fractional parts
     const indicesByFraction = raw
         .map((val, i) => ({ i, frac: val - base[i] }))
         .sort((a, b) => b.frac - a.frac);
@@ -62,7 +60,7 @@ export function getDifficultyDistributionByGrade(
         base[indicesByFraction[i].i]++;
     }
 
-    return { difficulty: base }; // [Level 1, 2, 3, 4]
+    return { difficulty: base }; 
 }
 
 

@@ -1,3 +1,5 @@
+import { Stream } from "@prisma/client";
+
 export interface MasteryConfigOptions {
   decayFactor: number;
   timeWindow: number;
@@ -11,6 +13,7 @@ export interface MasteryConfigOptions {
   };
   spaceReviewBonus: number;
   maxSpaceReviewBonusPerWindow: number;
+  stream?:Stream
 }
 
 export class MasteryConfig {
@@ -26,6 +29,7 @@ export class MasteryConfig {
   };
   public readonly spaceReviewBonus: number;
   public readonly maxSpaceReviewBonusPerWindow: number;
+  public stream:Stream;
 
   constructor(options: MasteryConfigOptions) {
     this.decayFactor = options.decayFactor;
@@ -37,6 +41,7 @@ export class MasteryConfig {
     this.masteryThresholds = options.masteryThresholds;
     this.spaceReviewBonus = options.spaceReviewBonus;
     this.maxSpaceReviewBonusPerWindow = options.maxSpaceReviewBonusPerWindow;
+    this.stream = options.stream
   }
 }
 
@@ -54,4 +59,5 @@ export const masteryConfig = new MasteryConfig({
   },
   spaceReviewBonus: 0.1, // Bonus for spaced reviews
   maxSpaceReviewBonusPerWindow: 0.25, // Cap on spaced review bonus
+  stream:"NEET"
 });

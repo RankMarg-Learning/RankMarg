@@ -47,7 +47,7 @@ export class PerformanceService {
                 orderBy: {
                     endTime: 'desc'
                 },
-                take: 10 // Get recent 10 tests for recent performance calculation
+                take: 10 
             });
             const recentTestScores = testParticipations.map(test => ({
                 score: test.score,
@@ -95,7 +95,7 @@ export class PerformanceService {
                     userId: userId,
                     isCompleted: true,
                     startTime: {
-                        gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Past 7 days
+                        gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) 
                     }
                 },
                 select: {
@@ -160,7 +160,6 @@ export class PerformanceService {
         return tx;
     }
     public async updateMetric(prisma, userId, metricType, currentValue) {
-        // Find existing metric if it exists
         const existingMetric = await prisma.metric.findFirst({
             where: {
                 userId,
@@ -168,7 +167,6 @@ export class PerformanceService {
             }
         });
 
-        // If metric exists, update it with previous value
         if (existingMetric) {
             await prisma.metric.update({
                 where: {
@@ -179,7 +177,6 @@ export class PerformanceService {
                 }
             });
         } else {
-            // Create new metric if it doesn't exist
             await prisma.metric.create({
                 data: {
                     userId,
@@ -195,17 +192,15 @@ export class PerformanceService {
             return 0;
         }
 
-        // Group sessions by day
         const sessionsByDay = {};
         practiceSessions.forEach(session => {
             const day = session.startTime.toISOString().split('T')[0];
             if (!sessionsByDay[day]) {
                 sessionsByDay[day] = 0;
             }
-            sessionsByDay[day] += (session.duration || 0) / 60; // Convert minutes to hours
+            sessionsByDay[day] += (session.duration || 0) / 60; 
         });
 
-        // Calculate average across days
         const totalDays = Object.keys(sessionsByDay).length;
         const totalHours: number = Object.values(sessionsByDay).reduce((sum: number, hours) => sum + Number(hours as number), 0) as number;
 

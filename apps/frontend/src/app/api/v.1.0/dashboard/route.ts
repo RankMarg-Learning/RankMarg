@@ -1,9 +1,7 @@
 export const dynamic = "force-dynamic";
 
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 
-const prisma = new PrismaClient();
 
 const QuerySchema = z.object({
     id: z.string().uuid(),
@@ -118,6 +116,7 @@ function calculateTodayStudyTime(attempts: AttemptsDashaboadProps[]): number {
 import { startOfDay, endOfDay } from 'date-fns';
 import { jsonResponse } from '@/utils/api-response';
 import { AttemptsDashaboadProps, PerformanceDashboardProps } from '@/types/dashboard.types';
+import prisma from '@/lib/prisma';
 
 async function getTopUsedSubtopicsToday(userId: string, count: number): Promise<string[]> {
     const todayStart = startOfDay(new Date());
