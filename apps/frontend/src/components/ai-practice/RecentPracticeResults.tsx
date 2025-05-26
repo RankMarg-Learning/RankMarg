@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PracticeSession } from "@/types/dashboard.types";
 import { SubjectIcons, SubjectTextColor } from "@/constant/SubjectColorCode";
+import Link from "next/link";
 
 
 
@@ -59,7 +60,7 @@ export default function RecentPracticeResults({ results }: { results: PracticeSe
                 </TableCell>
                 <TableCell>{result.duration}</TableCell>
                 <TableCell>
-                  <Button variant="link" className="text-blue-600">Review</Button>
+                  <Link href={`/ai-session/${result.id}?review=true&loc=ai_practice_page`} className="text-primary-600 hover:underline">Review</Link>
                 </TableCell>
               </TableRow>
             ))}

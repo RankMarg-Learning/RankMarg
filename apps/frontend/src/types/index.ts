@@ -4,6 +4,7 @@ export * from "./typeAPI";
 export * from "./mastery.api.types"
 export * from "./test.types";
 export * from "./performance.types";
+export * from "./attempt.types";
 
 
 export type QuestionWithOptions = Question & {

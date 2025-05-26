@@ -33,7 +33,7 @@ const SelectOption = memo(({
   onClick: () => void;
 }) => (
   <div
-    className={`flex items-center m-2 p-3 rounded-md cursor-pointer border
+    className={`flex items-center m-2 md:p-3 p-2 rounded-md cursor-pointer border
       ${isCorrect ? 'bg-green-200 border-green-500' : 
         isSelected ? 'bg-primary-100 border-primary-500' : 
         'bg-gray-50 hover:bg-yellow-50'}
@@ -73,7 +73,7 @@ const SelectOption = memo(({
       </label>
     </div>
     <div className="cursor-pointer">
-      <MarkdownRenderer content={option.content} className="text-base" />
+      <MarkdownRenderer content={option.content} className="md:text-base text-sm" />
     </div>
   </div>
 ));

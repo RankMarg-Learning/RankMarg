@@ -45,27 +45,27 @@ export async function GET(req: Request, { params }: { params: { sessionId: strin
             return jsonResponse(null, { success: false, message: "Practice session not found", status: 404 });
         }
 
-        // Get attempted question IDs
-        const attemptedQuestionIds = practiceSession.attempts.map(attempt => attempt.questionId);
+        // // Get attempted question IDs
+        // const attemptedQuestionIds = practiceSession.attempts.map(attempt => attempt.questionId);
         
-        // Separate unattempted and attempted questions
-        const unattemptedQuestions = practiceSession.questions.filter(
-            q => !attemptedQuestionIds.includes(q.question.id)
-        );
-        const attemptedQuestions = practiceSession.questions.filter(
-            q => attemptedQuestionIds.includes(q.question.id)
-        );
+        // // Separate unattempted and attempted questions
+        // const unattemptedQuestions = practiceSession.questions.filter(
+        //     q => !attemptedQuestionIds.includes(q.question.id)
+        // );
+        // const attemptedQuestions = practiceSession.questions.filter(
+        //     q => attemptedQuestionIds.includes(q.question.id)
+        // );
         
-        // Arrange questions: unattempted first, then attempted
-        const arrangedQuestions = [...unattemptedQuestions, ...attemptedQuestions];
+        // // Arrange questions: unattempted first, then attempted
+        // const arrangedQuestions = [...unattemptedQuestions, ...attemptedQuestions];
         
-        // Update the practice session object with arranged questions
-        const arrangedPracticeSession = {
-            ...practiceSession,
-            questions: arrangedQuestions
-        };
+        // // Update the practice session object with arranged questions
+        // const arrangedPracticeSession = {
+        //     ...practiceSession,
+        //     questions: arrangedQuestions
+        // };
 
-        return jsonResponse(arrangedPracticeSession, { success: true, message: "Ok", status: 200 });
+        return jsonResponse(practiceSession, { success: true, message: "Ok", status: 200 });
 
     } catch (error) {
         console.log("[AiPracticeSession-Dynamic] :", error);
