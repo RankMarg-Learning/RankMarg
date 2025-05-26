@@ -3,17 +3,12 @@ export const dynamic = "force-dynamic";
 import { PracticeService } from "@/services/auto/session.service";
 import { jsonResponse } from "@/utils/api-response";
 import { getBatchParameters } from "@/utils/batch";
-import { z } from "zod";
 
-const QuerySchema = z.object({
-    id: z.string().uuid().optional(),
-});
+
 export async function POST(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
-        const queryResult = QuerySchema.safeParse({
-            id: searchParams.get('id'),
-        });
+        const userId = searchParams.get('id');
 
         const authHeader = req.headers.get('Authorization')
         if (!authHeader || !authHeader.startsWith('Bearer')) {
@@ -25,17 +20,8 @@ export async function POST(req: Request) {
             return jsonResponse(null, { success: false, message: "Invalid API key", status: 403 })
         }
 
-        if (!queryResult.success) {
-            return jsonResponse(null, {
-                message: 'Invalid query parameters',
-                success: false,
-                status: 400,
-            })
-        }
-
         const { batchSize, offset } = getBatchParameters(req);
 
-        const { id: userId } = queryResult.data
         const practiceService = new PracticeService();
 
         if (userId) {
