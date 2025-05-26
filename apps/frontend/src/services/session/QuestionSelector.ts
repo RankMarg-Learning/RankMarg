@@ -117,7 +117,6 @@ export class QuestionSelector {
 
     async selectWeakConceptQuestions(subject: Subject, count: number): Promise<Question[]> {
         try {
-            // Find topics with low mastery levels or strength indices
             const weakTopics = await this.prisma.topicMastery.findMany({
                 where: {
                     userId: this.userId,
@@ -125,17 +124,17 @@ export class QuestionSelector {
                         subjectId: subject.id
                     },
                     OR: [
-                        { masteryLevel: { lte: 30 } }, // Low mastery level
-                        { strengthIndex: { lte: 40 } } // Low strength index
+                        { masteryLevel: { lte: 30 } }, 
+                        { strengthIndex: { lte: 40 } } 
                     ]
                 },
                 include: {
                     topic: true
                 },
                 orderBy: {
-                    masteryLevel: 'asc' // Prioritize the weakest topics first
+                    masteryLevel: 'asc' 
                 },
-                take: 10 // Limit to prevent too many weak topics
+                take: 10 
             });
 
             if (weakTopics.length === 0) {
@@ -146,13 +145,12 @@ export class QuestionSelector {
             const { difficulty: difficultyDistribution, categories } = this.getSelectionParameters(count);
 
             let selectedQuestions: Question[] = [];
-            // Get questions for these weak topics
+
             for (let difficulty = 1; difficulty <= 4; difficulty++) {
                 const questionsNeededForThisDifficulty = difficultyDistribution[difficulty - 1];
 
                 if (questionsNeededForThisDifficulty <= 0) continue;
 
-                // Get questions for this difficulty level
                 const questionsForDifficulty = await this.prisma.question.findMany({
                     where: {
                         topicId: {
@@ -175,17 +173,14 @@ export class QuestionSelector {
                     take: questionsNeededForThisDifficulty * 3
                 });
 
-                // Filter and select questions for this difficulty level
                 const filteredQuestionsForDifficulty = await this.filterRecentlyAttemptedQuestions(questionsForDifficulty);
 
-                // Add questions up to the required count for this difficulty
                 selectedQuestions = [
                     ...selectedQuestions,
                     ...filteredQuestionsForDifficulty.slice(0, questionsNeededForThisDifficulty)
                 ];
             }
 
-            // Fill remaining slots if needed
             if (selectedQuestions.length < count) {
                 const selectedIds = new Set(selectedQuestions.map(q => q.id));
 
@@ -230,7 +225,7 @@ export class QuestionSelector {
 
     async selectRevisionQuestions(subject: Subject, count: number): Promise<Question[]> {
         try {
-            // Find completed topics that need revision
+
             const completedTopics = await this.prisma.currentStudyTopic.findMany({
                 where: {
                     userId: this.userId,
@@ -246,7 +241,6 @@ export class QuestionSelector {
                 return [];
             }
 
-            // Find topics due for review based on spaced repetition schedule
             const reviewSchedules = await this.prisma.reviewSchedule.findMany({
                 where: {
                     userId: this.userId,
@@ -254,15 +248,13 @@ export class QuestionSelector {
                         in: completedTopics.map(ct => ct.topicId)
                     },
                     nextReviewAt: {
-                        lte: new Date() // Due for review
+                        lte: new Date() 
                     }
                 }
             });
 
-            // Prioritize topics due for review, then add other completed topics if needed
             let topicIds = reviewSchedules.map(rs => rs.topicId);
 
-            // If not enough review-due topics, add other completed topics
             if (topicIds.length < 5) {
                 const otherTopicIds = completedTopics
                     .filter(ct => !topicIds.includes(ct.topicId))
@@ -273,13 +265,12 @@ export class QuestionSelector {
 
             const { difficulty: difficultyDistribution, categories } = this.getSelectionParameters(count);
             let selectedQuestions: Question[] = [];
-            // Get questions for revision
+
             for (let difficulty = 1; difficulty <= 4; difficulty++) {
                 const questionsNeededForThisDifficulty = difficultyDistribution[difficulty - 1];
 
                 if (questionsNeededForThisDifficulty <= 0) continue;
 
-                // Get questions for this difficulty level
                 const questionsForDifficulty = await this.prisma.question.findMany({
                     where: {
                         topicId: {
@@ -302,17 +293,14 @@ export class QuestionSelector {
                     take: questionsNeededForThisDifficulty * 3
                 });
 
-                // Filter and select questions for this difficulty level
                 const filteredQuestionsForDifficulty = await this.filterRecentlyAttemptedQuestions(questionsForDifficulty);
 
-                // Add questions up to the required count for this difficulty
                 selectedQuestions = [
                     ...selectedQuestions,
                     ...filteredQuestionsForDifficulty.slice(0, questionsNeededForThisDifficulty)
                 ];
             }
 
-            // Fill remaining slots if needed
             if (selectedQuestions.length < count) {
                 const selectedIds = new Set(selectedQuestions.map(q => q.id));
 
@@ -355,9 +343,7 @@ export class QuestionSelector {
         }
     }
 
-    /**
-     * Select previous year questions (PYQs)
-     */
+
     async selectPYQs(subject: Subject, count: number): Promise<Question[]> {
         try {
             const { difficulty: difficultyDistribution, categories } = this.getSelectionParameters(count);

@@ -4,7 +4,7 @@ import { MasteryCalculator } from '@/services/mastery/MasteryCalculator';
 import prisma from '@/lib/prisma';
 import { startOfDay, subDays } from 'date-fns';
 import { AttemptsProcessor } from './AttemptsProcessor';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Stream } from '@prisma/client';
 
 
 export interface MasteryResult {
@@ -24,9 +24,11 @@ export class MasteryProcessor {
   constructor() {
     this.config = masteryConfig;
     this.attemptsProcessor = new AttemptsProcessor();
-    this.masteryCalculator = new MasteryCalculator();
+    this.masteryCalculator = new MasteryCalculator(this.config);
   }
-  async updateUserMastery(userId: string) {
+  async updateUserMastery(userId: string,stream:Stream) {
+
+    this.config.stream = stream;
 
     const result = {
       userId,
@@ -79,7 +81,6 @@ export class MasteryProcessor {
   
   public async updateMasteryTopicAndSubject(userId: string, subtopicIds: string[]){
     return await prisma.$transaction(async (tx) => {
-      // Step 1: Extract all unique topics from the provided subtopics
       const subtopics = await tx.subTopic.findMany({
         where: {
           id: {
@@ -98,18 +99,15 @@ export class MasteryProcessor {
         }
       });
   
-      // Create sets of unique topicIds and subjectIds
       const uniqueTopicIds = new Set(subtopics.map(st => st.topicId));
       const uniqueSubjectIds = new Set(subtopics.map(st => st.topic.subjectId));
   
-      // Step 2: Update topic mastery for each unique topic
       const updatedTopicMasteries = [];
       for (const topicId of Array.from(uniqueTopicIds)) {
         const updatedTopicMastery = await this.updateTopicMasteryFromExistingData(userId, topicId, tx);
         updatedTopicMasteries.push(updatedTopicMastery);
       }
   
-      // Step 3: Update subject mastery for each unique subject
       const updatedSubjectMasteries = [];
       for (const subjectId of Array.from(uniqueSubjectIds)) {
         const updatedSubjectMastery = await this.updateSubjectMasteryFromExistingData(userId, subjectId, tx);
@@ -145,7 +143,7 @@ export class MasteryProcessor {
   const useTransaction = !tx;
 
   const updateFunction = async (client) => {
-    // Get all topic masteries for this subject and user
+
     const topicMasteries = await client.topicMastery.findMany({
       where: {
         userId,
@@ -160,38 +158,36 @@ export class MasteryProcessor {
       return null;
     }
 
-    // Calculate aggregated stats
     const totalAttempts = topicMasteries.reduce((sum, m) => sum + m.totalAttempts, 0);
     const correctAttempts = topicMasteries.reduce((sum, m) => sum + m.correctAttempts, 0);
     
-    // Calculate weighted mastery level
     let weightedMasterySum = 0;
     let weightSum = 0;
     
     for (const m of topicMasteries) {
-      // Use attempts as weight, with minimum weight of 1
+
       const weight = Math.max(1, m.totalAttempts);
       weightedMasterySum += m.masteryLevel * weight;
       weightSum += weight;
     }
     
-    // Calculate new mastery level (rounded to nearest integer)
     const newMasteryLevel = weightSum > 0 
       ? Math.round(weightedMasterySum / weightSum)
       : 0;
 
-    // Find or create subject mastery record
-    let subjectMastery = await client.subjectMastery.findUnique({
+
+      let subjectMastery = await client.subjectMastery.findUnique({
       where: {
         userId_subjectId: {
           userId,
           subjectId
-        }
-      }
+        },
+      },
+
     });
 
     if (!subjectMastery) {
-      // Create new subject mastery if it doesn't exist
+
       subjectMastery = await client.subjectMastery.create({
         data: {
           userId,
@@ -202,7 +198,7 @@ export class MasteryProcessor {
         }
       });
     } else {
-      // Update existing subject mastery
+
       subjectMastery = await client.subjectMastery.update({
         where: {
           id: subjectMastery.id
@@ -218,7 +214,7 @@ export class MasteryProcessor {
     return subjectMastery;
   };
 
-  // Run in transaction if not already in one
+  
   if (useTransaction) {
     return await prisma.$transaction(updateFunction);
   } else {
@@ -230,7 +226,7 @@ export class MasteryProcessor {
   const useTransaction = !tx;
 
   const updateFunction = async (client) => {
-    // Get all subtopic masteries for this topic and user
+
     const subtopicMasteries = await client.subtopicMastery.findMany({
       where: {
         userId,
@@ -243,31 +239,24 @@ export class MasteryProcessor {
       return null;
     }
 
-    // Calculate aggregated stats
     const totalAttempts = subtopicMasteries.reduce((sum, m) => sum + m.totalAttempts, 0);
     const correctAttempts = subtopicMasteries.reduce((sum, m) => sum + m.correctAttempts, 0);
     const avgStrengthIndex = subtopicMasteries.reduce((sum, m) => sum + m.strengthIndex, 0) / subtopicMasteries.length;
     
-    // Calculate accuracy
-    // const accuracy = totalAttempts > 0 ? correctAttempts / totalAttempts : 0;
-    
-    // Calculate weighted mastery level
     let weightedMasterySum = 0;
     let weightSum = 0;
     
     for (const m of subtopicMasteries) {
-      // Use attempts as weight, with minimum weight of 1
+
       const weight = Math.max(1, m.totalAttempts);
       weightedMasterySum += m.masteryLevel * weight;
       weightSum += weight;
     }
     
-    // Calculate new mastery level (rounded to nearest integer)
     const newMasteryLevel = weightSum > 0 
       ? Math.round(weightedMasterySum / weightSum)
       : 0;
 
-    // Find or create topic mastery record
     let topicMastery = await client.topicMastery.findUnique({
       where: {
         userId_topicId: {
@@ -278,7 +267,7 @@ export class MasteryProcessor {
     });
 
     if (!topicMastery) {
-      // Create new topic mastery if it doesn't exist
+
       topicMastery = await client.topicMastery.create({
         data: {
           userId,
@@ -290,7 +279,7 @@ export class MasteryProcessor {
         }
       });
     } else {
-      // Update existing topic mastery
+
       topicMastery = await client.topicMastery.update({
         where: {
           id: topicMastery.id
@@ -307,7 +296,6 @@ export class MasteryProcessor {
     return topicMastery;
   };
 
-  // Run in transaction if not already in one
   if (useTransaction) {
     return await prisma.$transaction(updateFunction);
   } else {

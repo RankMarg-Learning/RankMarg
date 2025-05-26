@@ -1,4 +1,6 @@
 import { MasteryAttempt } from "@/types";
+import { MasteryConfig } from "./MasteryConfig";
+import { Stream } from "@prisma/client";
 
 export interface MasteryData {
   totalAttempts: number;
@@ -17,15 +19,20 @@ export interface MasteryData {
 
 
 export interface StrengthIndexData {
-  totalAttempts: number; // Total number of attempts
-  correctAttempts: number; // Total number of correct attempts
-  streak: number; // Number of consecutive correct answers
-  lastCorrectDate: Date | null; // Date of the last correct attempt
-  avgTime: number; // Average time spent on questions (in seconds)
+  totalAttempts: number; 
+  correctAttempts: number; 
+  streak: number; 
+  lastCorrectDate: Date | null; 
+  avgTime: number; 
 }
 
 export class MasteryCalculator {
+    private config: MasteryConfig;
   
+  constructor(config:MasteryConfig) {
+        this.config = config;
+    
+  }
   calculateMasteryScore(data: MasteryData): number {
 
     const baseScore = data.totalAttempts > 0
@@ -42,7 +49,7 @@ export class MasteryCalculator {
 
     const accuracyFactor = (data.recentAccuracy - 0.5) * 20;
 
-    const idealTime = 60; //TODO: This is NEET Exam ideal Time you can modify it according to Stream
+    const idealTime = this.config.stream === Stream.JEE ? 144 : 70; 
     const speedRatio = data.avgTime > 0 ? idealTime / data.avgTime : 1;
     const speedFactor = Math.max(0, Math.min(speedRatio * 5, 10));
 
@@ -153,7 +160,7 @@ export class MasteryCalculator {
   
   private countRepetitionsWithinTimeframe(attempts: MasteryAttempt[], hours: number): number {
     // Group attempts by question ID
-    const questionAttempts: Record<string, any[]> = {};
+    const questionAttempts: Record<string, MasteryAttempt[]> = {};
     for (const attempt of attempts) {
       if (!questionAttempts[attempt.question.id]) {
         questionAttempts[attempt.question.id] = [];

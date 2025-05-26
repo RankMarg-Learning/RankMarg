@@ -6,8 +6,6 @@ import { PracticeSessionGenerator } from "../session/PracticeSessionGenerator";
 
 export class PracticeService {
 
-
-
     async processUserBatch(batchSize: number, offset: number) {
         const users = await prisma.user.findMany({
             select: { id: true },

@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma';
 import { MasteryProcessor } from '../mastery/MasteryProcessor';
-import { MetricType } from '@prisma/client';
+import { MetricType, Stream } from '@prisma/client';
 
 export class MasteryService {
   private MasteryProcessor: MasteryProcessor;
@@ -8,36 +8,33 @@ export class MasteryService {
   constructor(){
     this.MasteryProcessor = new MasteryProcessor();
   }
+
+  async processOneUser(userId: string,stream:Stream) {
+
+    await this.MasteryProcessor.updateUserMastery(userId,stream);
+
+    await Promise.all(Object.keys(MetricType).map(async key => {
+      const metricType = MetricType[key as keyof typeof MetricType];
+      await this.UpdateMetrics(userId, metricType);
+    }));
+
+  }
   async processUserBatch(batchSize: number, offset: number) {
 
     // TODO: Implement if user is active or not
     const users = await prisma.user.findMany({
-      select: { id: true },
+      select: { id: true ,stream:true},
       skip: offset,
       take: batchSize,
     });
 
-    const stats = {
-      usersProcessed: users.length,
-      subjects: 0,
-      topics: 0,
-      subtopics: 0,
-    };
-
     for (const user of users) {
-      const updateResult = await this.MasteryProcessor.updateUserMastery(user.id);
-
-    await Promise.all(Object.keys(MetricType).map(async key => {
-      const metricType = MetricType[key as keyof typeof MetricType];
-      await this.UpdateMetrics(user.id, metricType);
-    }));
-
-      stats.subjects += updateResult.subjectsUpdated;
-      stats.topics += updateResult.topicsUpdated;
-      stats.subtopics += updateResult.subtopicsUpdated;
+      try {
+        await this.processOneUser(user.id, user.stream);
+      } catch (error) {
+        console.error(`Error processing user ${user.id}:`, error);
+      }
     }
-
-    return stats;
   }
 
   private async UpdateMetrics(userId: string, metricType: MetricType) {
