@@ -78,21 +78,19 @@ const QuestionUI = ({
   }, [question.id, question.type, answer, isAnswered]);
 
   const correctOptions = useMemo(() => {
-    if (!isAnswered || !question.options) return [];
+    if (!(isAnswered || isSubmitting) || !question.options) return [];
     return question.options
       .map((option, index) => ({ ...option, index }))
       .filter((option) => option.isCorrect)
       .map((option) => option.index);
-  }, [isAnswered, question.options]);
+  }, [isAnswered, question.options,isSubmitting]);
 
-  // Track reaction time
   useEffect(() => {
     if (!isAnswered && selectedValues.length === 0 && numericalValue === null) {
       setReactionTime(time);
     }
   }, [time, selectedValues, numericalValue, isAnswered]);
 
-  // Handlers
   const handleSelectionChange = (values: number[]) => {
     if (isAnswered) return;
     setSelectedValues(values);
@@ -156,7 +154,6 @@ const QuestionUI = ({
     handleAttempt(attemptData);
   };
 
-  // Memoize report email data
   const reportData = useMemo(() => ({
     email: 'support@rankmarg.in',
     subject: `Report: ${question?.slug}`,
@@ -186,8 +183,8 @@ Best regards,
     <div className="min-h-[calc(100vh-120px)] flex flex-col bg-white" id="fullscreen">
       <div className="flex flex-wrap md:flex-row flex-1 p-4 rounded-lg overflow-hidden border-b">
         {/* Left side: Question */}
-        <div className="w-full md:w-1/2 p-6 border-b md:border-b-0 md:border-r">
-          <h1 className="text-xl font-bold mb-4">Question</h1>
+        <div className="w-full md:w-1/2 md:p-6 p-2 border-b md:border-b-0 md:border-r">
+          <h1 className="text-lg font-bold mb-2">Question</h1>
 
           {/* Timer - Hidden when answered */}
           {!isAnswered && (
@@ -196,7 +193,7 @@ Best regards,
               defaultTime={time}
               isRunning={isRunning}
               onTimeChange={setTime}
-              className="bg-blue-500 text-white text-base " 
+              className="bg-blue-500 text-white text-base hidden" 
             />
           )} 
 
@@ -220,10 +217,10 @@ Best regards,
 
           {/* Question content */}
           <div className='noselect'>
-            <MarkdownRenderer content={question?.content} className='text-base' />
+            <MarkdownRenderer content={question?.content} className='md:text-base text-sm' />
           </div>
 
-          {/* Hint button - only shown when not answered and hint not used */}
+          {/* Hint button */}
           {!isAnswered && !isHintUsed && (
             <Button 
               variant="link" 
@@ -236,7 +233,7 @@ Best regards,
         </div>
         
         {/* Right side: Options */}
-        <div className="w-full md:w-1/2 p-6 relative noselect">
+        <div className="w-full md:w-1/2 md:p-6 p-2 relative noselect">
           <Options 
             isAnswered={isAnswered || isSubmitting}
             type={question.type} 
@@ -249,8 +246,8 @@ Best regards,
             correctNumericalValue={question.isNumerical}
           />
 
-          {/* Submit button - only when not answered */}
-          {!isAnswered && (
+          {/* Submit button*/}
+          {(!isAnswered && !isSubmitting )&& (
             <div className="flex justify-center mt-4 gap-2">
               <form onSubmit={handleOnSubmit}>
                 <Button 
@@ -284,8 +281,8 @@ Best regards,
         </Motion>
       )}
 
-      {/* Solution section - only when answered */}
-      {isAnswered && (
+      {/* Solution section  */}
+      {(isAnswered || isSubmitting )&& (
         <Motion animation='fade-in' className="w-full p-2">
           <div className="mt-4 p-3 sm:p-4 bg-purple-50 rounded-lg border border-purple-100">
             <div className="flex items-start gap-2 mb-1">

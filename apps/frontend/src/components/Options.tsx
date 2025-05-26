@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import Select from './Select';
 import { Input } from './ui/input';
 import { Option, QuestionType } from '@prisma/client';
-import { cn } from '../lib/utils'; // Assuming you have a cn utility for class name merging
+import { cn } from '../lib/utils'; 
 
 interface OptionsProps {
   isAnswered?: boolean;
@@ -14,7 +14,7 @@ interface OptionsProps {
   numericalValue: number | null;
   onNumericalChange: (value: number | null) => void;
   correctOptions?: number[];
-  correctNumericalValue?: number | null; // Added to check if numerical answer is correct
+  correctNumericalValue?: number | null; 
 }
 
 const Options: React.FC<OptionsProps> = ({
@@ -29,7 +29,6 @@ const Options: React.FC<OptionsProps> = ({
   correctNumericalValue
 }) => {
 
-  // Calculate isMultiple only once when options change
   const isMultiple = useMemo(() => {
     if (!options?.length) return false;
     return options.filter(option => option.isCorrect).length > 1;
@@ -43,12 +42,10 @@ const Options: React.FC<OptionsProps> = ({
           : [...selectedValues, index]
       );
     } else {
-      // For single selection, we replace the entire array
       onSelectionChange([index]);
     }
   };
 
-  // Determine the input status for numerical answers
   const getInputStatus = () => {
     if (!isAnswered || correctNumericalValue === undefined || numericalValue === null) {
       return 'default';
@@ -64,7 +61,7 @@ const Options: React.FC<OptionsProps> = ({
     <>
       {type === "MULTIPLE_CHOICE" && (
         <>
-          <h1 className="md:text-xl font-bold">Options</h1>
+          <h1 className="md:text-lg font-bold">Options</h1>
           <div className="flex flex-col noselect">
             <Select
               options={options}
@@ -80,7 +77,7 @@ const Options: React.FC<OptionsProps> = ({
       
       {type === "INTEGER" && (
         <>
-          <h1 className="md:text-xl font-bold mb-4">Numerical</h1>
+          <h1 className="md:text-lg font-bold mb-2">Numerical</h1>
           <div className="relative">
             <Input
               type="number"
@@ -96,7 +93,7 @@ const Options: React.FC<OptionsProps> = ({
               onChange={(e) => onNumericalChange(parseFloat(e.target.value) || null)}
             />
             
-            {isAnswered && inputStatus === 'incorrect' && correctNumericalValue !== undefined && (
+            {isAnswered  && correctNumericalValue !== undefined && (
               <div className="text-sm text-gray-600 ml-2 mt-1">
                 Correct answer: {correctNumericalValue}
               </div>
