@@ -201,6 +201,7 @@ const AiPracticeSession = ({ sessionId }: { sessionId: string }) => {
                     question={currentQuestion}
                     handleAttempt={handleAttempt}
                     answer={currentQuestionAttempt?.answer || null}
+                    attemptId={currentQuestionAttempt?.id || null}
                     isSolutionShow={(session?.data?.isCompleted || isReviewMode ) ?? false}
                 />
             )}

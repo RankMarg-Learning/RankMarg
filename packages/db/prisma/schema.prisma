@@ -39,13 +39,49 @@ model User {
   currentStudyTopic   CurrentStudyTopic[]
   activity            activity[]
 
-  updatedAt DateTime? @updatedAt
-  createdAt DateTime  @default(now())
+  updatedAt    DateTime?     @updatedAt
+  createdAt    DateTime      @default(now())
+  Subscription Subscription?
 
   @@index([id])
   @@index([username])
   @@index([stream])
   @@index([targetYear])
+}
+
+model Subscription {
+  id                String             @id @default(cuid())
+  userId            String             @unique
+  user              User               @relation(fields: [userId], references: [id])
+  plan              SubscriptionPlan
+  status            SubscriptionStatus
+  trialEndsAt       DateTime?
+  currentPeriodEnd  DateTime?
+  cancelAtPeriodEnd Boolean            @default(false)
+  provider          PaymentProvider
+  providerId        String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+enum SubscriptionPlan {
+  TRIAL
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIAL
+  CANCELLED
+  EXPIRED
+  PAST_DUE
+}
+
+enum PaymentProvider {
+  PHONEPE
+  RAZORPAY
+  NONE
 }
 
 enum StandardEnum {
@@ -335,7 +371,7 @@ model Attempt {
   questionId          String
   type                AttemptType
   answer              String?
-  mistake             String?
+  mistake             MistakeType?       @default(NONE)
   timing              Float?             @default(0)
   reactionTime        Float?
   status              SubmitStatus       @default(NOT_ANSWERED)
@@ -357,6 +393,15 @@ enum SubmitStatus {
   MARK_FOR_REVIEW
   ANSWERED_MARK
   NOT_ANSWERED
+}
+
+enum MistakeType {
+  NONE
+  CONCEPTUAL
+  CALCULATION
+  READING
+  OVERCONFIDENCE
+  OTHER
 }
 
 enum AttemptType {

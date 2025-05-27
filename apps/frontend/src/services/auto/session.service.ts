@@ -39,7 +39,7 @@ export class PracticeService {
                 stream: user.stream as Stream
             }
         });
-
+        await this.markSessionAsCompleted(userId);
         const config = createDefaultSessionConfig(user.stream as Stream, studentGrade, totalQuestions);
         const sessionGenerator = new PracticeSessionGenerator(prisma, config);
         const practiceSession = await sessionGenerator.generate(userId, subjects, studentGrade);
@@ -51,6 +51,18 @@ export class PracticeService {
             userId,
             generatedAt: new Date(),
         };
+    }
+
+    public async markSessionAsCompleted(userId: string) {
+        await prisma.practiceSession.updateMany({
+            where:{
+                userId: userId,
+                isCompleted: false
+            },
+            data: {
+                isCompleted: true,
+            }
+        })
     }
 
 }

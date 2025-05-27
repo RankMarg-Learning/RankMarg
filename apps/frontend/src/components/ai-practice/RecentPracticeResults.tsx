@@ -1,6 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PracticeSession } from "@/types/dashboard.types";
 import { SubjectIcons, SubjectTextColor } from "@/constant/SubjectColorCode";
@@ -16,12 +15,12 @@ const renderIcon = (title: string) => {
   return <Icon className={`w-6 h-6 ${colorClass}`} />;
 };
 
-export default function RecentPracticeResults({ results }: { results: PracticeSession[] }) {
+export default function RecentPracticeResults({ results ,allResults=false}: { results: PracticeSession[],allResults?:Boolean }) {
   return (
     <Card className="w-full p-4 border-0">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Recent Practice Results</h2>
-        <Button variant="link" className="text-blue-600">View All</Button>
+        { !allResults && (<Link href={`ai-practice/recentResults`} className="text-primary-600 text-sm font-semibold hover:underline">View All</Link>)}
       </div>
       <CardContent>
         <Table>
