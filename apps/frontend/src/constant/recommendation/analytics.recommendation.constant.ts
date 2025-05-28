@@ -30,12 +30,12 @@ export function getMetricCardData(metrics: Metric[]): Record<string, FormattedMe
                 valueStr = `${currentValue}`;
                 deltaStr = hasChanged ? `${isImproved ? '+' : ''}${((diff / previousValue) * 100).toFixed(1)}%` : '0%';
                 suggestion = isImproved
-                    ? `${deltaStr} more than last month`
+                    ? `${deltaStr} more than last week`
                     : `Try to solve more next week`;
                 break;
 
             case "CORRECT_ATTEMPTS":
-                valueStr = `${currentValue}%`;
+                valueStr = `${currentValue}`;
                 deltaStr = hasChanged ? `${isImproved ? '+' : ''}${((diff)).toFixed(1)}%` : '0%';
                 suggestion = isImproved
                     ? "Great progress! Keep it up"
@@ -43,7 +43,7 @@ export function getMetricCardData(metrics: Metric[]): Record<string, FormattedMe
                 break;
 
             case "MASTERY_LEVEL":
-                valueStr = `${currentValue}%`;
+                valueStr = `${currentValue}`;
                 deltaStr = hasChanged ? `${isImproved ? '+' : ''}${((diff)).toFixed(1)}%` : '0%';
                 suggestion = isImproved
                     ? "Improving steadily across subjects"
@@ -51,7 +51,7 @@ export function getMetricCardData(metrics: Metric[]): Record<string, FormattedMe
                 break;
 
             case "TEST_SCORE":
-                valueStr = `${currentValue}%`;
+                valueStr = `${currentValue}`;
                 deltaStr = hasChanged ? `${isImproved ? '+' : ''}${(diff).toFixed(1)}%` : '0%';
                 suggestion = isImproved
                     ? diff >= 10

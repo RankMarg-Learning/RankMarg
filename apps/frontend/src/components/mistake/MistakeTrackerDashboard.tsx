@@ -1,28 +1,27 @@
+"use client"
+
 import React from 'react'
 import MistakeOverview from './MistakeOverview'
 import MistakeDistrubution from './MistakeDistrubution'
 import MistakeInsights from './MistakeInsights'
-import MistakeRecent from './MistakeRecent'
+import { useMistakeDashboard } from '@/hooks/useMistakeDashboard'
 
 const MistakeTrackerDashboard = () => {
+    const { distribution, overview ,isLoading, isError} = useMistakeDashboard({ id: '0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5' })
+
+    if (isLoading) return <div>Loading...</div>
+    if (isError) return <div>Error loading data</div>
     return (
         <div>
             <div className="mb-8 md:space-y-6 space-y-3">
-                {/* <div className="hidden" id="el-qg6wxqjk">
-          <h2 className="text-lg font-medium  flex items-center gap-2">
-            Mistake Tracker
-          </h2>
-          <p className="text-gray-600 text-sm">Track your conceptual progress across subjects and topics</p>
-
-        </div> */}
-                <MistakeOverview />
+                <MistakeOverview overview={overview?.data} />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-8" id="el-z33dzxua">
                     <div className='col-span-2'>
-                        <MistakeDistrubution />
+                        <MistakeDistrubution dist={distribution?.data} />
                     </div>
                         <MistakeInsights />
                 </div>
-                        <MistakeRecent/>
+                        {/* <MistakeRecent/> */}
 
             </div>
         </div>
