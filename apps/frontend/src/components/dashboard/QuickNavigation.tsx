@@ -5,13 +5,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import Link from "next/link";
 import { useState } from "react";
 
-// Define the navigation items with clear student-focused labels
 const navItems = [
   { 
     icon: BookOpen, 
     label: "Start Studying", 
     description: "Begin your daily session",
-    href: "/practice", 
+    href: "/ai-practice", 
     color: "blue",
     priority: 1,
     comingSoon: false
@@ -38,7 +37,7 @@ const navItems = [
     icon: XCircle, 
     label: "Fix Mistakes", 
     description: "Review & correct errors",
-    href: "/mistakes", 
+    href: "/mistakes-tracker", 
     color: "red",
     priority: 4,
     comingSoon: false

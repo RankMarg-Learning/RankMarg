@@ -5,6 +5,7 @@ import MistakeOverview from './MistakeOverview'
 import MistakeDistrubution from './MistakeDistrubution'
 import MistakeInsights from './MistakeInsights'
 import { useMistakeDashboard } from '@/hooks/useMistakeDashboard'
+import MistakePageBanner from './MistakePageBanner'
 
 const MistakeTrackerDashboard = () => {
     const { distribution, overview ,isLoading, isError} = useMistakeDashboard({ id: '0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5' })
@@ -22,6 +23,7 @@ const MistakeTrackerDashboard = () => {
                         <MistakeInsights />
                 </div>
                         {/* <MistakeRecent/> */}
+                        <MistakePageBanner/>
 
             </div>
         </div>

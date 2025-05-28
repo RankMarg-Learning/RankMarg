@@ -54,7 +54,7 @@ const PracticeSummary = ({ overview }: { overview: PracticeSummaryProps }) => {
             <div>
               <h4 className="font-medium text-gray-800 mb-2" id="el-plvzw5le">Subject Breakdown</h4>
               <div className="space-y-3">
-                {overview?.subjectWiseSummary.length > 0 ? (overview?.subjectWiseSummary?.map((sm, index) => (
+                {overview?.subjectWiseSummary?.length > 0 ? (overview?.subjectWiseSummary?.map((sm, index) => (
                   <div key={index}>
                     <div className="flex justify-between text-sm mb-1">
                       <span>{sm?.subject}</span>
