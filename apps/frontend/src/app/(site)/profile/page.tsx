@@ -6,13 +6,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Pencil, Check, Clock } from "lucide-react"
+import { Pencil, Check } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import axios from "axios"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
 import ProfileSkeleton from "@/components/skeleton/skel_profile"
-import { Checkbox } from "@/components/ui/checkbox"
 import { TextFormator } from "@/utils/textFormator"
 import { StandardEnum } from "@prisma/client"
 
@@ -435,53 +434,7 @@ export default function ProfileUpdate() {
             </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-neutral-200/20">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-md font-medium text-gray-700">Notification Preferences</h4>
-              <div className="flex items-center text-amber-600">
-                <Clock className="h-4 w-4 mr-1" />
-                <span className="text-sm font-medium">Coming Soon</span>
-              </div>
-            </div>
-            <div className="space-y-3 opacity-60">
-              <div className="flex items-start">
-                <div className="flex items-center h-5">
-                  <Checkbox id="email-notifications" disabled />
-                </div>
-                <div className="ml-3 text-sm">
-                  <Label htmlFor="email-notifications" className="font-medium text-gray-700">Email Notifications</Label>
-                  <p className="text-gray-500">Receive test results, reminders, and progress reports via email</p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <div className="flex items-center h-5">
-                  <Checkbox id="study-reminders" disabled />
-                </div>
-                <div className="ml-3 text-sm">
-                  <Label htmlFor="study-reminders" className="font-medium text-gray-700">Study Reminders</Label>
-                  <p className="text-gray-500">Get daily reminders to complete your study goals</p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <div className="flex items-center h-5">
-                  <Checkbox id="performance-updates" disabled />
-                </div>
-                <div className="ml-3 text-sm">
-                  <Label htmlFor="performance-updates" className="font-medium text-gray-700">Performance Updates</Label>
-                  <p className="text-gray-500">Receive weekly performance analysis and improvement suggestions</p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <div className="flex items-center h-5">
-                  <Checkbox id="new-content" disabled />
-                </div>
-                <div className="ml-3 text-sm">
-                  <Label htmlFor="new-content" className="font-medium text-gray-700">New Content Alerts</Label>
-                  <p className="text-gray-500">Be notified when new study materials are added for your subjects</p>
-                </div>
-              </div>
-            </div>
-          </div>
+         
 
 
         </div>

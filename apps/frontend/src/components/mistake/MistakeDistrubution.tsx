@@ -28,7 +28,7 @@ const chartConfig = {
 
 const AnalyticsDashboard = ({ dist }: {dist:AnalyticsDashboardProps}) => {
 
-  const chartData = dist.distribution.map((item) => ({
+  const chartData = dist?.distribution?.map((item) => ({
     ...item,
     type: item.type.charAt(0).toUpperCase() + item.type.slice(1).toLowerCase(),
   }))
@@ -74,7 +74,7 @@ const AnalyticsDashboard = ({ dist }: {dist:AnalyticsDashboardProps}) => {
         <Info className="h-4 w-4 text-primary-700" />
         <div className="text-xs text-primary-900" id="el-y9l6an94">
           <span className="font-medium" id="el-q3wxpw80">
-          Suggestion: {dist.suggest || "No suggestions available."}
+          Suggestion: {dist?.suggest || "No suggestions available."}
           </span>
         </div>
       </div>

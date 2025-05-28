@@ -196,18 +196,18 @@ function ProfilePage({ username }: { username: string }) {
                     </div>
 
                     <div className="bg-white rounded-lg  overflow-hidden border border-neutral-200/30 mt-6" id="el-fhglnghk">
-                        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-5 py-4" id="el-uanx9s4v">
+                        <div className="bg-gradient-to-br from-primary-500 to-primary-600 px-5 py-4" id="el-uanx9s4v">
                             <h4 className="text-lg font-semibold text-white" id="el-10roalo3">Study Streak</h4>
                         </div>
                         <div className="p-5" id="el-tzxiyxpq">
                             <div className="flex items-center justify-between mb-4" id="el-thk9x48a">
                                 <div id="el-yi9vgfbb">
-                                    <span className="text-3xl font-bold text-indigo-600" id="el-44x6idbi">
+                                    <span className="text-3xl font-bold text-primary-600" id="el-44x6idbi">
                                         {userBasicData?.userPerformance?.streak || 0}
                                     </span>
                                     <span className="text-gray-500 ml-2" id="el-w159gazu">days</span>
                                 </div>
-                                <div className="bg-indigo-100 text-indigo-800 text-xs font-medium px-3 py-1 rounded-full" id="el-yuqswifc">
+                                <div className="bg-primary-100 text-primary-800 text-xs font-medium px-3 py-1 rounded-full" id="el-yuqswifc">
                                     Current
                                 </div>
                             </div>
@@ -219,7 +219,7 @@ function ProfilePage({ username }: { username: string }) {
                                     return (
                                         <div
                                             key={index}
-                                            className={`h-10 rounded-md ${isCompleted ? 'bg-indigo-600' : 'bg-gray-300'}`}
+                                            className={`h-10 rounded-md ${isCompleted ? 'bg-primary-600' : 'bg-gray-300'}`}
                                         />
                                     );
                                 })}
@@ -245,10 +245,10 @@ function ProfilePage({ username }: { username: string }) {
                                 <div className="bg-gray-50 rounded-lg p-4" id="el-6207zdd4">
                                     <div className="flex items-center justify-between mb-2" id="el-0dj5hc6j">
                                         <p className="text-sm text-gray-500" id="el-qa7mtiwu">Accuracy</p>
-                                        <span className="text-sm font-medium text-indigo-600" id="el-39k8zc0j">{userBasicData?.userPerformance?.accuracy?.toFixed(2)}%</span>
+                                        <span className="text-sm font-medium text-primary-600" id="el-39k8zc0j">{userBasicData?.userPerformance?.accuracy?.toFixed(2)}%</span>
                                     </div>
                                     <div className="w-full bg-gray-200 rounded-full h-2.5" id="el-rvdhqui8">
-                                        <Progress indicatorColor='bg-indigo-600' value={userBasicData?.userPerformance?.accuracy} className="h-2.5 rounded-full" id="el-0j8v1q4g" />
+                                        <Progress indicatorColor='bg-primary-600' value={userBasicData?.userPerformance?.accuracy} className="h-2.5 rounded-full" id="el-0j8v1q4g" />
                                     </div>
                                 </div>
                                 <div className="bg-gray-50 rounded-lg p-4 hidden" id="el-0qoauo7f">
@@ -263,10 +263,10 @@ function ProfilePage({ username }: { username: string }) {
                                 <div className="bg-gray-50 rounded-lg p-4" id="el-cptx9c1e">
                                     <div className="flex items-center justify-between mb-2" id="el-aq3gtngf">
                                         <p className="text-sm text-gray-500" id="el-o4bztcuj">Average Score</p>
-                                        <span className="text-sm font-medium text-blue-600" id="el-k0w88hbo">{userBasicData?.userPerformance?.avgScore}/100</span>
+                                        <span className="text-sm font-medium text-primary-600" id="el-k0w88hbo">{userBasicData?.userPerformance?.avgScore}/100</span>
                                     </div>
                                     <div className="w-full bg-gray-200 rounded-full h-2.5" id="el-gwxq68ty">
-                                        <Progress indicatorColor='bg-blue-600' value={userBasicData?.userPerformance?.avgScore} className="h-2.5 rounded-full" id="el-0j8v1q4g" />
+                                        <Progress indicatorColor='bg-primary-600' value={userBasicData?.userPerformance?.avgScore} className="h-2.5 rounded-full" id="el-0j8v1q4g" />
                                     </div>
                                 </div>
                             </div>

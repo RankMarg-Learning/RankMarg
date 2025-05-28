@@ -13,27 +13,27 @@ import MasterySubjectSkeleton from '../skeleton/subject.mastery.skeleton';
 
 const getMasteryColor = (mastery) => {
     if (mastery >= 85) return {
-        badge: "text-emerald-700 bg-emerald-50 border-emerald-200 font-medium",
+        badge: "text-emerald-700 bg-emerald-50 border-emerald-200 font-semibold",
         bg: "bg-emerald-500",
         progress: "bg-emerald-500"
     };
     if (mastery >= 70) return {
-        badge: "text-blue-700 bg-blue-50 border-blue-200 font-medium",
+        badge: "text-blue-700 bg-blue-50 border-blue-200 font-semibold",
         bg: "bg-blue-500",
         progress: "bg-blue-500"
     };
     if (mastery >= 60) return {
-        badge: "text-amber-700 bg-amber-50 border-amber-200 font-medium",
+        badge: "text-amber-700 bg-amber-50 border-amber-200 font-semibold",
         bg: "bg-amber-500",
         progress: "bg-amber-500"
     };
     if (mastery >= 40) return {
-        badge: "text-orange-700 bg-orange-50 border-orange-200 font-medium",
+        badge: "text-orange-700 bg-orange-50 border-orange-200 font-semibold",
         bg: "bg-orange-500",
         progress: "bg-orange-500"
     };
     return {
-        badge: "text-red-700 bg-red-50 border-red-200 font-medium",
+        badge: "text-red-700 bg-red-50 border-red-200 font-semibold",
         bg: "bg-red-500",
         progress: "bg-red-500"
     };
@@ -86,14 +86,14 @@ const MasterySubjectPage = ({ subjectId }) => {
 
     const renderSubjectHeader = () => (
         <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex flex-row justify-between md:items-start items-end gap-4">
                 <div>
-                    <h2 className="text-xl font-bold text-gray-800">{subjectMastery?.data?.subject?.name}</h2>
+                    <h2 className="text-lg font-bold text-gray-800">{subjectMastery?.data?.subject?.name}</h2>
                     <p className="text-sm text-gray-500">Mastery Breakdown</p>
                 </div>
 
                 <div className="flex flex-col items-end">
-                    <Badge className={`text-sm px-3 py-1 rounded-full ${masteryColors.badge}`}>
+                    <Badge className={`text-xs px-2 py-1 rounded-full ${masteryColors.badge}`}>
                         {overallMastery}% - {getMasteryLabel(overallMastery)}
                     </Badge>
                     <span className="text-xs mt-1 text-gray-500">{getMasteryMessage(overallMastery)}</span>
@@ -157,11 +157,11 @@ const MasterySubjectPage = ({ subjectId }) => {
                             <AccordionTrigger className="px-4 py-4 hover:no-underline group">
                                 <div className="flex items-center justify-between w-full pr-4">
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${topicColors.bg} text-white transition-all`}>
-                                            {Math.round(topic.mastery)}
+                                        <div className={`md:w-10 md:h-10 w-8 h-8 rounded-full flex items-center justify-center ${topicColors.bg} text-white transition-all`}>
+                                        {topic.mastery === 0 ? "00" : topic.mastery < 10 ? `0${Math.round(topic.mastery)}` : Math.round(topic.mastery)}
                                         </div>
                                         <div className="text-left">
-                                            <span className="font-semibold text-gray-800">{topic.name}</span>
+                                            <span className="font-semibold text-gray-800 truncate max-w-[160px] block">{topic.name}</span>
                                             <p className="text-xs text-gray-500 hidden sm:block">{getMasteryMessage(topic.mastery)}</p>
                                         </div>
                                     </div>

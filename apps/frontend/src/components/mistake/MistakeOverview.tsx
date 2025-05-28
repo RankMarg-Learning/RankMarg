@@ -21,7 +21,7 @@ const MistakeOverview = ({ overview }: { overview: MistakeAnalyticsOverview }) =
     mistakesBySubject,
     mostMistakeType } = overview;
 
-  const isImproving = trend.improving;
+  const isImproving = trend?.improving || false;
   const arrowIcon = isImproving ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
   const textColorClass = isImproving ? 'text-primary-800' : 'text-red-600';
 
@@ -33,22 +33,22 @@ const MistakeOverview = ({ overview }: { overview: MistakeAnalyticsOverview }) =
           <div className="md:col-span-1">
             <div className="text-sm text-primary-900 uppercase tracking-wider opacity-80">Weekly Mistakes</div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-4xl font-bold text-primary-900">{cnt.current}</span>
+              <span className="text-4xl font-bold text-primary-900">{cnt?.current}</span>
               {
-                trend.improving ? (
+                trend?.improving ? (
                   <Badge variant="outline" className="bg-green-500/10 text-green-900">
-                    {TextFormator(trend.status)}
+                    {TextFormator(trend?.status)}
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="bg-red-500/10 text-red-900">
-                    {TextFormator(trend.status)}
+                    {TextFormator(trend?.status)}
                   </Badge>
                 )
               }
             </div>
             <div className="mt-4">
               <Progress
-                value={cnt.reducePct}
+                value={cnt?.reducePct || 0}
                 max={100}
                 
                 className="h-2 bg-gray-300/30 border border-primary-100"
@@ -59,8 +59,8 @@ const MistakeOverview = ({ overview }: { overview: MistakeAnalyticsOverview }) =
               {arrowIcon}
               <span>
                 {isImproving
-                  ? `+${cnt.reducePct}% better than last week`
-                  : `${cnt.reducePct}% worse than last week`}
+                  ? `+${cnt?.reducePct || 0}% better than last week`
+                  : `${cnt?.reducePct || 0}% worse than last week`}
               </span>
             </div>
 
@@ -77,7 +77,7 @@ const MistakeOverview = ({ overview }: { overview: MistakeAnalyticsOverview }) =
                   <span>{TextFormator(trend?.status)}</span>
                 </div>
                 <div className="mt-2 text-sm opacity-80 text-gray-800">
-                  {trend.recommendation || "Keep up the good work!"}
+                  {trend?.recommendation || "Keep up the good work!"}
                 </div>
               </Card>
 
@@ -85,10 +85,10 @@ const MistakeOverview = ({ overview }: { overview: MistakeAnalyticsOverview }) =
               <Card className="border border-primary-100 p-4">
                 <div className="text-sm opacity-80 text-primary-800">Most Mistake Type</div>
                 <div className="mt-2 text-xl font-semibold flex items-center gap-2">
-                  {TextFormator(mostMistakeType.type)}
+                  {TextFormator(mostMistakeType?.type)}
                 </div>
                 <div className="mt-2 text-gray-800 text-sm opacity-80">
-                  {`${mostMistakeType.count} ${typePhrases[mostMistakeType.type] || "Mistakes"}`}
+                  {`${mostMistakeType?.count || 0} ${typePhrases[mostMistakeType?.type] || "Mistakes"}`}
                 </div>
               </Card>
 

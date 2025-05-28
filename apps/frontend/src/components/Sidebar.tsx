@@ -77,7 +77,7 @@ export function Sidebar({ className ,isMobile}: SidebarProps) {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                   location === item.href
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-gradient-to-tr from-primary-600 to-primary-500 text-white"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 )}
               >
