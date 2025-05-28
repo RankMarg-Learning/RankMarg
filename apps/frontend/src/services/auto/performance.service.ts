@@ -47,14 +47,16 @@ export class PerformanceService {
                 orderBy: {
                     endTime: 'desc'
                 },
-                take: 10 
+                take: 10
             });
-            const recentTestScores = testParticipations.map(test => ({
-                score: test.score,
-                accuracy: test.accuracy,
-                timing: test.timing,
-                date: test.endTime
-            }));
+            const recentTestScores = testParticipations
+                .reverse()
+                .map(test => ({
+                    score: test.score,
+                    accuracy: test.accuracy,
+                    timing: test.timing,
+                    date: test.endTime
+                }));
             const avgScore = testParticipations.length > 0
                 ? testParticipations.reduce((sum, test) => sum + (test.score || 0), 0) / testParticipations.length
                 : 0;
@@ -95,7 +97,7 @@ export class PerformanceService {
                     userId: userId,
                     isCompleted: true,
                     startTime: {
-                        gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) 
+                        gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
                     }
                 },
                 select: {
@@ -198,7 +200,7 @@ export class PerformanceService {
             if (!sessionsByDay[day]) {
                 sessionsByDay[day] = 0;
             }
-            sessionsByDay[day] += (session.duration || 0) / 60; 
+            sessionsByDay[day] += (session.duration || 0) / 60;
         });
 
         const totalDays = Object.keys(sessionsByDay).length;
