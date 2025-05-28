@@ -606,9 +606,9 @@ export default function Home() {
                 <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
                 <ul className="space-y-2">
                   <li><a href="/" className="hover:text-yellow-300">Home</a></li>
-                  <li><a href="#features" className="hover:text-yellow-300">Features</a></li>
+                  <li><a href="#features" className="hover:text-yellow-300 hidden">Features</a></li>
                   <li><a href="#ranking" className="hover:text-yellow-300">Ranking</a></li>
-                  <li><a href="#" className="hover:text-yellow-300">Contact</a></li>
+                  <li><a href="#" className="hover:text-yellow-300 hidden">Contact</a></li>
                 </ul>
               </div>
               <div>
