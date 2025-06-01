@@ -10,10 +10,10 @@ datasource db {
 model User {
   id                  String              @id @default(uuid())
   name                String?
-  username            String              @unique
-  email               String              @unique
+  username            String?             @unique
+  email               String?             @unique
   password            String?
-  phone               String?
+  phone               String?             @unique
   standard            StandardEnum?
   avatar              String?
   stream              Stream?
@@ -45,6 +45,8 @@ model User {
 
   @@index([id])
   @@index([username])
+  @@index([email])
+  @@index([phone])
   @@index([stream])
   @@index([targetYear])
 }
