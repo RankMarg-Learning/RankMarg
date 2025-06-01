@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import prisma from '@/lib/prisma';
 import { jsonResponse } from '@/utils/api-response';
 import { getAuthSession } from '@/utils/session';
@@ -19,7 +21,6 @@ export async function GET(req: Request) {
       });
     }
 
-    // Validate and sanitize input parameters
     let userId = searchParams.get('id');
 
     const session = await getAuthSession();

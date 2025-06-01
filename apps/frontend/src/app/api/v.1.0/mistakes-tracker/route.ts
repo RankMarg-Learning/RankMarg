@@ -16,10 +16,9 @@ const getDateRanges = () => {
   };
 };
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    let userId = searchParams.get('id');
+    let userId 
 
     const session = await getAuthSession();
     if (session?.user?.id) {
@@ -33,7 +32,6 @@ export async function GET(request: Request) {
       });
     }
 
-    // Validate userId format (assuming it should be a valid string/UUID)
     if (typeof userId !== 'string' || userId.trim().length === 0) {
       return jsonResponse(null, {
         status: 400,
@@ -44,7 +42,6 @@ export async function GET(request: Request) {
 
     const dateRanges = getDateRanges();
 
-    // Database queries with individual error handling
     let currentWeekAttempts, previousWeekAttempts;
 
     try {
@@ -107,7 +104,6 @@ export async function GET(request: Request) {
       });
     }
 
-    // Ensure arrays are valid
     if (!Array.isArray(currentWeekAttempts)) {
       currentWeekAttempts = [];
     }
@@ -150,7 +146,6 @@ export async function GET(request: Request) {
     });
 
   } catch (error) {
-    // Log the full error for debugging
     console.error("[Mistake Tracker] Unexpected error:", {
       message: error.message,
       stack: error.stack,
@@ -167,7 +162,6 @@ export async function GET(request: Request) {
 
 function getMostMistakeType(currentAttempts) {
   try {
-    // Validate input
     if (!Array.isArray(currentAttempts)) {
       throw new Error("Invalid attempts data provided");
     }
@@ -180,7 +174,6 @@ function getMostMistakeType(currentAttempts) {
         currentMistakeTypes[mistakeType] = (currentMistakeTypes[mistakeType] || 0) + 1;
       } catch (attemptError) {
         console.warn(`[Mistake Tracker] Error processing attempt at index ${index}:`, attemptError);
-        // Continue processing other attempts
       }
     });
 
@@ -210,7 +203,6 @@ function getMostMistakeType(currentAttempts) {
 
 function getMistakesBySubject(currentAttempts, previousAttempts) {
   try {
-    // Validate inputs
     if (!Array.isArray(currentAttempts) || !Array.isArray(previousAttempts)) {
       throw new Error("Invalid attempts data provided");
     }
@@ -218,7 +210,6 @@ function getMistakesBySubject(currentAttempts, previousAttempts) {
     const currentSubjectMistakes = {};
     const previousSubjectMistakes = {};
 
-    // Process current attempts
     currentAttempts.forEach((attempt, index) => {
       try {
         const subjectName = attempt?.question?.subject?.name || 'Unknown';
@@ -228,7 +219,6 @@ function getMistakesBySubject(currentAttempts, previousAttempts) {
       }
     });
 
-    // Process previous attempts
     previousAttempts.forEach((attempt, index) => {
       try {
         const subjectName = attempt?.question?.subject?.name || 'Unknown';
@@ -259,7 +249,6 @@ function getMistakesBySubject(currentAttempts, previousAttempts) {
 
 function getMistakeTrend(currentAttempts, previousAttempts) {
   try {
-    // Validate inputs
     if (!Array.isArray(currentAttempts) || !Array.isArray(previousAttempts)) {
       throw new Error("Invalid attempts data provided");
     }
