@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { Stream } from "@prisma/client";
 import { unstable_cache } from 'next/cache';
 import prisma from "@/lib/prisma";
