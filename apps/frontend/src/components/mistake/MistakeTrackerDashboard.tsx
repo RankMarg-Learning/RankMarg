@@ -8,7 +8,7 @@ import { useMistakeDashboard } from '@/hooks/useMistakeDashboard'
 import MistakePageBanner from './MistakePageBanner'
 
 const MistakeTrackerDashboard = () => {
-    const { distribution, overview ,isLoading, isError} = useMistakeDashboard({ id: '0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5' })
+    const { distribution, overview ,isLoading, isError} = useMistakeDashboard()
 
     if (isLoading) return <div>Loading...</div>
     if (isError) return <div>Error loading data</div>

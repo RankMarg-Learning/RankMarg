@@ -35,7 +35,7 @@ const formatDate = (dateStr: string) => {
 
 export function TestPerformance({ txScore ,recommendation}: Props) {
 
-  const chartData = txScore.map((test, index) => ({
+  const chartData = txScore?.map((test, index) => ({
     test: formatDate(test.date),
     accuracy: parseFloat(test.accuracy.toFixed(1)), 
   }))

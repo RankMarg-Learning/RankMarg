@@ -10,7 +10,6 @@ import { SmartStudyHubProps } from "@/types/dashboard.types";
 import { useMemo } from "react";
 import { timeFormator } from "@/utils/timeFormatter";
 
-// Extract reusable components for better organization and maintainability
 const TodaysProgressCard = ({ 
   percentComplete = 0, 
   minutesStudied = 0, 
@@ -63,15 +62,12 @@ const RevisionSubtopicsCard = ({ subtopics = [] }) => (
 
 const SmartRecommendation = ({ recommendation, isMobile }) => (
   <div className="relative bg-gradient-to-r from-primary-100 to-primary-200 md:col-span-2 p-4 md:p-6 flex flex-col justify-center rounded-lg overflow-hidden">
-    {/* Overlay */}
     <div className="absolute inset-0 bg-white/40 backdrop-blur-sm z-10 flex items-center justify-center">
       <div className="text-center">
         <h3 className="text-xl font-semibold text-primary-900">Coming Soon</h3>
         <p className="text-sm text-muted-foreground">Smart Recommendation will be available soon</p>
       </div>
     </div>
-
-    {/* Background Content (Dimmed) */}
     <div className="pointer-events-none opacity-50">
       <div className="text-center md:text-left">
         <h3 className="font-medium text-primary-900 mb-2">Smart Recommendation</h3>
@@ -101,7 +97,6 @@ const SmartRecommendation = ({ recommendation, isMobile }) => (
   </div>
 );
 
-// Helper function to get recommendation type label
 const getRecommendationType = (type) => {
   const types = {
     focus: "Focus Session",
@@ -114,7 +109,6 @@ const getRecommendationType = (type) => {
 export function SmartStudyHub({ dashboardData, currentStudies }: SmartStudyHubProps) {
   const isMobile = useIsMobile();
 
-  // Default data handling with nullish coalescing for better type safety
   const userStats = useMemo(() => ({
     streak: dashboardData?.userStats?.streak ?? 0,
     level: dashboardData?.userStats?.level ?? 1
@@ -131,7 +125,6 @@ export function SmartStudyHub({ dashboardData, currentStudies }: SmartStudyHubPr
     [dashboardData?.revisionSubtopics]
   );
 
-  // Memoize the recommendation data to prevent unnecessary rerenders
   const studyRecommendation = useMemo(() => ({
     type: "focus",
     subject: "Physics",
@@ -156,7 +149,6 @@ export function SmartStudyHub({ dashboardData, currentStudies }: SmartStudyHubPr
                   Personalized learning path based on your performance
                 </p>
               </div>
-
               <div className="flex items-center gap-2">
                 <Badge 
                   variant="outline" 
@@ -175,24 +167,16 @@ export function SmartStudyHub({ dashboardData, currentStudies }: SmartStudyHubPr
                 </Badge>
               </div>
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* Today's progress */}
               <TodaysProgressCard 
                 percentComplete={todaysProgress.percentComplete}
                 minutesStudied={todaysProgress.minutesStudied}
                 goalMinutes={todaysProgress.goalMinutes}
               />
-
-              {/* Revision subtopics */}
               <RevisionSubtopicsCard subtopics={revisionSubtopics} />
-
-              {/* Current topics */}
               <CurrentTopicCard currentStudies={currentStudies} />
             </div>
           </div>
-
-          {/* Smart recommendation panel */}
           <SmartRecommendation 
             recommendation={studyRecommendation}
             isMobile={isMobile}

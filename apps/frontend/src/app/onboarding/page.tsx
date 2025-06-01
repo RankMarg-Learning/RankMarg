@@ -1,10 +1,10 @@
 "use client"
-import React from 'react';
+import React, { useState } from 'react';
 import useOnboardingStore from '@/store/onboardingStore';
 import GradeSelection from '@/components/onboarding/GradeSelection';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Calendar, Clock, GraduationCap, RefreshCw, BookOpen, School } from 'lucide-react';
+import { ArrowRight, Calendar, Clock, GraduationCap, RefreshCw, BookOpen, School, Loader2, CheckCircle } from 'lucide-react';
 import Motion from '@/components/ui/motion';
 import StreamSelection from '@/components/onboarding/StreamSelection';
 import StudyHoursSelection from '@/components/onboarding/StudyHoursSelection';
@@ -13,12 +13,18 @@ import YearSelection from '@/components/onboarding/YearSelection';
 import TopicSelection from '@/components/onboarding/TopicSelection';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import {  useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { TextFormator } from '@/utils/textFormator';
 
 const DashboardPreview = () => {
-  const {  update } = useSession();
+  const { update } = useSession();
   const router = useRouter();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [currentProcess, setCurrentProcess] = useState('');
+  const [completedSteps, setCompletedSteps] = useState([]);
+
+  const apiKey = process.env.ADMIN_API_KEY || '';
+  
   const { 
     stream, 
     gradeLevel,
@@ -28,26 +34,114 @@ const DashboardPreview = () => {
     resetOnboarding
   } = useOnboardingStore();
 
+  const processSteps = [
+    { id: 'profile', label: 'Setting up your profile', duration: 800 },
+    { id: 'plan', label: 'Creating your study plan', duration: 1000 },
+    { id: 'content', label: 'Generating practice content', duration: 1200 },
+    { id: 'finalize', label: 'Finalizing your dashboard', duration: 600 }
+  ];
+
+  const simulateProgress = async (steps) => {
+    for (let i = 0; i < steps.length; i++) {
+      const step = steps[i];
+      setCurrentProcess(step.label);
+      
+      await new Promise(resolve => setTimeout(resolve, step.duration));
+      
+      setCompletedSteps(prev => [...prev, step.id]);
+      
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+  };
+
   const handleOnBoarding = async() => {
+    setIsProcessing(true);
+    
     try {
-      const response = await axios.post('/api/onboarding', {
+      const progressPromise = simulateProgress(processSteps);
+      
+      const onboardingResponse = await axios.post('/api/onboarding', {
         stream, 
         gradeLevel,
         targetYear,
         studyHoursPerDay,
         selectedTopics
       });
-      if(response.data.success) {
+      
+      if (onboardingResponse.data.success) {
+        await axios.post('/api/admin/cron/create-practice?type=user', null, {
+          headers: {
+            Authorization: `Bearer ${apiKey}`
+          }
+        });
+      }
+      
+      await progressPromise;
+      
+      if(onboardingResponse.data.success) {
         await update({ isNewUser: false });
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1000);
+        
+        setCurrentProcess('Complete! Redirecting...');
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        router.push('/dashboard');
       }
     } catch (error) {
       console.error("Error during onboarding:", error);
-      router.push('/')
-      
+      setIsProcessing(false);
+      router.push('/');
     }
+  };
+
+  if (isProcessing) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 yellow-gradient">
+        <Motion animation="scale-in" className="onboarding-card">
+          <div className="text-center space-y-6">
+            <div className="mb-4 mx-auto w-16 h-16 rounded-full flex items-center justify-center bg-primary/10">
+              {currentProcess.includes('Complete') ? (
+                <CheckCircle className="h-8 w-8 text-green-500" />
+              ) : (
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+              )}
+            </div>
+            
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Setting Up Your Learning Experience</h2>
+              <p className="text-muted-foreground text-sm">{currentProcess}</p>
+            </div>
+            
+            <div className="space-y-3 max-w-sm mx-auto">
+              {processSteps.map((step, index) => (
+                <div key={step.id} className="flex items-center space-x-3">
+                  <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                    completedSteps.includes(step.id) 
+                      ? 'bg-green-500' 
+                      : currentProcess === step.label 
+                        ? 'bg-primary' 
+                        : 'bg-gray-200'
+                  }`}>
+                    {completedSteps.includes(step.id) && (
+                      <CheckCircle className="w-3 h-3 text-white" />
+                    )}
+                    {currentProcess === step.label && !completedSteps.includes(step.id) && (
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                    )}
+                  </div>
+                  <span className={`text-sm ${
+                    completedSteps.includes(step.id) || currentProcess === step.label
+                      ? 'text-foreground font-medium' 
+                      : 'text-muted-foreground'
+                  }`}>
+                    {step.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Motion>
+      </div>
+    );
   }
 
   return (
@@ -140,16 +234,29 @@ const DashboardPreview = () => {
             className="gap-2"
             onClick={resetOnboarding}
             size="sm"
+            disabled={isProcessing}
           >
             <RefreshCw className="h-3 w-3" />
             Start Over
           </Button>
           
-          <Button className="gap-2" size="sm"
+          <Button 
+            className="gap-2" 
+            size="sm"
             onClick={handleOnBoarding}
+            disabled={isProcessing}
           >
-            Continue to Dashboard
-            <ArrowRight className="h-3 w-3" />
+            {isProcessing ? (
+              <>
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Setting Up...
+              </>
+            ) : (
+              <>
+                Continue to Dashboard
+                <ArrowRight className="h-3 w-3" />
+              </>
+            )}
           </Button>
         </Motion>
       </Motion>
@@ -159,7 +266,6 @@ const DashboardPreview = () => {
 
 const Index: React.FC = () => {
   const { currentStep, isCompleted } = useOnboardingStore();
-
 
   // For demonstration purposes, let's add a button to reset onboarding
   // in a real app, you would remove this

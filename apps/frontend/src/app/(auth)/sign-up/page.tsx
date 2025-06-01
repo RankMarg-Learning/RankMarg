@@ -35,8 +35,9 @@ const signUpSchema = z.object({
 const SignUpForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [msg, setMsg] = useState("");
-  const [msgType, setMsgType] = useState("error"); // "error", "success", "warning"
+  const [msgType, setMsgType] = useState("error"); 
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(true);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
@@ -52,6 +53,7 @@ const SignUpForm = () => {
 
   const watchPassword = watch("password");
   const watchConfirmPassword = watch("confirmpassword");
+  const watchUsername = watch("username");
 
   const handleSignUp = async (data: z.infer<typeof signUpSchema>) => {
     setMsg("");
@@ -59,6 +61,14 @@ const SignUpForm = () => {
     
     if (data.password !== data.confirmpassword) {
       setMsg("Passwords do not match");
+      setMsgType("error");
+      setIsLoading(false);
+      return;
+    }
+
+    // Check if username is available before proceeding
+    if (!isUsernameAvailable) {
+      setMsg("Please choose an available username");
       setMsgType("error");
       setIsLoading(false);
       return;
@@ -86,28 +96,43 @@ const SignUpForm = () => {
   };
 
   const checkUsernameAvailability = async (username: string) => {
+    if (!username || username.trim() === "") {
+      setIsUsernameAvailable(true);
+      return;
+    }
+
+    setIsCheckingUsername(true);
     try {
       const res = await axios.get(`/api/check-username`, {
-        params: { username },
+        params: { username: username.trim() },
       });
   
+      // Fixed: Access the success property correctly from API response
       setIsUsernameAvailable(res.data.success);
     } catch (error: any) {
       console.error("Username check failed:", error);
+      // On API error, assume username is not available to be safe
       setIsUsernameAvailable(false);
+    } finally {
+      setIsCheckingUsername(false);
     }
   };
 
   useEffect(() => {
-    const username = watch("username");
+    const username = watchUsername;
   
-    if (!username) return;
+    if (!username || username.trim() === "") {
+      setIsUsernameAvailable(true);
+      setIsCheckingUsername(false);
+      return;
+    }
   
     const delayDebounce = setTimeout(() => {
       checkUsernameAvailability(username);
     }, 500); 
+    
     return () => clearTimeout(delayDebounce);
-  }, [watch("username")]);
+  }, [watchUsername]);
 
   const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const lowercaseUsername = event.target.value.toLowerCase();
@@ -125,6 +150,15 @@ const SignUpForm = () => {
       default:
         return "bg-red-50 text-red-600 border-red-200";
     }
+  };
+
+  // Helper function to determine if form can be submitted
+  const canSubmit = () => {
+    return isUsernameAvailable && 
+           !isCheckingUsername && 
+           !isLoading && 
+           watchUsername && 
+           watchUsername.trim() !== "";
   };
 
   return (
@@ -157,22 +191,34 @@ const SignUpForm = () => {
                 </div>
                 <div className="grid gap-2 mb-2">
                   <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="Choose a unique username"
-                    {...register("username")}
-                    onChange={handleUsernameChange}
-                    className={errors.username || !isUsernameAvailable ? "border-red-300 focus:ring-red-500" : ""}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Choose a unique username"
+                      {...register("username")}
+                      onChange={handleUsernameChange}
+                      className={errors.username || !isUsernameAvailable ? "border-red-300 focus:ring-red-500" : ""}
+                    />
+                    {isCheckingUsername && watchUsername && (
+                      <div className="absolute right-2 top-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                      </div>
+                    )}
+                  </div>
                   {errors.username && (
                     <div className="text-red-500 text-xs">
                       {errors.username.message.toString()}
                     </div>
                   )}
-                  {!isUsernameAvailable && (
+                  {!isUsernameAvailable && watchUsername && watchUsername.trim() !== "" && !isCheckingUsername && (
                     <div className="text-red-500 text-xs">
                       This username is already taken. Please choose another one.
+                    </div>
+                  )}
+                  {isUsernameAvailable && watchUsername && watchUsername.trim() !== "" && !isCheckingUsername && !errors.username && (
+                    <div className="text-green-500 text-xs">
+                      Username is available!
                     </div>
                   )}
                 </div>
@@ -248,7 +294,7 @@ const SignUpForm = () => {
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={!isUsernameAvailable || isLoading}
+                  disabled={!canSubmit()}
                 >
                   {isLoading ? (
                     <>

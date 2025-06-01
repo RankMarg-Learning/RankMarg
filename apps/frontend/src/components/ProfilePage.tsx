@@ -71,7 +71,7 @@ function ProfilePage({ username }: { username: string }) {
 
 
     if (isLoading) {
-        return <ProfileSkeleton/>
+        return <ProfileSkeleton />
     }
     if (isError) {
         return <div>Error loading profile data</div>
@@ -245,10 +245,10 @@ function ProfilePage({ username }: { username: string }) {
                                 <div className="bg-gray-50 rounded-lg p-4" id="el-6207zdd4">
                                     <div className="flex items-center justify-between mb-2" id="el-0dj5hc6j">
                                         <p className="text-sm text-gray-500" id="el-qa7mtiwu">Accuracy</p>
-                                        <span className="text-sm font-medium text-primary-600" id="el-39k8zc0j">{userBasicData?.userPerformance?.accuracy?.toFixed(2)}%</span>
+                                        <span className="text-sm font-medium text-primary-600" id="el-39k8zc0j">{userBasicData?.userPerformance?.accuracy?.toFixed(2) || 0.0}%</span>
                                     </div>
                                     <div className="w-full bg-gray-200 rounded-full h-2.5" id="el-rvdhqui8">
-                                        <Progress indicatorColor='bg-primary-600' value={userBasicData?.userPerformance?.accuracy} className="h-2.5 rounded-full" id="el-0j8v1q4g" />
+                                        <Progress indicatorColor='bg-primary-600' value={userBasicData?.userPerformance?.accuracy || 0} className="h-2.5 rounded-full" id="el-0j8v1q4g" />
                                     </div>
                                 </div>
                                 <div className="bg-gray-50 rounded-lg p-4 hidden" id="el-0qoauo7f">
@@ -263,10 +263,10 @@ function ProfilePage({ username }: { username: string }) {
                                 <div className="bg-gray-50 rounded-lg p-4" id="el-cptx9c1e">
                                     <div className="flex items-center justify-between mb-2" id="el-aq3gtngf">
                                         <p className="text-sm text-gray-500" id="el-o4bztcuj">Average Score</p>
-                                        <span className="text-sm font-medium text-primary-600" id="el-k0w88hbo">{userBasicData?.userPerformance?.avgScore}/100</span>
+                                        <span className="text-sm font-medium text-primary-600" id="el-k0w88hbo">{userBasicData?.userPerformance?.avgScore || 0}/100</span>
                                     </div>
                                     <div className="w-full bg-gray-200 rounded-full h-2.5" id="el-gwxq68ty">
-                                        <Progress indicatorColor='bg-primary-600' value={userBasicData?.userPerformance?.avgScore} className="h-2.5 rounded-full" id="el-0j8v1q4g" />
+                                        <Progress indicatorColor='bg-primary-600' value={userBasicData?.userPerformance?.avgScore || 0} className="h-2.5 rounded-full" id="el-0j8v1q4g" />
                                     </div>
                                 </div>
                             </div>
@@ -274,35 +274,42 @@ function ProfilePage({ username }: { username: string }) {
                             <div className="mt-6" id="el-rm7e0jk2">
                                 <h4 className="text-md font-medium text-gray-700 mb-3" id="el-3oha6m6y">Subject-wise Performance</h4>
                                 <div className="space-y-4">
-                                    {Object.entries(userBasicData?.userPerformance?.subjectWiseAccuracy).map(([subjectKey, stats]) => {
-                                        const subject = subjectKey.toLowerCase();
-                                        const Icon = SubjectIcons[subject] || SubjectIcons.default;
-                                        const accuracy = parseFloat(((stats as { accuracy: number }).accuracy ?? 0).toFixed(2));
-                                        const textColor = SubjectTextColor[subject] || SubjectTextColor.default;
-                                        const barColor = SubjectBackgroundColor[subject] || SubjectBackgroundColor.default;
+                                    {userBasicData?.userPerformance?.subjectWiseAccuracy &&
+                                        Object.entries(userBasicData.userPerformance.subjectWiseAccuracy).length > 0 ? (
+                                        Object.entries(userBasicData.userPerformance.subjectWiseAccuracy).map(([subjectKey, stats]) => {
+                                            const subject = subjectKey.toLowerCase();
+                                            const Icon = SubjectIcons[subject] || SubjectIcons.default;
+                                            const accuracy = parseFloat(((stats as { accuracy: number }).accuracy ?? 0).toFixed(2));
+                                            const textColor = SubjectTextColor[subject] || SubjectTextColor.default;
+                                            const barColor = SubjectBackgroundColor[subject] || SubjectBackgroundColor.default;
 
-                                        return (
-                                            <div key={subjectKey}>
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <Icon className={`w-4 h-4 ${textColor}`} />
+                                            return (
+                                                <div key={subjectKey}>
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <Icon className={`w-4 h-4 ${textColor}`} />
+                                                            <span className={`text-sm font-medium ${textColor}`}>
+                                                                {subjectKey.charAt(0).toUpperCase() + subjectKey.slice(1)}
+                                                            </span>
+                                                        </div>
                                                         <span className={`text-sm font-medium ${textColor}`}>
-                                                            {subjectKey.charAt(0).toUpperCase() + subjectKey.slice(1)}
+                                                            {accuracy}%
                                                         </span>
                                                     </div>
-                                                    <span className={`text-sm font-medium ${textColor}`}>
-                                                        {accuracy}%
-                                                    </span>
+                                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                        <div
+                                                            className={`${barColor} h-2.5 rounded-full transition-all duration-500`}
+                                                            style={{ width: `${accuracy}%` }}
+                                                        />
+                                                    </div>
                                                 </div>
-                                                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                    <div
-                                                        className={`${barColor} h-2.5 rounded-full transition-all duration-500`}
-                                                        style={{ width: `${accuracy}%` }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="text-gray-500 text-center py-4" id="el-9w8v5b1f">
+                                            No subject-wise performance data available.
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -332,7 +339,7 @@ function ProfilePage({ username }: { username: string }) {
                                                         <Icon className={`h-6 w-6 ${textColor}`} />
                                                     </div>
                                                     <div>
-                                                        <h4 className="text-md font-semibold text-gray-800">Currently Studying</h4>
+                                                        <h4 className="text-md  text-gray-800">Currently Studying</h4>
                                                         <p className="text-sm text-gray-500">
                                                             {study.subjectName}: {study.topicName}
                                                         </p>
@@ -350,10 +357,9 @@ function ProfilePage({ username }: { username: string }) {
                                         );
                                     })}
                             </div>
-
-                            <h4 className="text-md font-medium text-gray-700 mb-3" id="el-qxvwlpa0">Recent Activity</h4>
+                            <h4 className="text-lg font-semibold text-gray-800" id="el-qxvwlpa0">Recent Activity</h4>
                             <div className="space-y-4">
-                                {userActivities.activities.map((activity) => {
+                                {userActivities?.activities && userActivities?.activities.length > 0 ? userActivities?.activities?.map((activity) => {
                                     const { icon, bg, text } = getIconAndColor(activity.type);
                                     return (
                                         <div className="flex" key={activity.id}>
@@ -371,15 +377,21 @@ function ProfilePage({ username }: { username: string }) {
                                             </div>
                                         </div>
                                     );
-                                })}
+                                }) : (
+                                    <div className="text-gray-500 text-center py-4" id="el-9w8v5b1f">
+                                        No recent activities found.
+                                    </div>
+                                )}
                             </div>
-
-
-                            <div className="mt-6 text-center" id="el-nxhlxk6x">
-                                <Link href="/rank-points" className="text-primary-600 hover:text-primary-800 text-sm font-medium" id="el-myfgz1mw" target="_self">
-                                    View Complete Activity Log
-                                </Link>
-                            </div>
+                            {
+                                userActivities?.activities && userActivities?.activities.length > 4 && (
+                                    <div className="mt-6 text-center" id="el-nxhlxk6x">
+                                        <Link href="/rank-points" className="text-primary-600 hover:text-primary-800 text-sm font-medium" id="el-myfgz1mw" target="_self">
+                                            View Complete Activity Log
+                                        </Link>
+                                    </div>
+                                )
+                            }
                         </div>
                     </div>
                 </div>

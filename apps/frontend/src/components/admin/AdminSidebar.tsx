@@ -5,6 +5,7 @@ import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { Button } from "../ui/button";
 
 interface SidebarItemProps {
   icon: React.ElementType;
@@ -88,14 +89,13 @@ const AdminSidebar = () => {
       </div>
 
       <div className="p-3 border-t border-gray-200">
-        <Link 
-          href="/logout" 
-          className="flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors text-sm"
+        <Button 
+          className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors text-sm"
           onClick={() => signOut({ callbackUrl: "/" })}
         >
           <LogOut className="h-4 w-4" />
           {!collapsed && <span className="font-medium">Logout</span>}
-        </Link>
+        </Button>
       </div>
     </div>
   );

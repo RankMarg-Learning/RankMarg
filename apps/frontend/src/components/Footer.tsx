@@ -38,9 +38,9 @@ const Footer = () => {
                         <h4 className="text-lg text-gray-900 font-medium mb-4">Resources</h4>
                         <ul className="text-sm  transition-all duration-500">
                             <li className="mb-2"><Link href="/" className=" text-gray-600 hover:text-gray-900">Quick Start</Link></li>
-                            <li className="mb-2"><Link href="/" className="text-gray-600 hover:text-gray-900">FAQs</Link></li>
-                            <li className="mb-2"><Link href="/" className=" text-gray-600 hover:text-gray-900">Help & Support</Link></li>
-                            <li><Link href="/" className=" text-gray-600 hover:text-gray-900">Refund Policy</Link></li>
+                            <li className="mb-2"><Link href="/faqs" className="text-gray-600 hover:text-gray-900">FAQs</Link></li>
+                            <li className="mb-2"><Link href="/help-support" className=" text-gray-600 hover:text-gray-900">Help & Support</Link></li>
+                            <li><Link href="/refunds" className=" text-gray-600 hover:text-gray-900">Refund Policy</Link></li>
                         </ul>
                     </div>
                     {/* <!--End Col--> */}
@@ -67,7 +67,7 @@ const Footer = () => {
                 {/* <!--Grid--> */}
                 <div className="py-7 border-t border-gray-200">
                     <div className="flex items-center justify-center flex-col lg:justify-between lg:flex-row">
-                        <span className="text-sm text-gray-500 ">©<a href="https://pagedone.io/">RankMarg</a> {new Date().getFullYear()}, All rights reserved.</span>
+                        <span className="text-sm text-gray-500 ">©RankMarg {new Date().getFullYear()}, All rights reserved.</span>
                         <div className="flex mt-4 space-x-4 sm:justify-center lg:mt-0 ">
                             <Link href="mailto:support@rankmarg.in" target="_blank" className="w-9 h-9 rounded-full bg-gray-700 flex justify-center items-center hover:bg-primary-600">
                             <Mail className="w-5 h-5 text-white" />
