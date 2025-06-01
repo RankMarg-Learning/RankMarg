@@ -11,9 +11,7 @@ import { toast } from '@/hooks/use-toast'
 
 const PracticeDashboard = () => {
     const [visible, setVisible] = useState(true);
-    const { overview, results, sessions, isLoading, isError } = useAiPractice(
-        { id: "0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5" }
-    )
+    const { overview, results, sessions, isLoading, isError } = useAiPractice()
     if (isLoading) return <PracticeDashboardSkeleton />
     if (isError) return <div>Error loading data</div>
 

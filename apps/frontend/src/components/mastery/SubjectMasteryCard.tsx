@@ -1,4 +1,4 @@
-import { ArrowUp,  CheckIcon, ChevronRight, CircleX, Info, InfoIcon, LucideIcon,TriangleAlert } from 'lucide-react';
+import { ArrowUp, CheckIcon, ChevronRight, CircleX, Info, InfoIcon, LucideIcon, TriangleAlert, BookOpen } from 'lucide-react';
 import React from 'react'
 import { Card } from '../ui/card';
 import { Progress } from '../ui/progress';
@@ -8,7 +8,6 @@ import { SubjectBackgroundColor, SubjectCardColor } from '@/constant/SubjectColo
 import { SubjectMasteryProps } from '@/types/mastery.types';
 import { RecommendationIcon } from '@/types/recommendation.types';
 import MarkdownRenderer from '@/lib/MarkdownRenderer';
-
 
 export const getMasteryLevelInfo = (mastery: number): { level: string; color: string } => {
   if (mastery >= 85) {
@@ -21,7 +20,6 @@ export const getMasteryLevelInfo = (mastery: number): { level: string; color: st
     return { level: "Needs Improvement", color: "text-red-600" };
   }
 };
-
 
 function getMasteryColor(masteryLevel: number): string {
   if (masteryLevel >= 90) {
@@ -40,7 +38,6 @@ function getMasteryColor(masteryLevel: number): string {
 }
 
 const SubjectMasteryCard = ({ sbt }: { sbt: SubjectMasteryProps }) => {
-
   const recommendationIconMap = {
     info: InfoIcon,
     warning: TriangleAlert,
@@ -48,13 +45,47 @@ const SubjectMasteryCard = ({ sbt }: { sbt: SubjectMasteryProps }) => {
     close: CircleX,
   } satisfies Record<RecommendationIcon, LucideIcon>;
 
+  const hasNoMastery = !sbt?.masteryPercentage || sbt?.masteryPercentage === 0;
+
+  if (hasNoMastery) {
+    return (
+      <div className="flex flex-col">
+
+        {/* Content Card */}
+        <Card className={` p-4 sm:p-6 bg-gradient-to-r ${SubjectCardColor[sbt.name.toLowerCase() as keyof typeof SubjectCardColor] || SubjectCardColor.default} border animate-fade-in overflow-hidden`}>
+          <div className="space-y-4 sm:space-y-6">
+            {/* Main Info Section */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+            <h2 className="text-base sm:text-lg font-bold mb-2 sm:mb-0">{sbt?.name}</h2>
+            <span className="text-lg sm:text-xl font-bold self-start sm:self-auto">{sbt?.masteryPercentage}%</span>
+          </div>
+            <div className="text-center py-3 sm:py-4">
+              <p className="text-sm text-gray-600 font-medium">
+                🎯 Ready to unlock your {sbt?.name} mastery potential?
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Start today and see your first insights this weekend!
+              </p>
+            </div>
+            <Link href="/ai-practice" className="block">
+              <Button className="w-full bg-gradient-to-tr from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-3 sm:py-4 rounded-md shadow-lg hover:shadow-xl transition-all duration-200 transform  text-sm sm:text-base">
+                <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                Begin Practice
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col ">
-      <Card className={`bg-gradient-to-r ${SubjectCardColor[sbt.name.toLowerCase() as keyof typeof SubjectCardColor] || SubjectCardColor.default} border  animate-fade-in overflow-hidden `}>
-        <div className="p-5">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-bold">{sbt?.name}</h2>
-            <span className="text-lg font-bold">{sbt?.masteryPercentage}%</span>
+    <div className="flex flex-col">
+      <Card className={`bg-gradient-to-r ${SubjectCardColor[sbt.name.toLowerCase() as keyof typeof SubjectCardColor] || SubjectCardColor.default} border animate-fade-in overflow-hidden`}>
+        <div className="p-4 sm:p-5">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+            <h2 className="text-base sm:text-lg font-bold mb-2 sm:mb-0">{sbt?.name}</h2>
+            <span className="text-lg sm:text-xl font-bold self-start sm:self-auto">{sbt?.masteryPercentage}%</span>
           </div>
 
           <Progress
@@ -63,8 +94,7 @@ const SubjectMasteryCard = ({ sbt }: { sbt: SubjectMasteryProps }) => {
             indicatorColor={` ${SubjectBackgroundColor[sbt?.name.toLowerCase() as keyof typeof SubjectBackgroundColor] || SubjectBackgroundColor.default}`}
           />
 
-          <div className=" justify-between text-xs mt-1 hidden">
-            {/* <span>{masteredConcepts}/{totalConcepts} concepts</span> */}
+          <div className="justify-between text-xs mt-1 hidden">
             <div className="flex items-center">
               <ArrowUp className="h-3 w-3 mr-1" />
               <span>+{sbt?.improvementFromLastMonth}% from last month</span>
@@ -76,16 +106,17 @@ const SubjectMasteryCard = ({ sbt }: { sbt: SubjectMasteryProps }) => {
       <div className="p-4 bg-white rounded-lg shadow-sm">
         <h3 className="font-medium text-gray-800 mb-3">Improvement Areas</h3>
         <div className="space-y-2 mb-6">
-          {sbt?.improvementAreas.map((topic) => (
+          {sbt?.improvementAreas?.map((topic) => (
             <div key={topic.name} className="flex justify-between text-sm">
               <span className="text-gray-700">{topic.name}</span>
               <span className={`font-medium ${getMasteryColor(topic.masteryLevel)}`}>{topic.masteryLevel}%</span>
             </div>
           ))}
         </div>
+        
         <h3 className="font-medium text-gray-800 mb-3">Top Performing Topics</h3>
         <div className="space-y-2 mb-6">
-          {sbt?.topPerformingTopics.map((topic) => (
+          {sbt?.topPerformingTopics?.map((topic) => (
             <div key={topic.name} className="flex justify-between text-sm">
               <span className="text-gray-700">{topic.name}</span>
               <span className="font-medium text-green-600">{topic.masteryLevel}%</span>
@@ -93,14 +124,12 @@ const SubjectMasteryCard = ({ sbt }: { sbt: SubjectMasteryProps }) => {
           ))}
         </div>
 
-
-
         <div className="mb-6 border-t pt-3 border-gray-200">
           <h3 className="font-medium text-gray-800 flex items-center gap-1 mb-3">
             <Info className="h-4 w-4 text-blue-500" />
             <span>Smart Recommendations</span>
           </h3>
-          {sbt?.recommendations.map((rx) => {
+          {sbt?.recommendations?.map((rx) => {
             const Icon = recommendationIconMap[rx.icon as RecommendationIcon] ?? InfoIcon;
             const iconColorClass = `text-${rx.color}-500`;
 
@@ -133,7 +162,7 @@ const SubjectMasteryCard = ({ sbt }: { sbt: SubjectMasteryProps }) => {
         </Link>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SubjectMasteryCard
+export default SubjectMasteryCard;

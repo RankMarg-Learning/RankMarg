@@ -60,8 +60,8 @@ const TopicSelection: React.FC = () => {
 
   return (
     <OnboardingLayout
-      title="Build Your Learning Path"
-      subtitle="Select topics that interest you most - choose at least one from each subject"
+      title="What Are You Currently Studying?"
+      subtitle="Select the topics you're actively working on right now - choose at least one from each subject"
       nextDisabled={!hasMinimumSelections}
     >
       <div className="space-y-4">

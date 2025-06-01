@@ -35,7 +35,7 @@ export default function RecentPracticeResults({ results ,allResults=false}: { re
             </TableRow>
           </TableHeader>
           <TableBody>
-            {results.map((result, index) => (
+            {results.length>0? results.map((result, index) => (
 
               <TableRow key={index}>
                 <TableCell>
@@ -62,7 +62,13 @@ export default function RecentPracticeResults({ results ,allResults=false}: { re
                   <Link href={`/ai-session/${result.id}?review=true&loc=ai_practice_page`} className="text-primary-600 hover:underline">Review</Link>
                 </TableCell>
               </TableRow>
-            ))}
+            )):(
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-4 text-gray-500">
+                  No recent practice results found.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>

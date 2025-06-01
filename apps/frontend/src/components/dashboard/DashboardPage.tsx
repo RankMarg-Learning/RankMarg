@@ -7,9 +7,7 @@ import { useHome } from '@/hooks/useHome'
 import DashboardSkeleton from '../skeleton/dashboard.skeleton'
 
 const DashboardPage = () => {
-    const { dashboardBasic, currentStudies, session, isLoading, isError } = useHome({
-        id: "0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5",
-    })
+    const { dashboardBasic, currentStudies, session, isLoading, isError } = useHome()
 
 
     if (isLoading) return <DashboardSkeleton/>

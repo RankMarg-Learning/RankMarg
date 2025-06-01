@@ -8,15 +8,25 @@ import { cache } from "react";
 import { unstable_cache } from "next/cache";
 
 const getSession = cache(async () => {
-    return await getAuthSession();
+    try {
+        return await getAuthSession();
+    } catch (error) {
+        console.error("Session retrieval error:", error);
+        throw new Error("Failed to retrieve session");
+    }
 });
 
 const getSubjectMap = unstable_cache(
     async () => {
-        const subjects = await prisma.subject.findMany({
-            select: { id: true, name: true }
-        });
-        return Object.fromEntries(subjects.map(s => [s.id, s.name]));
+        try {
+            const subjects = await prisma.subject.findMany({
+                select: { id: true, name: true }
+            });
+            return Object.fromEntries(subjects.map(s => [s.id, s.name]));
+        } catch (error) {
+            console.error("Subject map retrieval error:", error);
+            throw new Error("Failed to retrieve subject data");
+        }
     },
     ["subject-map"],
     { revalidate: 3600 } 
@@ -24,58 +34,110 @@ const getSubjectMap = unstable_cache(
 
 export async function GET(req: Request) {
     try {
-        const session = await getSession();
-
-        if (!session?.user) {
+        let session;
+        try {
+            session = await getSession();
+        } catch (error) {
+            console.error("Session error:", error);
             return jsonResponse(null, {
                 success: false,
-                message: "Unauthorized",
+                message: "Authentication service unavailable",
+                status: 503
+            });
+        }
+
+        if (!session?.user?.id) {
+            return jsonResponse(null, {
+                success: false,
+                message: "Unauthorized - Invalid or missing session",
                 status: 401
             });
         }
 
         const userId = session.user.id;
-        const todayStart = startOfDay(new Date());
-        const todayEnd = endOfDay(new Date());
 
-        const recentSessions = await prisma.practiceSession.findMany({
-            where: {
-                userId,
-                createdAt: {
-                    gte: todayStart,
-                    lt: todayEnd,
+        let todayStart: Date;
+        let todayEnd: Date;
+        
+        try {
+            todayStart = startOfDay(new Date());
+            todayEnd = endOfDay(new Date());
+        } catch (error) {
+            console.error("Date processing error:", error);
+            return jsonResponse(null, {
+                success: false,
+                message: "Invalid date processing",
+                status: 400
+            });
+        }
+
+        let recentSessions;
+        try {
+            recentSessions = await prisma.practiceSession.findMany({
+                where: {
+                    userId,
+                    createdAt: {
+                        gte: todayStart,
+                        lt: todayEnd,
+                    },
                 },
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-            select: {
-                id: true,
-                subjectId: true,
-                questions: {
-                    select: {
-                        question: {
-                            select: {
-                                subTopic: {
-                                    select: {
-                                        name: true,
+                orderBy: {
+                    createdAt: 'desc',
+                },
+                select: {
+                    id: true,
+                    subjectId: true,
+                    questions: {
+                        select: {
+                            question: {
+                                select: {
+                                    subTopic: {
+                                        select: {
+                                            name: true,
+                                        },
                                     },
                                 },
                             },
                         },
                     },
-                },
-                attempts: {
-                    select: {
-                        questionId: true,
-                        status: true,
-                        timing: true,
+                    attempts: {
+                        select: {
+                            questionId: true,
+                            status: true,
+                            timing: true,
+                        },
                     },
                 },
-            },
-        });
+            });
+        } catch (error) {
+            console.error("Database query error (practice sessions):", error);
+            return jsonResponse(null, {
+                success: false,
+                message: "Failed to retrieve practice sessions",
+                status: 500
+            });
+        }
 
-        const subjectIdToName = await getSubjectMap();
+        if (!Array.isArray(recentSessions)) {
+            console.error("Invalid data structure returned from database");
+            return jsonResponse(null, {
+                success: false,
+                message: "Invalid data format",
+                status: 500
+            });
+        }
+
+        let subjectIdToName;
+        try {
+            subjectIdToName = await getSubjectMap();
+        } catch (error) {
+            console.error("Subject map error:", error);
+            return jsonResponse(null, {
+                success: false,
+                message: "Failed to retrieve subject information",
+                status: 500
+            });
+        }
 
         let overallTotalQuestions = 0;
         let overallAttempts = 0;
@@ -88,84 +150,131 @@ export async function GET(req: Request) {
             correctAnswers: number,
         }> = {};
 
-        recentSessions.map(session => {
-            const questionCount = session.questions.length;
-            const attempts = session.attempts || [];
-            const attemptedIds = new Set(attempts.map(a => a.questionId));
-            const correctCount = attempts.filter(a => a.status === 'CORRECT').length;
-            const totalTime = attempts.reduce((sum, a) => sum + (a.timing || 0), 0);
+        try {
+            recentSessions.forEach(session => {
+                if (!session || typeof session !== 'object') {
+                    console.warn("Invalid session object:", session);
+                    return;
+                }
 
-            session.questions.forEach(q => {
-                const name = q.question.subTopic?.name;
-                if (name) overallSubtopics.add(name);
+                const questions = Array.isArray(session.questions) ? session.questions : [];
+                const attempts = Array.isArray(session.attempts) ? session.attempts : [];
+                
+                const questionCount = questions.length;
+                const attemptedIds = new Set(
+                    attempts
+                        .filter(a => a && typeof a.questionId !== 'undefined')
+                        .map(a => a.questionId)
+                );
+                
+                const correctCount = attempts.filter(a => 
+                    a && a.status === 'CORRECT'
+                ).length;
+                
+                const totalTime = attempts.reduce((sum, a) => {
+                    const timing = typeof a?.timing === 'number' ? a.timing : 0;
+                    return sum + timing;
+                }, 0);
+
+                questions.forEach(q => {
+                    try {
+                        const name = q?.question?.subTopic?.name;
+                        if (name && typeof name === 'string') {
+                            overallSubtopics.add(name);
+                        }
+                    } catch (error) {
+                        console.warn("Error processing subtopic for question:", q, error);
+                    }
+                });
+
+                overallTotalQuestions += questionCount;
+                overallAttempts += attemptedIds.size;
+                overallCorrect += correctCount;
+                overallTimeSpent += totalTime;
+
+                const subjectId = session.subjectId;
+                const subjectName = (subjectId && subjectIdToName[subjectId]) 
+                    ? subjectIdToName[subjectId] 
+                    : 'Unknown Subject';
+
+                if (!subjectSummaries[subjectName]) {
+                    subjectSummaries[subjectName] = {
+                        totalQuestions: 0,
+                        attempted: 0,
+                        correctAnswers: 0,
+                    };
+                }
+
+                subjectSummaries[subjectName].totalQuestions += questionCount;
+                subjectSummaries[subjectName].attempted += attemptedIds.size;
+                subjectSummaries[subjectName].correctAnswers += correctCount;
             });
+        } catch (error) {
+            console.error("Error processing session data:", error);
+            return jsonResponse(null, {
+                success: false,
+                message: "Error processing practice session data",
+                status: 500
+            });
+        }
 
-            overallTotalQuestions += questionCount;
-            overallAttempts += attemptedIds.size;
-            overallCorrect += correctCount;
-            overallTimeSpent += totalTime;
+        let subjectWiseSummary;
+        let overallSummary;
 
-            const subjectName = subjectIdToName[session.subjectId ?? ''] ?? 'Unknown';
+        try {
+            subjectWiseSummary = Object.entries(subjectSummaries).map(
+                ([subject, data]) => {
+                    const accuracyRate = data.attempted > 0
+                        ? Math.round((data.correctAnswers / data.attempted * 100) * 100) / 100
+                        : 0;
 
-            if (!subjectSummaries[subjectName]) {
-                subjectSummaries[subjectName] = {
-                    totalQuestions: 0,
-                    attempted: 0,
-                    correctAnswers: 0,
-                };
-            }
-            subjectSummaries[subjectName].totalQuestions += questionCount;
-            subjectSummaries[subjectName].attempted += attemptedIds.size;
-            subjectSummaries[subjectName].correctAnswers += correctCount;
+                    return {
+                        subject,
+                        totalQuestions: data.totalQuestions,
+                        correctAnswers: data.correctAnswers,
+                        totalAttempts: data.attempted,
+                        accuracyRate,
+                    };
+                }
+            );
 
-            return {
-                sessionId: session.id,
-                subjectId: session.subjectId,
-                subjectName,
-                totalQuestions: questionCount,
-                attempted: attemptedIds.size,
-                correctAnswers: correctCount,
-                timeSpent: parseFloat(totalTime.toFixed(2)),
-                accuracyRate: attemptedIds.size > 0
-                    ? parseFloat((correctCount / attemptedIds.size * 100).toFixed(2))
-                    : 0,
+            const overallAccuracy = overallAttempts > 0
+                ? Math.round((overallCorrect / overallAttempts * 100) * 100) / 100
+                : 0;
+
+            const timeSpentMinutes = Math.round((overallTimeSpent / 60) * 100) / 100;
+
+            overallSummary = {
+                totalQuestions: overallTotalQuestions,
+                attempted: overallAttempts,
+                correctAnswers: overallCorrect,
+                timeSpent: timeSpentMinutes,
+                accuracyRate: overallAccuracy,
+                subtopicsCovered: overallSubtopics.size,
             };
-        });
-
-        const subjectWiseSummary = Object.entries(subjectSummaries).map(
-            ([subject, data]) => {
-                return {
-                    subject,
-                    totalQuestions: data.totalQuestions,
-                    correctAnswers: data.correctAnswers,
-                    totalAttempts: data.attempted,
-                    accuracyRate: data.attempted > 0
-                        ? parseFloat((data.correctAnswers / data.attempted * 100).toFixed(2))
-                        : 0,
-                };
-            }
-        );
-
-        const overallSummary = {
-            totalQuestions: overallTotalQuestions,
-            attempted: overallAttempts,
-            correctAnswers: overallCorrect,
-            timeSpent: parseFloat((overallTimeSpent / 60).toFixed(2)),
-            accuracyRate: overallAttempts > 0
-                ? parseFloat((overallCorrect / overallAttempts * 100).toFixed(2))
-                : 0,
-        };
+        } catch (error) {
+            console.error("Error building summary data:", error);
+            return jsonResponse(null, {
+                success: false,
+                message: "Error calculating summary statistics",
+                status: 500
+            });
+        }
 
         return jsonResponse({
             overallSummary,
             subjectWiseSummary,
-        }, { success: true, message: "Ok", status: 200 });
+        }, { 
+            success: true, 
+            message: "Practice session summary retrieved successfully", 
+            status: 200 
+        });
 
     } catch (error) {
-        console.error("Error in practice session summary API:", error);
+        console.error("Unexpected error in practice session summary API:", error);
         return jsonResponse(null, {
             success: false,
-            message: "Internal Server Error",
+            message: "An unexpected error occurred while processing your request",
             status: 500
         });
     }

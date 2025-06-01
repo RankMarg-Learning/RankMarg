@@ -2,15 +2,32 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../../auth/[...nextauth]/options";
 import { jsonResponse } from "@/utils/api-response";
 import prisma from "@/lib/prisma";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export async function GET(req: Request, { params }: { params: { sessionId: string } }) {
     const { sessionId } = params;
+
     try {
-        const session = await getServerSession(authOptions);
-        if (!session) {
-            return jsonResponse(null, { success: false, message: "Unauthorized", status: 401 });
+        // Validate sessionId
+        if (!sessionId || typeof sessionId !== 'string') {
+            return jsonResponse(null, { 
+                success: false, 
+                message: "Invalid session ID", 
+                status: 400 
+            });
         }
-        
+
+        // Check authentication
+        const session = await getServerSession(authOptions);
+        if (!session || !session.user?.id) {
+            return jsonResponse(null, { 
+                success: false, 
+                message: "Unauthorized: Please log in", 
+                status: 401 
+            });
+        }
+
+        // Fetch practice session with proper error handling
         const practiceSession = await prisma.practiceSession.findUnique({
             where: {
                 id: sessionId,
@@ -41,34 +58,51 @@ export async function GET(req: Request, { params }: { params: { sessionId: strin
             }
         });
 
+        // Check if practice session exists
         if (!practiceSession) {
-            return jsonResponse(null, { success: false, message: "Practice session not found", status: 404 });
+            return jsonResponse(null, { 
+                success: false, 
+                message: "Practice session not found or you don't have access", 
+                status: 404 
+            });
         }
 
-        // // Get attempted question IDs
-        // const attemptedQuestionIds = practiceSession.attempts.map(attempt => attempt.questionId);
-        
-        // // Separate unattempted and attempted questions
-        // const unattemptedQuestions = practiceSession.questions.filter(
-        //     q => !attemptedQuestionIds.includes(q.question.id)
-        // );
-        // const attemptedQuestions = practiceSession.questions.filter(
-        //     q => attemptedQuestionIds.includes(q.question.id)
-        // );
-        
-        // // Arrange questions: unattempted first, then attempted
-        // const arrangedQuestions = [...unattemptedQuestions, ...attemptedQuestions];
-        
-        // // Update the practice session object with arranged questions
-        // const arrangedPracticeSession = {
-        //     ...practiceSession,
-        //     questions: arrangedQuestions
-        // };
-
-        return jsonResponse(practiceSession, { success: true, message: "Ok", status: 200 });
+        return jsonResponse(practiceSession, { 
+            success: true, 
+            message: "Practice session retrieved successfully", 
+            status: 200 
+        });
 
     } catch (error) {
-        console.log("[AiPracticeSession-Dynamic] :", error);
-        return jsonResponse(error, { success: false, message: "Internal Server Error", status: 500 });
+        // Type guard for error
+        const errorMessage = error instanceof Error 
+            ? error.message 
+            : "An unexpected error occurred";
+
+        // Log detailed error information
+        console.error("[AiPracticeSession-Dynamic] Error:", {
+            error: errorMessage,
+            sessionId,
+            stack: error instanceof Error ? error.stack : undefined
+        });
+
+        // Handle specific Prisma errors
+        if (error instanceof PrismaClientKnownRequestError) {
+            // Handle specific Prisma error codes
+            if (error.code === 'P2025') {
+                return jsonResponse(null, { 
+                    success: false, 
+                    message: "Practice session not found", 
+                    status: 404 
+                });
+            }
+        }
+
+        // Generic error response
+        return jsonResponse(null, { 
+            success: false, 
+            message: "Internal server error", 
+            status: 500,
+        });
     }
 }

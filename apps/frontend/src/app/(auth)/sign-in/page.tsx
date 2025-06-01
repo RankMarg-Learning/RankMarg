@@ -81,7 +81,6 @@ const SignInForm = () => {
     setValue("username", lowercaseUsername, { shouldValidate: true });
   };
 
-  // Helper function to get message styling based on type
   const getMessageStyles = () => {
     switch (msgType) {
       case "success":

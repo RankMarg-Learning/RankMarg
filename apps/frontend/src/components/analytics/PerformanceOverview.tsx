@@ -28,37 +28,37 @@ export function PerformanceOverview({ metrics }: { metrics: AnalyticsMetricsProp
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard
                     title="Questions Solved"
-                    value={metrics.TOTAL_QUESTIONS.value}
-                    change={metrics.TOTAL_QUESTIONS.delta}
-                    insight={metrics.TOTAL_QUESTIONS.suggestion}
-                    trend={getTrend(metrics.TOTAL_QUESTIONS.delta)}
+                    value={metrics?.TOTAL_QUESTIONS?.value || "0"}
+                    change={metrics?.TOTAL_QUESTIONS?.delta || ""}
+                    insight={metrics?.TOTAL_QUESTIONS?.suggestion || "No insights available.Keep practicing!"}
+                    trend={getTrend(metrics?.TOTAL_QUESTIONS?.delta)}
                     icon={Zap}
                 />
 
                 <StatCard
                     title="Correct Attempts"
-                    value={metrics.CORRECT_ATTEMPTS.value}
-                    change={metrics.CORRECT_ATTEMPTS.delta}
-                    insight={metrics.CORRECT_ATTEMPTS.suggestion}
-                    trend={getTrend(metrics.CORRECT_ATTEMPTS.delta)}
+                    value={metrics?.CORRECT_ATTEMPTS?.value || "0"}
+                    change={metrics?.CORRECT_ATTEMPTS?.delta || ""}
+                    insight={metrics?.CORRECT_ATTEMPTS?.suggestion || "No insights available. Keep practicing!"}
+                    trend={getTrend(metrics?.CORRECT_ATTEMPTS?.delta)}
                     icon={Target}
                 />
 
                 <StatCard
                     title="Test Score"
-                    value={metrics.TEST_SCORE.value}
-                    change={metrics.TEST_SCORE.delta}
-                    insight={metrics.TEST_SCORE.suggestion}
-                    trend={getTrend(metrics.TEST_SCORE.delta)}
+                    value={metrics?.TEST_SCORE?.value || "0"}
+                    change={metrics?.TEST_SCORE?.delta || ""}
+                    insight={metrics?.TEST_SCORE?.suggestion || "No insights available.Keep practicing!"}
+                    trend={getTrend(metrics?.TEST_SCORE?.delta)}
                     icon={Clock}
                 />
 
                 <StatCard
                     title="Mastery Level"
-                    value={metrics.MASTERY_LEVEL.value}
-                    change={metrics.MASTERY_LEVEL.delta}
-                    insight={metrics.MASTERY_LEVEL.suggestion}
-                    trend={getTrend(metrics.MASTERY_LEVEL.delta)}
+                    value={metrics?.MASTERY_LEVEL?.value || "0"}
+                    change={metrics?.MASTERY_LEVEL?.delta || ""}
+                    insight={metrics?.MASTERY_LEVEL?.suggestion || "No insights available.Keep practicing!"}
+                    trend={getTrend(metrics?.MASTERY_LEVEL?.delta)}
                     icon={ArrowUpRight}
                 />
             </div>
@@ -67,8 +67,8 @@ export function PerformanceOverview({ metrics }: { metrics: AnalyticsMetricsProp
 }
 
 function getTrend(delta: string): 'up' | 'down' | 'neutral' {
-    if (delta.startsWith('+')) return 'up';
-    if (delta.startsWith('-')) return 'down';
+    if (delta?.startsWith('+')) return 'up';
+    if (delta?.startsWith('-')) return 'down';
     return 'neutral';
 }
 

@@ -9,35 +9,43 @@ import { getStreamTimingSuggestion } from "@/constant/recommendation/time.recomm
 import prisma from "@/lib/prisma";
 import { RecentTestScoresProps } from "@/types";
 import { jsonResponse } from "@/utils/api-response";
+import { getAuthSession } from '@/utils/session';
 
 const CACHE_TTL = 60 * 5;
 const CACHE_REVALIDATE_SECONDS = 60 * 60;
 
-
 const getUserMetrics = cache(async (userId: string) => {
-    return prisma.metric.findMany({
-        where: { userId },
-        select: {
-            metricType: true,
-            currentValue: true,
-            previousValue: true,
-        },
-        orderBy: { metricType: 'asc' }
-    });
+    try {
+        return await prisma.metric.findMany({
+            where: { userId },
+            select: {
+                metricType: true,
+                currentValue: true,
+                previousValue: true,
+            },
+            orderBy: { metricType: 'asc' }
+        });
+    } catch (error) {
+        console.error(`[ANALYTICS_API] Error fetching user metrics for userId: ${userId}`, error);
+        throw new Error(`Failed to fetch user metrics: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
 });
-
 
 const getUserPerformance = cache(async (userId: string) => {
-    return prisma.userPerformance.findUnique({
-        where: { userId },
-        select: {
-            highestScore: true,
-            lowestScore: true,
-            recentTestScores: true,
-        }
-    });
+    try {
+        return await prisma.userPerformance.findUnique({
+            where: { userId },
+            select: {
+                highestScore: true,
+                lowestScore: true,
+                recentTestScores: true,
+            }
+        });
+    } catch (error) {
+        console.error(`[ANALYTICS_API] Error fetching user performance for userId: ${userId}`, error);
+        throw new Error(`Failed to fetch user performance: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
 });
-
 
 const getQuestionsByDifficultyBreakdown = cache(async (userId: string) => {
     const result = {
@@ -47,40 +55,42 @@ const getQuestionsByDifficultyBreakdown = cache(async (userId: string) => {
         veryHard: 0
     };
 
-    const difficultyData = await prisma.$queryRaw`
-    SELECT
-        q.difficulty, 
-        COUNT(DISTINCT a."questionId") as count
-    FROM 
-        "Attempt" a
-    JOIN 
-        "Question" q ON a."questionId" = q.id
-    WHERE 
-        a."userId" = ${userId}
-        AND a.status = 'CORRECT'
-    GROUP BY 
-        q.difficulty
-    `;
+    try {
+        const difficultyData = await prisma.$queryRaw<Array<{ difficulty: number; count: bigint }>>`
+            SELECT
+                q.difficulty, 
+                COUNT(DISTINCT a."questionId") as count
+            FROM 
+                "Attempt" a
+            JOIN 
+                "Question" q ON a."questionId" = q.id
+            WHERE 
+                a."userId" = ${userId}
+                AND a.status = 'CORRECT'
+            GROUP BY 
+                q.difficulty
+        `;
 
-    const difficultyMap = {
-        1: 'easy',
-        2: 'medium',
-        3: 'hard',
-        4: 'veryHard'
-    };
+        const difficultyMap: Record<number, keyof typeof result> = {
+            1: 'easy',
+            2: 'medium',
+            3: 'hard',
+            4: 'veryHard'
+        };
 
-    const typedData = difficultyData as Array<{ difficulty: number, count: bigint }>;
-
-    for (const item of typedData) {
-        const key = difficultyMap[item.difficulty];
-        if (key) {
-            result[key] = Number(item.count);
+        for (const item of difficultyData) {
+            const key = difficultyMap[item.difficulty];
+            if (key && item.count !== null && item.count !== undefined) {
+                result[key] = Number(item.count);
+            }
         }
+
+        return result;
+    } catch (error) {
+        console.error(`[ANALYTICS_API] Error fetching questions by difficulty for userId: ${userId}`, error);
+        throw new Error(`Failed to fetch difficulty breakdown: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-
-    return result;
 });
-
 
 const getAvgTimingByDifficulty = cache(async (userId: string) => {
     const result = {
@@ -90,74 +100,80 @@ const getAvgTimingByDifficulty = cache(async (userId: string) => {
         veryHard: 0
     };
 
-    const timingData = await prisma.$queryRaw`
-    SELECT 
-        q.difficulty,
-        ROUND(AVG(a."timing")::numeric) AS "avgTime"
-    FROM 
-        "Attempt" a
-    JOIN 
-        "Question" q ON a."questionId" = q."id"
-    WHERE 
-        a."userId" = ${userId}
-        AND a."status" = 'CORRECT'
-    GROUP BY 
-        q.difficulty
-    ORDER BY 
-        q.difficulty
-    `;
+    try {
+        const timingData = await prisma.$queryRaw<Array<{ difficulty: number; avgTime: number | null }>>`
+            SELECT 
+                q.difficulty,
+                ROUND(AVG(a."timing")::numeric) AS "avgTime"
+            FROM 
+                "Attempt" a
+            JOIN 
+                "Question" q ON a."questionId" = q."id"
+            WHERE 
+                a."userId" = ${userId}
+                AND a."status" = 'CORRECT'
+                AND a."timing" IS NOT NULL
+            GROUP BY 
+                q.difficulty
+            ORDER BY 
+                q.difficulty
+        `;
 
-    const difficultyMap = {
-        1: 'easy',
-        2: 'medium',
-        3: 'hard',
-        4: 'veryHard'
-    };
+        const difficultyMap: Record<number, keyof typeof result> = {
+            1: 'easy',
+            2: 'medium',
+            3: 'hard',
+            4: 'veryHard'
+        };
 
-    const typedTimingData = timingData as Array<{ difficulty: number, avgTime: number }>;
-
-    for (const item of typedTimingData) {
-        const key = difficultyMap[item.difficulty];
-        if (key) {
-            result[key] = Math.round(item.avgTime || 0);
+        for (const item of timingData) {
+            const key = difficultyMap[item.difficulty];
+            if (key && item.avgTime !== null && item.avgTime !== undefined) {
+                result[key] = Math.round(item.avgTime);
+            }
         }
-    }
 
-    return result;
+        return result;
+    } catch (error) {
+        console.error(`[ANALYTICS_API] Error fetching average timing by difficulty for userId: ${userId}`, error);
+        throw new Error(`Failed to fetch timing data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
 });
 
-export async function GET(req: NextRequest) {
+const validateUserId = (userId: string | null): string => {
+    if (!userId) {
+        throw new Error("User ID is required");
+    }
+    
+    if (typeof userId !== 'string' || userId.trim().length === 0) {
+        throw new Error("User ID must be a non-empty string");
+    }
+    
+    // Optional: Add UUID validation if your user IDs are UUIDs
+    // const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    // if (!uuidRegex.test(userId)) {
+    //     throw new Error("User ID must be a valid UUID");
+    // }
+    
+    return userId.trim();
+};
+
+// Helper function to safely process recommendation data
+const processRecommendationData = (
+    metrics: any[], 
+    performance: any, 
+    questionsByDifficulty: any, 
+    avgTimingByDifficulty: any
+) => {
     try {
-        const { searchParams } = new URL(req.url);
-        const userId = searchParams.get("id");
-        const skipCache = searchParams.get("skipCache") === "true";
-
-        if (!userId) {
-            return jsonResponse(null, {
-                success: false,
-                message: "User ID is required",
-                status: 400
-            });
-        }
-
-        if (!skipCache) {
-        }
-
-        const [metrics, performance, questionsByDifficulty, avgTimingByDifficulty] = await Promise.all([
-            getUserMetrics(userId),
-            getUserPerformance(userId),
-            getQuestionsByDifficultyBreakdown(userId),
-            getAvgTimingByDifficulty(userId)
-        ]);
-
-        const overview = getMetricCardData(metrics);
+        const overview = getMetricCardData(metrics || []);
         const testSuggestion = generateWeeklyTestSuggestion(
-            performance?.recentTestScores as RecentTestScoresProps[] || []
+            (performance?.recentTestScores as RecentTestScoresProps[]) || []
         );
-        const difficultyLabel = getDifficultySuggestion(questionsByDifficulty);
-        const timeLabel = getStreamTimingSuggestion("JEE", avgTimingByDifficulty);
+        const difficultyLabel = getDifficultySuggestion(questionsByDifficulty || {});
+        const timeLabel = getStreamTimingSuggestion("JEE", avgTimingByDifficulty || {});
 
-        const responseData = {
+        return {
             overview: {
                 metrics: overview,
                 performance: {
@@ -174,23 +190,113 @@ export async function GET(req: NextRequest) {
                 recommendation: timeLabel
             }
         };
+    } catch (error) {
+        console.error("[ANALYTICS_API] Error processing recommendation data:", error);
+        throw new Error(`Failed to process analytics recommendations: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+};
+
+export async function GET(req: NextRequest) {
+    try {
+        let searchParams;
+        try {
+            const url = new URL(req.url);
+            searchParams = url.searchParams;
+        } catch (error) {
+            console.error("[ANALYTICS_API] Invalid URL:", error);
+            return jsonResponse(null, {
+                success: false,
+                message: "Invalid request URL",
+                status: 400
+            });
+        }
+
+        const skipCache = searchParams.get("skipCache") === "true";
+        
+        let userId: string;
+        try {
+            const session = await getAuthSession();
+            userId = validateUserId(session?.user?.id);
+        } catch (error) {
+            return jsonResponse(null, {
+                success: false,
+                message: error instanceof Error ? error.message : "Invalid user ID",
+                status: 400
+            });
+        }
+
+        let metrics, performance, questionsByDifficulty, avgTimingByDifficulty;
+        
+        try {
+            [metrics, performance, questionsByDifficulty, avgTimingByDifficulty] = await Promise.all([
+                getUserMetrics(userId),
+                getUserPerformance(userId),
+                getQuestionsByDifficultyBreakdown(userId),
+                getAvgTimingByDifficulty(userId)
+            ]);
+        } catch (error) {
+            console.error("[ANALYTICS_API] Database operation failed:", error);
+            
+            // Check if it's a database connection error
+            if (error instanceof Error && error.message.includes('connect')) {
+                return jsonResponse(null, {
+                    success: false,
+                    message: "Database connection failed. Please try again later.",
+                    status: 503
+                });
+            }
+            
+            return jsonResponse(null, {
+                success: false,
+                message: "Failed to fetch analytics data from database",
+                status: 500
+            });
+        }
+
+        let responseData;
+        try {
+            responseData = processRecommendationData(
+                metrics, 
+                performance, 
+                questionsByDifficulty, 
+                avgTimingByDifficulty
+            );
+        } catch (error) {
+            console.error("[ANALYTICS_API] Recommendation processing failed:", error);
+            return jsonResponse(null, {
+                success: false,
+                message: "Failed to process analytics recommendations",
+                status: 500
+            });
+        }
+
+        const cacheHeaders = skipCache ? {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        } : {
+            'Cache-Control': `public, max-age=${CACHE_TTL}, s-maxage=${CACHE_REVALIDATE_SECONDS}, stale-while-revalidate=${CACHE_REVALIDATE_SECONDS}`,
+            'ETag': `"analytics-${userId}-${Date.now()}"`
+        };
 
         return jsonResponse(responseData, {
             success: true,
-            message: "OK",
+            message: "Analytics data fetched successfully",
             status: 200,
-            headers: {
-                'Cache-Control': `public, max-age=${CACHE_TTL}, s-maxage=${CACHE_REVALIDATE_SECONDS}, stale-while-revalidate=${CACHE_REVALIDATE_SECONDS}`,
-                'ETag': `"analytics-${userId}-${Date.now()}"` 
-            }
+            headers: cacheHeaders
         });
 
     } catch (error) {
-        console.error("[ANALYTICS_API] Error fetching analytics data:", error);
+        console.error("[ANALYTICS_API] Unexpected error:", error);
+        
+        const isDevelopment = process.env.NODE_ENV === 'development';
+        const errorMessage = isDevelopment 
+            ? `Internal server error: ${error instanceof Error ? error.message : 'Unknown error'}`
+            : "An unexpected error occurred while processing your request";
 
         return jsonResponse(null, {
             success: false,
-            message: "Failed to fetch analytics data",
+            message: errorMessage,
             status: 500
         });
     }

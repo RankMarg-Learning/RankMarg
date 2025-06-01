@@ -10,7 +10,7 @@ import AnalyticsDashboardSkeleton from '../skeleton/analytics.dashboard.skeleton
 import Calender from '../profile/Calender'
 
 const AnalyticsDashboard = () => {
-    const { analytics, attempts, isLoading, isError } = useAnalyticsDashboard({ id: '0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5' })
+    const { analytics, attempts, isLoading, isError } = useAnalyticsDashboard()
     if (isLoading) return (<AnalyticsDashboardSkeleton />)
     if (isError) return <div>Error loading data</div>
 

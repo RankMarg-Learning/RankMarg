@@ -1,20 +1,20 @@
 export const dynamic = "force-dynamic";
 
 import { z } from 'zod';
-
+import { startOfDay, endOfDay } from 'date-fns';
+import { jsonResponse } from '@/utils/api-response';
+import { AttemptsDashaboadProps, PerformanceDashboardProps } from '@/types/dashboard.types';
+import prisma from '@/lib/prisma';
+import { getAuthSession } from '@/utils/session';
 
 const QuerySchema = z.object({
-    id: z.string().uuid(),
     subtopicsCount: z.coerce.number().int().positive().default(3),
 });
-
-
 
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const queryResult = QuerySchema.safeParse({
-            id: searchParams.get('id'),
             subtopicsCount: searchParams.get('subtopicsCount') || 3,
         });
 
@@ -26,7 +26,17 @@ export async function GET(request: Request) {
             })
         }
 
-        const { id: userId, subtopicsCount } = queryResult.data;
+        const { subtopicsCount } = queryResult.data;
+
+        const session = await getAuthSession();
+        if (!session || !session.user?.id) {
+            return jsonResponse(null, {
+                message: 'Unauthorized',
+                success: false,
+                status: 401,
+            })
+        }
+        const userId = session.user.id;
 
         const user = await prisma.user.findUnique({
             where: { id: userId },
@@ -40,7 +50,6 @@ export async function GET(request: Request) {
             })
         }
 
-        //!Change this as per the cron update time 
         const todayStart = startOfDay(new Date());
         const todayEnd = endOfDay(new Date());
 
@@ -56,15 +65,25 @@ export async function GET(request: Request) {
             select: {
                 timing: true,
             }
+        }).catch(error => {
+            console.error('Error fetching attempts:', error);
+            return []; 
         });
 
         const todaysMinutesStudied = calculateTodayStudyTime(attempts);
-        const dailyGoalMinutes = user.studyHoursPerDay ? (user.studyHoursPerDay * 60*60) / 4 : 60*60;
 
+        const defaultStudyHours = 1; 
+        const dailyGoalMinutes = user.studyHoursPerDay 
+            ? (user.studyHoursPerDay * 60*60/6) 
+            : (defaultStudyHours * 60*60);
 
-        const revisionSubtopics = await getTopUsedSubtopicsToday(userId, subtopicsCount);
+        const revisionSubtopics = await getTopUsedSubtopicsToday(userId, subtopicsCount)
+            .catch(error => {
+                console.error('Error fetching revision subtopics:', error);
+                return []; 
+            });
 
-        const performance: PerformanceDashboardProps = await prisma.userPerformance.findUnique({
+        const performance: PerformanceDashboardProps | null = await prisma.userPerformance.findUnique({
             where: { userId },
             select: {
                 accuracy: true,
@@ -72,12 +91,19 @@ export async function GET(request: Request) {
                 totalAttempts: true,
                 streak: true,
             }
-        })
+        }).catch(error => {
+            console.error('Error fetching user performance:', error);
+            return null; 
+        });
 
-        const streak = performance.streak || 0;
-        const level = calculateUserLevel(performance);
+        const safePerformance = {
+            accuracy: performance?.accuracy ?? 0,
+            avgScore: performance?.avgScore ?? 0,
+            totalAttempts: performance?.totalAttempts ?? 0,
+            streak: performance?.streak ?? 0,
+        };
 
-
+        const level = calculateUserLevel(safePerformance);
 
         return jsonResponse({
             todaysProgress: {
@@ -87,10 +113,10 @@ export async function GET(request: Request) {
             },
             revisionSubtopics: revisionSubtopics,
             userStats: {
-                streak,
+                streak: safePerformance.streak,
                 level,
-                accuracy: performance.accuracy || 0,
-                totalQuestionsSolved: performance.totalAttempts || 0,
+                accuracy: safePerformance.accuracy,
+                totalQuestionsSolved: safePerformance.totalAttempts,
             },
         }, { message: "Ok", success: true, status: 200 });
 
@@ -104,81 +130,111 @@ export async function GET(request: Request) {
     }
 }
 
-
 function calculateTodayStudyTime(attempts: AttemptsDashaboadProps[]): number {
+    if (!attempts || attempts.length === 0) {
+        return 0;
+    }
+    
     return attempts.reduce((total, attempt) => {
-        return total + (attempt.timing || 0);
+        const timing = attempt?.timing ?? 0;
+        return total + (typeof timing === 'number' ? timing : 0);
     }, 0);
 }
 
-
-
-import { startOfDay, endOfDay } from 'date-fns';
-import { jsonResponse } from '@/utils/api-response';
-import { AttemptsDashaboadProps, PerformanceDashboardProps } from '@/types/dashboard.types';
-import prisma from '@/lib/prisma';
-
 async function getTopUsedSubtopicsToday(userId: string, count: number): Promise<string[]> {
-    const todayStart = startOfDay(new Date());
-    const todayEnd = endOfDay(new Date());
+    try {
+        if (!userId || count <= 0) {
+            return [];
+        }
 
-    const groupedSubtopics = await prisma.practiceSessionQuestions.groupBy({
-        by: ['questionId'],
-        where: {
-            practiceSession: {
-                userId,
-                createdAt: {
-                    gte: todayStart,
-                    lte: todayEnd,
-                }
+        const todayStart = startOfDay(new Date());
+        const todayEnd = endOfDay(new Date());
+
+        const groupedSubtopics = await prisma.practiceSessionQuestions.groupBy({
+            by: ['questionId'],
+            where: {
+                practiceSession: {
+                    userId,
+                    createdAt: {
+                        gte: todayStart,
+                        lte: todayEnd,
+                    }
+                },
             },
-        },
-    });
+        });
 
-    const questionIds = groupedSubtopics.map(q => q.questionId);
+        if (!groupedSubtopics || groupedSubtopics.length === 0) {
+            return [];
+        }
 
+        const questionIds = groupedSubtopics
+            .map(q => q.questionId)
+            .filter(id => id != null); 
 
-    const questions = await prisma.question.findMany({
-        where: {
-            id: { in: questionIds },
-            subtopicId: { not: null }
-        },
-        select: {
-            subtopicId: true,
-            subTopic: {
-                select: { name: true }
+        if (questionIds.length === 0) {
+            return [];
+        }
+
+        const questions = await prisma.question.findMany({
+            where: {
+                id: { in: questionIds },
+                subtopicId: { not: null }
+            },
+            select: {
+                subtopicId: true,
+                subTopic: {
+                    select: { name: true }
+                }
+            }
+        });
+
+        if (!questions || questions.length === 0) {
+            return [];
+        }
+
+        const frequencyMap = new Map<string, { name: string, count: number }>();
+
+        for (const q of questions) {
+            if (!q.subtopicId || !q.subTopic?.name) {
+                continue; 
+            }
+
+            const id = q.subtopicId;
+            const name = q.subTopic.name;
+
+            if (frequencyMap.has(id)) {
+                frequencyMap.get(id)!.count += 1;
+            } else {
+                frequencyMap.set(id, { name, count: 1 });
             }
         }
-    });
 
-    const frequencyMap = new Map<string, { name: string, count: number }>();
+        return Array.from(frequencyMap.values())
+            .sort((a, b) => b.count - a.count)
+            .slice(0, count)
+            .map(entry => entry.name);
 
-    for (const q of questions) {
-        const id = q.subtopicId!;
-        const name = q.subTopic?.name ?? 'Unknown';
-
-        if (frequencyMap.has(id)) {
-            frequencyMap.get(id)!.count += 1;
-        } else {
-            frequencyMap.set(id, { name, count: 1 });
-        }
+    } catch (error) {
+        console.error('Error in getTopUsedSubtopicsToday:', error);
+        return []; 
     }
-
-    return Array.from(frequencyMap.values())
-        .sort((a, b) => b.count - a.count)
-        .slice(0, count)
-        .map(entry => entry.name);
 }
 
+function calculateUserLevel(performance: PerformanceDashboardProps | null): number {
+    if (!performance) {
+        return 1; 
+    }
 
+    const accuracy = typeof performance.accuracy === 'number' ? performance.accuracy : 0;
+    const avgScore = typeof performance.avgScore === 'number' ? performance.avgScore : 0;
+    const totalAttempts = typeof performance.totalAttempts === 'number' ? performance.totalAttempts : 0;
 
-function calculateUserLevel(performance: PerformanceDashboardProps): number {
-    if (!performance) return 1;
+    const accuracyOutOf10 = Math.max(0, Math.min(100, accuracy)) / 10;
+    const avgScoreOutOf10 = Math.max(0, Math.min(100, avgScore)) / 10;
 
-    const accuracyOutOf10 = performance.accuracy / 10;
-    const avgScoreOutOf10 = performance.avgScore / 10;
-
-    const questionsFactor = Math.min(1, Math.log10(performance.totalAttempts + 1) / 2.004);
+    const questionsFactor = totalAttempts > 0 
+        ? Math.min(1, Math.log10(totalAttempts + 1) / 2.004)
+        : 0;
     const attemptsOutOf10 = questionsFactor * 10;
 
     const weightAccuracy = 0.4;
@@ -195,5 +251,3 @@ function calculateUserLevel(performance: PerformanceDashboardProps): number {
 
     return level;
 }
-
-

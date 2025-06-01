@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
 import { getAuthSession } from "@/utils/session";
 
-export async function POST(req: Request) {
+export async function PUT(req: Request) {
     const { subjectId, topicId } = await req.json();
     try {
         const session = await getAuthSession()
@@ -38,6 +38,7 @@ export async function POST(req: Request) {
                 },
                 data: {
                     isCurrent: false,
+                    isCompleted: true,//? Make this as per live feedback (If more than one topic is current)
                 },
             }),
             
@@ -47,6 +48,7 @@ export async function POST(req: Request) {
                 },
                 update: {
                     isCurrent: true,
+                    isCompleted: false,
                     startedAt: new Date(),
                 },
                 create: {
@@ -55,11 +57,12 @@ export async function POST(req: Request) {
                     topicId,
                     isCurrent: true,
                     isCompleted: false,
+                    startedAt: new Date(),
                 },
             }),
         ]);
         
-        return jsonResponse(null, { success: true, message: "Current topic updated successfully", status: 200 });
+        return jsonResponse(null, { success: true, message: "Current topic updated successfully and previous topic marked as completed", status: 200 });
     } catch (error) {
         console.log("[Update Current Topic] :", error);
         return jsonResponse(null, { success: false, message: "Internal Server Error", status: 500 });
