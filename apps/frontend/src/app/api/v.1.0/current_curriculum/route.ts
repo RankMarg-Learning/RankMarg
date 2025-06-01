@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import prisma from '@/lib/prisma';
 import { jsonResponse } from '@/utils/api-response';
 import { getAuthSession } from '@/utils/session';
@@ -23,7 +25,6 @@ export async function GET(req: Request) {
         const isCurrent = url.searchParams.get('isCurrent') === 'true';
         const uniqueSubjects = url.searchParams.get('uniqueSubjects') === 'true';
 
-        // Handle authentication
         let session;
         try {
             session = await getAuthSession();
@@ -268,10 +269,8 @@ export async function GET(req: Request) {
         }
 
     } catch (error) {
-        // Catch any unexpected errors
         console.error('Unexpected error in GET /api/study-topics:', error);
         
-        // Don't expose internal error details in production
         const isDevelopment = process.env.NODE_ENV === 'development';
         
         return jsonResponse(null, { 
