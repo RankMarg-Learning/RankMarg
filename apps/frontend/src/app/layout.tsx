@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import "./globals.css";
 import ClientSessionProvider from "@/context/ClientSessionProvider";
 import GoogleAnalytics from "@/lib/GoogleAnalytics";
+import QueryProvider from "@/context/QueryContext";
 
 
 const inter = Inter({ subsets: ["latin"] })
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
   },
-  
+
 };
 
 export default function RootLayout({
@@ -32,21 +33,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
-
-      <ClientSessionProvider>
-
-        <html lang="en">
-          <head>
-            <GoogleAnalytics trackingId={GA_TRACKING_ID} />
-          </head>
-          <body
-            className={`${inter.className}  antialiased default-scroll`}
-          >
-            {children}
-          </body>
-        </html>
-      </ClientSessionProvider>
-    </>
+      <html lang="en">
+        <head>
+          <GoogleAnalytics trackingId={GA_TRACKING_ID} />
+        </head>
+        <body
+          className={`${inter.className}  antialiased default-scroll`}
+        >
+          <QueryProvider>
+            <ClientSessionProvider>
+              {children}
+            </ClientSessionProvider>
+          </QueryProvider>
+        </body>
+      </html>
   );
 }

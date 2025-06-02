@@ -1,36 +1,31 @@
 import prisma from "@/lib/prisma";
+import { jsonResponse } from "@/utils/api-response";
 
+export async function GET(req: Request, { params }: { params: { username: string } }) {
+    const { username } = params;
 
-export async function GET(req: Request, {params} : { params: { username: string } }) {
-    const {username} = params;
-
-    try{
+    try {
         const user = await prisma.user.findUnique({
             where: {
                 username
             },
             include:{
-                attempts:true,
-                player1:true,
-                player2:true,    
-            },
+                attempts:true
+            }
+            
         });
 
-        if(!user){
-            return new Response("User not found", { status: 404 });
+        if (!user) {
+            return jsonResponse(null, { success: false, message: "User not found", status: 404 });
         }
 
-        return new Response(JSON.stringify(user), {status: 200});
-            
+        return jsonResponse(user, { success: true, message: "Ok", status: 200 });
 
     }
-    catch(error){
+    catch (error) {
         console.log("[User-Dynamic] :", error);
-        return new Response("Internal Server Error", { status: 500 });
+        return jsonResponse(null, { success: false, message: "Internal Server Error", status: 500 });
     }
-
-
-
 }
 
 

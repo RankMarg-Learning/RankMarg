@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { authOptions } from "../../auth/[...nextauth]/options";
 import { getServerSession } from "next-auth";
+import { ExamType } from "@prisma/client";
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
@@ -13,12 +14,12 @@ export async function GET(req: Request) {
 
         const tests = await prisma.test.findMany({
             where: {
-                isPublished: true,
-                examType: examType ,
-                stream: session?.user?.stream || null
+                //! stream: session.user.stream as Stream, //Add this afterwards
+                visibility: "PUBLIC",
+                examType:examType as ExamType
             },
             include: {
-                TestParticipation: {
+                testParticipation: {
                     where: {
                         userId: session.user.id
                     },
@@ -35,7 +36,7 @@ export async function GET(req: Request) {
         // Add hasAttempted flag to each test
         const testsWithAttemptStatus = tests.map(test => ({
             ...test,
-            hasAttempted: test.TestParticipation[0]?.status === "COMPLETED" || false,
+            hasAttempted: test.testParticipation[0]?.status === "COMPLETED" || false,
         }));
 
         return new Response(JSON.stringify(testsWithAttemptStatus), { status: 200 });

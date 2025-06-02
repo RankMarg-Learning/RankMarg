@@ -1,17 +1,19 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/options";
+//! NOT USING THIS FILE 
+
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { jsonResponse } from "@/utils/api-response";
+import { getAuthSession } from "@/utils/session";
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { topic, difficulty,subject } = body;
+  const {  difficulty } = body;
 
 
-  const session = await getServerSession(authOptions);
+  const session = await await getAuthSession()
 
   if (!session || !session.user?.id) {
-    return new Response("Unauthorized", { status: 401 });
+    return jsonResponse(null, { success: false, message: "Unauthorized", status: 401 });
   }
 
   try {
@@ -19,12 +21,11 @@ export async function POST(req: Request) {
       attempts: {
         none: {
           userId: session.user.id,
-          isCorrect: false,
+          status: "CORRECT",
         },
       },
     };
 
-    if (topic) filter.topic = topic;
     if (difficulty) filter.difficulty = difficulty;
 
     let questions = await prisma.question.findMany({
@@ -40,9 +41,7 @@ export async function POST(req: Request) {
         },
       };
 
-      if (topic) fallbackFilter.topic = topic;
       if (difficulty) fallbackFilter.difficulty = difficulty;
-      if (subject) fallbackFilter.subject = subject;
 
       questions = await prisma.question.findMany({
         where: fallbackFilter,
@@ -50,16 +49,16 @@ export async function POST(req: Request) {
     }
 
     if (questions.length === 0) {
-      return new Response("No questions found", { status: 404 });
+      return jsonResponse(null, { success: false, message: "No questions available", status: 404 });
     }
 
     const randomIndex = Math.floor(Math.random() * questions.length);
     const randomQuestion = questions[randomIndex];
 
-    return new Response(JSON.stringify(randomQuestion), { status: 200 });
+    return jsonResponse(randomQuestion, { success: true, message: "Ok", status: 200 });
 
   } catch (error) {
     console.log("[Pick Random] Error:", error);
-    return new Response("Internal Server Error", { status: 500 });
+    return jsonResponse(null, { success: false, message: "Internal Server Error", status: 500 });
   }
 }

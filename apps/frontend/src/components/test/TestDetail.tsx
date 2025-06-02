@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -16,6 +15,8 @@ import { ScrollArea } from '../ui/scroll-area'
 import Loading from '../Loading'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
 import { TestStatus } from '@prisma/client'
+import { TextFormator } from '@/utils/textFormator'
+import { getTestDetails } from '@/services/testPanel.service'
 
 
 
@@ -31,37 +32,28 @@ export default function TestDetail({ testId }: { testId: string }) {
 
   const { data: test, isLoading } = useQuery({
     queryKey: ["testId", testId],
-    queryFn: async () => {
-      try {
-        const response = await axios.get(`/api/test/${testId}`)
-        return response.data
-      } catch (error) {
-        console.error(error)
-        router.push("/tests")
-      }
-    },
+    queryFn: async () => getTestDetails(testId)
   })
 
-
-
+  console.log("test", test)
   useEffect(() => {
-    if(test?.testStatus === TestStatus.COMPLETED){
+    if(test?.data?.testStatus === TestStatus.COMPLETED){
       router.push(`/analysis/${testId}`)
     }
     setTestId(testId)
     if (test) {
       setTestInfo({
-        testId: test?.testId,
-        totalMarks: test?.totalMarks,
-        duration: test?.duration,
-        testTitle: test?.title,
+        testId: test?.data?.testId,
+        totalMarks: test?.data?.totalMarks,
+        duration: test?.data?.duration,
+        testTitle: test?.data?.title,
       })
-      setTestId(test?.testId)
-      setQuestions(test?.questions)
+      setTestId(test?.data?.testId)
+      setQuestions(test?.data?.testSection?.flatMap(section => section.testQuestion?.map(q => q.question)) || []);
       setTestSection(() => {
         let questionStartIndex = 1
-        return test?.section?.reduce((acc, curr) => {
-          const questionCount = curr.TestQuestion.length
+        return test?.data?.testSection?.reduce((acc, curr) => {
+          const questionCount = curr.testQuestion.length
           const keyName = `${curr.name}_${questionStartIndex}-${questionStartIndex + questionCount - 1}`
 
           acc[keyName] = {
@@ -88,13 +80,16 @@ export default function TestDetail({ testId }: { testId: string }) {
   };
 
 
+  
 
 
 
   if (isLoading) {
     return <Loading />
   }
- 
+  if(!test?.success && !isLoading){
+    return <div className='w-full h-screen flex items-center justify-center'>Test not found</div>
+  }
 
   return (
     <div className=" w-full">
@@ -116,9 +111,9 @@ export default function TestDetail({ testId }: { testId: string }) {
           {step === "instructions" ? (
             <>
               <CardHeader>
-                <CardTitle className="text-xl font-semibold">General Instructions:</CardTitle>
+                <CardTitle className="text-lg font-semibold">General Instructions:</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 text-sm">
                 <ol className="list-decimal pl-5 space-y-4">
                   <li>
                     The clock will be set at the server. The countdown timer at the top right corner of screen will display the
@@ -179,40 +174,32 @@ export default function TestDetail({ testId }: { testId: string }) {
                   by clicking on a question number without saving the answer to the previous question.
                 </div>
 
-                <div>
-                  You can view all the questions by clicking on the <span className="font-medium">Question Paper</span> button.{" "}
-                  <span className="text-red-500">
-                    This feature is provided, so that if you want you can just see the entire question paper at a glance.
-                  </span>
-                </div>
-
-
               </CardContent>
             </>
           ) : (
             <div >
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-center mb-4">
-                  {test.examType} - {test.title}
+                <CardTitle className="text-xl font-bold text-center mb-4">
+                  {TextFormator(test?.data?.examType)} - {test.title}
                 </CardTitle>
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Duration: {test.duration} Mins</span>
-                  <span>Total Marks: {test.totalMarks}</span>
+                  <span>Duration: {test?.data?.duration} Mins</span>
+                  <span>Total Marks: {test?.data?.totalMarks}</span>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6 rounded-none">
+              <CardContent className="space-y-6 rounded-none text-sm">
                 <ScrollArea className="h-[calc(100vh-1.5rem)]space-y-4" >
                   <h2 className="font-medium">Read the following instructions carefully.</h2>
                   <ol className="list-decimal pl-5 space-y-2">
-                    <li>The test contains a total of {test.totalQuestions} questions.</li>
+                    <li>The test contains a total of {test?.data?.totalQuestions} questions.</li>
                     <li>
                       Each question has{" "}
-                      {test?.section[0]?.TestQuestion[0]?.options?.length || 4} options (if applicable),
+                      {test?.data?.testSection[0]?.testQuestion[0]?.options?.length || 4} options (if applicable),
                       out of which only one is correct.
                     </li>
-                    <li>You have to finish the test in {test.duration} minutes.</li>
-                    {test.section.length > 1 ? (
-                      test.section.map((section, idx) => (
+                    <li>You have to finish the test in {test?.data?.duration} minutes.</li>
+                    {test?.data?.testSection.length > 1 ? (
+                      test?.data?.testSection.map((section, idx) => (
                         <li key={idx}>
                           For the "{section.name}" section:
                           <ul className="pl-5 list-disc space-y-1">
@@ -238,11 +225,11 @@ export default function TestDetail({ testId }: { testId: string }) {
                     ) : (
                       <>
                         <li>
-                          You will be awarded {test.section[0]?.correctMarks} marks for each correct answer.
+                          You will be awarded {test?.data?.testSection[0]?.correctMarks} marks for each correct answer.
                         </li>
-                        {test.section[0]?.negativeMarks ? (
+                        {test?.data?.testSection[0]?.negativeMarks ? (
                           <li>
-                            {Math.abs(test.section[0].negativeMarks)} marks will be deducted for each
+                            {Math.abs(test?.data?.testSection[0]?.negativeMarks)} marks will be deducted for each
                             incorrect answer.
                           </li>
                         ) : (
@@ -270,7 +257,7 @@ export default function TestDetail({ testId }: { testId: string }) {
                   </div>
                 )}
 
-                <div className="space-y-2">
+                <div className="space-y-2 text-xs">
                   <h2 className="font-medium">Declaration:</h2>
                   <div className="flex items-start gap-2">
                     <Checkbox
@@ -278,7 +265,7 @@ export default function TestDetail({ testId }: { testId: string }) {
                       checked={agreed}
                       onCheckedChange={(checked) => setAgreed(checked as boolean)}
                     />
-                    <label htmlFor="declaration" className="text-sm">
+                    <label htmlFor="declaration" className="text-xs">
                       I have read all the instructions carefully and have understood them. I agree not to
                       cheat or use unfair means in this examination. I understand that using unfair means of
                       any sort for my own or someone else&apos;s advantage will lead to my immediate

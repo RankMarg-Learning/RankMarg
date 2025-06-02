@@ -11,13 +11,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 // Define Zod schema for validation
 const signInSchema = z.object({
@@ -30,12 +31,15 @@ const signInSchema = z.object({
 
 const SignInForm = () => {
   const [msg, setMsg] = useState("");
+  const [msgType, setMsgType] = useState("error"); // "error", "success", "warning"
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
   const {
     register,
     handleSubmit,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(signInSchema),
   });
@@ -43,37 +47,60 @@ const SignInForm = () => {
   const router = useRouter();
 
   const handleLogin = async (data: { username: string; password: string }) => {
+    setIsLoading(true);
+    setMsg("");
+    
     try {
       const result = await signIn("credentials", {
         email: data.username,
         password: data.password,
         redirect: false,
       });
+      
       if (result?.error) {
         setMsg("Invalid username or password");
+        setMsgType("error");
       } else {
-        router.push("/tests");
+        setMsg("Welcome back! Redirecting to your dashboard...");
+        setMsgType("success");
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1000);
       }
     } catch (error) {
       console.error("Login failed:", error);
-      alert("An unexpected error occurred. Please try again later.");
+      setMsg("An unexpected error occurred. Please try again later.");
+      setMsgType("error");
+    } finally {
+      setIsLoading(false);
     }
   };
+  
   const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const lowercaseUsername = event.target.value.toLowerCase();
     setValue("username", lowercaseUsername, { shouldValidate: true });
   };
-  
 
+  const getMessageStyles = () => {
+    switch (msgType) {
+      case "success":
+        return "bg-green-50 text-green-600 border-green-200";
+      case "warning":
+        return "bg-yellow-50 text-yellow-600 border-yellow-200";
+      case "error":
+      default:
+        return "bg-red-50 text-red-600 border-red-200";
+    }
+  };
+  
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex items-center justify-center h-screen yellow-gradient">
       <div className="w-full max-w-md">
-        <Card className="mx-auto max-w-sm">
+        <Card className="mx-auto max-w-sm shadow-lg">
           <CardHeader>
-            <CardTitle className="text-2xl">Login</CardTitle>
+            <CardTitle className="text-2xl">Welcome Back!</CardTitle>
             <CardDescription>
-              Enter your email or username and password to log in to your account
-            </CardDescription>
+            Sign in to access your personalized dashboard and continue your journey            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(handleLogin)}>
@@ -82,9 +109,10 @@ const SignInForm = () => {
                 <Input
                   id="email"
                   type="text"
-                  placeholder="Email or Username"
+                  placeholder="Your email or username"
                   {...register("username")}
                   onChange={handleUsernameChange}
+                  className={errors.username ? "border-red-300 focus:ring-red-500" : ""}
                 />
                 {errors.username && (
                   <p className="text-red-500 text-sm">{errors.username?.message?.toString()}</p>
@@ -96,7 +124,7 @@ const SignInForm = () => {
                   <Label htmlFor="password">Password</Label>
                   <Link
                     href="/forgot-password"
-                    className="text-sm underline hover:text-yellow-500"
+                    className="text-sm text-primary-600 hover:text-primary-800 underline"
                   >
                     Forgot your password?
                   </Link>
@@ -104,45 +132,89 @@ const SignInForm = () => {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter Password"
-
+                  placeholder="Your password"
+                  className={errors.password ? "border-red-300 focus:ring-red-500" : ""}
                   {...register("password")}
                 />
-                 <button
-                    type="button"
-                    className="absolute right-2 top-9 text-sm text-gray-500"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                  >
-                    {showPassword ? <Eye className="w-5 h-5"/> : <EyeOff className="w-5 h-5"/>}
-                  </button>
+                <button
+                  type="button"
+                  className="absolute right-2 top-9 text-sm text-gray-500"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? <Eye className="w-5 h-5"/> : <EyeOff className="w-5 h-5"/>}
+                </button>
                 {errors.password && (
                   <p className="text-red-500 text-sm">{errors.password?.message?.toString()}</p>
                 )}
-              {msg && <div className="text-red-500 text-xs">{msg}</div>}
               </div>
+              
+              {msg && (
+                <Alert className={`mt-4 mb-4 ${getMessageStyles()}`}>
+                  <AlertDescription>{msg}</AlertDescription>
+                </Alert>
+              )}
+              
               <Button
                 type="submit"
                 className="w-full mt-4"
-                disabled={isSubmitting}
+                disabled={isLoading}
               >
-                {isSubmitting ? "Logging in..." : "Login"}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Login"
+                )}
               </Button>
             </form>
 
+            <div className="relative mt-6 mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-gray-500">Or continue with</span>
+              </div>
+            </div>
+
             <Button
               variant="outline"
-              className="w-full mt-4"
-              onClick={() => signIn("google", { callbackUrl: "/tests" })}
+              className="w-full"
+              onClick={() => signIn("google")}
             >
+              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                <path
+                  d="M12.0001 4.67676C13.0358 4.67676 14.0783 5.01379 14.9571 5.65121L18.1868 2.45786C16.1994 0.851428 14.0215 0 12.0001 0C8.19786 0 4.80133 1.8833 2.80084 4.70755L6.0246 7.92534C7.07276 5.95617 9.39311 4.67676 12.0001 4.67676Z"
+                  fill="#EA4335"
+                />
+                <path
+                  d="M23.49 12.2744C23.49 11.4608 23.4177 10.6473 23.2732 9.86816H12V14.4972H18.47C18.1894 16.0691 17.3213 17.4077 16.0739 18.308L19.1955 21.4396C21.3577 19.3149 23.49 16.2083 23.49 12.2744Z"
+                  fill="#4285F4"
+                />
+                <path
+                  d="M5.95 14.3044C5.68 13.6107 5.53 12.8695 5.53 12.1008C5.53 11.3321 5.68 10.5908 5.95 9.89721L2.72621 6.67943C1.85843 8.29984 1.35181 10.1476 1.35181 12.1008C1.35181 14.054 1.85843 15.9017 2.72621 17.5222L5.95 14.3044Z"
+                  fill="#FBBC05"
+                />
+                <path
+                  d="M12.0001 24.0001C14.0215 24.0001 15.855 23.359 17.3051 22.2692L14.1835 19.1376C13.3138 19.6606 12.24 20.0001 12.0001 20.0001C9.39311 20.0001 7.07276 18.7207 6.0246 16.7515L2.80084 19.9693C4.80133 22.7936 8.19786 24.0001 12.0001 24.0001Z"
+                  fill="#34A853"
+                />
+              </svg>
               Login with Google
             </Button>
 
             <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Link href="/sign-up" className="underline hover:text-yellow-500">
-                Sign up
+              New to our platform?{" "}
+              <Link href="/sign-up" className="text-yellow-600 hover:text-yellow-800 underline ">
+                Create an account
               </Link>
             </div>
+            
+            <p className="text-center text-xs text-gray-500 mt-4">
+              Protected by enterprise-grade security. We respect your privacy.
+            </p>
           </CardContent>
         </Card>
       </div>

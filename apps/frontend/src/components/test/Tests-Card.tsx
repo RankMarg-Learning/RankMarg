@@ -24,7 +24,7 @@ const TestsCard = ({ title, description, duration, totalQuestions, testId, hasAt
 
   return (
     <>
-      <Card className='rounded-md'>
+      <Card className="hover:shadow-lg transition-shadow duration-300 w-full">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
           <CardDescription>

@@ -1,26 +1,20 @@
 "use client";
-import { Card } from "@/components/ui/card";
 import React from "react";
 import Heatmap from "./heatmap/Heatmap";
-import { Separator } from "@/components/ui/separator";
+import { CalenderProps } from "@/types/analytics.type";
 
-interface CalenderProps {
-  attempts: Date[];
-}
-
-const Calender = ({attempts}:CalenderProps) => {
+const Calender = ({ attempts }: { attempts: CalenderProps[] }) => {
   return (
-    <Card >
-      <div className="h-[27.8px] p-[9px_12px_0_12px]">
-        <div className="font-semibold">{attempts.length} submissions</div>
+    <div className="my-3">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-gray-800">
+          Attempt Activities
+        </h3>
       </div>
-      <Separator className="my-2" />
-      <div className="p-3">
-        <Heatmap 
+      <Heatmap
         attempts={attempts}
-        />
-      </div>
-    </Card>
+      />
+    </div>
   );
 };
 

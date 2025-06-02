@@ -1,11 +1,10 @@
 import prisma from "@/lib/prisma"
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/options";
+import { getAuthSession } from "@/utils/session";
 
 export async function GET() {
 
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getAuthSession()
         if (!session || !session.user?.id) {
             return new Response("Unauthorized", { status: 401 });
         }

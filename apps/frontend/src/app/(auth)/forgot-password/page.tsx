@@ -1,24 +1,28 @@
 "use client";
-import axios from 'axios';
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { AlertCircle, ArrowRight } from 'lucide-react'
+import { getForgotPassword } from '@/services';
 
 const ForgotPassoword = () => {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
-  const [isLoading] = useState(false)
+  const [isLoading,setIsLoading] = useState(false)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const { data } = await axios.post('/api/auth/forgot-password', { email });
-            setMessage(data.msg);
+          setIsLoading(true);
+            const response = await getForgotPassword(email);
+            setMessage(response.success ? "Check your email for the reset link" : response.message);
         } catch (error) {
             setMessage(error.response.data.error);
+        }
+        finally{
+          setIsLoading(false);
         }
        
       };

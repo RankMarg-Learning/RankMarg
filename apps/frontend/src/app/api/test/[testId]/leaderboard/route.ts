@@ -9,7 +9,7 @@ export async function POST(req:Request,{ params }: { params: { testId: string } 
             select:{
                 title:true,
                 totalMarks:true,
-                TestParticipation:{
+                testParticipation:{
                     orderBy:[
                         { score: "desc" }, 
                         { timing: "asc" }, 

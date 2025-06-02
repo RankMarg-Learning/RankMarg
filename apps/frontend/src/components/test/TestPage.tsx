@@ -17,9 +17,8 @@ import {
 import { Button } from "../ui/button";
 
 const TestPage = ({ testId }: { testId: string }) => {
-  const { setTestId, isLoaded, setIsTestComplete } = useTestContext();
+  const { setTestId, isLoaded, setIsTestComplete, setMinimizeCount } = useTestContext();
   const [showExitWarning, setShowExitWarning] = useState(false);
-
 
 
   useEffect(() => {
@@ -44,16 +43,27 @@ const TestPage = ({ testId }: { testId: string }) => {
 
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement) {
+        setMinimizeCount((prev) => prev + 1);
+        setShowExitWarning(true);
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setMinimizeCount((prev) => prev + 1);
         setShowExitWarning(true);
       }
     };
 
+
     document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [testId, setTestId]);
+
 
 
   if (isLoaded) {
@@ -78,7 +88,7 @@ const TestPage = ({ testId }: { testId: string }) => {
               continue in full-screen mode?
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button
               variant="outline"
               onClick={() => {

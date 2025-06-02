@@ -27,7 +27,7 @@ import { generateSlug } from "@/lib/generateSlug";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Tags } from "@/constant/tags";
+import { PYQ_Year } from "@/constant/tags";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import { Checkbox } from "../ui/checkbox";
 import { z } from "zod";
@@ -43,7 +43,7 @@ const QuestionFormSchema = z.object({
   hint: z.string().optional(),
   tag: z.string().optional(),
   content: z.string().min(1, { message: "Content is required" }),
-  questionTime: z.number().min(1, { message: "Question time must be at least 1 minute" }),
+  category: z.number().min(1, { message: "Category is required" }),
   options: z.array(
     z.object({
       content: z.string().min(1, { message: "Option content is required" }),
@@ -52,6 +52,7 @@ const QuestionFormSchema = z.object({
   ).optional(),
   numericalAnswer: z.number().optional(),
   solution: z.string().optional(),
+  subTopic: z.string().min(1, { message: "Sub Topic is required" }),
 });
 
 const Contribute = () => {
@@ -60,7 +61,7 @@ const Contribute = () => {
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.Role === "USER") {
+    if (status === "authenticated" && session?.user?.role === "USER") {
       router.replace("/"); // Redirect to home page
     }
   }, [session, status, router]);
@@ -86,9 +87,10 @@ const Contribute = () => {
   const [numericalAnswer, setNumericalAnswer] = useState<number | undefined>(
     undefined
   );
-  const [questionTime, setQuestionTime] = useState(5);
+  const [category, setCategory] = useState("");
   const [questionType, setQuestionType] = useState("MCQ");
   const [solution, setSolution] = useState("");
+  const [subTopic, setSubTopic] = useState("");
   const [msg, setMsg] = useState("");
   const [showSolution, setShowSolution] = useState(false);
 
@@ -129,10 +131,11 @@ const Contribute = () => {
     hint,
     tag,
     content,
-    questionTime,
+    category,
     options,
     numericalAnswer,
     solution,
+    subTopic
   };
 
   if (questionType === "NUM") {
@@ -170,9 +173,10 @@ const Contribute = () => {
       setStream("");
       setHint("");
       setNumericalAnswer(undefined);
-      setQuestionTime(5);
+      setCategory("");
       setQuestionType("mcq");
       setSolution("");
+      setSubTopic("")
     }
   };
 
@@ -200,15 +204,10 @@ const Contribute = () => {
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
-          <div className="flex flex-wrap  mb-6 w-full">
+          <div className="flex flex-wrap  mb-3 w-full">
             <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-              <label
-                className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                htmlFor="grid-last-name"
-              >
-                Stream*
-              </label>
               <SelectFilter
+                label="Stream*"
                 width={"full"}
                 placeholder="Stream"
                 selectName={Object.keys(filterData)}
@@ -217,13 +216,8 @@ const Contribute = () => {
 
             </div>
             <div className="w-full md:w-1/2 px-3">
-              <label
-                className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                htmlFor="grid-last-name"
-              >
-                Class*
-              </label>
               <SelectFilter
+                label="Class*"
                 width={"full"}
                 placeholder="Class"
                 selectName={["Foundation", "11th", "12th"]}
@@ -231,15 +225,10 @@ const Contribute = () => {
               />
             </div>
           </div>
-          <div className="flex flex-wrap  mb-6 w-full">
+          <div className="flex flex-wrap  mb-3 w-full">
             <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-              <label
-                className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-                htmlFor="grid-last-name"
-              >
-                Subjects*
-              </label>
               <SelectFilter
+                label="Subjects*"
                 width={"full"}
                 placeholder="Subjects"
                 selectName={Object.keys(filterData[stream] || {})}
@@ -263,45 +252,57 @@ const Contribute = () => {
 
             </div>
           </div>
-          <div className="flex flex-wrap   px-3 w-full md:w-1/2">
-            <label
-              className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-              htmlFor="grid-last-name"
-            >
-              Difficulty*
-            </label>
-            <SelectFilter
-              width={"full"}
-              placeholder="Difficulty"
-              selectName={["Easy", "Medium", "Hard"]}
-              onChange={(value: string[]) => setDifficulty(value[0])}
-            />
+          <div className="flex flex-wrap  mb-3 w-full">
+            <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+              <label
+                className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
+                htmlFor="grid-last-name"
+              >
+                Sub Topic*
+              </label>
+              <Input
+                required
+                type="text"
+                className="mb-2"
+                placeholder="Sub Topic"
+                value={subTopic}
+                name="Sub Topic"
+                onChange={(e) => setSubTopic(e.target.value)}
+              />
+            </div>
+            <div className="w-full md:w-1/2 px-3">
 
+              <SelectFilter
+                label="Category*"
+                width={"full"}
+                placeholder="Category"
+                selectName={["Physics", "Chemistry", "Mathematics", "Biology"]}
+                onChange={(value: string[]) => setCategory(value[0])}
+              />
+            </div>
           </div>
-          <div className="flex flex-wrap  px-3 w-full md:w-1/2">
-            <label
-              className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-              htmlFor="grid-last-name"
-            >
-              Tags
-            </label>
-            <SelectFilter
-              width={"full"}
-              placeholder="Tags"
-              selectName={Tags}
-              onChange={(value: string[]) => setTag(value[0])}
-            />
+          <div className="flex flex-wrap  mb-3 w-full">
+            <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+              <SelectFilter
+                label="Difficulty*"
+                width={"full"}
+                placeholder="Difficulty"
+                selectName={["Easy", "Medium", "Hard"]}
+                onChange={(value: string[]) => setDifficulty(value[0])}
+              />
+
+            </div>
+            <div className="w-full md:w-1/2 px-3">
+              <SelectFilter
+                label="Tags"
+                width={"full"}
+                placeholder="Tags"
+                selectName={PYQ_Year}
+                onChange={(value: string[]) => setTag(value[0])}
+              />
+            </div>
           </div>
-          <div className="w-full m-2">
-            <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
-              htmlFor="grid-last-name">Question Time (Min)*</Label>
-            <SelectFilter
-              width={"full"}
-              placeholder="Question Time"
-              selectName={["1", "2", "3", "4", "5", "6", "8", "10", "12", "15"]}
-              onChange={(value: string[]) => setQuestionTime(parseInt(value[0]))}
-            />
-          </div>
+
           <div className="w-full m-2">
             <Label className="block  tracking-wide text-gray-700 text-xs font-bold mb-2"
               htmlFor="grid-last-name">Hints</Label>
