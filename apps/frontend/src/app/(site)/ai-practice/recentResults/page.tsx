@@ -23,17 +23,19 @@ const SessionPage = () => {
         `${process.env.VERSION}/session/subject_practice_session?loc=ai_practice&_done_item=true&_type=all&_count=${PAGE_SIZE}&_page=${pageParam}`
       )
 
+      // Add null checks here
+      const responseData = data?.data || []
+      
       return {
-        data: data.data,
+        data: responseData,
         nextPage: pageParam + 1,
-        hasNextPage: data.data.length === PAGE_SIZE,
+        hasNextPage: responseData.length === PAGE_SIZE,
       }
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.hasNextPage ? lastPage.nextPage : undefined,
   })
-
 
   const observerRef = useRef<IntersectionObserver | null>(null)
 
@@ -56,7 +58,7 @@ const SessionPage = () => {
   if (isLoading) return <Loading />
   if (isError) return <div>Error loading data</div>
 
-  const allResults = data.pages.flatMap((page) => page.data)
+  const allResults = data?.pages?.flatMap((page) => page.data) || []
 
   return (
     <>

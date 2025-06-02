@@ -24,14 +24,13 @@ interface NavItem {
 }
 
 interface SidebarProps {
-  isMobile?: boolean;
+  mobileMenuOpen?: boolean;
   className?: string;
 }
 
-export function Sidebar({ className ,isMobile}: SidebarProps) {
-
+export function Sidebar({ className, mobileMenuOpen }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const location =  usePathname();
+  const location = usePathname();
   const { data: session } = useSession();
 
   const navItems: NavItem[] = [
@@ -48,12 +47,14 @@ export function Sidebar({ className ,isMobile}: SidebarProps) {
   return (
     <aside
       className={cn(
-        "bg-white border-r border-card-border h-[calc(100vh-64px)] sticky top-16 transition-all duration-300 z-40",
-        collapsed ? "w-16" : "w-56",
+        "bg-white border-r border-card-border h-[calc(100vh-64px)] sticky top-16 transition-all duration-300",
+        collapsed ? "w-28" : "w-60",
+        "lg:w-auto w-56",
         className
       )}
     >
-      <div className={`p-2 flex justify-end ${isMobile ? 'hidden' : 'block'}`}>
+      {/* Collapse button - hidden on mobile */}
+      <div className="p-2 justify-end hidden lg:flex">
         <Button
           variant="ghost"
           size="icon"
@@ -82,7 +83,13 @@ export function Sidebar({ className ,isMobile}: SidebarProps) {
                 )}
               >
                 <item.icon size={18} />
-                {!collapsed && <span>{item.label}</span>}
+                {/* On desktop: show label when not collapsed, on mobile: always show */}
+                <span className={cn(
+                  "lg:block",
+                  collapsed && "lg:hidden"
+                )}>
+                  {item.label}
+                </span>
               </Link>
             </li>
           ))}

@@ -6,11 +6,13 @@ import MistakeDistrubution from './MistakeDistrubution'
 import MistakeInsights from './MistakeInsights'
 import { useMistakeDashboard } from '@/hooks/useMistakeDashboard'
 import MistakePageBanner from './MistakePageBanner'
+import MistakeTrackerDashboardSkeleton from '../skeleton/mistake.dashboard.skeleton'
 
 const MistakeTrackerDashboard = () => {
-    const { distribution, overview ,isLoading, isError} = useMistakeDashboard()
+    const { distribution, overview, insight, isLoading, isError } = useMistakeDashboard()
 
-    if (isLoading) return <div>Loading...</div>
+
+    if (isLoading) return <MistakeTrackerDashboardSkeleton/>
     if (isError) return <div>Error loading data</div>
     return (
         <div>
@@ -20,10 +22,9 @@ const MistakeTrackerDashboard = () => {
                     <div className='col-span-2'>
                         <MistakeDistrubution dist={distribution?.data} />
                     </div>
-                        <MistakeInsights />
+                    <MistakeInsights insights={insight?.data} />
                 </div>
-                        {/* <MistakeRecent/> */}
-                        <MistakePageBanner/>
+                <MistakePageBanner />
 
             </div>
         </div>

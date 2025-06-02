@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from './ui/badge';
@@ -21,19 +20,22 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
-  const isMobile = useIsMobile();
   const { data: session } = useSession();
 
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-sm bg-white/80 border-b border-card-border">
       <div className="container flex h-16 items-center justify-between py-4">
-        <div className="flex items-center ">
-          {isMobile && (
-            <Button variant="ghost" size="icon" onClick={onMenuClick} className="mr-1">
-              <Menu size={20} />
-            </Button>
-          )}
-          <div >
+        <div className="flex items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onMenuClick}
+            className="mr-1 lg:hidden"
+          >
+            <Menu size={20} />
+          </Button>
+
+          <div>
             <Link href="/" className="flex items-center gap-2">
               <Image
                 src="https://utfs.io/f/DbhgrrAIqRoKWCwFFv4kujRo2cBDzhfSAtQ1p0ZrLwxy9lHG"
@@ -56,11 +58,9 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          {isMobile && (
-            <Button variant="ghost" size="icon">
-              <Search size={20} />
-            </Button>
-          )}
+          <Button variant="ghost" size="icon" className="hidden">
+            <Search size={20} />
+          </Button>
 
           <Button variant="ghost" size="icon" className="relative">
             <Bell size={20} />
@@ -73,18 +73,20 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <div className="relative">
                   <Avatar className="h-8 w-8 border border-card-border">
                     <AvatarImage src={session?.user.image} />
-                    <AvatarFallback className="bg-subtle-gray text-foreground">{
-                      session?.user.name.split(" ")
+                    <AvatarFallback className="bg-subtle-gray text-foreground">
+                      {session?.user.name?.split(" ")
                         .map((n) => n[0])
                         .join("")
-                        .toUpperCase()
-                    }</AvatarFallback>
+                        .toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                   <Badge variant="outline" className="absolute -top-2 -right-2 bg-amber-50 text-amber-700 border-amber-200 p-0.5 gap-0.5 flex md:hidden">
                     <Crown size={8} className="text-amber-500" />
                   </Badge>
                 </div>
-                <span className="font-medium text-sm hidden md:inline-block">{session?.user?.name}</span>
+                <span className="font-medium text-sm hidden md:inline-block">
+                  {session?.user?.name}
+                </span>
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
@@ -103,7 +105,8 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex items-center cursor-pointer text-red-500 focus:text-red-500"
+              <DropdownMenuItem
+                className="flex items-center cursor-pointer text-red-500 focus:text-red-500"
                 onClick={() => signOut({ callbackUrl: "/" })}
               >
                 <LogOut className="mr-2 h-4 w-4" />
