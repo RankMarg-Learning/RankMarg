@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Options from "@/components/Options";
 import { useTestContext } from "@/context/TestContext";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
@@ -8,8 +8,9 @@ import TimeSpendOnQuestion from "@/utils/test/TimeSpendOnQuestion";
 import { QuestionStatus } from "@/utils";
 
 export function TestQuestion() {
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
+  // State for the new Options component interface
+  const [selectedValues, setSelectedValues] = useState<number[]>([]);
+  const [numericalValue, setNumericalValue] = useState<number | null>(null);
 
   const {
     questions,
@@ -21,123 +22,147 @@ export function TestQuestion() {
     testSection,
   } = useTestContext();
 
-  const question = questions?.[currentQuestion - 1];
-  const options = question?.options || [];
-  const isLastQuestion = currentQuestion === totalQuestions;
+  // Memoized values for optimization
+  const question = useMemo(() => questions?.[currentQuestion - 1], [questions, currentQuestion]);
+  const options = useMemo(() => question?.options || [], [question]);
+  
+  // Question type flags
+  const questionTypes = useMemo(() => ({
+    isLastQuestion: currentQuestion === totalQuestions,
+    isNumerical: question?.type === "INTEGER",
+    isSingleChoice: question?.type === "MULTIPLE_CHOICE" && question?.format !== "MULTIPLE_SELECT",
+    isMultipleChoice: question?.type === "MULTIPLE_CHOICE" && question?.format === "MULTIPLE_SELECT"
+  }), [currentQuestion, totalQuestions, question?.type, question?.format]);
 
-  const getMarks = (currentQuestionIndex: number) => {
-
+  // Calculate marks based on question section
+  const getMarks = useCallback((questionIndex) => {
     if (!testSection || Object.keys(testSection).length === 0) {
       return { correctMarks: 0, negativeMarks: 0 };
     }
+
     for (const [key, value] of Object.entries(testSection)) {
       const range = key.split('_')[1];
-
       const [start, end] = range.split('-').map(Number);
-      if (currentQuestionIndex >= start && currentQuestionIndex <= end) {
+      
+      if (questionIndex >= start && questionIndex <= end) {
         return {
           correctMarks: value.correctMarks,
           negativeMarks: value.negativeMarks > 0 ? -value.negativeMarks : 0,
         };
       }
     }
+    
     return { correctMarks: 0, negativeMarks: 0 };
-  }
+  }, [testSection]);
 
+  // Handle selection changes
+  const handleSelectionChange = useCallback((values: number[]) => {
+    setSelectedValues(values);
+  }, []);
 
+  // Handle numerical value changes
+  const handleNumericalChange = useCallback((value: number | null) => {
+    setNumericalValue(value);
+  }, []);
 
+  // Load saved answers when navigating between questions
   useEffect(() => {
     const currentQuestionData = questionsData[currentQuestion]?.selectedOptions || [];
+    
     if (currentQuestionData.length > 0) {
-      if (questionsData[currentQuestion]?.type === "multiple") {
-        setSelectedOption(null);
-        setSelectedOptions(currentQuestionData);
+      if (questionTypes.isNumerical) {
+        // For numerical questions, store as numerical value
+        const numValue = Number(currentQuestionData[0]);
+        setNumericalValue(isNaN(numValue) ? null : numValue);
+        setSelectedValues([]);
       } else {
-        setSelectedOption(currentQuestionData[0]);
-        setSelectedOptions([]);
+        // For choice questions, store as array of indices
+        setSelectedValues(currentQuestionData);
+        setNumericalValue(null);
       }
     } else {
-      setSelectedOption(null);
-      setSelectedOptions([]);
+      // Reset when no saved answer
+      setSelectedValues([]);
+      setNumericalValue(null);
     }
-  }, [currentQuestion, questionsData, question?.type]);
+  }, [currentQuestion, questionsData, questionTypes.isNumerical]);
 
+  // Get current selection based on question type
+  const getCurrentSelection = useCallback(() => {
+    if (questionTypes.isNumerical) {
+      return numericalValue !== null ? [numericalValue] : [];
+    } else {
+      return selectedValues;
+    }
+  }, [questionTypes.isNumerical, numericalValue, selectedValues]);
 
+  // Determine question status
+  const getQuestionStatus = useCallback((isMarked, hasAnswer) => {
+    if (isMarked) {
+      return hasAnswer ? QuestionStatus.AnsweredAndMarked : QuestionStatus.MarkedForReview;
+    }
+    return hasAnswer ? QuestionStatus.Answered : QuestionStatus.NotAnswered;
+  }, []);
 
-
-  
-
-  // Handlers
-  const onMarkForReview = () => {
+  // Update question data
+  const updateQuestionData = useCallback((isMarked = false) => {
+    const currentSelection = getCurrentSelection();
+    const hasAnswer = currentSelection.length > 0;
+    const questionType = questionTypes.isMultipleChoice ? 'multiple' : 'single';
+    
     setQuestionsData((prev) => ({
       ...prev,
       [currentQuestion]: {
         ...prev[currentQuestion],
-        status:
-          selectedOption !== null || selectedOptions.length > 0
-            ? QuestionStatus.AnsweredAndMarked
-            : QuestionStatus.MarkedForReview,
-        selectedOptions:
-            selectedOption !== null 
-            ? [selectedOption]
-            : selectedOptions,
-        type: question?.type === 'MCQ' ? (selectedOption !== null ? 'single' : 'multiple') : question?.type,
+        selectedOptions: currentSelection,
+        status: getQuestionStatus(isMarked, hasAnswer),
+        type: question?.type === 'INTEGER' ? "integer" : questionType,
+        submittedAt: new Date(),
       },
     }));
 
-    if (!isLastQuestion) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setSelectedOptions([]);
-    }
-  };
+    return { hasAnswer };
+  }, [currentQuestion, getCurrentSelection, getQuestionStatus, question?.type, questionTypes.isMultipleChoice, setQuestionsData]);
 
-  const onClearResponse = () => {
+  // Handler: Mark for review
+  const onMarkForReview = useCallback(() => {
+    updateQuestionData(true);
+    
+    if (!questionTypes.isLastQuestion) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedValues([]);
+      setNumericalValue(null);
+    }
+  }, [currentQuestion, questionTypes.isLastQuestion, setCurrentQuestion, updateQuestionData]);
+
+  // Handler: Clear response
+  const onClearResponse = useCallback(() => {
     setQuestionsData((prev) => ({
       ...prev,
       [currentQuestion]: {
         ...prev[currentQuestion],
         status: QuestionStatus.NotAnswered,
-        selectedOptions: null,
+        selectedOptions: [],
+        submittedAt: new Date(),
       },
     }));
 
-    setSelectedOption(null);
-    setSelectedOptions([]);
-  };
+    setSelectedValues([]);
+    setNumericalValue(null);
+  }, [currentQuestion, setQuestionsData]);
 
-
-  const onSaveAndNext = () => {
-    setQuestionsData((prev) => ({
-      ...prev,
-      [currentQuestion]: {
-        ...prev[currentQuestion],
-        selectedOptions:
-          question?.type === "MCQ"
-            ? selectedOption !== null
-              ? [selectedOption]
-              : selectedOptions
-            : [selectedOption],
-        status:
-          ( selectedOption !== null) ||
-            selectedOptions.length > 0
-            ? QuestionStatus.Answered
-            : QuestionStatus.NotAnswered,
-        type: question?.type === 'MCQ' ? (selectedOption !== null ? 'single' : 'multiple') : question?.type,
-      },
-    }));
-
-    if (!isLastQuestion) {
+  // Handler: Save and next
+  const onSaveAndNext = useCallback(() => {
+    updateQuestionData(false);
+    
+    if (!questionTypes.isLastQuestion) {
       setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setSelectedOptions([]);
+      setSelectedValues([]);
+      setNumericalValue(null);
     }
+  }, [currentQuestion, questionTypes.isLastQuestion, setCurrentQuestion, updateQuestionData]);
 
-
-
-  };
-
-
+  const marks = getMarks(currentQuestion);
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)]">
@@ -150,9 +175,9 @@ export function TestQuestion() {
           <div className="flex gap-1">
             <Badge variant="outline" className="flex items-center gap-1">
               <span>Marks:</span>
-              <span className="text-green-600">+{getMarks(currentQuestion).correctMarks}</span>
+              <span className="text-green-600">+{marks.correctMarks}</span>
               <span>/</span>
-              <span className="text-red-500">{getMarks(currentQuestion).negativeMarks}</span>
+              <span className="text-red-500">{marks.negativeMarks}</span>
             </Badge>
             <TimeSpendOnQuestion currentQuestion={currentQuestion} />
           </div>
@@ -172,10 +197,12 @@ export function TestQuestion() {
             <Options
               type={question?.type}
               options={options}
-              selectedOption={selectedOption}
-              selectedOptions={selectedOptions}
-              setSelectedOption={setSelectedOption}
-              setSelectedOptions={setSelectedOptions}
+              selectedValues={selectedValues}
+              onSelectionChange={handleSelectionChange}
+              numericalValue={numericalValue}
+              onNumericalChange={handleNumericalChange}
+              isAnswered={false}
+              correctOptions={[]}
             />
           </div>
         </div>
@@ -203,8 +230,9 @@ export function TestQuestion() {
           <Button
             onClick={onSaveAndNext}
             className="flex-1 sm:flex-initial bg-yellow-400 hover:bg-yellow-500"
+            disabled={(questionTypes.isNumerical ? numericalValue === null : selectedValues.length === 0)}
           >
-            {`Save ${!isLastQuestion ? "and Next" : ""}`}
+            {`Save ${!questionTypes.isLastQuestion ? "and Next" : ""}`}
           </Button>
         </div>
       </div>

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {  ChevronLeft } from 'lucide-react';
@@ -15,7 +15,7 @@ export function QuestionNavigation() {
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const getStatusCounts = () => {
+  const statusCounts = useMemo(() => {
     const counts: Record<QuestionStatus, number> = {
       [QuestionStatus.NotAnswered]: totalQuestions,
       [QuestionStatus.Answered]: 0,
@@ -29,14 +29,14 @@ export function QuestionNavigation() {
     });
 
     return counts;
-  };
+  }, [questionsData, totalQuestions]);
 
-  const statusClasses: Record<QuestionStatus, string> = {
+  const statusClasses = useMemo(() => ({
     [QuestionStatus.Answered]: 'bg-green-500 text-white hover:bg-green-600',
     [QuestionStatus.NotAnswered]: 'bg-gray-200 text-gray-700 hover:bg-gray-300',
     [QuestionStatus.MarkedForReview]: 'bg-purple-500 text-white hover:bg-purple-600',
     [QuestionStatus.AnsweredAndMarked]: 'bg-purple-700 text-white hover:bg-purple-800',
-  };
+  }), []);
 
   const getButtonClassName = (questionNumber: number) => {
     const status = questionsData[questionNumber]?.status || QuestionStatus.NotAnswered;
@@ -57,7 +57,7 @@ export function QuestionNavigation() {
   const NavigationContent = () => (
     <div className="flex flex-col   h-full md:h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-3.5rem)]  ">
       <div className="p-2 border-b space-y-3 mt-3">
-        {Object.entries(getStatusCounts()).map(([status, count]) => (
+        {Object.entries(statusCounts).map(([status, count]) => (
           <div key={status} className="flex flex-1 items-center gap-1">
             <div className={`h-5 w-5 text-center text-sm rounded-sm justify-center  ${statusClasses[status as QuestionStatus]}`} >
               {count}
@@ -106,7 +106,7 @@ export function QuestionNavigation() {
 
 
       <div className=" p-2 border-t">
-        <TestSummaryPopup statusCounts={getStatusCounts()} />
+        <TestSummaryPopup statusCounts={statusCounts} />
         {/* <Button
           className="w-full"
           onClick={handleOnSubmit}

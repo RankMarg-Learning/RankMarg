@@ -9,14 +9,16 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 type FilterSelectProps = {
+  label?: string;
   width: string;
   placeholder: string;
   selectName: string[];
-  isMultiple?: boolean; 
-  onChange: (values: string[]) => void; 
+  isMultiple?: boolean;
+  onChange: (values: string[]) => void;
 };
 
 const FilterSelect = ({
+  label,
   width,
   placeholder,
   selectName,
@@ -53,6 +55,12 @@ const FilterSelect = ({
 
   return (
     <>
+      <label
+        className={`${label ? 'block' : 'hidden'}   tracking-wide text-gray-700 text-xs font-bold mb-2`}
+        htmlFor="grid-last-name"
+      >
+        {label}
+      </label>
       <Select
         onValueChange={handleValueChange}
         value={isMultiple ? undefined : selectedValues[0] || ""}

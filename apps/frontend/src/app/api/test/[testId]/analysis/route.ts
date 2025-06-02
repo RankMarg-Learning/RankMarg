@@ -1,14 +1,14 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import prisma from "@/lib/prisma";
 import { TestWithIncludes } from "@/types/typeTest";
+import { getAuthSession } from "@/utils/session";
 import { SectionA, SectionB, SectionC, SectionD } from "@/utils/test/analysis";
 import { SectionE } from "@/utils/test/analysis/SectionE";
-import { getServerSession } from "next-auth";
+
 
 export async function GET(req:Request,{ params }: { params: { testId: string } }){
     const {testId} = params;
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getAuthSession()
         if (!session && !session?.user?.id) {
             return new Response("Unauthorized", { status: 401 });
         }
@@ -29,9 +29,9 @@ export async function GET(req:Request,{ params }: { params: { testId: string } }
             include:{
                 test:{
                     include:{
-                        TestSection:{
+                        testSection:{
                             include:{
-                                TestQuestion:{
+                                testQuestion:{
                                     include:{
                                         question:{
                                             select:{
@@ -48,9 +48,9 @@ export async function GET(req:Request,{ params }: { params: { testId: string } }
                         }
                     }
                 },
-                TestSubmission:{
+                attempt:{
                     include:{
-                        Question:{
+                        question:{
                             select:{
                                 id:true,
                                 slug:true,
@@ -66,7 +66,6 @@ export async function GET(req:Request,{ params }: { params: { testId: string } }
         if(!test){
             return new Response("Test Not Found", { status: 404 });
         }
-
         const sectionA = SectionA(test)
         const sectionB = SectionB(test)
         const sectionC = SectionC(test)

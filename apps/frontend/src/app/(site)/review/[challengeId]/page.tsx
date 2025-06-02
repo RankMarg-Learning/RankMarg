@@ -1,7 +1,7 @@
 "use client";
 import ChallengeOver from '@/components/challenge/challengeOver';
 import Loading from '@/components/Loading';
-import { ChallengeWithDetails, DetailsProps } from '@/types';
+import {  DetailsProps } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import React from 'react';
@@ -9,10 +9,10 @@ import React from 'react';
 const Review = ({ params }: { params: { challengeId: string } }) => {
   const { challengeId } = params;
 
-  const { data: review, isLoading } = useQuery<ChallengeWithDetails>({
+  const { data: review, isLoading } = useQuery({
     queryKey: ["challenge-info", challengeId], 
     queryFn: async () => {
-      const { data } = await axios.get<ChallengeWithDetails>(`/api/challenge/${challengeId}`);
+      const { data } = await axios.get(`/api/challenge/${challengeId}`);
       return data;
     },
   });

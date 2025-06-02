@@ -1,28 +1,30 @@
 import bcrypt from "bcrypt";
 import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
+import { jsonResponse } from "@/utils/api-response";
 
 export async function POST(req:Request){
     try {
         const body = await req.json();
         const { token, password } = body;
         if (!token || !password) {
-            return Response.json({ msg: 'Token and password are required.' });
+            return jsonResponse(null,{success:false,message:"Token and password are required.",status:400});
         }
 
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET_RESET);
 
         if (!decodedToken) {
-            return Response.json({ msg: 'Invalid or expired token.' });
+            return jsonResponse(null,{success:false,message:"Invalid token.",status:401});
         }
         const { email, purpose } = decodedToken as { email: string; purpose: string };
 
         if (purpose !== "password-reset") {
-            return Response.json({ msg: "Invalid token purpose." });
+            return jsonResponse(null,{success:false,message:"Invalid token purpose.",status:401});
           }
+
           const user = await prisma.user.findUnique({ where: { email } });
           if (!user) {
-            return Response.json({ msg: "User not found." });
+            return jsonResponse(null,{success:false,message:"User not found.",status:404});
           }
           const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -30,13 +32,15 @@ export async function POST(req:Request){
                 where: { email },
                 data: { password: hashedPassword },
             });
-            return Response.json({ msg: 'Password reset successfully.' });
-
+            return jsonResponse(null,{success:true,message:"Password reset successfully.",status:200});
 
 
     } catch (error) {
         console.error(error);
-        return Response.json({ msg: 'Internal server error.' });
+        if (error.name === "JsonWebTokenError") {
+            return jsonResponse(null,{success:false,message:"Invalid Rest Link.",status:401});
+          }
+        return jsonResponse(null,{success:false,message:"Internal Server Error",status:500});
         
     }
 

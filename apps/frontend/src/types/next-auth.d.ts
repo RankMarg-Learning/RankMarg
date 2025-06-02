@@ -9,8 +9,9 @@ declare module 'next-auth' {
         username?: string
         createdAt?: string
         stream?: string
-        Role?: "ADMIN" | "USER" | "INSTRUCTOR"
+        role?: "ADMIN" | "USER" | "INSTRUCTOR"
         accessToken?: string
+        isNewUser?: boolean
         
     }
     interface Session {
@@ -19,8 +20,9 @@ declare module 'next-auth' {
             username?: string
             createdAt?: DateTime
             stream?: string
-            Role?: "ADMIN" | "USER" | "INSTRUCTOR"
+            role?: "ADMIN" | "USER" | "INSTRUCTOR"
             accessToken?: string
+            isNewUser?: boolean
         } & DefaultSession['user']
     }
 }
@@ -30,8 +32,9 @@ declare module 'next-auth/jwt' {
         id: string
         username?: string
         createdAt?: string
-        Role?: "ADMIN" | "USER" | "INSTRUCTOR"
+        role?: "ADMIN" | "USER" | "INSTRUCTOR"
         stream?: string
         accessToken?: string
+        isNewUser?: boolean
     }
 }

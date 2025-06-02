@@ -9,6 +9,7 @@ const nextConfig = {
         domains: ["lh3.googleusercontent.com","cdn.rareblocks.xyz","utfs.io","res.cloudinary.com"],
       },
     env:{
+      VERSION: process.env.VERSION,
       NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
       GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
       GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
@@ -22,7 +23,8 @@ const nextConfig = {
       SMTP_PASSWORD: process.env.SMTP_PASSWORD,
       CLOUDINARY_CLOUD_NAME:process.env.CLOUDINARY_CLOUD_NAME,
       CLOUDINARY_API_KEY:process.env.CLOUDINARY_API_KEY,
-      CLOUDINARY_API_SECRET:process.env.CLOUDINARY_API_SECRET
+      CLOUDINARY_API_SECRET:process.env.CLOUDINARY_API_SECRET,
+      ADMIN_API_KEY:process.env.ADMIN_API_KEY,
     }
 };
 

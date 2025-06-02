@@ -22,7 +22,17 @@ const config: Config = {
   			},
   			primary: {
   				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
+  				foreground: 'hsl(var(--primary-foreground))',
+				  50: '#fefce8',
+				  100: '#fef9c3',
+				  200: '#fef08a',
+				  300: '#fde047',
+				  400: '#facc15',
+				  500: '#eab308', // Main color
+				  600: '#ca8a04',
+				  700: '#a16207',
+				  800: '#854d0e',
+				  900: '#713f12',
   			},
   			secondary: {
   				DEFAULT: 'hsl(var(--secondary))',
@@ -90,6 +100,16 @@ const config: Config = {
   		}
   	}
   },
+  safelist: [
+    "border-purple-200", "bg-gradient-to-br", "from-purple-50", "to-purple-100/30","bg-purple-400",
+    "border-amber-200", "from-amber-50", "to-amber-100/30","bg-amber-400",
+    "border-green-200", "from-green-50", "to-green-100/30",
+	"bg-green-400",
+    "border-blue-200", "from-blue-50", "to-blue-100/30",
+	"bg-blue-400",
+    "border-gray-200", "from-gray-50", "to-gray-100/30",
+	"bg-gray-400"
+  ],
   plugins: [require("tailwindcss-animate"),require('@tailwindcss/typography')],
 };
 export default config;

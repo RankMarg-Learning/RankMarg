@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState} from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -8,6 +8,22 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2 } from 'lucide-react'
 import Link from "next/link"
+import { resetPassword } from "@/services"
+import { z } from "zod"
+
+const passwordSchema = z.object({
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[a-z]/, "Must include a lowercase letter")
+    .regex(/[A-Z]/, "Must include an uppercase letter")
+    .regex(/[0-9]/, "Must include a number")
+    .regex(/[^A-Za-z0-9]/, "Must include a special character"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match.",
+  path: ["confirmPassword"],
+});
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("")
@@ -20,12 +36,12 @@ export default function ResetPassword() {
 
 
   useEffect(() => {
-   const url = new URL(window.location.href)
+    const url = new URL(window.location.href)
     setToken(url.searchParams.get("token"))
   }, [])
 
-  
-  
+
+
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,18 +49,23 @@ export default function ResetPassword() {
       setError("Passwords do not match.")
       return
     }
+    const result = passwordSchema.safeParse({ password, confirmPassword });
 
+    if (!result.success) {
+      const issue = result.error.issues[0];
+      setError(issue.message);
+      return;
+    }
     setIsLoading(true)
     setError(null)
 
     try {
-      const res = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
-      })
-
-      if (!res.ok) throw new Error("Failed to reset password.")
+      const response = await resetPassword(token as string, password)
+      if (!response.success) {
+        setError(response.message || "Something went wrong.")
+        return
+      }
+      setPassword("")
       setSuccess(true)
     } catch (err) {
       setError(err.message || "Something went wrong.")
@@ -53,7 +74,7 @@ export default function ResetPassword() {
     }
   }
 
- 
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -96,11 +117,10 @@ export default function ResetPassword() {
                 </div>
               </div>
               {error && (
-                <Alert variant="destructive" className="mt-4">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
+                <div className="flex items-center mt-4 text-sm text-yellow-600">
+                <AlertCircle className="mr-2 h-4 w-4" />
+                {error}
+              </div>
               )}
               <Button className="w-full mt-4" type="submit" disabled={isLoading}>
                 {isLoading ? "Resetting..." : "Reset Password"}
@@ -108,7 +128,7 @@ export default function ResetPassword() {
             </form>
           )}
         </CardContent>
-        <CardFooter className="flex justify-center">
+        <CardFooter className="flex justify-center text-sm font-medium hover:underline">
           <Link href={'/sign-in'}>
             Back to Login
           </Link>
