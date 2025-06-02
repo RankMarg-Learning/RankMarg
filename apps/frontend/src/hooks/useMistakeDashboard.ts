@@ -21,14 +21,19 @@ export function useMistakeDashboard() {
                 queryKey: ['overview'],
                 queryFn: fetchData(`${version}/mistakes-tracker`),
             },
+            {
+                queryKey: ['insight'],
+                queryFn: fetchData(`${version}/mistakes-tracker/insight`),
+            },
             
         ],
     })
 
-    const [distribution, overview] = queries
+    const [distribution, overview,insight] = queries
 
     return {
         distribution: distribution.data,
+        insight: insight.data,
         overview: overview.data,
         isLoading: queries.some(q => q.isLoading),
         isError: queries.some(q => q.isError),

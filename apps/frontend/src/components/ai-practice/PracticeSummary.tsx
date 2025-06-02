@@ -79,29 +79,39 @@ const PracticeSummary = ({ overview }: { overview: PracticeSummaryProps }) => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200/30 shadow-sm p-6" id="el-4w5xs49y">
-        <div className="flex items-center justify-between mb-4" id="el-jjw9xv95">
-          <h3 className="text-lg font-bold text-gray-800" id="el-8r424lv9">AI Smart Suggestions</h3>
-          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full" id="el-hrd5jcmf">Personalized</span>
+      <div className="relative">
+        {/* Blurred overlay */}
+        <div className="absolute inset-0 backdrop-blur-sm bg-white/20 z-10 flex flex-col items-center justify-center rounded-xl border border-gray-200/30 shadow-sm p-6">
+          <h3 className="text-lg font-bold text-gray-700 mb-2">Coming Soon</h3>
+          <p className="text-sm text-gray-600">Smart AI suggestions are on the way!</p>
         </div>
 
-        <div className="space-y-4 text-sm" id="el-uvj32rui">
-          <div className="p-4 bg-amber-50 rounded-lg border border-amber-200" id="el-7fjiscm4">
-            <p className="text-gray-800" id="el-wvvjb65b"><strong id="el-znpcnhfb" className="">Thermodynamics Tip:</strong> You struggled with Thermodynamics today. Revise these 5 key formulas!</p>
-            <button className="mt-2 text-sm text-amber-600 hover:text-amber-800 font-medium" id="el-q7cen1z3">View Formulas →</button>
+        {/* Underlying blurred content (visibly blurred behind overlay) */}
+        <div className="bg-white rounded-xl border border-gray-200/30 shadow-sm p-6 opacity-30 pointer-events-none select-none">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-800">AI Smart Suggestions</h3>
+            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Personalized</span>
           </div>
 
-          <div className="p-4 bg-green-50 rounded-lg border border-green-200" id="el-47hxrqck">
-            <p className="text-gray-800" id="el-i143nq8m"><strong id="el-3vd1m4us">Mechanics Improvement:</strong> You're improving in Mechanics! Want to challenge yourself with tougher questions?</p>
-            <button className="mt-2 text-sm text-green-600 hover:text-green-800 font-medium" id="el-3defrjdp">Start Hard Level →</button>
-          </div>
+          <div className="space-y-4 text-sm">
+            <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+              <p className="text-gray-800"><strong>Thermodynamics Tip:</strong> You struggled with Thermodynamics today. Revise these 5 key formulas!</p>
+              <button className="mt-2 text-sm text-amber-600 hover:text-amber-800 font-medium">View Formulas →</button>
+            </div>
 
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200" id="el-kvwb6tjr">
-            <p className="text-gray-800" id="el-h310ssj5"><strong id="el-o0l9up5h" className="">Study Tip:</strong> You're solving questions too fast—try reading carefully to avoid silly mistakes.</p>
-            <button className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium" id="el-gpw9qkq8">View Detailed Analysis →</button>
+            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+              <p className="text-gray-800"><strong>Mechanics Improvement:</strong> You're improving in Mechanics! Want to challenge yourself with tougher questions?</p>
+              <button className="mt-2 text-sm text-green-600 hover:text-green-800 font-medium">Start Hard Level →</button>
+            </div>
+
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-gray-800"><strong>Study Tip:</strong> You're solving questions too fast—try reading carefully to avoid silly mistakes.</p>
+              <button className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium">View Detailed Analysis →</button>
+            </div>
           </div>
         </div>
       </div>
+
     </div>
   )
 }
