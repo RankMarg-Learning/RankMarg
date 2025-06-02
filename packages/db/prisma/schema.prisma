@@ -68,8 +68,8 @@ model Subscription {
 
 enum SubscriptionPlan {
   TRIAL
-  MONTHLY
-  YEARLY
+  YEAR_1
+  YEAR_2
 }
 
 enum SubscriptionStatus {
