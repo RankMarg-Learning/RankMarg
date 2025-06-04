@@ -1,6 +1,7 @@
 import { PrismaClient, Subject, Question } from '@prisma/client';
 import { QuestionSelector } from './QuestionSelector';
 import { SessionConfig } from '@/types/session.api.types';
+import prisma from '@/lib/prisma';
 
 type QuestionSource = 'currentTopic' | 'weakConcepts' | 'revisionTopics' | 'pyq';
 
@@ -12,6 +13,7 @@ interface QuestionDistribution {
 
 export class PracticeSessionGenerator {
     private questionSelector: QuestionSelector;
+    public userId:string;
 
     constructor(
         private readonly prisma: PrismaClient,
@@ -26,7 +28,7 @@ export class PracticeSessionGenerator {
                 grade,
                 this.config
             );
-
+            this.userId = userId;
             await Promise.all(
                 subjects.map(subject => this.generateSubjectSession(userId, subject))
             );
@@ -61,16 +63,14 @@ export class PracticeSessionGenerator {
                 }
             }
         }
-
         const finalQuestions = Array.from(questionMap.values());
 
-        if (finalQuestions.length < totalQuestionsForSubject) {
-            console.warn(
-                `Could only find ${finalQuestions.length} unique questions for subject ${subject.name}, ` +
-                `wanted ${totalQuestionsForSubject}`
-            );
-        }
-
+        // if (finalQuestions.length < totalQuestionsForSubject) {
+        //     console.warn(
+        //         `Could only find ${finalQuestions.length} unique questions for subject ${subject.name}, ` +
+        //         `wanted ${totalQuestionsForSubject}`
+        //     );
+        // }
         const shuffledQuestions = this.shuffleArray(finalQuestions);
         await this.createPracticeSession(userId, shuffledQuestions, subject.id);
     }
@@ -208,9 +208,20 @@ export class PracticeSessionGenerator {
                 where: {
                     subjectId: subject.id,
                     id: {
-                        notIn: Array.from(existingIds)
+                        notIn: Array.from(existingIds),
                     },
-                    isPublished: true
+                    isPublished: true,
+                    topic: {
+                        currentStudyTopic: {
+                            some: {
+                                userId:this.userId,
+                                OR: [
+                                    { isCurrent: true },
+                                    { isCompleted: true }
+                                ]
+                            }
+                        }
+                    }
                 },
                 include: {
                     options: true
@@ -222,6 +233,7 @@ export class PracticeSessionGenerator {
             return [];
         }
     }
+    
 
     private async createPracticeSession(
         userId: string,
@@ -229,7 +241,7 @@ export class PracticeSessionGenerator {
         subjectId: string
     ): Promise<void> {
         try {
-            await this.prisma.practiceSession.create({
+            await prisma.practiceSession.create({
                 data: {
                     userId,
                     questionsSolved: 0,
