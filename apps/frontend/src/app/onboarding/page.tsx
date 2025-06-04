@@ -23,7 +23,6 @@ const DashboardPreview = () => {
   const [currentProcess, setCurrentProcess] = useState('');
   const [completedSteps, setCompletedSteps] = useState([]);
 
-  const apiKey = process.env.ADMIN_API_KEY || '';
   
   const { 
     stream, 
@@ -69,11 +68,7 @@ const DashboardPreview = () => {
       });
       
       if (onboardingResponse.data.success) {
-        await axios.post('/api/admin/cron/create-practice?type=user', null, {
-          headers: {
-            Authorization: `Bearer ${apiKey}`
-          }
-        });
+        await axios.post('/api/onboarding/session');
       }
       
       await progressPromise;
