@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { PracticeService } from "@/services/auto/session.service";
 import { jsonResponse } from "@/utils/api-response";
 import { getBatchParameters } from "@/utils/batch";
-import { getAuthSession } from "@/utils/session";
 
 enum TypeProps {
     USER = 'user',
@@ -12,6 +11,10 @@ enum TypeProps {
 
 export async function POST(req: Request) {
     try {
+        const body = await req.json();
+
+        const { userId } = body;
+
         const { searchParams } = new URL(req.url);
         const type = searchParams.get('type') as TypeProps;
 
@@ -26,18 +29,17 @@ export async function POST(req: Request) {
         }
 
         const { batchSize, offset } = getBatchParameters(req);
-
+        
         const practiceService = new PracticeService();
-
+        
         if (type === TypeProps.USER) {
-            const session = await getAuthSession();
-            if (!session) {
+            if (!userId) {
                 return jsonResponse(null, { success: false, message: "Unauthorized - Type", status: 401 });
             }
-            await practiceService.generateSessionForUser(session?.user?.id);
+            await practiceService.generateSessionForUser(userId);
             return jsonResponse(null, { success: true, message: "Ok", status: 200 });
         }
-
+        
         const stats = await practiceService.processUserBatch(batchSize, offset);
         return jsonResponse(stats, { success: true, message: "Ok", status: 200 });
     } catch (error) {

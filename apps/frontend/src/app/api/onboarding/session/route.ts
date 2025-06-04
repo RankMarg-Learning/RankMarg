@@ -1,13 +1,21 @@
 import { jsonResponse } from "@/utils/api-response";
+import { getAuthSession } from "@/utils/session";
 import axios from "axios";
 
 export async function POST(req: Request) {
     const ADMIN_API_KEY = process.env.ADMIN_API_KEY;
     try {
-        const response = await axios(`${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/admin/cron/create-practice?type=user`, {
+        const session = await getAuthSession();
+        if (!session || !session.user) {
+            return jsonResponse(null, { success: false, message: "Unauthorized ", status: 401 });
+        }
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/admin/cron/create-practice?type=user`,{
+            userId: session?.user?.id
+        }, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${ADMIN_API_KEY}`,
+              'Content-Type': 'application/json',
             }
           });
         if (response.status === 200) {
