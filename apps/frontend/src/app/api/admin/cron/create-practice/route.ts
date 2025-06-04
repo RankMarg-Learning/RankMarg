@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
         const authHeader = req.headers.get('Authorization')
         if (!authHeader || !authHeader.startsWith('Bearer')) {
-            return jsonResponse(null, { success: false, message: "Unauthorized", status: 401 })
+            return jsonResponse(null, { success: false, message: "Unauthorized - Authorization", status: 401 })
         }
         const apiKey = authHeader.split(' ')[1]
 
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
         if (type === TypeProps.USER) {
             const session = await getAuthSession();
             if (!session) {
-                return jsonResponse(null, { success: false, message: "Unauthorized", status: 401 });
+                return jsonResponse(null, { success: false, message: "Unauthorized - Type", status: 401 });
             }
             await practiceService.generateSessionForUser(session?.user?.id);
             return jsonResponse(null, { success: true, message: "Ok", status: 200 });
