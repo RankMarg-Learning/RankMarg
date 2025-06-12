@@ -1,27 +1,44 @@
-# Use official Node.js base image
-FROM node:20-alpine
+# ---------- Stage 1: Build ----------
+    FROM node:20 AS builder
 
-# Set root working directory
-WORKDIR /app
-
-# Copy root-level dependencies (monorepo setup)
-COPY ../../package.json ../../package-lock.json ./
-
-# Copy all apps and packages (backend + shared code)
-COPY ../../apps ./apps
-COPY ../../packages ./packages
-
-# Install all workspace dependencies
-RUN npm install --legacy-peer-deps --workspaces --include-workspace-root
-
-# Change working directory to backend
-WORKDIR /app/apps/backend
-
-# Build backend (assumes TypeScript)
-RUN npm run build
-
-# Expose backend port (if needed)
-EXPOSE 3001
-
-# Run the compiled JS file
-CMD ["node", "-r", "tsconfig-paths/register", "dist/index.js"]
+    # Set workdir at monorepo root
+    WORKDIR /app
+    
+    # Copy root package files for dependency resolution
+    COPY ../../package.json ../../package-lock.json ../../turbo.json ./
+    COPY ../../apps/backend/package.json ./apps/backend/
+    COPY ../../packages/db/package.json ./packages/db/
+    
+    # Install all dependencies (monorepo-aware)
+    RUN npm install
+    
+    # Copy the entire monorepo
+    COPY ../../ .
+    
+    # Generate Prisma client from shared schema
+    RUN npm run generate --workspace=apps/backend
+    
+    # Compile TypeScript in backend
+    RUN npm run build --workspace=apps/backend
+    
+    
+    # ---------- Stage 2: Runtime ----------
+    FROM node:20-alpine AS runner
+    
+    # Set working directory
+    WORKDIR /app
+    
+    # Copy backend build and node_modules
+    COPY --from=builder /app/node_modules ./node_modules
+    COPY --from=builder /app/apps/backend ./apps/backend
+    COPY --from=builder /app/packages ./packages
+    
+    # Set backend as working directory
+    WORKDIR /app/apps/backend
+    
+    # Expose the backend port
+    EXPOSE 8080
+    
+    # Start backend server
+    CMD ["npm", "run", "start"]
+    
