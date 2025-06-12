@@ -3,31 +3,30 @@ version: "3.8"
 services:
   postgres:
     image: postgres:15
-    container_name: rankmarg-postgres
-    restart: always
-    env_file:
-      - .env
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
 
   backend:
     build:
       context: .
       dockerfile: apps/backend/Dockerfile
-    container_name: rankmarg-backend
-    restart: always
     ports:
-      - "3001:3001"
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql://neondb_owner:npg_5DYNKOvEXRI3@ep-aged-base-a1wt41l2-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+      JWT_SECRET: your-jwt-secret-here
+      PORT: 8080
     depends_on:
       - postgres
-    env_file:
-      - .env
-    working_dir: /app/apps/backend
     volumes:
       - .:/app
-    command: ["npm", "run", "start"]
+      - /app/node_modules
 
 volumes:
-  pgdata:
+  postgres_data:

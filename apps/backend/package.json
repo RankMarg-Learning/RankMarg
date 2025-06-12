@@ -5,10 +5,10 @@
   "requires": true,
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only --require tsconfig-paths/register src/index.ts",
-    "build": "tsc && prisma generate --schema=../../packages/db/prisma/schema.prisma",
+    "build": "tsc",
     "start": "node -r tsconfig-paths/register dist/index.js",
-    "generate": "prisma generate --schema=../../packages/db/prisma/schema.prisma",
-    "migrate": "prisma migrate dev --schema=../../packages/db/prisma/schema.prisma",
+    "generate": "cd ../../packages/db && npx prisma generate",
+    "migrate": "cd ../../packages/db && npx prisma migrate dev",
     "postinstall": "npm run generate"
   },
   "keywords": [],

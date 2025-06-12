@@ -1,40 +1,62 @@
-# Ignore everything in node_modules
-**/node_modules
-**/.turbo
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Ignore test files
-**/__tests__
-**/*.spec.*
-**/*.test.*
+# Production builds
+dist
+build
+.next
 
-# Ignore logs and system files
-*.log
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-pnpm-debug.log
+# Environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Ignore editor and system junk
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode
+.idea
 *.swp
 *.swo
-*.idea
-.vscode
+*~
 
-# Ignore local env files (for security)
-.env
-.env.local
-.env.development
-.env.test
+# Logs
+logs
+*.log
 
-# Ignore output builds (will be regenerated in Docker)
-**/dist
-**/.next
-**/build
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# Git-related
+# Coverage directory used by tools like istanbul
+coverage
+
+# nyc test coverage
+.nyc_output
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Git
 .git
 .gitignore
 
-# Ignore local Docker files not needed in image
-docker-compose.yml
+# Misc
+README.md
+.eslintrc.js
+.prettierrc
+jest.config.js
