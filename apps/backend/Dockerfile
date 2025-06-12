@@ -1,44 +1,86 @@
-# ---------- Stage 1: Build ----------
-    FROM node:20 AS builder
+# Alternative Dockerfile - Simpler approach
+FROM node:20
 
-    # Set workdir at monorepo root
-    WORKDIR /app
+# Set workdir at monorepo root
+WORKDIR /app
+
+# Copy everything first
+COPY . .
+
+# Install dependencies
+RUN npm install
+
+# Generate Prisma client
+RUN cd packages/db && npx prisma generate
+
+# Build backend
+RUN cd apps/backend && npm run build
+
+# Set working directory to backend
+WORKDIR /app/apps/backend
+
+# Expose port
+EXPOSE 8080
+
+# Start the application
+CMD ["npm", "run", "start"]
+# # ---------- Stage 1: Build ----------
+#     FROM node:20 AS builder
+
+#     # Set workdir at monorepo root
+#     WORKDIR /app
     
-    # Copy root package files for dependency resolution
-    COPY ../../package.json ../../package-lock.json ../../turbo.json ./
-    COPY ../../apps/backend/package.json ./apps/backend/
-    COPY ../../packages/db/package.json ./packages/db/
+#     # Copy package files first for better caching
+#     COPY package*.json turbo.json ./
+#     COPY apps/backend/package.json ./apps/backend/
+#     COPY packages/db/package.json ./packages/db/
     
-    # Install all dependencies (monorepo-aware)
-    RUN npm install
+#     # Install dependencies
+#     RUN npm install
     
-    # Copy the entire monorepo
-    COPY ../../ .
+#     # Copy the entire monorepo source code
+#     COPY . .
     
-    # Generate Prisma client from shared schema
-    RUN npm run generate --workspace=apps/backend
+#     # Verify schema file exists (debugging step)
+#     RUN ls -la packages/db/prisma/
     
-    # Compile TypeScript in backend
-    RUN npm run build --workspace=apps/backend
+#     # Generate Prisma client from the db package
+#     WORKDIR /app/packages/db
+#     RUN npx prisma generate
     
+#     # Build the backend application
+#     WORKDIR /app/apps/backend
+#     RUN npm run build
     
-    # ---------- Stage 2: Runtime ----------
-    FROM node:20-alpine AS runner
+#     # ---------- Stage 2: Runtime ----------
+#     FROM node:20-alpine AS runner
     
-    # Set working directory
-    WORKDIR /app
+#     # Install necessary packages for Prisma
+#     RUN apk add --no-cache openssl
+
+#     # Create non-root user
+#     RUN addgroup --system --gid 1001 nodejs
+#     RUN adduser --system --uid 1001 backend
     
-    # Copy backend build and node_modules
-    COPY --from=builder /app/node_modules ./node_modules
-    COPY --from=builder /app/apps/backend ./apps/backend
-    COPY --from=builder /app/packages ./packages
+#     # Set working directory
+#     WORKDIR /app
     
-    # Set backend as working directory
-    WORKDIR /app/apps/backend
+#     # Copy package files
+#     COPY --from=builder /app/package*.json ./
+#     COPY --from=builder /app/apps/backend/package.json ./apps/backend/
+#     COPY --from=builder /app/packages/db/package.json ./packages/db/
     
-    # Expose the backend port
-    EXPOSE 8080
+#     # Copy built application and dependencies
+#     COPY --from=builder /app/node_modules ./node_modules
+#     COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
+#     COPY --from=builder /app/apps/backend/package.json ./apps/backend/
+#     COPY --from=builder /app/packages ./packages
     
-    # Start backend server
-    CMD ["npm", "run", "start"]
+#     # Set backend as working directory
+#     WORKDIR /app/apps/backend
     
+#     # Expose the backend port
+#     EXPOSE 3001
+    
+#     # Start backend server
+#     CMD ["npm", "run", "start"]
