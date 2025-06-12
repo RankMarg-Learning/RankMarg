@@ -1,4 +1,4 @@
-generator client {
+generator client {More actions
   provider = "prisma-client-js"
 }
 
@@ -18,15 +18,18 @@ model User {
   avatar              String?
   stream              Stream?
   coins               Int                 @default(0)
+  xp                  Int                 @default(0)
+  grade               GradeEnum           @default(C)
   role                Role?               @default(USER)
   provider            Provider
   location            String?
   targetYear          Int?
   studyHoursPerDay    Int?
+  questionsPerDay     Int?                @default(10)
   onboardingCompleted Boolean?            @default(false)
   isActive            Boolean?            @default(true)
   attempts            Attempt[]
-  test                Test[]
+
   testParticipated    TestParticipation[]
   userPerformance     UserPerformance?
   metric              Metric[]
@@ -38,10 +41,14 @@ model User {
   practiceSession     PracticeSession[]
   currentStudyTopic   CurrentStudyTopic[]
   activity            activity[]
+  coinTransaction     CoinTransaction[]
 
-  updatedAt    DateTime?     @updatedAt
-  createdAt    DateTime      @default(now())
-  Subscription Subscription?
+  updatedAt        DateTime?          @updatedAt
+  createdAt        DateTime           @default(now())
+  Subscription     Subscription?
+  UserAchievement  UserAchievement[]
+  UserNotification UserNotification[]
+  StudySuggestion  StudySuggestion[]
 
   @@index([id])
   @@index([username])
@@ -49,12 +56,93 @@ model User {
   @@index([phone])
   @@index([stream])
   @@index([targetYear])
+  @@index([xp])
+}
+
+enum GradeEnum {
+  A_PLUS
+  A
+  B
+  C
+  D
+}
+
+model StudySuggestion {
+  id         String   @id @default(uuid())
+  userId     String
+  suggestion String
+  type       String
+  action     String?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model UserNotification {
+  id             String             @id @default(uuid())
+  userId         String
+  notificationId String
+  status         NotificationStatus @default(UNREAD)
+  deliveredAt    DateTime           @default(now())
+  readAt         DateTime?
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notification   Notification       @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, notificationId])
+  @@index([userId, status])
+}
+
+model Notification {
+  id                String             @id @default(uuid())
+  type              String
+  title             String
+  message           String
+  scheduledAt       DateTime?
+  createdAt         DateTime           @default(now())
+  userNotifications UserNotification[]
+
+  @@index([type, createdAt])
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+  DISMISSED
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId, unlockedAt])
+}
+
+model Achievement {
+  id               String            @id @default(uuid())
+  type             String            @unique
+  name             String
+  description      String
+  badgeName        String
+  badgeDescription String
+  criteriaValue    Int
+  coinReward       Int               @default(0)
+  xpReward         Int               @default(0)
+  userAchievements UserAchievement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Subscription {
   id                String             @id @default(cuid())
   userId            String             @unique
-  user              User               @relation(fields: [userId], references: [id])
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   plan              SubscriptionPlan
   status            SubscriptionStatus
   trialEndsAt       DateTime?
@@ -68,8 +156,8 @@ model Subscription {
 
 enum SubscriptionPlan {
   TRIAL
-  YEAR_1
-  YEAR_2
+  ACHIEVER_YEARLY
+  SCHOLAR_YEARLY
 }
 
 enum SubscriptionStatus {
@@ -81,8 +169,9 @@ enum SubscriptionStatus {
 }
 
 enum PaymentProvider {
-  PHONEPE
+
   RAZORPAY
+  SALES_AGENT
   NONE
 }
 
@@ -115,6 +204,7 @@ enum MetricType {
 model UserPerformance {
   id                  String    @id @default(uuid())
   userId              String    @unique
+  dailyQuestions      Int       @default(5)
   streak              Int       @default(0)
   totalAttempts       Int       @default(0)
   correctAttempts     Int       @default(0)
@@ -209,8 +299,8 @@ model TopicMastery {
   totalAttempts   Int             @default(0)
   correctAttempts Int             @default(0)
   reviewSchedule  ReviewSchedule?
-  topic           Topic           @relation(fields: [topicId], references: [id])
-  user            User            @relation(fields: [userId], references: [id])
+  topic           Topic           @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, topicId])
 }
@@ -224,8 +314,8 @@ model SubtopicMastery {
   strengthIndex   Float    @default(0.0)
   totalAttempts   Int      @default(0)
   correctAttempts Int      @default(0)
-  user            User     @relation(fields: [userId], references: [id])
-  subtopic        SubTopic @relation(fields: [subtopicId], references: [id])
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subtopic        SubTopic @relation(fields: [subtopicId], references: [id], onDelete: Cascade)
 
   @@unique([userId, subtopicId])
 }
@@ -256,7 +346,7 @@ model MasteryHistory {
   totalTimeSpent  Float    @default(0) // in minutes or seconds
   recordedAt      DateTime @default(now())
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subject         Subject? @relation(fields: [subjectId], references: [id])
+  subject         Subject? @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   @@index([userId, subjectId, recordedAt])
 }
@@ -347,7 +437,7 @@ enum QCategory {
 
 model QuestionCategory {
   questionId String
-  question   Question  @relation(fields: [questionId], references: [id])
+  question   Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
   category   QCategory
 
   @@id([questionId, category])
@@ -452,7 +542,7 @@ model Test {
   startTime         DateTime?
   endTime           DateTime?
   createdBy         String
-  author            User?               @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  authorId          String?
   testParticipation TestParticipation[]
   testSection       TestSection[]
 
@@ -546,6 +636,18 @@ model activity {
   earnCoin  Int?
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CoinTransaction {
+  id          String   @id @default(uuid())
+  userId      String
+  amount      Int
+  type        String
+  description String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 enum Stream {
