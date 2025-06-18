@@ -4,11 +4,25 @@ import useOnboardingStore from '@/store/onboardingStore';
 import { TopicData } from '@/utils/constants';
 import Motion from '@/components/ui/motion';
 import OnboardingLayout from './OnboardingLayout';
-import { Card } from '@/components/ui/card';
 import { Chip } from '@/components/ui/chip';
 import { useSubjects } from '@/hooks/useSubject';
 import { useTopics } from '@/hooks/useTopics';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Check, ChevronsUpDown, BookOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { SubjectCardColor, SubjectTextColor, SubjectIcons } from '@/constant/SubjectColorCode';
 
 const TopicSelection: React.FC = () => {
   const {
@@ -19,10 +33,9 @@ const TopicSelection: React.FC = () => {
   } = useOnboardingStore();
 
   const { subjects, isLoading: isLoadingSubjects } = useSubjects(stream);
-  console.log("subjects", subjects);  
-
+  const [open, setOpen] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
-  const { topics, isLoading: isLoadingTopics } = useTopics(selectedSubjectId);
+  const { topics } = useTopics(selectedSubjectId);
 
   const subjectsWithSelections = React.useMemo(() => {
     const selectionMap = new Map();
@@ -37,12 +50,24 @@ const TopicSelection: React.FC = () => {
     return selectionMap;
   }, [subjects, selectedTopics]);
 
+  const handleSubjectClick = (subjectId: string) => {
+    setSelectedSubjectId(subjectId);
+    setOpen(true);
+  };
+
   const handleToggleTopic = (topic: TopicData) => {
     const isSelected = selectedTopics.some(t => t.id === topic.id);
 
     if (isSelected) {
       removeTopic(topic.id);
     } else {
+      // Check if we already have a topic selected for this subject
+      const existingTopicForSubject = selectedTopics.find(t => t.subjectId === topic.subjectId);
+      if (existingTopicForSubject) {
+        // Remove the existing topic for this subject
+        removeTopic(existingTopicForSubject.id);
+      }
+      // Add the new topic
       addTopic(topic);
     }
   };
@@ -61,23 +86,27 @@ const TopicSelection: React.FC = () => {
   return (
     <OnboardingLayout
       title="What Are You Currently Studying?"
-      subtitle="Select the topics you're actively working on right now - choose at least one from each subject"
+      subtitle="Select one topic from each subject that you're currently working on"
       nextDisabled={!hasMinimumSelections}
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         {isLoadingSubjects ? (
           <div className="text-center py-8">Loading your subjects...</div>
         ) : (
           <>
-            <Motion animation="slide-in-up" delay={150} className="w-full">
-              {selectedTopics.length > 0 && (
-                <div className="mb-4 yellow-gradient rounded-xl p-3">
-                  <div className="flex items-center mb-2">
-                    <h3 className="text-sm font-medium">Your selected topics:</h3>
-                    <span className="ml-2 bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full">
-                      {selectedTopics.length}
-                    </span>
+            {/* Selected Topics Summary */}
+            <Motion animation="slide-in-up" delay={150}>
+              <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-border/50">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    <h3 className="text-sm font-medium">Selected Topics</h3>
                   </div>
+                  <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
+                    {selectedTopics.length} of {subjects?.data?.length || 0}
+                  </span>
+                </div>
+                {selectedTopics.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {selectedTopics.map((topic) => (
                       <Chip
@@ -91,19 +120,22 @@ const TopicSelection: React.FC = () => {
                       </Chip>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-sm text-muted-foreground">No topics selected yet</p>
+                )}
+              </div>
             </Motion>
 
+            {/* Warning Message */}
             {!hasMinimumSelections && incompleteSubjects?.length > 0 && (
-              <Motion animation="fade-in" delay={200} className="w-full">
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-                  <div className="flex items-start">
-                    <AlertCircle size={16} className="text-amber-500 mt-0.5 mr-2 flex-shrink-0" />
+              <Motion animation="fade-in" delay={200}>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-amber-800 text-sm font-medium">Complete your selection</p>
                       <p className="text-amber-700 text-xs mt-1">
-                        Please select at least one topic from each of these subjects:
+                        Please select one topic from each of these subjects:
                         {incompleteSubjects.map(subject => (
                           <span key={subject.id} className="font-medium"> {subject.name}{incompleteSubjects.indexOf(subject) !== incompleteSubjects.length - 1 ? ',' : ''}</span>
                         ))}
@@ -114,68 +146,87 @@ const TopicSelection: React.FC = () => {
               </Motion>
             )}
 
-            <div className="space-y-6 max-h-[450px] overflow-y-auto pr-2 pb-2">
-              {subjects && subjects?.data?.map((subject) => {
-                const hasSelection = subjectsWithSelections.get(subject.id);
+            {/* Subject Selection */}
+            <Motion animation="slide-in-up" delay={250}>
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-muted-foreground">Select a subject to choose a topic</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {subjects?.data?.map((subject) => {
+                    const hasSelection = subjectsWithSelections.get(subject.id);
+                    const isSelected = selectedSubjectId === subject.id;
+                    const selectedTopic = selectedTopics.find(t => t.subjectId === subject.id);
 
-                return (
-                  <div
-                    key={subject.id}
-                    className="w-full"
-                    onMouseEnter={() => setSelectedSubjectId(subject.id)}
-                  >
-                    <div className={cn(
-                      "flex items-center gap-2 mb-3 pb-1 border-b",
-                      hasSelection ? "border-primary/30" : "border-border/30"
-                    )}>
-                      {subject.icon && <subject.icon size={20} className={hasSelection ? "text-primary" : "text-muted-foreground"} />}
-                      <h3 className={cn(
-                        "text-base font-semibold",
-                        hasSelection ? "text-primary" : "text-foreground"
-                      )}>
-                        {subject.name}
-                        {hasSelection && <span className="ml-2 text-xs font-normal text-muted-foreground">(topics selected)</span>}
-                      </h3>
-                    </div>
+                    // Use color and icon from SubjectColorCode
+                    const cardColor = SubjectCardColor[subject.id] || SubjectCardColor.default;
+                    const textColor = SubjectTextColor[subject.id] || SubjectTextColor.default;
+                    const Icon = SubjectIcons[subject.id] || SubjectIcons.default;
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                      {selectedSubjectId === subject.id && isLoadingTopics ? (
-                        <div className="col-span-full text-center py-4 text-sm text-muted-foreground">
-                          Loading topics...
-                        </div>
-                      ) : (
-                        topics && topics?.data?.filter(topic => topic.subjectId === subject.id)
-                          .map((topic) => {
-                            const isSelected = selectedTopics.some(t => t.id === topic.id);
-
-                            return (
-                              <Card
-                                key={topic.id}
-                                className={cn(
-                                  "border cursor-pointer transition-all duration-200 hover:shadow-md p-2",
-                                  isSelected
-                                    ? "border-primary ring-1 ring-primary/20 bg-primary/5"
-                                    : "border-border hover:border-primary/30"
-                                )}
-                                onClick={() => handleToggleTopic(topic)}
-                              >
-                                <div className="flex items-start justify-between h-full overflow-hidden">
-                                  <div className="flex-1 min-w-0">
-                                    <h4 className="font-medium text-xs truncate">{topic.name}</h4>
-                                  </div>
-                                  {isSelected && (
-                                    <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
-                                  )}
-                                </div>
-                              </Card>
-                            );
-                          })
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                    return (
+                      <Popover key={subject.id} open={isSelected && open} onOpenChange={(v) => { setOpen(v); if (!v) setSelectedSubjectId(null); }}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              `flex flex-col items-start gap-2 h-auto py-3 px-4 border w-full min-h-[64px] ${cardColor}`,
+                              hasSelection && !isSelected && "border-2 border-primary/60",
+                              isSelected && "border-2 border-primary",
+                              'transition-colors duration-150',
+                            )}
+                            onClick={() => handleSubjectClick(subject.id)}
+                          >
+                            <div className="flex items-center gap-2 w-full">
+                              <Icon size={18} className={textColor} />
+                              <span className={cn("font-medium truncate", textColor)}>{subject.name}</span>
+                              {hasSelection && !isSelected && (
+                                <Check className="h-4 w-4 ml-auto text-primary" />
+                              )}
+                            </div>
+                            {selectedTopic && (
+                              <span className="text-xs text-muted-foreground truncate w-full">
+                                {selectedTopic.name}
+                              </span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-72 p-0 z-50" align="center" sideOffset={8}>
+                          <Command>
+                            <CommandInput placeholder="Search topics..." />
+                            <CommandList>
+                              <CommandEmpty>No topic found.</CommandEmpty>
+                              <CommandGroup>
+                                {topics?.data?.filter(topic => topic.subjectId === subject.id)
+                                  .map((topic) => {
+                                    const isSelected = selectedTopics.some(t => t.id === topic.id);
+                                    return (
+                                      <CommandItem
+                                        key={topic.id}
+                                        value={topic.id}
+                                        onSelect={() => {
+                                          handleToggleTopic(topic);
+                                          setOpen(false);
+                                          setSelectedSubjectId(null);
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            isSelected ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                        {topic.name}
+                                      </CommandItem>
+                                    );
+                                  })}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  })}
+                </div>
+              </div>
+            </Motion>
           </>
         )}
       </div>

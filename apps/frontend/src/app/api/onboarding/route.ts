@@ -3,7 +3,7 @@ import { jsonResponse } from "@/utils/api-response";
 import { getAuthSession } from "@/utils/session";
 
 export async function POST(req: Request) {
-    const { stream, gradeLevel, targetYear, studyHoursPerDay, selectedTopics } = await req.json();
+    const {phone, stream, gradeLevel, targetYear, studyHoursPerDay, selectedTopics } = await req.json();
     try {
         const session = await getAuthSession()
         if (!session) {
@@ -13,6 +13,7 @@ export async function POST(req: Request) {
         await prisma.user.update({
             where: { id: session.user.id },
             data: {
+                phone: phone || null,
                 stream,
                 standard: gradeLevel,
                 targetYear,
