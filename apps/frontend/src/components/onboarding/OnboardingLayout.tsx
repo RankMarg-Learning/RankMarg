@@ -62,14 +62,14 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
     previousStep();
   };
 
-  const steps: OnboardingStep[] = ['stream', 'grade', 'year', 'studyHours', 'topics'];
+  const steps: OnboardingStep[] = ['phone','stream', 'grade', 'year', 'studyHours', 'topics'];
   const currentStepIndex = steps.indexOf(currentStep);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 yellow-gradient ">
+    <div className="min-h-screen flex flex-col items-center justify-center px-2 py-12 yellow-gradient ">
       <Motion
         animation="scale-in"
-        className={cn("bg-white/90 backdrop-blur-sm max-w-5xl w-full mx-auto rounded-2xl p-6 shadow-lg border border-border/30 relative flex flex-col", className)}
+        className={cn("bg-white/90 backdrop-blur-sm max-w-5xl w-full mx-auto rounded-2xl p-6 shadow-md border border-border/30 relative flex flex-col", className)}
       >
     
         

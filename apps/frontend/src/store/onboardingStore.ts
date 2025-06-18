@@ -1,15 +1,16 @@
 import {  SubjectData, TopicData } from "@/utils/constants";
-import { StandardEnum } from "@prisma/client";
+import { StandardEnum, Stream } from "@prisma/client";
 import { create } from "zustand";
 
-export type OnboardingStep = 'stream' | 'grade' | 'year' | 'studyHours' | 'subjects' | 'topics';
+export type OnboardingStep = 'phone' | 'stream' | 'grade' | 'year' | 'studyHours' | 'subjects' | 'topics';
 
 interface OnboardingState {
   currentStep: OnboardingStep;
   isCompleted: boolean;
 
   // User selections
-  stream: "JEE" | "NEET" | null;
+  phone: string;
+  stream: Stream | null;
   gradeLevel: StandardEnum | null;
   targetYear: number | null;
   studyHoursPerDay: number | null;
@@ -17,7 +18,8 @@ interface OnboardingState {
   selectedTopics: TopicData[];
 
   // Actions
-  setStream: (stream: "JEE" | "NEET") => void;
+  setPhone: (phone: string) => void; 
+  setStream: (stream: Stream) => void;
   setGradeLevel: (grade: StandardEnum) => void;
   setTargetYear: (year: number) => void;
   setStudyHoursPerDay: (hours: number) => void;
@@ -32,8 +34,9 @@ interface OnboardingState {
 }
 
 const useOnboardingStore = create<OnboardingState>((set) => ({
-  currentStep: 'stream',
+  currentStep: 'phone',
   isCompleted: false,
+  phone: '',
   stream: null,
   gradeLevel: null,
   targetYear: null,
@@ -42,12 +45,12 @@ const useOnboardingStore = create<OnboardingState>((set) => ({
   selectedTopics: [],
 
   // Actions
+  setPhone: (phone) => set({ phone }),
   setStream: (stream) => set((state) => ({ 
     stream, 
     selectedSubjects: [],
     selectedTopics: [] 
   })),
-  
   setGradeLevel: (gradeLevel) => set({ gradeLevel }),
   
   setTargetYear: (targetYear) => set({ targetYear }),
@@ -60,15 +63,12 @@ const useOnboardingStore = create<OnboardingState>((set) => ({
   
   removeSubject: (subjectId) => set((state) => ({
     selectedSubjects: state.selectedSubjects.filter(s => s.id !== subjectId),
-    // Also remove any topics associated with this subject
     selectedTopics: state.selectedTopics.filter(t => t.subjectId !== subjectId)
   })),
   
   addTopic: (topic) => set((state) => {
-    // Check if this topic's subject is already in selectedSubjects
     const subjectExists = state.selectedSubjects.some(s => s.id === topic.subjectId);
     
-    // If not, find the subject and add it
     let updatedSubjects = [...state.selectedSubjects];
     if (!subjectExists && state.stream) {
       const subjects = getSubjectsByStream(state.stream);
@@ -89,26 +89,22 @@ const useOnboardingStore = create<OnboardingState>((set) => ({
   })),
   
   nextStep: () => set((state) => {
-    // Define the order of steps
-    const steps: OnboardingStep[] = ['stream', 'grade', 'year', 'studyHours', 'topics'];
+    const steps: OnboardingStep[] = ['phone','stream', 'grade', 'year', 'studyHours', 'topics'];
     const currentIndex = steps.indexOf(state.currentStep);
     
-    // If we're at the last step, mark as completed
     if (currentIndex === steps.length - 1) {
       return { isCompleted: true };
     }
     
-    // Otherwise, move to the next step
     const nextStep = steps[currentIndex + 1];
     return { currentStep: nextStep };
   }),
   
   previousStep: () => set((state) => {
-    // Define the order of steps
-    const steps: OnboardingStep[] = ['stream', 'grade', 'year', 'studyHours', 'topics'];
+
+    const steps: OnboardingStep[] = ['phone','stream', 'grade', 'year', 'studyHours', 'topics'];
     const currentIndex = steps.indexOf(state.currentStep);
     
-    // If we're at the first step, do nothing
     if (currentIndex === 0) {
       return {};
     }
@@ -120,7 +116,7 @@ const useOnboardingStore = create<OnboardingState>((set) => ({
   completeOnboarding: () => set({ isCompleted: true }),
   
   resetOnboarding: () => set({
-    currentStep: 'stream',
+    currentStep: 'phone',
     isCompleted: false,
     stream: null,
     gradeLevel: null,
@@ -131,10 +127,7 @@ const useOnboardingStore = create<OnboardingState>((set) => ({
   })
 }));
 
-// Needed for the addTopic action
-const getSubjectsByStream = (stream: "JEE" | "NEET") => {
-  // This is a simplified version just for the store
-  // The actual implementation is in utils/constants.ts
+const getSubjectsByStream = (stream: Stream) => {
   return [];
 };
 
