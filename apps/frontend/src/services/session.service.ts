@@ -2,7 +2,7 @@ import api from "@/utils/api";
 
 // Get AI Practice Sessions API
 export const getAiPracticeSession = async (sessionId: string) => {
-    const version = process.env.VERSION || '/v.1.0'
+    const version =  '/v.1.0'
     try {
         const response = await api.get(`${version}/ai-session/${sessionId}`);
         return response.data;
@@ -16,7 +16,7 @@ export const getAiPracticeSession = async (sessionId: string) => {
 }
 
 export const getAllAiPracticeSession = async (userId: string, sessionCount?: number) => {
-    const version = process.env.VERSION || '/v.1.0'
+    const version = '/v.1.0'
     try {
         const response = await api.get(`${version}/ai-practice?userId=${userId}&sessionCount=${sessionCount}`);
         return response.data;

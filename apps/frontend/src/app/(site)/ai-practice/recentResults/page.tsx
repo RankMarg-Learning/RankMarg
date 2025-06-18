@@ -19,12 +19,10 @@ const SessionPage = () => {
   } = useInfiniteQuery({
     queryKey: ['results'],
     queryFn: async ({ pageParam = 1 }) => {
-      const version = process.env.VERSION || '/v.1.0'
       const { data } = await api.get(
-        `${version}/session/subject_practice_session?loc=ai_practice&_done_item=true&_type=all&_count=${PAGE_SIZE}&_page=${pageParam}`
+        `/v.1.0/session/subject_practice_session?loc=ai_practice&_done_item=true&_type=all&_count=${PAGE_SIZE}&_page=${pageParam}`
       )
 
-      // Add null checks here
       const responseData = data?.data || []
       
       return {

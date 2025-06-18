@@ -72,7 +72,7 @@ export const deleteTest = async (id: string) => {
 
 
 export const getTestResults = async (resultsLimit: number) => {
-  const version = process.env.VERSION || '/v.1.0';
+  const version =  '/v.1.0';
   try {
     const response = await api.get(`${version}/tests/results?limit=${resultsLimit}`);
     return response.data;

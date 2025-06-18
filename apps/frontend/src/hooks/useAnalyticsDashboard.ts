@@ -8,7 +8,7 @@ const fetchTests = (endpoint: string) => async () => {
 }
 
 export function useAnalyticsDashboard() {
-    const version = process.env.VERSION || '/v.1.0'
+    const version =  '/v.1.0'
 
     const queries = useQueries({
         queries: [
