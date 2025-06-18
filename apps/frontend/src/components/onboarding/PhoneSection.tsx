@@ -13,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 type CountryCode = {
   code: string;
@@ -31,6 +33,7 @@ const PhoneSection: React.FC = () => {
   const [selectedCountryCode, setSelectedCountryCode] = React.useState<CountryCode>(COUNTRY_CODES[0]);
   const [phoneNumber, setPhoneNumber] = React.useState('');
   const [isValidating, setIsValidating] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const validatePhoneNumber = (number: string) => {
     const digitsOnly = number.replace(/\D/g, '');
@@ -69,20 +72,62 @@ const PhoneSection: React.FC = () => {
     }
   };
 
-  
+  const checkPhoneAvailability = async (phone: string) => {
+    try {
+      const { data } = await axios.post('/api/check/phone', { phone });
+      
+      if (!data.success) {
+        setError(data.message);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const errorMessage = error.response?.data?.message;
+        setError(errorMessage || 'Failed to validate phone number');
+        
+        // If the error is specifically about the number being already registered
+        if (error.response?.status === 409) {
+          return false;
+        }
+      } else {
+        setError('Failed to validate phone number. Please try again.');
+      }
+      return false;
+    }
+  };
 
   const handleNext = async () => {
+    setIsValidating(true);
+    setIsLoading(true);
+    
+    try {
+      // First validate the format
       if (!validatePhoneNumber(phoneNumber)) {
-          throw new Error('Invalid phone number');
-        }
-        setIsValidating(true);
+        throw new Error('Invalid phone number format');
+      }
+
+      // Then check availability through API
+      const isAvailable = await checkPhoneAvailability(selectedCountryCode.code + phoneNumber);
+      if (!isAvailable) {
+        throw new Error('Phone number validation failed');
+      }
+
+      // If we reach here, validation was successful
+      return true;
+    } catch (error) {
+      // Error is already handled by setting the error state
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <OnboardingLayout
       title="Enter your Phone Number"
       subtitle="We'll use this to send you important updates and notifications"
-      nextDisabled={!phoneNumber || isValidating }
+      nextDisabled={!phoneNumber || isLoading || (isValidating && !!error)}
       onNext={handleNext}
     >
       <Motion
@@ -100,6 +145,7 @@ const PhoneSection: React.FC = () => {
                   <Select
                     value={selectedCountryCode.code}
                     onValueChange={handleCountryCodeChange}
+                    disabled={isLoading}
                   >
                     <SelectTrigger className="w-[100px] text-sm">
                       <SelectValue>
@@ -123,17 +169,25 @@ const PhoneSection: React.FC = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="98x-xxxx-xxxx"
-                    value={phoneNumber}
-                    onChange={handlePhoneChange}
-                    className={cn(
-                      "text-sm flex-1 placeholder:text-sm",
-                      error && isValidating ? "border-destructive" : "border-border"
+                  <div className="relative flex-1">
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="98x-xxxx-xxxx"
+                      value={phoneNumber}
+                      onChange={handlePhoneChange}
+                      disabled={isLoading}
+                      className={cn(
+                        "text-sm flex-1 placeholder:text-sm pr-8",
+                        error && isValidating ? "border-destructive" : "border-border"
+                      )}
+                    />
+                    {isLoading && (
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      </div>
                     )}
-                  />
+                  </div>
                 </div>
                 {error && isValidating && (
                   <p className="text-xs text-destructive mt-1">{error}</p>

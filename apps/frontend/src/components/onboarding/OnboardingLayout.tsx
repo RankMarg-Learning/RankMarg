@@ -14,7 +14,7 @@ interface OnboardingLayoutProps {
   nextDisabled?: boolean;
   previousDisabled?: boolean;
   hideProgress?: boolean;
-  onNext?: () => void | Promise<void>;
+  onNext?: () => Promise<boolean | void>;
   onPrevious?: () => void;
 }
 
@@ -38,9 +38,13 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
     setIsSubmitting(true);
     try {
       if (onNext) {
-        await onNext();
+        const result = await onNext();
+        if (result === true) {
+          nextStep();
+        }
+      } else {
+        nextStep();
       }
-      nextStep();
     } catch (error) {
       console.error(error);
       toast({
