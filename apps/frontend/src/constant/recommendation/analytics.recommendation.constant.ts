@@ -28,7 +28,7 @@ export function getMetricCardData(metrics: Metric[]): Record<string, FormattedMe
         switch (metricType) {
             case "TOTAL_QUESTIONS":
                 valueStr = `${currentValue}`;
-                deltaStr = hasChanged ? `${isImproved ? '+' : ''}${((diff / previousValue) * 100).toFixed(1)}%` : '0%';
+                deltaStr = hasChanged ? `${isImproved ? '+' : ''}${((diff / (previousValue === 0 ? 1:previousValue)) * 100).toFixed(1)}%` : '0%';
                 suggestion = isImproved
                     ? `${deltaStr} more than last week`
                     : `Try to solve more next week`;
@@ -36,7 +36,7 @@ export function getMetricCardData(metrics: Metric[]): Record<string, FormattedMe
 
             case "CORRECT_ATTEMPTS":
                 valueStr = `${currentValue}`;
-                deltaStr = hasChanged ? `${isImproved ? '+' : ''}${((diff)).toFixed(1)}%` : '0%';
+                deltaStr = hasChanged ? `${isImproved ? '+' : ''}${((diff / (previousValue === 0 ? 1:previousValue)) * 100).toFixed(1)}%` : '0%';
                 suggestion = isImproved
                     ? "Great progress! Keep it up"
                     : "Accuracy dropped, revise weak topics";
@@ -44,7 +44,7 @@ export function getMetricCardData(metrics: Metric[]): Record<string, FormattedMe
 
             case "MASTERY_LEVEL":
                 valueStr = `${currentValue}`;
-                deltaStr = hasChanged ? `${isImproved ? '+' : ''}${((diff)).toFixed(1)}%` : '0%';
+                deltaStr = hasChanged ? `{((diff / (previousValue === 0 ? 1:previousValue)) * 100).toFixed(1)}%` : '0%';
                 suggestion = isImproved
                     ? "Improving steadily across subjects"
                     : "Focus more on concept revision";
@@ -52,7 +52,7 @@ export function getMetricCardData(metrics: Metric[]): Record<string, FormattedMe
 
             case "TEST_SCORE":
                 valueStr = `${currentValue}`;
-                deltaStr = hasChanged ? `${isImproved ? '+' : ''}${(diff).toFixed(1)}%` : '0%';
+                deltaStr = hasChanged ? `{((diff / (previousValue === 0 ? 1:previousValue)) * 100).toFixed(1)}%` : '0%';
                 suggestion = isImproved
                     ? diff >= 10
                         ? "Big jump in score! Keep up the momentum"

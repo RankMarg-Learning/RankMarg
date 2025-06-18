@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest } from 'next/server';
-import { cache } from 'react';
 import { getMetricCardData } from "@/constant/recommendation/analytics.recommendation.constant";
 import { getDifficultySuggestion } from "@/constant/recommendation/difficulty.recommendation.constant";
 import { generateWeeklyTestSuggestion } from "@/constant/recommendation/test.recommendation.constant";
@@ -11,10 +10,7 @@ import { RecentTestScoresProps } from "@/types";
 import { jsonResponse } from "@/utils/api-response";
 import { getAuthSession } from '@/utils/session';
 
-const CACHE_TTL = 60 * 5;
-const CACHE_REVALIDATE_SECONDS = 60 * 60;
-
-const getUserMetrics = cache(async (userId: string) => {
+const getUserMetrics = async (userId: string) => {
     try {
         return await prisma.metric.findMany({
             where: { userId },
@@ -29,9 +25,9 @@ const getUserMetrics = cache(async (userId: string) => {
         console.error(`[ANALYTICS_API] Error fetching user metrics for userId: ${userId}`, error);
         throw new Error(`Failed to fetch user metrics: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-});
+};
 
-const getUserPerformance = cache(async (userId: string) => {
+const getUserPerformance = async (userId: string) => {
     try {
         return await prisma.userPerformance.findUnique({
             where: { userId },
@@ -45,9 +41,9 @@ const getUserPerformance = cache(async (userId: string) => {
         console.error(`[ANALYTICS_API] Error fetching user performance for userId: ${userId}`, error);
         throw new Error(`Failed to fetch user performance: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-});
+};
 
-const getQuestionsByDifficultyBreakdown = cache(async (userId: string) => {
+const getQuestionsByDifficultyBreakdown = async (userId: string) => {
     const result = {
         easy: 0,
         medium: 0,
@@ -66,7 +62,7 @@ const getQuestionsByDifficultyBreakdown = cache(async (userId: string) => {
                 "Question" q ON a."questionId" = q.id
             WHERE 
                 a."userId" = ${userId}
-                AND a.status = 'CORRECT'
+                
             GROUP BY 
                 q.difficulty
         `;
@@ -90,9 +86,9 @@ const getQuestionsByDifficultyBreakdown = cache(async (userId: string) => {
         console.error(`[ANALYTICS_API] Error fetching questions by difficulty for userId: ${userId}`, error);
         throw new Error(`Failed to fetch difficulty breakdown: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-});
+};
 
-const getAvgTimingByDifficulty = cache(async (userId: string) => {
+const getAvgTimingByDifficulty = async (userId: string) => {
     const result = {
         easy: 0,
         medium: 0,
@@ -138,7 +134,7 @@ const getAvgTimingByDifficulty = cache(async (userId: string) => {
         console.error(`[ANALYTICS_API] Error fetching average timing by difficulty for userId: ${userId}`, error);
         throw new Error(`Failed to fetch timing data: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-});
+};
 
 const validateUserId = (userId: string | null): string => {
     if (!userId) {
@@ -198,21 +194,6 @@ const processRecommendationData = (
 
 export async function GET(req: NextRequest) {
     try {
-        let searchParams;
-        try {
-            const url = new URL(req.url);
-            searchParams = url.searchParams;
-        } catch (error) {
-            console.error("[ANALYTICS_API] Invalid URL:", error);
-            return jsonResponse(null, {
-                success: false,
-                message: "Invalid request URL",
-                status: 400
-            });
-        }
-
-        const skipCache = searchParams.get("skipCache") === "true";
-        
         let userId: string;
         try {
             const session = await getAuthSession();
@@ -270,20 +251,10 @@ export async function GET(req: NextRequest) {
             });
         }
 
-        const cacheHeaders = skipCache ? {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-        } : {
-            'Cache-Control': `public, max-age=${CACHE_TTL}, s-maxage=${CACHE_REVALIDATE_SECONDS}, stale-while-revalidate=${CACHE_REVALIDATE_SECONDS}`,
-            'ETag': `"analytics-${userId}-${Date.now()}"`
-        };
-
         return jsonResponse(responseData, {
             success: true,
             message: "Analytics data fetched successfully",
-            status: 200,
-            headers: cacheHeaders
+            status: 200
         });
 
     } catch (error) {

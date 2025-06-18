@@ -1,3 +1,8 @@
+import moduleAlias from "module-alias";
+moduleAlias.addAliases({
+  "@": __dirname,
+});
+
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -6,12 +11,12 @@ import session from "./routes/session";
 import mastery from "./routes/mastery";
 import performance from "./routes/performance";
 import reviews from "./routes/reviews";
-import { logger } from "./lib/logger";
-import { PerformanceService } from "./services/auto/performance.service";
-import { ReviewScheduleService } from "./services/auto/reviewSchedule.service";
-import { MasteryService } from "./services/auto/mastery.service";
-import { PracticeService } from "./services/auto/session.service";
 import path from "path";
+import { updatePerformanceJob } from "./jobs/updatePerformance.job";
+import { resetStreakJob } from "./jobs/resetStreak.job";
+import { updateReviewJob } from "./jobs/review.update.job";
+import { updateMasteryJob } from "./jobs/mastery.update.job";
+import { createSessionJob } from "./jobs/session.create.job";
 
 dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
@@ -20,68 +25,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-cron.schedule("*/5 * * * *", async () => {
-  try {
-    logger.info("Running performance update for JEE/NEET students");
-
-    const performanceService = new PerformanceService();
-    await performanceService.processAllUsers();
-
-    logger.info("Performance update completed successfully");
-  } catch (error) {
-    logger.error(
-      `Error in cron job: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
-  }
-});
-
-//Update Review (Weekly)
-cron.schedule("0 0 * * 0", async () => {
-  try {
-    logger.info("Running review update for JEE/NEET students");
-
-    const review = new ReviewScheduleService();
-    await review.processAllUsers();
-
-    logger.info("Review update completed successfully");
-  } catch (error) {
-    logger.error(
-      `Error in cron job: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
-  }
-});
-
-//Update Mastery (Weekly)
-cron.schedule("0 0 * * 0", async () => {
-  try {
-    logger.info("Running mastery update for JEE/NEET students");
-
-    const masteryService = new MasteryService();
-    await masteryService.processAllUsers();
-
-    logger.info("Mastery update completed successfully");
-  } catch (error) {
-    logger.error(
-      `Error in cron job: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
-  }
-});
-
-//Create Practice (Daily)
-cron.schedule("0 0 * * *", async () => {
-  try {
-    logger.info("Running practice creation for JEE/NEET students");
-
-    const session = new PracticeService();
-    await session.processAllUsers();
-
-    logger.info("Practice creation completed successfully");
-  } catch (error) {
-    logger.error(
-      `Error in cron job: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
-  }
-});
+cron.schedule("0 0 * * *", resetStreakJob); //(Daily at Midnight)
+cron.schedule("*/5 * * * *", updatePerformanceJob); // (Every 5 minutes)
+cron.schedule("0 0 * * 0", updateReviewJob); //(Every Sunday at Midnight)
+cron.schedule("0 0 * * 0", updateMasteryJob); // (Every Sunday at Midnight)
+cron.schedule("0 0 * * *", createSessionJob); // (Daily at Midnight)
 
 app.use("/api/create-practice", session);
 app.use("/api/update-mastery", mastery);

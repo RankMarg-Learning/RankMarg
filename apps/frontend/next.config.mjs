@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '../../.env' });
 
 const nextConfig = {
-    reactStrictMode: false,
+    reactStrictMode: true,
     images: {
         domains: ["lh3.googleusercontent.com","cdn.rareblocks.xyz","utfs.io","res.cloudinary.com"],
       },
