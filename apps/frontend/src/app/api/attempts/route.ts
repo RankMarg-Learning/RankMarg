@@ -1,10 +1,14 @@
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
-import { AttemptType, SubmitStatus, Prisma } from "@prisma/client";
+import { AttemptType, SubmitStatus, Prisma, MetricType } from "@prisma/client";
 import { getAuthSession } from "@/utils/session";
 import { AttemptCreateData, AttemptRequestBody } from "@/types";
 
-
+interface metricToUpdateType {
+    userId: string;
+    metricType: MetricType;
+    increment: number;
+}
 
 export async function POST(req: Request): Promise<Response> {
     try {
@@ -33,6 +37,7 @@ export async function POST(req: Request): Promise<Response> {
 
         const userId: string = session.user.id;
 
+        // Check if this is the first attempt today (optimized with single query)
         const isFirstAttemptToday: boolean = await checkFirstAttemptToday(userId);
 
         const attemptData: AttemptCreateData = {
@@ -52,22 +57,31 @@ export async function POST(req: Request): Promise<Response> {
             attemptData.testParticipationId = id;
         }
 
+        // Single optimized transaction
         await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-
+            // Create attempt
             await tx.attempt.create({ data: attemptData });
 
+            // Batch all updates in parallel where possible
+            const promises: Promise<any>[] = [];
+
+            // Update practice session stats if needed
             if (attemptType === AttemptType.SESSION) {
-                await updatePracticeSessionStats(tx, id, isCorrect);
+                promises.push(updatePracticeSessionStats(tx, id, isCorrect));
             }
 
-            if (isFirstAttemptToday) {
-                await updateUserStreak(tx, userId, isCorrect);
-            }
+            // Update user performance with optimized single query
+            promises.push(updateUserPerformanceOptimized(tx, userId, isCorrect, isFirstAttemptToday));
+
+            // Update metrics efficiently
+            promises.push(updateUserMetricsOptimized(tx, userId, isCorrect));
+
+            await Promise.all(promises);
         });
 
         return jsonResponse(null, {
             success: true,
-            message: "Attempt recorded successfully",
+            message: "Ok",
             status: 200,
         });
 
@@ -81,20 +95,15 @@ export async function POST(req: Request): Promise<Response> {
     }
 }
 
-
 async function checkFirstAttemptToday(userId: string): Promise<boolean> {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
 
     const todayAttemptCount = await prisma.attempt.count({
         where: {
             userId,
             solvedAt: {
                 gte: startOfDay,
-                lte: endOfDay,
             },
         },
     });
@@ -102,20 +111,16 @@ async function checkFirstAttemptToday(userId: string): Promise<boolean> {
     return todayAttemptCount === 0;
 }
 
-
 async function updatePracticeSessionStats(
     tx: Prisma.TransactionClient,
     sessionId: string,
     isCorrect: boolean,
 ): Promise<void> {
-
     const currentSession = await tx.practiceSession.findUnique({
         where: { id: sessionId },
         select: {
             questionsSolved: true,
             startTime: true,
-            isCompleted: true,
-            createdAt: true
         },
     });
 
@@ -139,38 +144,87 @@ async function updatePracticeSessionStats(
         where: { id: sessionId },
         data: updateData,
     });
-
 }
 
-
-async function updateUserStreak(
+// Highly optimized user metrics update
+async function updateUserMetricsOptimized(
     tx: Prisma.TransactionClient,
     userId: string,
-    isCorrect: boolean
+    isCorrect: boolean,
 ): Promise<void> {
-
-    const userPerformance = await tx.userPerformance.findUnique({
-        where: { userId },
-        select: { streak: true },
-    });
-    const currentStreak: number = userPerformance?.streak ?? 0;
-    let newStreak: number;
+    const metricsToUpdate:metricToUpdateType[] = [
+        {
+            userId,
+            metricType: MetricType.TOTAL_QUESTIONS,
+            increment: 1,
+        },
+    ];
 
     if (isCorrect) {
-        newStreak = currentStreak + 1;
-    } else {
-        newStreak = 0;
+        metricsToUpdate.push({
+            userId,
+            metricType: MetricType.CORRECT_ATTEMPTS,
+            increment: 1,
+        });
     }
 
-    await tx.userPerformance.upsert({
+    await Promise.all(
+        metricsToUpdate.map(({ userId, metricType, increment }) =>
+            tx.metric.upsert({
+                where: {
+                    userId_metricType: {
+                        userId: userId,
+                        metricType: metricType,
+                    },
+                },
+                update: {
+                    currentValue: { increment },
+                },
+                create: {
+                    userId,
+                    metricType,
+                    currentValue: increment,
+                    previousValue: 0,
+                },
+            })
+        )
+    );
+}
+
+// Completely optimized user performance update with single query
+async function updateUserPerformanceOptimized(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    isCorrect: boolean,
+    isFirstAttemptToday: boolean
+): Promise<void> {
+    // Single atomic upsert with calculated accuracy
+    const result = await tx.userPerformance.upsert({
         where: { userId },
-        update: { streak: newStreak },
+        update: {
+            totalAttempts: { increment: 1 },
+            correctAttempts: isCorrect ? { increment: 1 } : undefined,
+            streak: isFirstAttemptToday ? (isCorrect ? { increment: 1 } : 0) : undefined,
+        },
         create: {
             userId,
-            streak: newStreak,
-            totalAttempts: 0,
-            correctAttempts: 0,
-            accuracy: 0,
+            totalAttempts: 1,
+            correctAttempts: isCorrect ? 1 : 0,
+            streak: isFirstAttemptToday && isCorrect ? 1 : 0,
+            accuracy: isCorrect ? 100 : 0,
+        },
+        select: {
+            totalAttempts: true,
+            correctAttempts: true,
         },
     });
+
+    // Calculate and update accuracy in a single query if this is an update
+    if (result.totalAttempts > 1) {
+        const newAccuracy = (result.correctAttempts / result.totalAttempts) * 100;
+        await tx.userPerformance.update({
+            where: { userId },
+            data: { accuracy: newAccuracy },
+        });
+    }
 }

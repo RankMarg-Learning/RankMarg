@@ -1037,3 +1037,82 @@ Transaction API error: Transaction already closed: A query cannot be executed on
 2025-06-12 14:30:00 [INFO]: Running performance update for JEE/NEET students
 2025-06-12 14:30:12 [INFO]: Performance update completed successfully
 2025-06-12 15:50:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 13:10:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 13:10:05 [ERROR]: Error in cron job: 
+Invalid `prisma.user.count()` invocation in
+E:\Development\RankMarg\RankMarg-Official\apps\backend\src\services\auto\performance.service.ts:16:43
+
+  13 let offset = 0;
+  14 
+  15 while (true) {
+→ 16   const userCount = await prisma.user.count(
+Can't reach database server at `ep-aged-base-a1wt41l2-pooler.ap-southeast-1.aws.neon.tech:5432`
+
+Please make sure your database server is running at `ep-aged-base-a1wt41l2-pooler.ap-southeast-1.aws.neon.tech:5432`.
+2025-06-13 19:05:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 19:05:08 [ERROR]: Error in cron job: 
+Invalid `prisma_1.default.testParticipation.findMany()` invocation in
+E:\Development\RankMarg\RankMarg-Official\apps\backend\dist\services\auto\performance.service.js:41:48
+
+  38 prisma_1.default.attempt.count({
+  39     where: { userId, status: "CORRECT" },
+  40 }),
+→ 41 prisma_1.default.testParticipation.findMany(
+Can't reach database server at `ep-aged-base-a1wt41l2-pooler.ap-southeast-1.aws.neon.tech:5432`
+
+Please make sure your database server is running at `ep-aged-base-a1wt41l2-pooler.ap-southeast-1.aws.neon.tech:5432`.
+2025-06-13 19:10:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 19:10:14 [ERROR]: Error in cron job: 
+Invalid `prisma_1.default.practiceSession.findMany()` invocation in
+E:\Development\RankMarg\RankMarg-Official\apps\backend\dist\services\auto\performance.service.js:56:46
+
+  53     where: { userId },
+  54     include: { subject: true },
+  55 }),
+→ 56 prisma_1.default.practiceSession.findMany(
+Can't reach database server at `ep-aged-base-a1wt41l2-pooler.ap-southeast-1.aws.neon.tech:5432`
+
+Please make sure your database server is running at `ep-aged-base-a1wt41l2-pooler.ap-southeast-1.aws.neon.tech:5432`.
+2025-06-13 19:15:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 19:15:25 [INFO]: Performance update completed successfully
+2025-06-13 19:20:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 19:20:05 [INFO]: Performance update completed successfully
+2025-06-13 19:45:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 19:45:07 [INFO]: Performance update completed successfully
+2025-06-13 19:50:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 19:50:05 [INFO]: Performance update completed successfully
+2025-06-13 19:55:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 19:55:05 [INFO]: Performance update completed successfully
+2025-06-13 20:00:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 20:00:05 [INFO]: Performance update completed successfully
+2025-06-13 20:05:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 20:05:04 [INFO]: Performance update completed successfully
+2025-06-13 20:10:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 20:10:06 [INFO]: Performance update completed successfully
+2025-06-13 20:15:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 20:15:08 [INFO]: Performance update completed successfully
+2025-06-13 20:20:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 20:20:10 [INFO]: Performance update completed successfully
+2025-06-13 20:25:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 20:25:04 [INFO]: Performance update completed successfully
+2025-06-13 20:30:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 20:30:04 [INFO]: Performance update completed successfully
+2025-06-13 20:35:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 20:35:04 [INFO]: Performance update completed successfully
+2025-06-13 20:40:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 20:40:06 [INFO]: Performance update completed successfully
+2025-06-13 20:45:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 20:45:05 [INFO]: Performance update completed successfully
+2025-06-13 20:50:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 20:50:04 [INFO]: Performance update completed successfully
+2025-06-13 20:55:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 20:55:15 [INFO]: Performance update completed successfully
+2025-06-13 21:00:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-13 21:00:04 [INFO]: Performance update completed successfully
+2025-06-17 11:05:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-17 11:05:08 [INFO]: Performance update completed successfully
+2025-06-17 12:00:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-17 12:00:13 [INFO]: Performance update completed successfully
+2025-06-17 12:05:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-17 17:25:00 [INFO]: Running performance update for JEE/NEET students
+2025-06-17 17:25:08 [INFO]: Performance update completed successfully

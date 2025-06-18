@@ -27,7 +27,7 @@ export function PerformanceOverview({ metrics }: { metrics: AnalyticsMetricsProp
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard
-                    title="Questions Solved"
+                    title="Questions Attempts"
                     value={metrics?.TOTAL_QUESTIONS?.value || "0"}
                     change={metrics?.TOTAL_QUESTIONS?.delta || ""}
                     insight={metrics?.TOTAL_QUESTIONS?.suggestion || "No insights available.Keep practicing!"}
