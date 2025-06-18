@@ -7,7 +7,7 @@ import OnboardingLayout from './OnboardingLayout';
 import { Chip } from '@/components/ui/chip';
 import { useSubjects } from '@/hooks/useSubject';
 import { useTopics } from '@/hooks/useTopics';
-import { AlertCircle, Check, ChevronsUpDown, BookOpen } from 'lucide-react';
+import { AlertCircle, Check,  BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Command,
