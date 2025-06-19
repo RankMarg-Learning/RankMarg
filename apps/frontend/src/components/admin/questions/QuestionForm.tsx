@@ -34,7 +34,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { generateSlug } from "@/lib/generateSlug";
 import { TextFormator } from "@/utils/textFormator";
 import { CategoryMultiSelect } from "./CategoryMultiSelect";
-import { PYQ_Year } from "@/constant/tags";
+import { PYQ_Year } from "@/constant/pyqYear";
 
 interface QuestionFormProps {
   initialQuestion?: Question;

@@ -29,7 +29,7 @@ const RecommendedTest: React.FC<RecommendedTestProps> = ({
   onStartTest,
 }) => {
   const streamLabel = stream === 'JEE' ? 'JEE Aspirants' : stream === 'NEET' ? 'NEET Aspirants' : 'Aspirants';
-  const diffLabel = difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
+  const diffLabel = difficulty?.charAt(0)?.toUpperCase() + difficulty?.slice(1)?.toLowerCase();
 
   const examTypeCopy: Record<string, string> = {
     FULL_LENGTH: 'Full Mock to simulate real exam pressure.',

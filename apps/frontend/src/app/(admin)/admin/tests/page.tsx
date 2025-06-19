@@ -161,7 +161,7 @@ export default function AdminTestPage() {
                           <span className="text-lg font-medium">No test found</span>
                           <span className="text-sm">Try adjusting your filters or add a new test</span>
 
-                          <Link href="/admin/questions/add" >
+                          <Link href="/admin/tests/add" >
                             <Button
                               className="mt-4 bg-edu-blue hover:bg-primary-500"
                             >

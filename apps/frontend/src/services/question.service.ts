@@ -1,9 +1,9 @@
-import { Question } from "@/types/typeAdmin";
+import { Question, QuestionFilter } from "@/types/typeAdmin";
 import api from "@/utils/api";
 
 export const getAllQuestions = async () => {
   try {
-    const response = await api.get('/question?isPublished=true');
+    const response = await api.get('/question');
     return response.data;
   } catch (error) {
     console.error("Error fetching questions:", error);
@@ -15,6 +15,21 @@ export const getAllQuestions = async () => {
   }
   
 };
+
+export const getQuestionByFilter = async (filter: Partial<QuestionFilter>) => {
+  try {
+    const response = await api.get('/question', { params: filter });
+    return response.data;
+    
+  } catch (error) {
+    console.error("Error fetching questions by filter:", error);
+    return {
+      success: false,
+      message: "Error fetching questions",
+    }
+    
+  }
+}
 
 export const getQuestionBySlug = async (slug: string) => {
   try {

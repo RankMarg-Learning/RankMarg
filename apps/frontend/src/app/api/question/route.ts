@@ -59,11 +59,11 @@ export async function GET(req: Request) {
     if (search) {
       whereClause.OR = [
         { content: { contains: search, mode: "insensitive" } },
+        { title: { contains: search, mode: "insensitive" } },
         { topic: { name: { contains: search, mode: "insensitive" } } },
         { subTopic: { name: { contains: search, mode: "insensitive" } } },
       ];
     }
-    
     const session = await getAuthSession()
     let userID = session?.user?.id || "default-user-id";
 
@@ -111,9 +111,8 @@ export async function GET(req: Request) {
     ]);
 
     const currentPage = Math.ceil(total / limit);
-
     return jsonResponse(
-      { questions, currentPage, totalPages:total },
+      { questions, currentPage, totalPages: Math.ceil (total/limit) },
       { success: true, message: "Ok", status: 200 }
     )
   } catch (error) {
