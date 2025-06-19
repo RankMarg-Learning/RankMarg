@@ -58,9 +58,9 @@ const PracticeSummary = ({ overview }: { overview: PracticeSummaryProps }) => {
                   <div key={index}>
                     <div className="flex justify-between text-sm mb-1">
                       <span>{sm?.subject}</span>
-                      <span className="font-medium">{sm?.totalQuestions} Questions</span>
+                      <span className="font-medium">Correct :{sm?.correctAnswers} </span>
                     </div>
-                    <Progress value={(sm?.totalAttempts / sm?.totalQuestions) * 100} indicatorColor={` ${SubjectBackgroundColor[sm?.subject.toLowerCase() as keyof typeof SubjectBackgroundColor] || SubjectBackgroundColor.default}`} className="h-2.5" />
+                    <Progress value={sm?.accuracyRate} indicatorColor={` ${SubjectBackgroundColor[sm?.subject.toLowerCase() as keyof typeof SubjectBackgroundColor] || SubjectBackgroundColor.default}`} className="h-2.5" />
                   </div>
                 ))) : (
                   <div className="flex flex-col items-center justify-center text-center py-10">

@@ -33,7 +33,7 @@ export async function GET(req: Request) {
   const stream = searchParams.get("stream") as Stream;
   const type = searchParams.get("type") as QuestionType;
   const search = searchParams.get("search");
-  const isPublished = searchParams.get("isPublished") === "true";
+  const isPublished = searchParams.get("isPublished") === "true" ? true : false; 
   const skip = (page - 1) * limit;
 
   try {
@@ -67,7 +67,7 @@ export async function GET(req: Request) {
     const session = await getAuthSession()
     let userID = session?.user?.id || "default-user-id";
 
-    if (isPublished !== undefined) {
+    if (isPublished) {
       whereClause.isPublished = isPublished;
     }
 

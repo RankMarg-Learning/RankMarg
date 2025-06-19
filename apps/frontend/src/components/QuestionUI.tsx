@@ -248,7 +248,7 @@ Best regards,
           {!isAnswered && !isHintUsed && (
             <Button
               variant="link"
-              className="text-sm mt-2"
+              className="text-sm mt-2 underline"
               onClick={handleShowHint}
             >
               Show Hint
@@ -293,10 +293,13 @@ Best regards,
             onClick={() => setShowFeedbackModal(true)}
             variant="outline"
             size="sm"
-            className="bg-red-100 border-red-300 text-red-700 hover:bg-red-200 flex items-center gap-2"
+            className="bg-amber-400 text-black font-medium rounded-md py-2 px-4 shadow-sm
+    hover:bg-amber-500 focus:bg-amber-500
+    active:bg-amber-600
+    disabled:bg-amber-400/50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <AlertCircle className="w-4 h-4" />
-            Why was I wrong?
+            Select Error Reason
           </Button>
         </div>
       )}
@@ -335,9 +338,9 @@ Best regards,
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="text-xs sm:text-sm text-purple-800 mt-2 transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                  <h4 className="font-medium mt-1 mb-2">Step-by-Step Analysis</h4>
-                  {question?.solution ? (
-                    <MarkdownRenderer content={question.solution} className="text-sm" />
+                  {question?.solution ? (<>
+                    <h4 className="font-medium mt-1 mb-2">Step-by-Step Analysis</h4>
+                    <MarkdownRenderer content={question.solution} className="text-sm" /> </>
                   ) : (
                     <span className="text-sm">Solution is not available</span>
                   )}
