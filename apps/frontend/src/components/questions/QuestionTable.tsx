@@ -27,13 +27,13 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import { PYQ_Year } from "@/constant/tags";
-import { Stream } from "@prisma/client";
+import { Stream, QuestionType } from "@prisma/client";
 import { useSubjects } from "@/hooks/useSubject";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { usePathname } from "next/navigation";
-import { getAllQuestions } from "@/services/question.service";
+import {  getQuestionByFilter } from "@/services/question.service";
+import { PYQ_Year } from "@/constant/pyqYear";
 
 interface QuestionsetProps {
   selectedQuestions?: {
@@ -54,17 +54,17 @@ const Questionset: React.FC<QuestionsetProps> = ({
   IPstream
 }) => {
   const [subject, setSubject] = useState("");
-  const [difficulty, setDifficulty] = useState(null);
-  const [tags, setTags] = useState("");
+  const [difficulty, setDifficulty] = useState<number | null>(null);
+  const [pyqYear, setPyqYear] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [type, setType] = useState("");
+  const [type, setType] = useState<QuestionType | null>(null);
 
   const pathname = usePathname();
   const isAdminPage = pathname.startsWith("/admin");
 
-  const getInitialStream = () => {
-    return (typeof window !== "undefined" && localStorage.getItem("stream")) || "JEE";
+  const getInitialStream = ():Stream => {
+    return ((typeof window !== "undefined" && localStorage.getItem("stream"))as Stream || "NEET" ) ;
   };
 
   const [stream, setStream] = useState<Stream>(getInitialStream() as Stream);
@@ -94,21 +94,21 @@ const Questionset: React.FC<QuestionsetProps> = ({
     setCurrentPage(1);
   };
 
-  const handleTags = (value: string[]) => {
-    setTags(value[0] === "Default" ? "" : value[0]);
+  const handlePyqYear = (value: string[]) => {
+    setPyqYear(value[0] === "Default" ? "" : value[0]);
     setCurrentPage(1);
   };
 
   const { data:questions, isLoading, refetch } = useQuery({
-    queryKey: ["questions", currentPage, subject, difficulty, tags, search, isPublished],
-    queryFn: async () => getAllQuestions()
+    queryKey: ["questions", currentPage, subject, difficulty, pyqYear, search, isPublished],
+    queryFn: async () => getQuestionByFilter({isPublished, page: currentPage, subjectId: subject, difficulty,  pyqYear, search, stream ,type }),
   });
 
 
 
   useEffect(() => {
     refetch();
-  }, [currentPage, subject, difficulty, tags, search, stream, type, refetch]);
+  }, [currentPage, subject, difficulty, pyqYear, search, stream, type, refetch]);
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
@@ -141,16 +141,16 @@ const Questionset: React.FC<QuestionsetProps> = ({
       <Tabs defaultValue="all">
         <div className="grid gap-2 sm:flex sm:items-center">
           <TabsList>
-            {!isSubjectLoading ? subjects.data.map((sub) => (
+            {!isSubjectLoading ? subjects?.data?.map((sub) => (
               <TabsTrigger
-                key={sub.id} // Ensure unique key
-                value={sub.name} // Use the subject name as value
+                key={sub.id} 
+                value={sub.id} 
                 onClick={() => {
-                  setSubject(sub.id); // Set subject ID on click
+                  setSubject(sub.id); 
                   setCurrentPage(1);
                 }}
               >
-                {sub.name} {/* Display subject name */}
+                {sub.name} 
               </TabsTrigger>
             )):
             
@@ -186,13 +186,13 @@ const Questionset: React.FC<QuestionsetProps> = ({
               width={"[100px]"}
               placeholder="PYQ Year"
               selectName={PYQ_Year}
-              onChange={handleTags}
+              onChange={handlePyqYear}
             />
             <SelectFilter
               width={"[100px]"}
               placeholder="Type"
               selectName={["Default", "MULTIPLE_CHOICE", "INTEGER", "SUBJECTIVE"]}
-              onChange={(value) => setType(value[0])}
+              onChange={(value) => setType(value[0] === "Default" ? null : value[0] as QuestionType)}
             />
 
           </div>
@@ -267,7 +267,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
                   <PaginationItem>
                     <PaginationPrevious
                       className={cn(
-                        "gap-1 px-2 py-1 text-sm sm:text-base",
+                        "gap-1 px-2 py-1 text-sm sm:text-sm",
                         currentPage === 1 && "cursor-not-allowed opacity-50"
                       )}
                       onClick={handlePrevious}
@@ -279,7 +279,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
                       {/* First Page */}
                       <PaginationItem>
                         <PaginationLink
-                          className="px-2 py-1 text-sm sm:text-base"
+                          className="px-2 py-1 text-sm sm:text-sm"
                           onClick={() => handlePageClick(1)}
                         >
                           1
@@ -295,7 +295,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
                       {currentPage !== 1 && currentPage !== questions?.data.totalPages && (
                         <PaginationItem>
                           <PaginationLink
-                            className="px-2 py-1 text-sm sm:text-base font-semibold"
+                            className="px-2 py-1 text-sm sm:text-sm font-semibold"
                             onClick={() => handlePageClick(currentPage)}
                           >
                             {currentPage}
@@ -311,7 +311,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
                       {/* Last Page */}
                       <PaginationItem>
                         <PaginationLink
-                          className={`px-2 py-1 text-sm sm:text-base ${questions?.data.totalPages === 1 ? "hidden" : ""}`}
+                          className={`px-2 py-1 text-sm sm:text-sm ${questions?.data.totalPages === 1 ? "hidden" : ""}`}
                           onClick={() => handlePageClick(questions?.data.totalPages)}
                         >
                           {questions?.data.totalPages}
@@ -324,7 +324,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
                   <PaginationItem>
                     <PaginationNext
                       className={cn(
-                        "gap-1 px-2 py-1 text-sm sm:text-base",
+                        "gap-1 px-2 py-1 text-sm sm:text-sm",
                         currentPage === questions?.data?.totalPages && "cursor-not-allowed opacity-50"
                       )}
                       onClick={handleNext}

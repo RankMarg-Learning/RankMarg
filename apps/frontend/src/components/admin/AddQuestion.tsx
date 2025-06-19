@@ -27,7 +27,7 @@ import { generateSlug } from "@/lib/generateSlug";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { PYQ_Year } from "@/constant/tags";
+import { PYQ_Year } from "@/constant/pyqYear";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import { Checkbox } from "../ui/checkbox";
 import { z } from "zod";

@@ -258,11 +258,12 @@ const TestForm = ({ initialTest, onSave, onCancel,loading }: TestFormProps) => {
           {errors.examType && <p className="text-red-500 text-sm">{errors.examType.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="stream">Stream</Label>
+          <Label htmlFor="stream">Stream<span className="text-red-500">*</span></Label>
 
           <Controller
             name="stream"
             control={control}
+            rules={{ required: "Stream is required" }}
             render={({ field }) => (
               <Select value={field.value} onValueChange={(value) => field.onChange(value)}>
                 <SelectTrigger className={errors.stream ? "border-red-500" : ""}>

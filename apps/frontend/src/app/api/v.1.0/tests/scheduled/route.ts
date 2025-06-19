@@ -1,11 +1,10 @@
 export const dynamic = "force-dynamic";
 import { NextRequest } from "next/server";
-import { getServerSession } from "next-auth";
 import { Stream } from "@prisma/client";
-import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
 import { unstable_cache } from "next/cache";
+import { getAuthSession } from "@/utils/session";
 
 const getUpcomingTestsForStream = unstable_cache(
     async (stream: Stream) => {
@@ -43,19 +42,8 @@ const getUpcomingTestsForStream = unstable_cache(
 
 export async function GET(req: NextRequest) {
     try {
-        // Handle session retrieval errors
-        let session;
-        try {
-            session = await getServerSession(authOptions);
-        } catch (error) {
-            console.error("[UpcomingScheduledTests] Session error:", error);
-            return jsonResponse(null, {
-                success: false,
-                message: "Authentication service unavailable",
-                status: 503
-            });
-        }
-
+        
+        const session = await getAuthSession();
         // Check authentication
         if (!session?.user) {
             return jsonResponse(null, {
@@ -64,9 +52,7 @@ export async function GET(req: NextRequest) {
                 status: 401
             });
         }
-
-        // Validate user stream
-        const userStream = session?.user?.stream as Stream;
+        const userStream = session?.user?.stream as Stream || "NEET";
         if (!userStream) {
             console.warn("[UpcomingScheduledTests] User has no stream:", session.user.id);
             return jsonResponse(null, {

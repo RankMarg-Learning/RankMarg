@@ -1,10 +1,6 @@
-import { ClassEnum, Stream } from "@prisma/client";
+import { ClassEnum, QuestionType, Stream } from "@prisma/client";
 
-export enum QuestionType {
-  MULTIPLE_CHOICE = "MULTIPLE_CHOICE",
-  INTEGER = "INTEGER",
-  SUBJECTIVE = "SUBJECTIVE"
-}
+
 
 export enum QuestionFormat {
   SINGLE_SELECT = "SINGLE_SELECT",
@@ -204,4 +200,21 @@ export interface Subtopic {
 export interface QuestionTopic {
   questionId: string;
   topicId: string;
+}
+
+export interface QuestionFilter {
+  page: number;
+  subjectId?: string | null;
+  topicId?: string | null;
+  subtopicId?: string | null;
+  difficulty?: number | null;
+  category?: QCategory;
+  className?: ClassEnum;
+  pyqYear?: string | null;
+  stream?: Stream;
+  type?: QuestionType;
+  search?: string | null;
+  isPublished?: boolean;
+  skip: number;
+  limit: number;
 }

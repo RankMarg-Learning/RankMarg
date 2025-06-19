@@ -1,6 +1,5 @@
 "use client"
 import { useState } from "react";
-import {  QuestionType } from "@/types/typeAdmin";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,  DialogDescription, DialogClose } from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
@@ -31,6 +30,7 @@ import { useQuery } from "@tanstack/react-query";
 import { deleteQuestion, getAllQuestions } from "@/services/question.service";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
+import { QuestionType } from "@prisma/client";
 
 
 export default function Tests() {
@@ -129,10 +129,10 @@ export default function Tests() {
                 <TableHead className="w-[100px]">ID</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Subject</TableHead>
                 <TableHead>Difficulty</TableHead>
                 <TableHead>Stream</TableHead>
-                <TableHead className="text-center">Accuracy</TableHead>
+                <TableHead>Subject</TableHead>
+                <TableHead className="text-center">Topic</TableHead>
                 <TableHead className="text-center">Published</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -173,11 +173,11 @@ export default function Tests() {
                       <TableCell className="font-medium">{question.id.substring(0, 6)}</TableCell>
                       <TableCell className="max-w-[250px] truncate">{question.title}</TableCell>
                       <TableCell>{getTypeBadge(question.type)}</TableCell>
-                      <TableCell>{question.category || "-"}</TableCell>
                       <TableCell>{getDifficultyBadge(question.difficulty)}</TableCell>
                       <TableCell>{question.stream || "-"}</TableCell>
-                      <TableCell className="text-center">
-                        {question.accuracy !== undefined ? `${(question.accuracy * 100).toFixed(1)}%` : "-"}
+                      <TableCell>{question?.subject?.name || "-"}</TableCell>
+                      <TableCell className="max-w-[150px] truncate">
+                      {question?.topic?.name || "-"}
                       </TableCell>
                       <TableCell className="text-center">
                         {question.isPublished ? (
