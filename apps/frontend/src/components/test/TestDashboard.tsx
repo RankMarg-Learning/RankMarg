@@ -47,14 +47,14 @@ const TestDashboard = () => {
         {
           recommended?.data && (
             <RecommendedTest
-              testId={recommended?.data.testId}
-              testName={recommended?.data.title}
-              examType={recommended?.data.examType}
-              totalQuestions={recommended?.data.totalQuestions}
-              totalMarks={recommended?.data.totalMarks}
-              stream={recommended?.data.stream}
-              duration={recommended?.data.duration}
-              difficulty={recommended?.data.difficulty}
+              testId={recommended?.data?.testId}
+              testName={recommended?.data?.title}
+              examType={recommended?.data?.examType}
+              totalQuestions={recommended?.data?.totalQuestions}
+              totalMarks={recommended?.data?.totalMarks}
+              stream={recommended?.data?.stream}
+              duration={recommended?.data?.duration}
+              difficulty={recommended?.data?.difficulty}
               onStartTest={handleStartTest}
             />
           )

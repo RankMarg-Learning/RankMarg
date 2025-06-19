@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
         }
 
         // Validate user stream
-        const userStream = session.user.stream as Stream;
+        const userStream = session?.user?.stream as Stream;
         if (!userStream) {
             console.warn("[UpcomingScheduledTests] User has no stream:", session.user.id);
             return jsonResponse(null, {

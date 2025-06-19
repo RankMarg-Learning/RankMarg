@@ -62,6 +62,7 @@ const getQuestionsByDifficultyBreakdown = async (userId: string) => {
                 "Question" q ON a."questionId" = q.id
             WHERE 
                 a."userId" = ${userId}
+                AND a."status" = 'CORRECT'
                 
             GROUP BY 
                 q.difficulty
