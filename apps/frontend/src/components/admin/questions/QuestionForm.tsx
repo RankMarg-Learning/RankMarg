@@ -22,8 +22,8 @@ import {
 import { PlusCircle, Trash2, Save } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { QCategory, Question, QuestionFormat, QuestionType } from "@/types/typeAdmin";
-import { StandardEnum, Stream } from "@prisma/client";
+import { QCategory, Question, QuestionFormat  } from "@/types/typeAdmin";
+import { StandardEnum, Stream ,QuestionType} from "@prisma/client";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import { useSubjects } from "@/hooks/useSubject";
 import { useTopics } from "@/hooks/useTopics";
