@@ -12,19 +12,47 @@ const inter = Inter({ subsets: ["latin"] })
 const GA_TRACKING_ID = "G-4R4ZKM8YXN";
 
 export const metadata: Metadata = {
-  title: "RankMarg | Learn, Solve, Achieve",
-  description: "RankMarg is a cutting-edge ed-tech platform for JEE and NEET aspirants, designed to deliver a highly personalized and engaging learning experience. With a vast question bank, chapter-wise and topic-wise tests, and weekly mock tests every Sunday at 5 PM, RankMarg ensures thorough exam preparation. Its unique Elo-based ranking system provides dynamic assessments, while advanced performance analytics help students focus on areas needing improvement. Gamified features like the coin-based store and tier system motivate learners with rewards and progression milestones. Adaptive challenges tailored to individual strengths and weaknesses make RankMarg the ultimate companion for excelling in competitive exams.",
+  title: "RankMarg | Personalized Practice for JEE & NEET",
+  description:
+    "Boost your JEE/NEET rank with AI-powered practice, dynamic tests, and mastery tracking. Experience India's most personalized exam preparation platform.",
+  keywords: [
+    "RankMarg",
+    "JEE Practice",
+    "NEET Preparation",
+    "Personalized Learning",
+    "Mock Tests",
+    "Topic-wise Practice",
+    "Adaptive Learning",
+    "Spaced Repetition",
+    "Gamified Learning"
+  ],
   openGraph: {
-    title: 'RankMarg | Learn, Solve, Achieve',
+    title: "RankMarg | Personalized Practice for JEE & NEET",
     description:
-      'RankMarg is a cutting-edge ed-tech platform for JEE and NEET aspirants, designed to deliver a highly personalized and engaging learning experience. With a vast question bank, chapter-wise and topic-wise tests, and weekly mock tests every Sunday at 5 PM, RankMarg ensures thorough exam preparation. Its unique Elo-based ranking system provides dynamic assessments, while advanced performance analytics help students focus on areas needing improvement. Gamified features like the coin-based store and tier system motivate learners with rewards and progression milestones. Adaptive challenges tailored to individual strengths and weaknesses make RankMarg the ultimate companion for excelling in competitive exams.',
-    url: 'https://rankmarg.in',
-    type: 'website',
+      "Boost your JEE/NEET rank with AI-powered practice, dynamic tests, and mastery tracking. Experience India's most personalized exam preparation platform.",
+    url: "https://www.rankmarg.in",
+    type: "website",
+    siteName: "RankMarg",
+    images: [
+      {
+        url: "https://www.rankmarg.in/Logo.svg", 
+        width: 1200,
+        height: 630,
+        alt: "RankMarg – Personalized Practice Platform for JEE & NEET",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "RankMarg | Personalized Practice for JEE & NEET",
+    description:
+      "Crack JEE & NEET with adaptive practice, smart tests, mastery insights, and motivational challenges. Practice smarter, rank higher with RankMarg.",
   },
   icons: {
-    icon: '/favicon.ico',
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
   },
-
+  metadataBase: new URL("https://www.rankmarg.in"),
 };
 
 export default function RootLayout({
