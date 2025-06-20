@@ -1,4 +1,3 @@
-"uce client"
 import { useState } from 'react';
 import {
   Dialog,
@@ -40,30 +39,41 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
       });
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data?.success) {
-        queryClient.invalidateQueries({ queryKey: ['currentTopics'] });
-
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['currentTopics'] }),
+          queryClient.invalidateQueries({ queryKey: ['currentStudies'] }),
+          queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+        ]);
         toast({
-          title: "Success",
-          description: data.message || "Current topic updated successfully",
-        });
-
+          title: data.message || "Current topic updated successfully!!",
+          variant: "default",
+          duration: 3000,
+          className: "bg-gray-100 text-gray-800",
+        })
+        
+        setSelectedSubject("");
+        setSelectedTopic("");
         setOpen(false);
       } else {
         toast({
-          title: "Error",
-          description: data.message || "Failed to update current topic",
-          variant: "destructive"
-        });
+          title: data.message || "Failed to update current topic!!",
+          variant: "default",
+          duration: 3000,
+          className: "bg-red-500 text-white",
+        })
+        
       }
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: (error as any).response?.data?.message || error.message || 'Failed to update current topic',
-        variant: "destructive"
-      });
+        title: (error as any).response?.data?.message || error.message || 'Failed to update current topic',
+        variant: "default",
+        duration: 3000,
+        className: "bg-red-500 text-white",
+      })
+      
     },
     onSettled: () => {
       setIsSubmitting(false);
@@ -73,10 +83,12 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
   const handleUpdateCurrentTopic = () => {
     if (!selectedSubject || !selectedTopic) {
       toast({
-        title: "Error",
-        description: "Please select both subject and topic",
-        variant: "destructive"
-      });
+        title: "Please select both subject and topic",
+        variant: "default",
+        duration: 3000,
+        className: "bg-red-500 text-white",
+      })
+      
       return;
     }
 
@@ -89,9 +101,10 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
 
   const { subjects, isLoading: isLoadingSubjects } = useSubjects("JEE");
   const { topics: filteredTopics, isLoading: isLoadingTopics } = useTopics(selectedSubject);
+  
   return (
     <>
-      <Card className="border border-green-100  bg-white">
+      <Card className="border border-green-100 bg-white">
         <div className="p-4 space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="font-medium text-sm text-green-800 flex items-center gap-1">
@@ -121,7 +134,6 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
               <div key={i} className="flex items-center justify-between">
                 <span className="truncate">{topic.topicName}</span>
                 <span className="bg-green-50 text-xs px-2 py-1 rounded-md border border-green-100">
-
                   {topic.subjectName}
                 </span>
               </div>
@@ -189,7 +201,14 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
             </div>
           </div>
           <DialogFooter className='gap-2'>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setOpen(false);
+                setSelectedSubject("");
+                setSelectedTopic("");
+              }}
+            >
               Cancel
             </Button>
             <Button
@@ -208,5 +227,6 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>)
+    </>
+  );
 }

@@ -105,15 +105,21 @@ export default function ProfileUpdate() {
     onError: (err: Error, _, context) => {
       queryClient.setQueryData(["profile"], context?.previousProfile)
       toast({
-        title: "Error",
-        description: err.message || "Failed to update profile",
-        variant: "destructive"
+        title: err.message || "Failed to update profile!!",
+        variant: "default",
+        duration: 3000,
+        className: "bg-red-500 text-white",
       })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] })
       setEditingField(null)
-      toast({ title: "Success", description: "Profile updated successfully" })
+      toast({
+        title: "Profile Updated Successfully!!",
+        variant: "default",
+        duration: 3000,
+        className: "bg-gray-100 text-gray-800",
+      })
     },
   })
 
@@ -141,18 +147,20 @@ export default function ProfileUpdate() {
 
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "Error",
-        description: "Image size should be less than 5MB",
-        variant: "destructive"
+        title: "Image size should be less than 5MB",
+        variant: "default",
+        duration: 3000,
+        className: "bg-red-500 text-white",
       })
       return
     }
 
     if (!file.type.startsWith("image/")) {
       toast({
-        title: "Error",
-        description: "Please upload an image file",
-        variant: "destructive"
+        title: "Please upload an image file",
+        variant: "default",
+        duration: 3000,
+        className: "bg-red-500 text-white",
       })
       return
     }
@@ -205,9 +213,10 @@ export default function ProfileUpdate() {
 
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to process or upload image",
-        variant: "destructive"
+        title: "Failed to process or upload image",
+        variant: "default",
+        duration: 3000,
+        className: "bg-red-500 text-white",
       })
     }
   }

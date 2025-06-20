@@ -91,11 +91,11 @@ const MistakeFeedbackModal: React.FC<MistakeFeedbackModalProps> = ({
     const handleSubmit = async () => {
         if (!selectedMistakeType) {
             toast({
-                title: "Please select a reason",
-                description: "Choose why you think you got this question wrong.",
-                variant: "destructive",
-                className: "bg-white"
-            });
+                title: "Please select a reason!!",
+                variant: "default",
+                duration: 3000,
+                className: "bg-red-500 text-white",
+            })
             return;
         }
         setIsSubmitting(true);
@@ -104,28 +104,28 @@ const MistakeFeedbackModal: React.FC<MistakeFeedbackModalProps> = ({
             const response = await axios.put(`/api/attempts/${attemptId}`, { mistake: selectedMistakeType })
             if (!response.data.success) {
                 toast({
-                    title: "Submission failed",
-                    description: "There was an error submitting your feedback. Please try again.",
-                    variant: "destructive",
-                    className: "bg-white"
-                });
+                    title: "Submission failed!!",
+                    variant: "default",
+                    duration: 3000,
+                    className: "bg-red-500 text-white",
+                })
             } else {
                 toast({
                     title: "Feedback submitted!",
-                    description: "Thank you for helping us understand your learning process.",
-                    className: "bg-white",
+                    variant: "default",
+                    duration: 3000,
+                    className: "bg-gray-100 text-gray-800",
                 });
             }
             handleClose();
         } catch (error) {
             console.error('Error submitting mistake feedback:', error);
-
             toast({
-                title: "Submission failed",
-                description: "There was an error submitting your feedback. Please try again.",
-                variant: "destructive",
-                className: "bg-white"
-            });
+                title: "Submission failed!!",
+                variant: "default",
+                duration: 3000,
+                className: "bg-red-500 text-white",
+            })
         } finally {
             setIsSubmitting(false);
         }

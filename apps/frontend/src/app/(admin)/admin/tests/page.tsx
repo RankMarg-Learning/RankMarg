@@ -32,11 +32,22 @@ export default function AdminTestPage() {
       const response = await deleteTest(testId);
       setIsDeleteDialogOpen(false);
       if (response.success) {
-        toast({ title: "Success", description: "Test Deleted Successfully", color: "white", className: "bg-green-500" })
+        toast({
+          title: "Test Deleted Successfully",
+          variant: "default",
+          duration: 3000,
+          className: "bg-gray-100 text-gray-800",
+        })
         refetch()
       }
       else{
-        toast({ title: "Error", description: response.message, color: "white", className: "bg-red-500" })
+        toast({
+          title: response.message,
+          variant: "default",
+          duration: 3000,
+          className: "bg-red-500 text-white",
+        })
+        
       }
     }
   }

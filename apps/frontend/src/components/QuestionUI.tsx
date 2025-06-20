@@ -167,13 +167,12 @@ const QuestionUI = ({
       isHintUsed,
       reactionTime
     };
-
     toast({
       title: isCorrect ? "Correct Answer" : "Incorrect Answer",
-      description: isCorrect ? "Your answer was correct." : "Try Next Time!",
-      variant: isCorrect ? "success" : "destructive",
-      duration: 1000
-    });
+      variant: "default",
+      duration: 3000,
+      className: isCorrect? "bg-gray-100 text-gray-800" : "bg-red-500 text-white",
+    })
 
     handleAttempt(attemptData);
   };

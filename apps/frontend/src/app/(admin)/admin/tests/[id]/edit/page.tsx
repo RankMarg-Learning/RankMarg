@@ -33,22 +33,29 @@ const EditTest = ({ params }: { params: { id: string } }) => {
 
             if (response && response.success) {
                 toast({
-                    title: 'Test Updated',
-                    description: 'Test has been updated successfully',
-                })
+                    title: "Test Updated Successfully!",
+                    variant: "default",
+                    duration: 3000,
+                    className: "bg-gray-100 text-gray-800",
+                  })
                 router.push('/admin/tests');
             } else {
                 toast({
-                    title: 'Failed',
-                    description: 'Failed to update test',
-                })
+                    title: "Failed to update test!",
+                    variant: "default",
+                    duration: 3000,
+                    className: "bg-red-500 text-white",
+                  })
+                
             }
         } catch (error) {
             console.error(error);
             toast({
-                type: "foreground",
-                description: "Failed to update test",
-            });
+                title: "Failed to update test!",
+                variant: "default",
+                duration: 3000,
+                className: "bg-red-500 text-white",
+              })
         }
         finally {
             setLoading(false);

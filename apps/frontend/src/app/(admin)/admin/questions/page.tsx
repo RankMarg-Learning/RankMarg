@@ -50,7 +50,12 @@ export default function Tests() {
      const data = await deleteQuestion(slug);
       setIsDeleteDialogOpen(false);
       if(data.success) {
-        toast({ title: "Success", description: "Question Deleted Successfully", color: "white", className: "bg-green-500" })
+        toast({
+          title: "Success! Question Deleted Successfully",
+          variant: "default",
+          duration: 3000,
+          className: "bg-gray-100 text-gray-800",
+        })
         refetch();
       }else{
         toast({ title: "Error", description: "Failed to delete question", color: "white", className: "bg-red-500 text-white" })
