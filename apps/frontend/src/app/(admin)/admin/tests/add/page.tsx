@@ -17,16 +17,22 @@ const TestAdd = () => {
 
             if (response && response.success) {
                 toast({
-                    title: 'Test Added',
-                    description: 'Test has been added successfully',
-                })
+                    title: "Test Added Successfully!!",
+                    variant: "default",
+                    duration: 3000,
+                    className: "bg-gray-100 text-gray-800",
+                  })
+                
                 route.push('/admin/tests');
             }
             else {
                 toast({
-                    title: 'Failed',
-                    description: 'Failed to add test',
-                })
+                    title: "Failed to add test!",
+                    variant: "default",
+                    duration: 3000,
+                    className: "bg-red-500 text-white",
+                  })
+                
             }
         } catch (error) {
             console.error(error)

@@ -68,7 +68,7 @@ export const questionSchema = z.object({
     (val) => (val === "" || val === undefined ? undefined : Number(val)),
     z.number().optional()
   ),
-  isPublished: z.boolean().default(false),
+  isPublished: z.boolean().default(true),
 
   options: z
     .array(
@@ -118,7 +118,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       commonMistake: "",
       questionTime: 1,
       isNumerical: undefined,
-      isPublished: false,
+      isPublished: true,
       options: [],
     },
   });
@@ -152,7 +152,12 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
   const addOption = () => {
     const options = getValues("options") || [];
     if (options.length >= 4) {
-      toast({ title: "Maximum options reached", description: "You can't add more than 4 options.", variant: "destructive" });
+      toast({
+        title: "Maximum options reached!!",
+        variant: "default",
+        duration: 3000,
+        className: "bg-red-500 text-white",
+      })
       return;
     }
     setValue("options", [...options, { content: "", isCorrect: false }]);
@@ -612,7 +617,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
           <div className="flex items-center space-x-2">
             <Switch
               id="isPublished"
-              checked={watch("isPublished")} // Sync with form state
+              checked={watch("isPublished")} 
               onCheckedChange={(checked) => setValue("isPublished", checked)}
             />
             <Label htmlFor="isPublished">Publish question immediately</Label>

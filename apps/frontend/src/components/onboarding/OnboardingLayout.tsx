@@ -48,10 +48,12 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
     } catch (error) {
       console.error(error);
       toast({
-        title: "Error",
-        description: "There was an error proceeding to the next step",
-        variant: "destructive",
-      });
+        title: "There was an error proceeding to the next step",
+        variant: "default",
+        duration: 3000,
+        className: "bg-red-500 text-white",
+      })
+      
     } finally {
       setIsSubmitting(false);
     }

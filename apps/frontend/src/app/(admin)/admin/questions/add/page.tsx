@@ -17,16 +17,22 @@ const QuestionAdd = () => {
       const question = await addQuestions(questionData);
       if (question.success) {
         toast({
-          title: 'Question Added',
-          description: 'Question has been added successfully',
-        });
+          title: "Question added successfully",
+          variant: "default",
+          duration: 3000,
+          className: "bg-gray-100 text-gray-800",
+        })
+        
         route.push('/admin/questions');
       }
       else {
         toast({
-          title: 'Failed',
-          description: 'Failed to add question',
-        });
+          title: "Failed to add question",
+          variant: "default",
+          duration: 3000,
+          className: "bg-red-500 text-white",
+        })
+        
       }
 
     } catch (error) {

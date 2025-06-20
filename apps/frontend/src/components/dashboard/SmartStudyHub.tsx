@@ -48,10 +48,10 @@ const RevisionSubtopicsCard = ({ subtopics = [] }) => (
         ) : (
           <div className="flex flex-col items-center justify-center text-center py-3 w-full">
             <h2 className="text-sm font-medium text-gray-700">
-              No subtopics to revise today.
+              No subtopics to study today.
             </h2>
             <p className="mt-2 text-xs text-gray-500">
-              No practice session found, so no revision topics available.
+              No practice session found, so no study topics available.
             </p>
           </div>
         )}

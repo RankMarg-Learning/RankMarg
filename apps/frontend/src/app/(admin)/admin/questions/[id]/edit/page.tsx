@@ -31,23 +31,29 @@ const EditQuestion = ({ params }: { params: { id: string } }) => {
            const res =  await updateQuestion(id, questionData);
             if(!res.success){
                 toast({
-                    type: "foreground",
-                    description: res.message,
-                });
+                    title: res.message,
+                    variant: "default",
+                    duration: 3000,
+                    className: "bg-red-500 text-white",
+                  })
                 return;
             }
             toast({
-                type: "foreground",
-                description: "Question updated successfully",
-            });
+                title: "Question updated successfully",
+                variant: "default",
+                duration: 3000,
+                className: "bg-gray-100 text-gray-800",
+              })
 
             router.push("/admin/questions");
 
         } catch (error) {
             toast({
-                type: "foreground",
-                description: "Failed to update question",
-            });
+                title: "Failed to update question",
+                variant: "default",
+                duration: 3000,
+                className: "bg-red-500 text-white",
+              })
 
         }
         finally {
