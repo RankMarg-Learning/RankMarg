@@ -26,11 +26,11 @@ model User {
   location            String?
   targetYear          Int?
   studyHoursPerDay    Int?
-  questionsPerDay     Int?          @default(10)
+  questionsPerDay     Int?          @default(5)
   onboardingCompleted Boolean?      @default(false)
   isActive            Boolean?      @default(true)
-  attempts            Attempt[]
 
+  attempts          Attempt[]
   testParticipated  TestParticipation[]
   userPerformance   UserPerformance?
   metric            Metric[]
@@ -43,13 +43,13 @@ model User {
   currentStudyTopic CurrentStudyTopic[]
   activity          activity[]
   coinTransaction   CoinTransaction[]
+  UserAchievement   UserAchievement[]
+  UserNotification  UserNotification[]
+  StudySuggestion   StudySuggestion[]
 
-  updatedAt        DateTime?          @updatedAt
-  createdAt        DateTime           @default(now())
-  Subscription     Subscription?
-  UserAchievement  UserAchievement[]
-  UserNotification UserNotification[]
-  StudySuggestion  StudySuggestion[]
+  updatedAt    DateTime?     @updatedAt
+  createdAt    DateTime      @default(now())
+  Subscription Subscription?
 
   @@index([id])
   @@index([username])
