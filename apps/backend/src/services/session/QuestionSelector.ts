@@ -1,4 +1,4 @@
-import { Subject, QCategory } from "@prisma/client";
+import { Subject, QCategory, GradeEnum } from "@prisma/client";
 import { getDifficultyDistributionByGrade } from "./SessionConfig";
 import {
   SelectectedQuestion,
@@ -9,9 +9,9 @@ import prisma from "../../lib/prisma";
 export class QuestionSelector {
   private config: SessionConfig;
   private userId: string;
-  private grade: string;
+  private grade: GradeEnum;
 
-  constructor(userId: string, grade: string, config: SessionConfig) {
+  constructor(userId: string, grade: GradeEnum, config: SessionConfig) {
     this.userId = userId;
     this.grade = grade;
     this.config = config;
@@ -71,26 +71,13 @@ export class QuestionSelector {
                     {
                       category: {
                         some: {
-                          category: { in: ["APPLICATION", "CALCULATION"] },
+                          category: { in: ["CONCEPTUAL", "APPLICATION"] },
                         },
                       },
                     },
                     { category: { none: {} } },
                   ],
                 },
-              ],
-            },
-            {
-              category: { some: { category: { in: categories } } },
-            },
-            {
-              OR: [
-                {
-                  category: {
-                    some: { category: { in: ["APPLICATION", "CALCULATION"] } },
-                  },
-                },
-                { category: { none: {} } },
               ],
             },
           ],
@@ -135,13 +122,10 @@ export class QuestionSelector {
             id: {
               notIn: Array.from(selectedIds),
             },
-            category: {
-              some: {
-                category: {
-                  in: categories,
-                },
-              },
-            },
+            OR: [
+              { category: { some: { category: { in: categories } } } },
+              { category: { none: {} } },
+            ],
             isPublished: true,
           },
           include: {
@@ -176,7 +160,7 @@ export class QuestionSelector {
           topic: {
             subjectId: subject.id,
           },
-          OR: [{ masteryLevel: { lte: 30 } }, { strengthIndex: { lte: 40 } }],
+          OR: [{ masteryLevel: { lte: 40 } }, { strengthIndex: { lte: 50 } }],
         },
         include: {
           topic: true,
@@ -210,13 +194,22 @@ export class QuestionSelector {
             },
             subjectId: subject.id,
             difficulty: difficulty,
-            category: {
-              some: {
+            OR: [
+              {
                 category: {
-                  in: categories,
+                  some: {
+                    category: {
+                      in: categories,
+                    },
+                  },
                 },
               },
-            },
+              {
+                category: {
+                  none: {},
+                },
+              },
+            ],
             isPublished: true,
           },
           select: {
@@ -249,13 +242,10 @@ export class QuestionSelector {
             id: {
               notIn: Array.from(selectedIds),
             },
-            category: {
-              some: {
-                category: {
-                  in: categories,
-                },
-              },
-            },
+            OR: [
+              { category: { some: { category: { in: categories } } } },
+              { category: { none: {} } },
+            ],
             isPublished: true,
           },
           include: {
@@ -339,13 +329,22 @@ export class QuestionSelector {
             },
             subjectId: subject.id,
             difficulty: difficulty,
-            category: {
-              some: {
+            OR: [
+              {
                 category: {
-                  in: categories,
+                  some: {
+                    category: {
+                      in: categories,
+                    },
+                  },
                 },
               },
-            },
+              {
+                category: {
+                  none: {},
+                },
+              },
+            ],
             isPublished: true,
           },
           select: {
@@ -378,13 +377,10 @@ export class QuestionSelector {
             id: {
               notIn: Array.from(selectedIds),
             },
-            category: {
-              some: {
-                category: {
-                  in: categories,
-                },
-              },
-            },
+            OR: [
+              { category: { some: { category: { in: categories } } } },
+              { category: { none: {} } },
+            ],
             isPublished: true,
           },
           include: {

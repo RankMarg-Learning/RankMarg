@@ -1,5 +1,5 @@
 import prisma from "../../lib/prisma";
-import { Stream } from "@prisma/client";
+import { GradeEnum, Stream } from "@prisma/client";
 import { createDefaultSessionConfig } from "../session/SessionConfig";
 import { PracticeSessionGenerator } from "../session/PracticeSessionGenerator";
 
@@ -50,14 +50,14 @@ export class PracticeService {
     }
 
     const config = createDefaultSessionConfig(
-      user.stream as Stream,
-      user.grade,
-      user.userPerformance?.dailyQuestions || 10
+      (user.stream as Stream) || Stream.NEET,
+      user.userPerformance?.dailyQuestions || 10,
+      (user.grade as GradeEnum) || GradeEnum.C
     );
 
     await this.markSessionAsCompleted(userId);
     const sessionGenerator = new PracticeSessionGenerator(prisma, config);
-    await sessionGenerator.generate(userId, user?.stream as Stream, user.grade);
+    await sessionGenerator.generate(userId, config.stream, config.grade);
   }
   public async markSessionAsCompleted(userId: string) {
     await prisma.practiceSession.updateMany({
