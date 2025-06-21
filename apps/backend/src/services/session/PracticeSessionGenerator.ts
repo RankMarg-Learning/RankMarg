@@ -1,4 +1,10 @@
-import { PrismaClient, Subject, Question, Stream } from "@prisma/client";
+import {
+  PrismaClient,
+  Subject,
+  Question,
+  Stream,
+  GradeEnum,
+} from "@prisma/client";
 import { QuestionSelector } from "./QuestionSelector";
 import prisma from "../../lib/prisma";
 import {
@@ -27,7 +33,11 @@ export class PracticeSessionGenerator {
     private readonly config: SessionConfig
   ) {}
 
-  async generate(userId: string, stream: Stream, grade: string): Promise<void> {
+  async generate(
+    userId: string,
+    stream: Stream,
+    grade: GradeEnum
+  ): Promise<void> {
     try {
       this.questionSelector = new QuestionSelector(userId, grade, this.config);
       this.userId = userId;

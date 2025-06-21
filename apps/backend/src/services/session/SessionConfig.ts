@@ -1,10 +1,10 @@
 import { SessionConfig } from "../../type/session.api.types";
-import { QCategory, Stream } from "@prisma/client";
+import { GradeEnum, QCategory, Stream } from "@prisma/client";
 
 export function createDefaultSessionConfig(
   stream: Stream,
-  grade: string,
-  totalQuestions: number
+  totalQuestions: number,
+  grade: GradeEnum
 ): SessionConfig {
   const config: SessionConfig = {
     distribution: {
@@ -13,6 +13,7 @@ export function createDefaultSessionConfig(
       revisionTopics: 0.3,
     },
     stream: stream,
+    grade: grade,
     totalQuestions: totalQuestions,
     questionCategoriesDistribution: getQuestionCategoriesByGrade(grade),
     difficultyDistribution: getDifficultyDistributionByGrade(
@@ -25,7 +26,7 @@ export function createDefaultSessionConfig(
 }
 
 export function getQuestionCategoriesByGrade(
-  grade: string
+  grade: GradeEnum
 ): Record<string, QCategory[]> {
   const categories: Record<string, QCategory[]> = {
     D: [
@@ -67,15 +68,15 @@ export function getQuestionCategoriesByGrade(
 }
 
 export function getDifficultyDistributionByGrade(
-  grade: string,
+  grade: GradeEnum,
   totalQuestions: number
 ): { difficulty: number[] } {
-  const percentMap: Record<string, number[]> = {
+  const percentMap: Record<GradeEnum, number[]> = {
     D: [0.4, 0.35, 0.2, 0.05],
     C: [0.35, 0.35, 0.2, 0.1],
-    B: [0.25, 0.35, 0.25, 0.15],
+    B: [0.25, 0.4, 0.25, 0.1],
     A: [0.2, 0.3, 0.3, 0.2],
-    "A+": [0.15, 0.25, 0.3, 0.3],
+    A_PLUS: [0.15, 0.25, 0.3, 0.3],
   };
 
   const percentages = percentMap[grade] || percentMap["C"];

@@ -22,6 +22,7 @@ import { toast } from '@/hooks/use-toast';
 import axios from 'axios';
 import { Card } from '../ui/card';
 import { CurrentStudies } from '@/types/dashboard.types';
+import { useSession } from 'next-auth/react';
 
 export default function CurrentTopicCard({ currentStudies }: { currentStudies: CurrentStudies[] }) {
 
@@ -30,6 +31,7 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("");
   const queryClient = useQueryClient();
+  const {data:session,status} = useSession();
 
   const updateCurrentTopicMutation = useMutation({
     mutationFn: async ({ subjectId, topicId }: { subjectId: string; topicId: string }) => {
@@ -99,7 +101,8 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
     });
   };
 
-  const { subjects, isLoading: isLoadingSubjects } = useSubjects("JEE");
+  const { subjects, isLoading: isLoadingSubjects } = useSubjects(session?.user?.stream || "NEET");
+  
   const { topics: filteredTopics, isLoading: isLoadingTopics } = useTopics(selectedSubject);
   
   return (
@@ -163,9 +166,9 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
                 value={selectedSubject}
                 onValueChange={(value) => {
                   setSelectedSubject(value);
-                  setSelectedTopic(""); // Reset topic when subject changes
+                  setSelectedTopic(""); 
                 }}
-                disabled={isLoadingSubjects}
+                disabled={status !== "authenticated" || isLoadingSubjects}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a subject" />
