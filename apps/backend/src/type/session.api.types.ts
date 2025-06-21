@@ -1,4 +1,4 @@
-import { QCategory, Stream } from "@prisma/client";
+import { GradeEnum, QCategory, Stream } from "@prisma/client";
 
 export interface SessionConfig {
   distribution: {
@@ -8,6 +8,7 @@ export interface SessionConfig {
   };
   stream: Stream;
   totalQuestions: number;
+  grade: GradeEnum;
   questionCategoriesDistribution: Record<string, QCategory[]>;
 
   difficultyDistribution: {
