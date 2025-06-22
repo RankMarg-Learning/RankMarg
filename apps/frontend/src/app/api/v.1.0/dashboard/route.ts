@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import { z } from 'zod';
-import { startOfDay, endOfDay } from 'date-fns';
 import { jsonResponse } from '@/utils/api-response';
 import { AttemptsDashaboadProps, PerformanceDashboardProps } from '@/types/dashboard.types';
 import prisma from '@/lib/prisma';
 import { getAuthSession } from '@/utils/session';
+import { getDayWindow } from '@/lib/dayRange';
 
 const QuerySchema = z.object({
     subtopicsCount: z.coerce.number().int().positive().default(3),
@@ -50,8 +50,7 @@ export async function GET(request: Request) {
             })
         }
 
-        const todayStart = startOfDay(new Date());
-        const todayEnd = endOfDay(new Date());
+        const { from: todayStart, to: todayEnd } = getDayWindow()
 
         const attempts: AttemptsDashaboadProps[] = await prisma.attempt.findMany({
             where: {
@@ -147,8 +146,7 @@ async function getTopUsedSubtopicsToday(userId: string, count: number): Promise<
             return [];
         }
 
-        const todayStart = startOfDay(new Date());
-        const todayEnd = endOfDay(new Date());
+        const { from: todayStart, to: todayEnd } = getDayWindow();
 
         const groupedSubtopics = await prisma.practiceSessionQuestions.groupBy({
             by: ['questionId'],
