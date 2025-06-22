@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PracticeSession } from "@/types/dashboard.types";
 import { SubjectIcons, SubjectTextColor } from "@/constant/SubjectColorCode";
 import Link from "next/link";
+import { DateFormator } from "@/utils/dateFormator";
 
 
 
@@ -20,7 +21,7 @@ export default function RecentPracticeResults({ results ,allResults=false}: { re
     <Card className="w-full p-4 border-0">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Recent Practice Results</h2>
-        { !allResults && (<Link href={`ai-practice/recentResults`} className="text-primary-600 text-sm font-semibold hover:underline">View All</Link>)}
+        { !allResults && (<Link href={`/ai-practice/recentResults`} className="text-primary-600 text-sm font-semibold hover:underline">View All</Link>)}
       </div>
       <CardContent>
         <Table>
@@ -47,10 +48,7 @@ export default function RecentPracticeResults({ results ,allResults=false}: { re
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>{new Date(result.date).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}</TableCell>
+                <TableCell>{DateFormator(result?.date,"date")}</TableCell>
                 <TableCell>{result.score}</TableCell>
                 <TableCell>
                   <Badge variant={result.accuracy >= 80 ? "Easy" : "Medium"}>

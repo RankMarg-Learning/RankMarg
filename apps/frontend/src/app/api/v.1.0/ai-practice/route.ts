@@ -3,9 +3,9 @@ export const dynamic = "force-dynamic";
 import { jsonResponse } from "@/utils/api-response";
 import prisma from "@/lib/prisma";
 import { getAuthSession } from "@/utils/session";
-import { endOfDay, startOfDay } from "date-fns";
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
+import { getDayWindow } from "@/lib/dayRange";
 
 const getSession = cache(async () => {
     try {
@@ -56,20 +56,7 @@ export async function GET(req: Request) {
 
         const userId = session.user.id;
 
-        let todayStart: Date;
-        let todayEnd: Date;
-        
-        try {
-            todayStart = startOfDay(new Date());
-            todayEnd = endOfDay(new Date());
-        } catch (error) {
-            console.error("Date processing error:", error);
-            return jsonResponse(null, {
-                success: false,
-                message: "Invalid date processing",
-                status: 400
-            });
-        }
+        const {from: todayStart, to: todayEnd} = getDayWindow();
 
         let recentSessions;
         try {
