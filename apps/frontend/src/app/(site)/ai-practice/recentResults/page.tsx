@@ -16,19 +16,25 @@ const SessionPage = () => {
     isFetchingNextPage,
     isLoading,
     isError,
+    error,
   } = useInfiniteQuery({
     queryKey: ['results'],
     queryFn: async ({ pageParam = 1 }) => {
-      const { data } = await api.get(
-        `/v.1.0/session/subject_practice_session?loc=ai_practice&_done_item=true&_type=all&_count=${PAGE_SIZE}&_page=${pageParam}`
-      )
+      try {
+        const { data } = await api.get(
+          `/v.1.0/session/subject_practice_session?loc=ai_practice&_done_item=true&_type=all&_count=${PAGE_SIZE}&_page=${pageParam}`
+        )
 
-      const responseData = data?.data || []
-      
-      return {
-        data: responseData,
-        nextPage: pageParam + 1,
-        hasNextPage: responseData.length === PAGE_SIZE,
+        const responseData = data?.data || []
+        
+        return {
+          data: responseData,
+          nextPage: pageParam + 1,
+          hasNextPage: Array.isArray(responseData) && responseData.length === PAGE_SIZE,
+        }
+      } catch (error) {
+        console.error('Error fetching results:', error)
+        throw error
       }
     },
     initialPageParam: 1,
@@ -55,9 +61,27 @@ const SessionPage = () => {
   )
 
   if (isLoading) return <Loading />
-  if (isError) return <div>Error loading data</div>
+  
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
+        <div className="text-red-500 text-lg font-medium mb-2">
+          Error loading data
+        </div>
+        <div className="text-gray-600 text-sm text-center">
+          {error?.message || 'Something went wrong while loading your practice results.'}
+        </div>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+    )
+  }
 
-  const allResults = data?.pages?.flatMap((page) => page.data) || []
+  const allResults = data?.pages?.flatMap((page) => page?.data || []) || []
 
   return (
     <>
