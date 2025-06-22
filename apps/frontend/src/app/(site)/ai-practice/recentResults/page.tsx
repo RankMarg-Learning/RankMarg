@@ -21,16 +21,18 @@ const SessionPage = () => {
     queryKey: ['results'],
     queryFn: async ({ pageParam = 1 }) => {
       try {
-        const { data } = await api.get(
+        const response = await api.get(
           `/v.1.0/session/subject_practice_session?loc=ai_practice&_done_item=true&_type=all&_count=${PAGE_SIZE}&_page=${pageParam}`
         )
 
-        const responseData = data?.data || []
-        
+        const responseData = Array.isArray(response?.data?.data)
+          ? response.data.data
+          : []
+
         return {
           data: responseData,
           nextPage: pageParam + 1,
-          hasNextPage: Array.isArray(responseData) && responseData.length === PAGE_SIZE,
+          hasNextPage: responseData.length === PAGE_SIZE,
         }
       } catch (error) {
         console.error('Error fetching results:', error)
@@ -39,7 +41,7 @@ const SessionPage = () => {
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextPage : undefined,
+      lastPage?.hasNextPage ? lastPage.nextPage : undefined,
   })
 
   const observerRef = useRef<IntersectionObserver | null>(null)
@@ -61,7 +63,7 @@ const SessionPage = () => {
   )
 
   if (isLoading) return <Loading />
-  
+
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
