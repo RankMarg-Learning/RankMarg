@@ -34,6 +34,7 @@ import { Button } from "../ui/button";
 import { usePathname } from "next/navigation";
 import {  getQuestionByFilter } from "@/services/question.service";
 import { PYQ_Year } from "@/constant/pyqYear";
+import useSessionStore from "@/store/sessionStore";
 
 interface QuestionsetProps {
   selectedQuestions?: {
@@ -63,22 +64,23 @@ const Questionset: React.FC<QuestionsetProps> = ({
   const pathname = usePathname();
   const isAdminPage = pathname.startsWith("/admin");
 
-  const getInitialStream = ():Stream => {
-    return ((typeof window !== "undefined" && localStorage.getItem("stream"))as Stream || "NEET" ) ;
+  const { stream: sessionStream } = useSessionStore();
+
+  const getInitialStream = (): Stream => {
+    if (IPstream) return IPstream;
+    if (sessionStream) return sessionStream;
+    return (typeof window !== "undefined" && localStorage.getItem("stream") as Stream) || "NEET";
   };
 
-  const [stream, setStream] = useState<Stream>(getInitialStream() as Stream);
-
+  const [stream, setStream] = useState<Stream>(getInitialStream());
 
   useEffect(() => {
     if (IPstream) {
       setStream(IPstream);
+    } else if (sessionStream) {
+      setStream(sessionStream);
     }
-  }, [IPstream]);
-
-
-
-
+  }, [IPstream, sessionStream]);
 
   const handleDifficulty = (value: string[]) => {
     const difficultyMap: Record<string, number | null> = {
@@ -100,11 +102,9 @@ const Questionset: React.FC<QuestionsetProps> = ({
   };
 
   const { data:questions, isLoading, refetch } = useQuery({
-    queryKey: ["questions", currentPage, subject, difficulty, pyqYear, search, isPublished],
+    queryKey: ["questions", currentPage, subject, difficulty, pyqYear, search, isPublished,stream],
     queryFn: async () => getQuestionByFilter({isPublished, page: currentPage, subjectId: subject, difficulty,  pyqYear, search, stream ,type }),
   });
-
-
 
   useEffect(() => {
     refetch();

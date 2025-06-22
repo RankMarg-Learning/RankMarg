@@ -3,6 +3,7 @@ import { jsonResponse } from "@/utils/api-response";
 import { AttemptType, SubmitStatus, Prisma, MetricType } from "@prisma/client";
 import { getAuthSession } from "@/utils/session";
 import { AttemptCreateData, AttemptRequestBody } from "@/types";
+import { getDayWindow } from "@/lib/dayRange";
 
 interface metricToUpdateType {
     userId: string;
@@ -96,14 +97,13 @@ export async function POST(req: Request): Promise<Response> {
 }
 
 async function checkFirstAttemptToday(userId: string): Promise<boolean> {
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    const {from} = getDayWindow()
 
     const todayAttemptCount = await prisma.attempt.count({
         where: {
             userId,
             solvedAt: {
-                gte: startOfDay,
+                gte: from,
             },
         },
     });
