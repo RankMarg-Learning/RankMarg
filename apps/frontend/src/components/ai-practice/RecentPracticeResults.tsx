@@ -21,7 +21,7 @@ export default function RecentPracticeResults({ results ,allResults=false}: { re
     <Card className="w-full p-4 border-0">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Recent Practice Results</h2>
-        { !allResults && (<Link href={`/ai-practice/recent-results`} className="text-primary-600 text-sm font-semibold hover:underline">View All</Link>)}
+        { !allResults && (<a href="/ai-practice/recent-results" className="text-primary-600 text-sm font-semibold hover:underline"> View All</a>)}
       </div>
       <CardContent>
         <Table>
@@ -36,7 +36,7 @@ export default function RecentPracticeResults({ results ,allResults=false}: { re
             </TableRow>
           </TableHeader>
           <TableBody>
-            {results.length>0? results.map((result, index) => (
+            {results?.length>0? results?.map((result, index) => (
 
               <TableRow key={index}>
                 <TableCell>
@@ -49,15 +49,15 @@ export default function RecentPracticeResults({ results ,allResults=false}: { re
                   </div>
                 </TableCell>
                 <TableCell>{DateFormator(result?.date,"date")}</TableCell>
-                <TableCell>{result.score}</TableCell>
+                <TableCell>{result?.score}</TableCell>
                 <TableCell>
-                  <Badge variant={result.accuracy >= 80 ? "Easy" : "Medium"}>
-                    {result.accuracy}%
+                  <Badge variant={result?.accuracy >= 80 ? "Easy" : "Medium"}>
+                    {result?.accuracy}%
                   </Badge>
                 </TableCell>
-                <TableCell>{result.duration}</TableCell>
+                <TableCell>{result?.duration}</TableCell>
                 <TableCell>
-                  <Link href={`/ai-session/${result.id}?review=true&loc=ai_practice_page`} className="text-primary-600 hover:underline">Review</Link>
+                  <Link href={`/ai-session/${result?.id}?review=true&loc=ai_practice_page`} className="text-primary-600 hover:underline">Review</Link>
                 </TableCell>
               </TableRow>
             )):(

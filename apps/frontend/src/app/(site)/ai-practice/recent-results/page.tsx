@@ -87,7 +87,7 @@ const SessionPage = () => {
 
   return (
     <>
-      <RecentPracticeResults results={allResults} allResults />
+      <RecentPracticeResults results={allResults} allResults={true} />
       <div ref={loadMoreRef} className="h-12" />
       {isFetchingNextPage && (
         <div className="flex justify-center my-4">
