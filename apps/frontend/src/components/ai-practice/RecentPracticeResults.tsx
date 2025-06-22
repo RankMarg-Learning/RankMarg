@@ -3,8 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PracticeSession } from "@/types/dashboard.types";
 import { SubjectIcons, SubjectTextColor } from "@/constant/SubjectColorCode";
-import Link from "next/link";
 import { DateFormator } from "@/utils/dateFormator";
+import Link from "next/link";
 
 
 
@@ -21,7 +21,7 @@ export default function RecentPracticeResults({ results ,allResults=false}: { re
     <Card className="w-full p-4 border-0">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Recent Practice Results</h2>
-        { !allResults && (<Link href={`/ai-practice/recentResults`} className="text-primary-600 text-sm font-semibold hover:underline">View All</Link>)}
+        { !allResults && (<Link href={`/ai-practice/recent-results`} className="text-primary-600 text-sm font-semibold hover:underline">View All</Link>)}
       </div>
       <CardContent>
         <Table>
