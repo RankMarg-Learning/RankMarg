@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
 
+import { getDayWindow } from "@/lib/dayRange";
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
 import { getAuthSession } from "@/utils/session";
-import { endOfDay, startOfDay } from "date-fns";
 
 export type SessionType = "all" | "individual" | "today";
 
@@ -73,12 +73,11 @@ export async function GET(req: Request) {
 
         if (type === "today") {
             try {
-                const todayStart = startOfDay(new Date());
-                const todayEnd = endOfDay(new Date());
+                const { from, to } = getDayWindow();
 
                 queryWhere.createdAt = {
-                    gte: todayStart,
-                    lt: todayEnd
+                    gte: from,
+                    lt: to
                 };
             } catch (dateError) {
                 console.error("Error processing date filters:", dateError);

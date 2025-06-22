@@ -1,19 +1,19 @@
+import { getDayWindow } from "@/lib/dayRange";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { endOfDay, startOfDay } from "date-fns";
+import { endOfDay } from "date-fns";
 
 export const resetStreakJob = async () => {
   try {
     logger.info("Running Reset Streak Job");
 
-    const startOfToday = startOfDay(new Date());
-    const endOfToday = endOfDay(new Date());
+    const { from, to } = getDayWindow();
 
     const solvedUserIds = await prisma.attempt.findMany({
       where: {
         solvedAt: {
-          gte: startOfToday,
-          lte: endOfToday,
+          gte: from,
+          lte: to,
         },
       },
       select: {
