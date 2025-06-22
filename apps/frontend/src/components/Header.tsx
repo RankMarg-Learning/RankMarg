@@ -14,6 +14,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from './ui/badge';
 import { signOut, useSession } from 'next-auth/react';
+import { useEffect } from 'react';
+import useSessionStore from '@/store/sessionStore';
+import { Stream } from '@prisma/client';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -21,6 +24,13 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { data: session } = useSession();
+  const { setStream } = useSessionStore();
+
+  useEffect(() => {
+    if (session?.user?.stream) {
+      setStream(session.user.stream as Stream);
+    }
+  }, [session?.user?.stream, setStream]);
 
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-sm bg-white/80 border-b border-card-border">
