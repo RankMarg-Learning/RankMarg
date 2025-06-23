@@ -1,5 +1,6 @@
 import React from 'react'
 import { Button } from '../ui/button'
+import Link from "next/link"
 
 const BottomCTA = () => {
     return (
@@ -20,12 +21,14 @@ const BottomCTA = () => {
                 </p>
 
                 <div className="mb-10">
-                    <Button
-                        className="bg-white text-primary-900 hover:bg-primary-100 font-semibold px-8 py-6 text-base rounded-xl shadow-md transition-all duration-300 hover:scale-105"
-                        id="el-taz3sgbx"
-                    >
-                        Start Free Trial Now
-                    </Button>
+                    <Link href="/sign-up">
+                        <Button
+                            className="bg-white text-primary-900 hover:bg-primary-100 font-semibold px-8 py-6 text-base rounded-xl shadow-md transition-all duration-300 hover:scale-105"
+                            id="el-taz3sgbx"
+                        >
+                            Start Free Trial Now
+                        </Button>
+                    </Link>
                 </div>
 
                 {/* Optional Metrics */}
