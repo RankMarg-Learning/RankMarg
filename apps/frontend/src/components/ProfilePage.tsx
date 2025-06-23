@@ -90,7 +90,7 @@ function ProfilePage({ username }: { username: string }) {
                         <div className="p-5" id="el-6okbp9bd">
                             <div className="flex flex-col items-center" id="el-glupe86c">
                                 <div className="relative w-32 h-32 mb-4" id="el-6gqzb2fs">
-                                    <Image src={userBasicData?.avatar} width={100} height={100} alt="Profile picture" className="w-full h-full object-cover rounded-full border-4 border-white" id="el-vmmcp80t" />
+                                    <Image src={userBasicData?.avatar || "/Profile_image.png"} width={100} height={100} alt="Profile picture" className="w-full h-full object-cover rounded-full border-4 border-white" id="el-vmmcp80t" />
                                 </div>
                                 <h3 className="text-xl font-semibold text-gray-800" id="el-6tdve9az">{userBasicData?.name}</h3>
                                 <p className="text-gray-500 mb-4" id="el-3tvpkwz4">@{userBasicData?.username}</p>
