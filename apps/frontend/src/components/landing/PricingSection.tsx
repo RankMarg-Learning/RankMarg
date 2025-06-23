@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Check } from 'lucide-react'
+import Link from 'next/link'
 
 const plans = [
   {
@@ -56,19 +57,18 @@ const plans = [
 
 const PlanCard = ({ plan }) => {
   return (
-    <Card className={`relative transition-all duration-300 hover:shadow-lg flex flex-col  h-full ${
-      plan.highlight ? 'border-2 border-primary-500 shadow-lg' : ''
-    }`}>
+    <Card className={`relative transition-all duration-300 hover:shadow-lg flex flex-col  h-full ${plan.highlight ? 'border-2 border-primary-500 shadow-lg' : ''
+      }`}>
       {/* Badges */}
       {plan.highlight && (
         <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-primary-100 text-primary-700 hover:bg-primary-100">
           Most Popular
         </Badge>
       )}
-      
+
       {plan.comingSoon && (
-        <Badge 
-          variant="secondary" 
+        <Badge
+          variant="secondary"
           className="absolute -top-2 left-1/2 transform -translate-x-1/2"
         >
           Coming Soon
@@ -77,7 +77,7 @@ const PlanCard = ({ plan }) => {
 
       <CardHeader className="text-center pb-4">
         <h3 className="text-xl font-bold text-gray-900 mb-4">{plan.title}</h3>
-        
+
         {/* Price Section */}
         <div className="flex items-baseline justify-center mb-2">
           <span className="text-3xl font-bold text-gray-900">
@@ -85,7 +85,7 @@ const PlanCard = ({ plan }) => {
           </span>
           <span className="text-gray-500 ml-1 text-sm">{plan.subtitle}</span>
         </div>
-        
+
         {/* Original Price */}
         {plan.originalPrice && (
           <div className="text-sm text-gray-500">
@@ -111,18 +111,19 @@ const PlanCard = ({ plan }) => {
       </CardContent>
 
       <CardFooter className="pt-0 mt-auto">
-        <Button
-          className={`w-full ${
-            plan.highlight 
-              ? 'bg-primary-600 hover:bg-primary-700' 
-              : plan.comingSoon 
-                ? 'bg-gray-300 text-gray-500 hover:bg-gray-300' 
-                : 'bg-primary-100 hover:bg-primary-200 text-gray-700'
-          }`}
-          disabled={plan.comingSoon}
-        >
-          {plan.button}
-        </Button>
+        <Link href={'/sign-up'} className='w-full'>
+          <Button
+            className={`w-full ${plan.highlight
+                ? 'bg-primary-600 hover:bg-primary-700'
+                : plan.comingSoon
+                  ? 'bg-gray-300 text-gray-500 hover:bg-gray-300'
+                  : 'bg-primary-100 hover:bg-primary-200 text-gray-700'
+              }`}
+            disabled={plan.comingSoon}
+          >
+            {plan.button}
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

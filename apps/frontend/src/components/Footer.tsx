@@ -14,7 +14,7 @@ const Footer = () => {
                         <Link href="/" className="flex md:justify-start justify-center ">
                             <Image
                                 src="https://utfs.io/f/DbhgrrAIqRoKWCwFFv4kujRo2cBDzhfSAtQ1p0ZrLwxy9lHG"
-                                alt="Acme Inc"
+                                alt="RankMarg Learning Logo"
                                 width={150}
                                 height={40}
                                 className="object-contain"
@@ -37,7 +37,7 @@ const Footer = () => {
                     <div className="lg:mx-auto text-left">
                         <h4 className="text-lg text-gray-900 font-medium mb-4">Resources</h4>
                         <ul className="text-sm  transition-all duration-500">
-                            <li className="mb-2"><Link href="/" className=" text-gray-600 hover:text-gray-900">Quick Start</Link></li>
+                            <li className="mb-2"><Link href="/get-started" className=" text-gray-600 hover:text-gray-900">Quick Start</Link></li>
                             <li className="mb-2"><Link href="/faqs" className="text-gray-600 hover:text-gray-900">FAQs</Link></li>
                             <li className="mb-2"><Link href="/help-support" className=" text-gray-600 hover:text-gray-900">Help & Support</Link></li>
                             <li><Link href="/refunds" className=" text-gray-600 hover:text-gray-900">Refund Policy</Link></li>
@@ -48,7 +48,7 @@ const Footer = () => {
                         <h4 className="text-lg text-gray-900 font-medium mb-4">Company</h4>
                         <ul className="text-sm  transition-all duration-500">
                             <li className="mb-2"><Link href="/about-us" className="text-gray-600 hover:text-gray-900">About Us</Link></li>
-                            <li className="mb-2"><Link href="/contact-us:;" className=" text-gray-600 hover:text-gray-900">Contact Us</Link></li>
+                            <li className="mb-2"><Link href="/contact-us" className=" text-gray-600 hover:text-gray-900">Contact Us</Link></li>
                             <li className="mb-2"><Link href="/privacy-policy" className=" text-gray-600 hover:text-gray-900">Privacy policy</Link></li>
                             <li><Link href="/terms" className=" text-gray-600 hover:text-gray-900">Terms and conditions</Link></li>
                             
