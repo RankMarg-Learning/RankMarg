@@ -1,12 +1,28 @@
 "use client"
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Sparkles, Target, TrendingUp } from 'lucide-react';
+import { Play, Sparkles, Target, TrendingUp, RotateCcw } from 'lucide-react';
 import AnimatedDashboard from './AnimatedDashboard';
 import Link from 'next/link';
+import { X } from 'lucide-react';
 
 const HeroSection = () => {
-    
+    const [open, setOpen] = useState(false);
+    const videoRef = React.useRef<HTMLVideoElement>(null);
+    const [showReplay, setShowReplay] = useState(false);
+    const handleReplay = () => {
+        if (videoRef.current) {
+            videoRef.current.currentTime = 0;
+            videoRef.current.play();
+            setShowReplay(false);
+        }
+    };
+    const handleEnded = () => {
+        setShowReplay(true);
+    };
+    const handlePlay = () => {
+        setShowReplay(false);
+    };
     return (
 
         <div className="relative max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-3 pb-24">
@@ -17,7 +33,7 @@ const HeroSection = () => {
                     <div className="space-y-4">
                         <div className="inline-flex items-center gap-2 bg-primary-900 text-primary px-4 py-2 rounded-full text-sm font-medium">
                             <Sparkles className="w-4 h-4" />
-                            India’s Best Practice Platform
+                            India's Best Practice Platform
                         </div>
 
                         <h1 className="font-Manrope text-3xl md:text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight text-gray-700" id="el-211pmw0l">
@@ -54,7 +70,7 @@ const HeroSection = () => {
 
                     {/* CTA Buttons */}
                     <div className="flex flex-col sm:flex-row gap-4">
-                    <Link href={'/questionset'} >
+                    <Link href={'/dashboard'} >
                                 <Button 
                                 size='lg'
                                 className="w-full  border-2 border-primary  px-10  py-6 rounded-xl transition-all duration-300 ">
@@ -66,11 +82,49 @@ const HeroSection = () => {
                             variant="outline"
                             size="lg"
                             className="border-2 border-primary text-primary hover:bg-primary hover:text-gray-800 px-10  py-6 rounded-xl transition-all duration-300"
+                            onClick={() => setOpen(true)}
                         >
                             <Play className={`w-5 h-5 mr-2 transition-transform duration-300 scale-110`} />
                             Watch Demo
-                            
                         </Button>
+                        {open && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                                <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl md:max-w-3xl p-0 overflow-hidden">
+                                    <button
+                                        className="absolute top-4 right-4 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow-md transition-all"
+                                        aria-label="Close"
+                                        onClick={() => setOpen(false)}
+                                    >
+                                        <X className="w-6 h-6 text-gray-700 hover:text-primary transition" />
+                                    </button>
+                                    <div className="relative w-full rounded-2xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
+                                        <video
+                                            ref={videoRef}
+                                            src="/demo.webm"
+                                            controls
+                                            className="absolute top-0 left-0 w-full h-full object-cover bg-black"
+                                            poster="/hero_pic1.jpg"
+                                            onEnded={handleEnded}
+                                            onPlay={handlePlay}
+                                        >
+                                            Sorry, your browser doesn't support embedded videos. 
+                                            <a href="/demo.webm" className="text-primary underline">Download the demo video</a> instead.
+                                        </video>
+                                        {showReplay && (
+                                            <div className="absolute inset-0 flex items-center justify-center z-20">
+                                                <button
+                                                    onClick={handleReplay}
+                                                    className="bg-black/60 rounded-full p-4 hover:bg-black/80 transition flex items-center justify-center"
+                                                    aria-label="Replay"
+                                                >
+                                                    <RotateCcw className="w-16 h-16 text-white drop-shadow-lg" />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Social Proof */}
