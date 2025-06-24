@@ -2,10 +2,44 @@ import { Goal, Hourglass, ListChecks } from 'lucide-react'
 import React from 'react'
 import { Progress } from '../ui/progress'
 import { SubjectBackgroundColor } from '@/constant/SubjectColorCode';
-import { PracticeSummaryProps } from '@/types/aiPractice.type';
+import { PracticeSummaryProps, StudySuggestionProps } from '@/types/aiPractice.type';
+import { useToast } from '@/hooks/use-toast';
 
+const suggestionTypeStyles: Record<string, { card: string; button: string; buttonHover: string; text: string }> = {
+  MOTIVATION: {
+    card: 'bg-green-50 border-green-200',
+    button: 'bg-green-600 text-white',
+    buttonHover: 'hover:bg-green-700',
+    text: 'text-green-800'
+  },
+  CELEBRATION: {
+    card: 'bg-yellow-50 border-yellow-200',
+    button: 'bg-yellow-500 text-white',
+    buttonHover: 'hover:bg-yellow-600',
+    text: 'text-yellow-800'
+  },
+  REMINDER: {
+    card: 'bg-blue-50 border-blue-200',
+    button: 'bg-blue-600 text-white',
+    buttonHover: 'hover:bg-blue-800',
+    text: 'text-blue-800'
+  },
+  WARNING: {
+    card: 'bg-red-50 border-red-200',
+    button: 'bg-red-600 text-white',
+    buttonHover: 'hover:bg-red-800',
+    text: 'text-red-800'
+  },
+  GUIDANCE: {
+    card: 'bg-purple-50 border-purple-200',
+    button: 'bg-purple-600 text-white',
+    buttonHover: 'hover:bg-purple-800',
+    text: 'text-purple-800'
+  },
+};
 
-const PracticeSummary = ({ overview }: { overview: PracticeSummaryProps }) => {
+const PracticeSummary = ({ overview ,suggestions}: { overview: PracticeSummaryProps, suggestions:StudySuggestionProps[]}) => {
+  const { toast } = useToast();
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8" id="el-bbfwi7xn">
@@ -68,7 +102,7 @@ const PracticeSummary = ({ overview }: { overview: PracticeSummaryProps }) => {
                       No subject-wise breakdown available
                     </h2>
                     <p className="mt-2 text-xs text-gray-600 max-w-xs">
-                      Today’s practice session hasn’t been generated yet. Check back soon!
+                      Today's practice session hasn't been generated yet. Check back soon!
                     </p>
 
                   </div>
@@ -79,35 +113,45 @@ const PracticeSummary = ({ overview }: { overview: PracticeSummaryProps }) => {
         </div>
       </div>
 
-      <div className="relative">
-        {/* Blurred overlay */}
-        <div className="absolute inset-0 backdrop-blur-sm bg-white/20 z-10 flex flex-col items-center justify-center rounded-xl border border-gray-200/30 shadow-sm p-6">
-          <h3 className="text-lg font-bold text-gray-700 mb-2">Coming Soon</h3>
-          <p className="text-sm text-gray-600">Smart AI suggestions are on the way!</p>
-        </div>
-
-        {/* Underlying blurred content (visibly blurred behind overlay) */}
-        <div className="bg-white rounded-xl border border-gray-200/30 shadow-sm p-6 opacity-30 pointer-events-none select-none">
+      <div >
+        
+        <div className="bg-white rounded-xl border border-gray-200/30 shadow-sm p-6  ">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-800">AI Smart Suggestions</h3>
             <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Personalized</span>
           </div>
 
           <div className="space-y-4 text-sm">
-            <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-              <p className="text-gray-800"><strong>Thermodynamics Tip:</strong> You struggled with Thermodynamics today. Revise these 5 key formulas!</p>
-              <button className="mt-2 text-sm text-amber-600 hover:text-amber-800 font-medium">View Formulas →</button>
-            </div>
-
-            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-              <p className="text-gray-800"><strong>Mechanics Improvement:</strong> You're improving in Mechanics! Want to challenge yourself with tougher questions?</p>
-              <button className="mt-2 text-sm text-green-600 hover:text-green-800 font-medium">Start Hard Level →</button>
-            </div>
-
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-gray-800"><strong>Study Tip:</strong> You're solving questions too fast—try reading carefully to avoid silly mistakes.</p>
-              <button className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium">View Detailed Analysis →</button>
-            </div>
+            {suggestions?.length > 0 ? suggestions?.map((suggestion, index) => {
+              const style = suggestionTypeStyles[suggestion?.type] || {
+                card: 'bg-gray-50 border-gray-200',
+                button: 'bg-gray-400 text-white',
+                buttonHover: '',
+                text: 'text-gray-800'
+              };
+              return (
+                <div
+                  key={index}
+                  className={`p-4 rounded-lg border ${style.card}`}
+                >
+                  <p className={`${style.text}`}>{suggestion?.suggestion}</p>
+                  {suggestion?.actionName && suggestion?.actionUrl && (
+                    <button
+                      type="button"
+                      className={`mt-2 inline-block text-sm font-medium rounded ${style.text} cursor-pointer transition-transform duration-200 hover:translate-x-1`}
+                      onClick={() => toast({
+                        title: "This feature will be available soon!!",
+                        variant: "default",
+                        duration: 3000,
+                        className: "bg-gray-100 text-gray-800",
+                      })}
+                    >
+                      {suggestion?.actionName} →
+                    </button>
+                  )}
+                </div>
+              );
+            }) : <p className="text-gray-500">No suggestions available for today.</p>}
           </div>
         </div>
       </div>
