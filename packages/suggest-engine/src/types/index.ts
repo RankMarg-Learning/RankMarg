@@ -20,7 +20,7 @@ export interface SuggestionContext {
 }
 
 export interface SuggestionHandler {
-  generate(context: SuggestionContext): Promise<GeneratedSuggestion[]>;
+  generate(userId: string): Promise<void>;
 }
 
 export interface GeneratedSuggestion {
