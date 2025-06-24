@@ -11,14 +11,14 @@ import { toast } from '@/hooks/use-toast'
 
 const PracticeDashboard = () => {
     const [visible, setVisible] = useState(true);
-    const { overview, results, sessions, isLoading, isError } = useAiPractice()
+    const { overview, results, sessions,suggestions, isLoading, isError } = useAiPractice()
     if (isLoading) return <PracticeDashboardSkeleton />
     if (isError) return <div>Error loading data</div>
 
     const handleClick = () => {
         setVisible(false);
         toast({
-            title: "Thanks for your feedback! We’re working on that.",
+            title: "Thanks for your feedback! We're working on that.",
             variant: "default",
             duration: 3000,
             className: "bg-gray-100 text-gray-800",
@@ -57,7 +57,7 @@ const PracticeDashboard = () => {
         </button>
       )}
                 </div>
-                <PracticeSummary overview={overview?.data} />
+                <PracticeSummary overview={overview?.data} suggestions={suggestions?.data} />
                 <PracticePageBanner />
                 <RecentPracticeResults results={results?.data} />
                 <PracticeTestimonials />

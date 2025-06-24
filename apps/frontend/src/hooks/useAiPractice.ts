@@ -24,15 +24,20 @@ export function useAiPractice() {
                 queryKey: ['sessions'],
                 queryFn: fetchTests(`${version}/session/subject_practice_session?loc=ai_practice&_count=3&_type=today&_subtopic_limit=3`),
             },
+            {
+                queryKey:['suggestions'],
+                queryFn: fetchTests(`/suggestion?status=ACTIVE&triggerType=DAILY_ANALYSIS&limit=3&duration=2&sort=desc`),
+            }
         ],
     })
 
-    const [overview, results, sessions] = queries
+    const [overview, results, sessions,suggestions] = queries
 
     return {
         overview: overview.data,
         results: results.data,
         sessions: sessions.data,
+        suggestions: suggestions.data,
         isLoading: queries.some(q => q.isLoading),
         isError: queries.some(q => q.isError),
     }
