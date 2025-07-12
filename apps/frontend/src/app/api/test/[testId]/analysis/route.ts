@@ -29,9 +29,9 @@ export async function GET(req:Request,{ params }: { params: { testId: string } }
             include:{
                 test:{
                     include:{
-                        testSections:{
+                        testSection:{
                             include:{
-                                testQuestions:{
+                                testQuestion:{
                                     include:{
                                         question:{
                                             select:{
@@ -48,7 +48,7 @@ export async function GET(req:Request,{ params }: { params: { testId: string } }
                         }
                     }
                 },
-                attempts:{
+                attempt:{
                     include:{
                         question:{
                             select:{
