@@ -41,7 +41,7 @@ export async function POST(req:Request){
             return jsonResponse(null, { message: "Failed to create order", success: false, status: 500 });
         }
 
-        const subscription = await prisma.subscription.findUnique({
+        const subscription = await prisma.subscription.findFirst({
             where:{
                 userId: userId,
             },
@@ -50,18 +50,20 @@ export async function POST(req:Request){
 
             }
         })
-
+        if (!subscription) {
+            return jsonResponse(null, { message: "Subscription not found", success: false, status: 404 });
+        }
          await prisma.payment.create({
             data: {
-                userId: userId,
-                subscriptionId: subscription?.id || null,
-                amount: amount,
+                amount,
                 currency: "INR",
                 status: "PENDING",
                 provider: "PLATFORM",
-                orderId:order.id
-            }}
-        )
+                orderId: order.id,
+                user: { connect: { id: userId } },
+                subscription: subscription?.id ? { connect: { id: subscription.id } } : undefined,
+            }
+        })
     
         return jsonResponse({
             userId: userId,
