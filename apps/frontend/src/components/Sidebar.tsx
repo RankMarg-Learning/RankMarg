@@ -9,7 +9,8 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUpNarrowWide,
-  UserPen
+  UserPen,
+  ExternalLink
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -24,11 +25,10 @@ interface NavItem {
 }
 
 interface SidebarProps {
-  mobileMenuOpen?: boolean;
   className?: string;
 }
 
-export function Sidebar({ className, mobileMenuOpen }: SidebarProps) {
+export function Sidebar({ className }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = usePathname();
   const { data: session } = useSession();
@@ -95,6 +95,27 @@ export function Sidebar({ className, mobileMenuOpen }: SidebarProps) {
           ))}
         </ul>
       </nav>
+
+      {/* Upgrade Card at the bottom */}
+      {session?.user && session.user.plan?.status !== 'ACTIVE' && !collapsed && (
+        <div className="absolute bottom-4 left-0 w-full flex justify-center px-1">
+          <div className="bg-primary-50 border border-primary-200 rounded-xl shadow-sm p-4 flex flex-col items-center w-full max-w-[220px]">
+            <div className="flex flex-col items-center mb-2">
+            
+              <div className="text-center">
+                <div className="font-semibold text-base text-primary-900">Get Unlimited Access<br/>with <span className="font-bold">RANK Plan</span></div>
+                <div className="w-16 h-1 border-b-2 border-primary-400 mx-auto mt-1 mb-2 rounded-full" />
+              </div>
+            </div>
+            <Link href={`/pricing?ref=side_upgrade&id=${session?.user?.id}&current_plan=${session?.user?.plan?.status}`} target='_blank' className="w-full">
+              <Button className="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold text-sm rounded-md mt-1" size="sm">
+                View Benefits
+                <ExternalLink/>
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
