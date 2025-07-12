@@ -10,18 +10,16 @@ const PaymentStatusPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const plan = searchParams.get('planName');
-  const expiry = searchParams.get('expiry');
-  const status = searchParams.get('status');
+  const plan = searchParams?.get('planName') || '';
+  const expiry = searchParams?.get('expiry') || '';
+  const status = searchParams?.get('status') || '';
 
-  // Redirect if status is missing or invalid
   useEffect(() => {
     if (!status || (status !== 'success' && status !== 'failed')) {
       router.replace('/pricing');
     }
   }, [status, router]);
 
-  // Countdown timer for success
   useEffect(() => {
     if (status === 'success' && countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -132,3 +130,5 @@ const PaymentStatusPage = () => {
 };
 
 export default PaymentStatusPage;
+
+export const dynamic = 'force-dynamic';
