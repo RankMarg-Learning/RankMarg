@@ -23,6 +23,9 @@ import axios from 'axios';
 import { Card } from '../ui/card';
 import { CurrentStudies } from '@/types/dashboard.types';
 import { useSession } from 'next-auth/react';
+import { Info } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function CurrentTopicCard({ currentStudies }: { currentStudies: CurrentStudies[] }) {
 
@@ -31,7 +34,9 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("");
   const queryClient = useQueryClient();
-  const {data:session,status} = useSession();
+  const { data: session, status } = useSession();
+  const [infoOpen, setInfoOpen] = useState(false);
+  const router = useRouter();
 
   const updateCurrentTopicMutation = useMutation({
     mutationFn: async ({ subjectId, topicId }: { subjectId: string; topicId: string }) => {
@@ -49,12 +54,12 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
           queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
         ]);
         toast({
-          title: data.message || "Current topic updated successfully!!",
+          title: "Your current topic is updated!",
+          description: "Changes will reflect from tomorrow's practice session.",
           variant: "default",
-          duration: 3000,
+          duration: 3500,
           className: "bg-gray-100 text-gray-800",
         })
-        
         setSelectedSubject("");
         setSelectedTopic("");
         setOpen(false);
@@ -65,7 +70,7 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
           duration: 3000,
           className: "bg-red-500 text-white",
         })
-        
+
       }
     },
     onError: (error) => {
@@ -75,7 +80,7 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
         duration: 3000,
         className: "bg-red-500 text-white",
       })
-      
+
     },
     onSettled: () => {
       setIsSubmitting(false);
@@ -90,7 +95,7 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
         duration: 3000,
         className: "bg-red-500 text-white",
       })
-      
+
       return;
     }
 
@@ -102,9 +107,9 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
   };
 
   const { subjects, isLoading: isLoadingSubjects } = useSubjects(session?.user?.stream || "NEET");
-  
+
   const { topics: filteredTopics, isLoading: isLoadingTopics } = useTopics(selectedSubject);
-  
+
   return (
     <>
       <Card className="border border-green-100 bg-white">
@@ -115,6 +120,24 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
                 <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
               </svg>
               Current Topics
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Info
+                        className="h-4 w-4 ml-1 text-green-600 hover:text-green-800 transition-colors cursor-pointer align-middle"
+                        onClick={() => setInfoOpen(true)}
+                        aria-label="What is this?"
+                        tabIndex={0}
+                        role="button"
+                      />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className='bg-primary-100 text-primary-900'>
+                    What is this?
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </h3>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -166,7 +189,7 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
                 value={selectedSubject}
                 onValueChange={(value) => {
                   setSelectedSubject(value);
-                  setSelectedTopic(""); 
+                  setSelectedTopic("");
                 }}
                 disabled={status !== "authenticated" || isLoadingSubjects}
               >
@@ -204,8 +227,8 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
             </div>
           </div>
           <DialogFooter className='gap-2'>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setOpen(false);
                 setSelectedSubject("");
@@ -230,6 +253,41 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>About Current Topics</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2 text-sm text-gray-700">
+            <p>
+              <b>Update your current topic</b> to match what you're learning in your coaching or school. This helps you and your mentor keep track of your progress.
+            </p>
+            <p>
+              <b>What does this mean?</b> When you mark a topic as current, it means you're working on or have completed that chapter. This helps in planning your next steps better.
+            </p>
+            <p>
+              <b>Want to update all your topics?</b> Go here to manage your full list:
+            </p>
+          </div>
+          <DialogFooter className="gap-2 flex flex-col sm:flex-row sm:justify-end">
+            <Button
+              className="w-full sm:w-auto"
+              onClick={() => {
+                setInfoOpen(false);
+                router.push('/my-curriculum');
+              }}
+              variant="default"
+            >
+              Go to My Curriculum
+            </Button>
+            <Button variant="outline" onClick={() => setInfoOpen(false)} className="w-full sm:w-auto">
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </>
   );
 }

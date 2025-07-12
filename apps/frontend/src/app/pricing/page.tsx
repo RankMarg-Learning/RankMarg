@@ -1,9 +1,11 @@
-import PricingPage from '@/components/pricing'
+import SaasPricing from '@/components/PricingPage'
 import React from 'react'
 
 const page = () => {
   return (
-    <PricingPage/>
+    <div>
+        <SaasPricing/>
+    </div>
   )
 }
 
