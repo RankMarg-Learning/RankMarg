@@ -15,7 +15,7 @@ export const useSocket = () => {
       return; 
     }
 
-    const token = session?.user.accessToken;
+    const token = session?.user.id;
 
     if (token) {
       const ws = new WebSocket(`${WS_URL}?token=${token}`);
