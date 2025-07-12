@@ -33,8 +33,9 @@ export function Header({ onMenuClick }: HeaderProps) {
   }, [session?.user?.stream, setStream]);
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-sm bg-white/80 border-b border-card-border">
-      <div className="container flex h-16 items-center justify-between py-4">
+    <>
+      <header className="sticky top-0 z-50 w-full backdrop-blur-sm bg-white/80 border-b border-card-border">
+        <div className="container flex h-16 items-center justify-between py-4">
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -76,6 +77,23 @@ export function Header({ onMenuClick }: HeaderProps) {
             <Bell size={20} />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-accent rounded-full"></span>
           </Button>
+          {
+            session?.user?.plan?.status !== "ACTIVE" && (
+              <Link href={`/pricing?ref=header_upgrade&id=${session?.user?.id}&current_plan=${session?.user?.plan?.status}`} className="md:hidden flex items-center">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="relative bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border-amber-300 hover:from-amber-100 hover:to-yellow-100 hover:border-amber-400 hover:shadow-md transition-all duration-300 transform hover:scale-105 font-semibold"
+                >
+                  <span className="relative z-10 flex items-center gap-1">
+                    <Crown size={12} className="text-amber-600" />
+                    Upgrade
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-200/20 to-yellow-200/20 rounded-md animate-pulse"></div>
+                </Button>
+              </Link>
+            )
+          }
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -129,5 +147,6 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
       </div>
     </header>
+    </>
   );
 }

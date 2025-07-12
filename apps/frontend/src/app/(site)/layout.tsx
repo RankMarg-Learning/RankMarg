@@ -39,7 +39,6 @@ const Layout = ({
         
         {/* Sidebar - responsive visibility */}
         <Sidebar
-          mobileMenuOpen={mobileMenuOpen}
           className={cn(
             // Desktop: always visible, positioned normally
             "hidden lg:block",
