@@ -1,47 +1,64 @@
 "use client"
 import React, { useState } from 'react';
-import { Check, Sparkles, X, BookOpen, Trophy, Target, Zap, Users } from 'lucide-react';
+import {
+  Target,
+  Brain,
+  FileText,
+  BarChart2,
+  LayoutDashboard,
+  CircleX,
+  Check,
+  X,
+  Sparkles
+} from "lucide-react";
 import PricingDialog from './PricingDialog';
 
 const SaasPricing = () => {
   const [showDialog, setShowDialog] = useState(false);
 
-  const features = [
+   const features = [
     {
-      name: "GS Learning Modules",
-      desc: "Structured & in-depth GS modules along with strength tracking",
-      free: false,
+      name: "Dashboard",
+      desc: "View your performance, daily tasks, and system suggestions at a glance.",
+      free: true,
       rank: true,
-      icon: <BookOpen className="w-4 h-4" />
+      icon: <LayoutDashboard className="w-4 h-4" />
     },
     {
-      name: "Practice MCQ",
-      desc: "Practice MCQs on any subject or topic",
+      name: "Smart Practice",
+      desc: "Get AI-powered daily practice based on your performance, mastery, and topic progress.",
       free: "Limited",
       rank: "Unlimited",
       icon: <Target className="w-4 h-4" />
     },
     {
-      name: "Practice PYQ",
-      desc: "Practice Previous Year Questions from 2011-25",
-      free: true,
-      rank: true,
-      icon: <Trophy className="w-4 h-4" />
+      name: "Mock Tests",
+      desc: "Attempt NEET/JEE full-length tests with detailed analysis, rank, and percentile.",
+      free: "Limited",
+      rank: "Unlimited",
+      icon: <FileText className="w-4 h-4" />
     },
     {
-      name: "Weekly Progress Report",
-      desc: "Track your progress with personalised reports",
+      name: "Mastery Tracking",
+      desc: "Track concept-level mastery using Bayesian algorithms and weekly performance updates.",
       free: false,
       rank: true,
-      icon: <Zap className="w-4 h-4" />
+      icon: <Brain className="w-4 h-4" />
     },
     {
-      name: "Priority WhatsApp Support",
-      desc: "Get priority help for all your queries from the team",
+      name: "Mistakes Tracker",
+      desc: "Automatically record incorrect attempts and revise weak areas with smart feedback.",
       free: false,
       rank: true,
-      icon: <Users className="w-4 h-4" />
+      icon: <CircleX className="w-4 h-4" />
     },
+    {
+      name: "Analytics",
+      desc: "View in-depth reports including topic-wise accuracy, speed, and consistency trends.",
+      free: false,
+      rank: true,
+      icon: <BarChart2 className="w-4 h-4" />
+    }
   ];
 
   const trustIndicators = [
