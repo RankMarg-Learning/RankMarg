@@ -5,9 +5,9 @@ export type TestWithIncludes = Prisma.TestParticipationGetPayload<{
     include: {
         test: {
             include: {
-                testSection: {
+                testSections: {
                     include: {
-                        testQuestion: {
+                        testQuestions: {
                             include: {
                                 question: {
                                     select: {
@@ -24,7 +24,7 @@ export type TestWithIncludes = Prisma.TestParticipationGetPayload<{
                 }
             }
         }
-        attempt: {
+        attempts: {
             include: {
                 question: {
                     select: {
