@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-     await prisma.user.create({
+     const user = await prisma.user.create({
       data: {
         name: fullname,
         username,
@@ -41,6 +41,16 @@ export async function POST(req: Request) {
         updatedAt: new Date(),
       },
     });
+    await prisma.subscription.create({
+      data: {
+        user: { connect: { id: user.id } },
+        status: "TRIAL",
+        provider:"NONE",
+        duration: 30,
+        amount: 0,
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
+      },
+    })
 
     return jsonResponse(null, { success: true, message: "User created successfully", status: 201 });
   } catch (error) {

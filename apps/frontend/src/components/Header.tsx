@@ -90,9 +90,11 @@ export function Header({ onMenuClick }: HeaderProps) {
                         .toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <Badge variant="outline" className="absolute -top-2 -right-2 bg-amber-50 text-amber-700 border-amber-200 p-0.5 gap-0.5 flex md:hidden">
-                    <Crown size={8} className="text-amber-500" />
-                  </Badge>
+                  {session?.user?.plan?.status === "ACTIVE" && (
+                    <Badge variant="outline" className="absolute -top-2 -right-2 bg-amber-50 text-amber-700 border-amber-200 p-0.5 gap-0.5 flex">
+                      <Crown size={8} className="text-amber-500" />
+                    </Badge>
+                  )}
                 </div>
                 <span className="font-medium text-sm hidden md:inline-block">
                   {session?.user?.name}
