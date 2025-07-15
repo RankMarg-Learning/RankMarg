@@ -39,6 +39,7 @@ export async function POST(req: Request) {
       currency: "INR",
       receipt,
       notes: {
+        userId,
         email: userEmail,
         planId,
         duration,
