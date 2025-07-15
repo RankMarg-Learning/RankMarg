@@ -34,6 +34,7 @@ const StreamSelection: React.FC = () => {
                   ? "border-primary ring-1 ring-primary/20 bg-primary/5"
                   : "border-border hover:border-primary/30"
               )}
+              aria-disabled={ streamOption.id === "JEE"}
               onClick={() => handleSelectStream(streamOption.id)}
             >
               <CardContent className="p-4">

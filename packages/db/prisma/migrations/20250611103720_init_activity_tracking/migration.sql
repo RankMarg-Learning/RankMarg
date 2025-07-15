@@ -13,7 +13,7 @@ CREATE TYPE "NotificationStatus" AS ENUM ('UNREAD', 'READ', 'DISMISSED');
 
 -- AlterEnum
 BEGIN;
-CREATE TYPE "PaymentProvider_new" AS ENUM ('RAZORPAY', 'SALES_AGENT', 'NONE');
+CREATE TYPE "PaymentProvider_new" AS ENUM ('PLATFORM', 'SALES_AGENT', 'NONE');
 ALTER TABLE "Subscription" ALTER COLUMN "provider" TYPE "PaymentProvider_new" USING ("provider"::text::"PaymentProvider_new");
 ALTER TYPE "PaymentProvider" RENAME TO "PaymentProvider_old";
 ALTER TYPE "PaymentProvider_new" RENAME TO "PaymentProvider";
