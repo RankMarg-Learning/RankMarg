@@ -11,77 +11,70 @@ export async function POST(req: Request) {
         .digest('hex');
 
     if (signature !== expectedSignature) {
-        return jsonResponse(null, { message: "Invalid signature", status: 400, success: false })
+        return jsonResponse(null, { message: "Invalid signature", status: 400, success: false });
     }
 
-    const event = JSON.parse(rawBody);
+    try {
+        const event = JSON.parse(rawBody);
 
-    switch (event.event) {
-        case 'payment.captured':
-            const payment = event.payload.payment.entity;
-            const orderId = payment.order_id;
+        switch (event.event) {
+            case 'payment.captured':
+                const payment = event.payload.payment.entity;
+                const orderId = payment.order_id;
 
-            if (orderId) {
-                const subscription = await prisma.subscription.findFirst({
-                    where: { providerId: orderId },
-                });
-
-                if (subscription) {
-                    await prisma.subscription.update({
-                        where: { id: subscription.id },
-                        data: { status: 'ACTIVE' },
-                    });
-
-                    await prisma.payment.create({
+                if (orderId) {
+                    await prisma.payment.updateMany({
+                        where: { orderId: orderId },
                         data: {
-                            userId: payment.notes?.userId || subscription.userId,
-                            subscriptionId: subscription.id,
-                            amount: payment.amount / 100,
-                            currency: payment.currency,
                             status: 'COMPLETED',
-                            provider: 'PLATFORM',
                             paymentMethod: payment.method,
-                            orderId: orderId,
                             paidAt: new Date(),
                         },
                     });
+
+                    if(payment.notes?.userId) {
+                        await prisma.subscription.updateMany({
+                            where: { userId: payment.notes.userId },
+                            data: {
+                                status: 'ACTIVE',
+                                planId: payment.notes.planId,
+                            }
+                        });
+                    }
                 }
-            }
-            break;
+                break;
 
-        case 'payment.failed':
-            const failedPayment = event.payload.payment.entity;
-            const failedOrderId = failedPayment.order_id;
+            case 'payment.failed':
+                const failedPayment = event.payload.payment.entity;
+                const failedOrderId = failedPayment.order_id;
 
-            if (failedOrderId) {
-                const subscription = await prisma.subscription.findFirst({
-                    where: { providerId: failedOrderId },
-                });
-
-                if (subscription) {
-                    await prisma.payment.update({
-                        where: { id: subscription.id },
-                        data: { status: 'FAILED' },
-                    });
-
-                    await prisma.payment.create({
+                if (failedOrderId) {
+                    await prisma.payment.updateMany({
+                        where: { orderId: failedOrderId },
                         data: {
-                            userId: failedPayment.notes?.userId || subscription.userId,
-                            subscriptionId: subscription.id,
-                            amount: failedPayment.amount / 100,
-                            currency: failedPayment.currency,
                             status: 'FAILED',
                             paymentMethod: failedPayment.method,
-                            provider: 'PLATFORM',
-                            orderId: failedOrderId,
-                            paidAt: new Date(),
                         },
                     });
-                }
-            }
-            break;
 
-        default:
-            console.log(`Unhandled event: ${event.event}`);
+                    if (failedPayment.notes?.userId) {
+                        await prisma.subscription.updateMany({
+                            where: { userId: failedPayment.notes.userId },
+                            data: {
+                                status: 'CANCELLED'
+                            }
+                        });
+                    }
+                }
+                break;
+
+            default:
+                console.log(`Unhandled event: ${event.event}`);
+        }
+
+        return jsonResponse(null, { message: "Webhook processed successfully", status: 200, success: true });
+    } catch (error) {
+        console.error('Webhook processing error:', error);
+        return jsonResponse(null, { message: "Webhook processing failed", status: 500, success: false });
     }
 }

@@ -101,6 +101,9 @@ const PricingDialog = ({ onClose }) => {
                 modal: {
                   ondismiss: function() {
                     setPaying(false);
+                    setTimeout(() => {
+                      onClose();
+                  }, 2000);
                   }
                 }
               };
