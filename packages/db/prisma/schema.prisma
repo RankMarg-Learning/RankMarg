@@ -346,7 +346,15 @@ model Attempt {
   testParticipation TestParticipation? @relation("TestSubmissionAttempts", fields: [testParticipationId], references: [id])
   practiceSession   PracticeSession?   @relation("RevisionSessionAttempts", references: [id], fields: [practiceSessionId])
 
+  @@index([userId])
   @@index([userId, questionId])
+  @@index([questionId])
+  @@index([testParticipationId])
+  @@index([practiceSessionId])
+  @@index([solvedAt])
+  @@index([status])
+  @@index([mistake])
+  @@index([userId,solvedAt])
 }
 
 model PracticeSession {

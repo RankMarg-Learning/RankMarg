@@ -18,6 +18,8 @@ import { updateReviewJob } from "./jobs/review.update.job";
 import { updateMasteryJob } from "./jobs/mastery.update.job";
 import { createSessionJob } from "./jobs/session.create.job";
 import { createSuggestion } from "./jobs/suggest.create.job";
+import { AttemptService } from "./services/attempt.service";
+import { AgentService } from "./services/agent.service";
 
 dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
@@ -27,11 +29,18 @@ app.use(cors());
 app.use(express.json());
 
 cron.schedule("0 0 * * *", resetStreakJob); //(Daily at Midnight)
-cron.schedule("*/5 * * * *", updatePerformanceJob); // (Every 5 minutes)
+// cron.schedule("*/5 * * * *", updatePerformanceJob); // (Every 5 minutes)
 cron.schedule("0 0 * * 0", updateReviewJob); //(Every Sunday at Midnight)
 cron.schedule("0 0 * * 0", updateMasteryJob); // (Every Sunday at Midnight)
 cron.schedule("0 0 * * *", createSessionJob); // (Daily at Midnight)
 cron.schedule("0 0 * * *", createSuggestion); // (Daily at Midnight)
+
+cron.schedule("* * * * *", () => {
+  const service = new AgentService();
+  service.initAgent().catch((error) => {
+    console.error("Error during agent initialization:", error);
+  });
+}); // (Every 5 minutes)
 
 app.use("/api/create-practice", session);
 app.use("/api/update-mastery", mastery);
