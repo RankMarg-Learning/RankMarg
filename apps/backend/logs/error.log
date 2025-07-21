@@ -457,3 +457,4 @@ E:\Development\RankMarg\RankMarg-Official\apps\backend\dist\services\auto\perfor
 Can't reach database server at `ep-aged-base-a1wt41l2-pooler.ap-southeast-1.aws.neon.tech:5432`
 
 Please make sure your database server is running at `ep-aged-base-a1wt41l2-pooler.ap-southeast-1.aws.neon.tech:5432`.
+2025-07-21 22:12:02 [ERROR]: Error in cron job: Cast to date failed for value "{ gte: 2025-07-17T16:42:02.738Z }" (type Object) at path "createdAt" for model "AIAgentResponse"

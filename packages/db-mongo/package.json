@@ -1,0 +1,12 @@
+{
+    "name": "@repo/db-mongo",
+    "version": "1.0.0",
+    "main": "./index.ts",
+    "types": "./index.ts",
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "mongoose": "^7.6.0"
+    }
+}
