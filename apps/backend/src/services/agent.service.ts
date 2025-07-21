@@ -456,15 +456,15 @@ test: ${performanceSummary.isTestGiven ? "Yes" : "No"}
   }
   private getAnalysisStartDate(): Date {
     const date = new Date();
-    date.setDate(date.getDate() - 4); // 4 days ago
+    date.setDate(date.getDate() - 7); // 7 days ago
     date.setHours(0, 0, 0, 0);
-    return new Date("2025-06-17T00:00:00.000Z");
+    return date;
   }
 
   private getAnalysisEndDate(): Date {
     const date = new Date();
     date.setHours(23, 59, 59, 999);
-    return new Date("2025-06-21T23:59:59.999Z");
+    return date;
   }
 
   private logProgress(current: number, total: number): void {
