@@ -13,7 +13,7 @@ export async function GET(req: Request) {
     const subjectId = searchParams.get("_subjectId");
     const done = searchParams.get("_done_item") === "true";
     const count = searchParams.get("_count") ? parseInt(searchParams.get("_count")!) : undefined;
-    const subtopicLimit = searchParams.get("_subtopic_limit") ? parseInt(searchParams.get("_subtopic_limit")!) : 3;
+    const subtopicLimit = searchParams.get("_subtopic_limit") ? parseInt(searchParams.get("_subtopic_limit")!) : 10;
 
     try {
         // Validate input parameters
@@ -288,7 +288,7 @@ export async function GET(req: Request) {
                     .slice(0, Math.max(1, subtopicLimit)); // Ensure at least 1 subtopic if available
 
                 const avgDifficulty = difficultyCounts > 0
-                    ? Math.round(totalDifficulty / difficultyCounts * 10) / 10
+                    ? Math.round((totalDifficulty / difficultyCounts) * 10) / 10
                     : 0;
 
                 const correctAnswers = session.correctAnswers ?? 0;

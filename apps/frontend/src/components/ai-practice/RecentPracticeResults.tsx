@@ -5,6 +5,7 @@ import { PracticeSession } from "@/types/dashboard.types";
 import { SubjectIcons, SubjectTextColor } from "@/constant/SubjectColorCode";
 import { DateFormator } from "@/utils/dateFormator";
 import Link from "next/link";
+import { timeFormator } from "@/utils/timeFormatter";
 
 
 
@@ -55,7 +56,7 @@ export default function RecentPracticeResults({ results ,allResults=false}: { re
                     {result?.accuracy}%
                   </Badge>
                 </TableCell>
-                <TableCell>{result?.duration}</TableCell>
+                <TableCell>{timeFormator(Number(result?.duration),{from:'sec',to:['min','sec']})}</TableCell>
                 <TableCell>
                   <Link href={`/ai-session/${result?.id}?review=true&loc=ai_practice_page`} className="text-primary-600 hover:underline">Review</Link>
                 </TableCell>
