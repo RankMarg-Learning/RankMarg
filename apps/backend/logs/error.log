@@ -458,3 +458,47 @@ Can't reach database server at `ep-aged-base-a1wt41l2-pooler.ap-southeast-1.aws.
 
 Please make sure your database server is running at `ep-aged-base-a1wt41l2-pooler.ap-southeast-1.aws.neon.tech:5432`.
 2025-07-21 22:12:02 [ERROR]: Error in cron job: Cast to date failed for value "{ gte: 2025-07-17T16:42:02.738Z }" (type Object) at path "createdAt" for model "AIAgentResponse"
+2025-07-24 00:00:05 [ERROR]: Error in Reset Streak Job: 
+Invalid `prisma.attempt.findMany()` invocation in
+E:\Development\RankMarg\RankMarg-Official\apps\backend\src\jobs\resetStreak.job.ts:12:48
+
+   9 
+  10 const { from, to } = getDayWindow();
+  11 
+→ 12 const solvedUserIds = await prisma.attempt.findMany(
+Can't reach database server at `ep-morning-leaf-a1kswy2x.ap-southeast-1.aws.neon.tech:5432`
+
+Please make sure your database server is running at `ep-morning-leaf-a1kswy2x.ap-southeast-1.aws.neon.tech:5432`.
+2025-07-24 00:00:05 [ERROR]: Error in Suggestion Job: 
+Invalid `prisma.user.count()` invocation in
+E:\Development\RankMarg\RankMarg-Official\apps\backend\src\services\auto\suggest.service.ts:11:43
+
+   8 let offset = 0;
+   9 
+  10 while (true) {
+→ 11   const userCount = await prisma.user.count(
+Can't reach database server at `ep-morning-leaf-a1kswy2x.ap-southeast-1.aws.neon.tech:5432`
+
+Please make sure your database server is running at `ep-morning-leaf-a1kswy2x.ap-southeast-1.aws.neon.tech:5432`.
+2025-07-24 00:00:05 [ERROR]: Error in cron job: 
+Invalid `prisma.user.count()` invocation in
+E:\Development\RankMarg\RankMarg-Official\apps\backend\src\services\auto\session.service.ts:13:43
+
+  10 let offset = 0;
+  11 
+  12 while (true) {
+→ 13   const userCount = await prisma.user.count(
+Can't reach database server at `ep-morning-leaf-a1kswy2x.ap-southeast-1.aws.neon.tech:5432`
+
+Please make sure your database server is running at `ep-morning-leaf-a1kswy2x.ap-southeast-1.aws.neon.tech:5432`.
+2025-07-24 00:00:05 [ERROR]: Error in cron job: 
+Invalid `prisma.user.count()` invocation in
+E:\Development\RankMarg\RankMarg-Official\apps\backend\src\services\auto\performance.service.ts:16:43
+
+  13 let offset = 0;
+  14 
+  15 while (true) {
+→ 16   const userCount = await prisma.user.count(
+Can't reach database server at `ep-morning-leaf-a1kswy2x.ap-southeast-1.aws.neon.tech:5432`
+
+Please make sure your database server is running at `ep-morning-leaf-a1kswy2x.ap-southeast-1.aws.neon.tech:5432`.
