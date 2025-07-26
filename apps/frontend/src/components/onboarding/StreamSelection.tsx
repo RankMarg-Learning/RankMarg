@@ -32,16 +32,21 @@ const StreamSelection: React.FC = () => {
                 "border-2 cursor-pointer transition-all duration-200 hover:shadow-md h-full",
                 stream === streamOption.id
                   ? "border-primary ring-1 ring-primary/20 bg-primary/5"
-                  : "border-border hover:border-primary/30"
+                  : "border-border hover:border-primary/30",
+                streamOption.name === 'JEE' && 'opacity-60 cursor-not-allowed pointer-events-none'
               )}
-              aria-disabled={ streamOption.id === "JEE"}
-              onClick={() => handleSelectStream(streamOption.id)}
+              onClick={streamOption.name === 'JEE' ? undefined : () => handleSelectStream(streamOption.id)}
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold">{streamOption.name}</h3>
+                    <h3 className="text-lg font-semibold">
+                      {streamOption.name}
+                      {streamOption.name === 'JEE' && (
+                        <span className="ml-2 text-xs text-muted-foreground font-normal">(Coming Soon)</span>
+                      )}
+                    </h3>
                     <p className="text-muted-foreground text-sm mt-1">{streamOption.description}</p>
                     
                     <div className="flex flex-wrap gap-2 mt-3">

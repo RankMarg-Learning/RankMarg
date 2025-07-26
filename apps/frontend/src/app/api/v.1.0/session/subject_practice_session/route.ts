@@ -288,7 +288,7 @@ export async function GET(req: Request) {
                     .slice(0, Math.max(1, subtopicLimit)); // Ensure at least 1 subtopic if available
 
                 const avgDifficulty = difficultyCounts > 0
-                    ? Math.round((totalDifficulty / difficultyCounts) * 10) / 10
+                    ? Math.round(((totalDifficulty / difficultyCounts) * 10) / 10)
                     : 0;
 
                 const correctAnswers = session.correctAnswers ?? 0;
