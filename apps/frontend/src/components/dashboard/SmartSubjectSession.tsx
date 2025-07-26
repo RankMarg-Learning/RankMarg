@@ -8,6 +8,7 @@ import { Button } from '../ui/button';
 import { SubjectBackgroundColor, SubjectCardColor, SubjectIcons, SubjectTextColor } from '@/constant/SubjectColorCode';
 import { PracticeSession } from '@/types/dashboard.types';
 import { useRouter } from 'next/navigation';
+import { timeFormator } from '@/utils/timeFormatter';
 
 // Extracted to a separate component for better reusability and cleaner code
 const DynamicSubjectIcon = ({ subject }: { subject: string }) => {
@@ -93,7 +94,7 @@ const SubjectPracticeCard = ({
               <div className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 <span className='font-normal text-sm truncate'>
-                  {practice.timeRequired} min
+                  {timeFormator(Number(practice.timeRequired),{from:'sec',to:['min','sec']})}
                 </span>
               </div>
             </div>
