@@ -161,7 +161,7 @@ const MasterySubjectPage = ({ subjectId }) => {
                                         {topic.mastery === 0 ? "00" : topic.mastery < 10 ? `0${Math.round(topic.mastery)}` : Math.round(topic.mastery)}
                                         </div>
                                         <div className="text-left">
-                                            <span className="font-semibold text-gray-800 truncate max-w-[160px] block">{topic.name}</span>
+                                            <span className="font-semibold text-gray-800 block max-w-full sm:max-w-[120px] truncate">{topic.name}</span>
                                             <p className="text-xs text-gray-500 hidden sm:block">{getMasteryMessage(topic.mastery)}</p>
                                         </div>
                                     </div>

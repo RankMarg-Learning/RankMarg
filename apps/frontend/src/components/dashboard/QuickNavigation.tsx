@@ -21,7 +21,7 @@ const navItems = [
     description: "Get personalized help",
     href: "/ai-practice", 
     color: "purple",
-    priority: 2,
+    priority: 8,
     comingSoon: true
   },
   { 
@@ -30,7 +30,7 @@ const navItems = [
     description: "Practice specific topics",
     href: "/practice", 
     color: "amber",
-    priority: 3,
+    priority: 4,
     comingSoon: true
   },
   { 
@@ -48,7 +48,7 @@ const navItems = [
     description: "Track performance",
     href: "/analytics", 
     color: "green",
-    priority: 5,
+    priority: 3,
     comingSoon: false
   },
   { 
@@ -75,7 +75,7 @@ const navItems = [
     description: "Subject proficiency",
     href: "/mastery", 
     color: "amber",
-    priority: 8,
+    priority: 2,
     comingSoon: false
   },
   { 
