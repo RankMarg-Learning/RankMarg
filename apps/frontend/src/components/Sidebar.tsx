@@ -98,7 +98,7 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* Upgrade Card at the bottom */}
       {session?.user && session.user.plan?.status !== 'ACTIVE' && !collapsed && (
-        <div className="absolute bottom-4 left-0 w-full flex justify-center px-1">
+        <div className="absolute bottom-4 left-0 w-full flex sm:hidden justify-center px-1">
           <div className="bg-primary-50 border border-primary-200 rounded-xl shadow-sm p-4 flex flex-col items-center w-full max-w-[220px]">
             <div className="flex flex-col items-center mb-2">
             
