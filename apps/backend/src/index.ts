@@ -27,11 +27,11 @@ app.use(cors());
 app.use(express.json());
 
 cron.schedule("0 0 * * *", resetStreakJob); //(Daily at Midnight)
-cron.schedule("*/5 * * * *", updatePerformanceJob); // (Every 5 minutes)
-cron.schedule("0 0 * * 0", updateReviewJob); //(Every Sunday at Midnight)
-cron.schedule("0 0 * * 0", updateMasteryJob); // (Every Sunday at Midnight)
+cron.schedule("0 0 * * *", updatePerformanceJob); // (Every 5 minutes)
 cron.schedule("0 0 * * *", createSessionJob); // (Daily at Midnight)
 cron.schedule("0 0 * * *", createSuggestion); // (Daily at Midnight)
+cron.schedule("0 0 * * 0", updateReviewJob); //(Every Sunday at Midnight)
+cron.schedule("0 0 * * 0", updateMasteryJob); // (Every Sunday at Midnight)
 
 app.use("/api/create-practice", session);
 app.use("/api/update-mastery", mastery);
