@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Subtopic, Topic } from "@/types/typeAdmin";
 
 interface SubtopicFormProps {
@@ -14,14 +15,20 @@ interface SubtopicFormProps {
 
 const SubtopicForm = ({ initialSubtopic, topics, selectedTopicId, onSave, onCancel }: SubtopicFormProps) => {
   const [name, setName] = useState(initialSubtopic?.name || "");
+  const [slug, setSlug] = useState(initialSubtopic?.slug || "");
   const [topicId, setTopicId] = useState(initialSubtopic?.topicId || selectedTopicId || "");
+  const [orderIndex, setOrderIndex] = useState(initialSubtopic?.orderIndex || 0);
+  const [estimatedMinutes, setEstimatedMinutes] = useState(initialSubtopic?.estimatedMinutes || undefined);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     onSave({
       name,
+      slug: slug || undefined,
       topicId,
+      orderIndex,
+      estimatedMinutes,
     });
   };
 
@@ -29,21 +36,21 @@ const SubtopicForm = ({ initialSubtopic, topics, selectedTopicId, onSave, onCanc
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Label htmlFor="topicId">Topic *</Label>
-        <select
-          id="topicId"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        <SearchableSelect
           value={topicId}
-          onChange={(e) => setTopicId(e.target.value)}
-          required
+          onValueChange={setTopicId}
+          placeholder="-- Select Topic --"
           disabled={!!selectedTopicId}
-        >
-          <option value="">-- Select Topic --</option>
-          {topics.map((topic) => (
-            <option key={topic.id} value={topic.id}>
-              {topic.name}
-            </option>
-          ))}
-        </select>
+          options={[
+            { value: "", label: "-- Select Topic --" },
+            ...topics.map((topic) => ({
+              value: topic.id,
+              label: topic.name,
+            }))
+          ]}
+          searchPlaceholder="Search topics..."
+          emptyMessage="No topics found."
+        />
       </div>
       
       <div>
@@ -53,6 +60,40 @@ const SubtopicForm = ({ initialSubtopic, topics, selectedTopicId, onSave, onCanc
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="slug">Slug</Label>
+        <Input
+          id="slug"
+          value={slug}
+          onChange={(e) => setSlug(e.target.value)}
+          placeholder="e.g., newton-laws, energy-conservation"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="orderIndex">Order Index *</Label>
+        <Input
+          id="orderIndex"
+          type="number"
+          min="0"
+          value={orderIndex}
+          onChange={(e) => setOrderIndex(parseInt(e.target.value))}
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="estimatedMinutes">Estimated Minutes</Label>
+        <Input
+          id="estimatedMinutes"
+          type="number"
+          min="1"
+          value={estimatedMinutes || ""}
+          onChange={(e) => setEstimatedMinutes(e.target.value ? parseInt(e.target.value) : undefined)}
+          placeholder="e.g., 45"
         />
       </div>
       

@@ -1,14 +1,14 @@
 import { logger } from "@/lib/logger";
-import { ReviewScheduleService } from "@/services/auto/reviewSchedule.service";
+import { LearningProgressService } from "@/services/learning/LearningProgressService";
 
 export const updateReviewJob = async () => {
   try {
-    logger.info("Update Review Job Started......");
+    logger.info("Update Learning Progress Job Started......");
 
-    const review = new ReviewScheduleService();
-    await review.processAllUsers();
+    const learning = new LearningProgressService();
+    await learning.processAllUsers();
 
-    logger.info("Review update completed successfully");
+    logger.info("Learning progress update completed successfully");
   } catch (error) {
     logger.error(
       `Error in cron job: ${error instanceof Error ? error.message : "Unknown error"}`

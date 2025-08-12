@@ -1,4 +1,10 @@
-import { AttemptType, SubmitStatus } from "@prisma/client";
+import {
+  AttemptType,
+  SubmitStatus,
+  MistakeType,
+  Stream,
+  GradeEnum,
+} from "@prisma/client";
 
 export interface MasteryAttempt {
   userId: string;
@@ -8,6 +14,7 @@ export interface MasteryAttempt {
   status: SubmitStatus;
   hintsUsed: boolean;
   solvedAt?: Date;
+  mistake?: MistakeType;
 
   question: {
     id: string;
@@ -16,6 +23,106 @@ export interface MasteryAttempt {
     subjectId: string | null;
     topicId: string | null;
     subtopicId: string | null;
+    categories?: string[];
+  };
+}
+
+export interface UserProfileData {
+  id: string;
+  stream: Stream | null;
+  targetYear: number | null;
+  studyHoursPerDay: number | null;
+  questionsPerDay: number | null;
+  grade: GradeEnum;
+  xp: number;
+  coins: number;
+  isActive: boolean;
+}
+
+export interface PerformanceTrend {
+  recentAccuracy: number;
+  accuracyTrend: number; // positive = improving, negative = declining
+  speedTrend: number;
+  consistencyScore: number;
+  improvementRate: number;
+  lastWeekPerformance: number;
+  lastMonthPerformance: number;
+}
+
+export interface EnhancedMasteryData {
+  totalAttempts: number;
+  correctAttempts: number;
+  avgTime: number;
+  totalTime: number;
+  streak: number;
+  lastCorrectDate: Date | null;
+  avgDifficulty: number;
+  recentAccuracy: number;
+  oneDayRepetitions: number;
+  threeDayRepetitions: number;
+
+  // Enhanced metrics
+  mistakeAnalysis: {
+    conceptual: number;
+    calculation: number;
+    reading: number;
+    overconfidence: number;
+    other: number;
+  };
+  difficultyDistribution: {
+    easy: number;
+    medium: number;
+    hard: number;
+  };
+  timeDistribution: {
+    fast: number; // < 50% of ideal time
+    normal: number; // 50-150% of ideal time
+    slow: number; // > 150% of ideal time
+  };
+  spacedRepetitionScore: number;
+  forgettingCurveFactor: number;
+  adaptiveLearningScore: number;
+}
+
+export interface MasteryCalculationContext {
+  userProfile: UserProfileData;
+  performanceTrend: PerformanceTrend;
+  streamConfig: any;
+  timeWindow: number;
+  referenceDate: Date;
+}
+
+export interface HierarchicalMasteryData {
+  subtopic: {
+    id: string;
+    name: string;
+    masteryLevel: number;
+    strengthIndex: number;
+    totalAttempts: number;
+    correctAttempts: number;
+    lastPracticed: Date | null;
+    confidenceLevel: number;
+  };
+  topic: {
+    id: string;
+    name: string;
+    masteryLevel: number;
+    strengthIndex: number;
+    totalAttempts: number;
+    correctAttempts: number;
+    subtopicCount: number;
+    masteredSubtopicCount: number;
+    weightage: number;
+  };
+  subject: {
+    id: string;
+    name: string;
+    masteryLevel: number;
+    totalAttempts: number;
+    correctAttempts: number;
+    topicCount: number;
+    masteredTopicCount: number;
+    overallConfidence: number;
   };
 }
 

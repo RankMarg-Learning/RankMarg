@@ -15,9 +15,9 @@ export const getTopics = async (subjectId?: string) => {
 
 };
 
-export const addTopic = async (name: string, subjectId: string, weightage: number) => {
+export const addTopic = async (name: string, subjectId: string, weightage: number, slug?: string, orderIndex?: number, estimatedMinutes?: number) => {
   try {
-    const response = await api.post('/topics', { name, subjectId, weightage });
+    const response = await api.post('/topics', { name, subjectId, weightage, slug, orderIndex, estimatedMinutes });
     return response.data;
   } catch (error) {
     console.error("Error adding topic:", error);
@@ -30,9 +30,9 @@ export const addTopic = async (name: string, subjectId: string, weightage: numbe
 
 };
 
-export const updateTopic = async (id: string, name: string, subjectId: string, weightage: number) => {
+export const updateTopic = async (id: string, name: string, subjectId: string, weightage: number, slug?: string, orderIndex?: number, estimatedMinutes?: number) => {
   try {
-    const response = await api.put(`/topics/${id}`, { name, subjectId, weightage });
+    const response = await api.put(`/topics/${id}`, { name, subjectId, weightage, slug, orderIndex, estimatedMinutes });
     return response.data;
 
   } catch (error) {

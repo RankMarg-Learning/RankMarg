@@ -8,7 +8,10 @@ export async function GET(req:Request){
 
     try {
         const topics = await prisma.topic.findMany({
-            where: subjectId ? { subjectId } : undefined
+            where: subjectId ? { subjectId } : undefined,
+            orderBy: {
+                orderIndex: "asc"
+            }
         });
 
         return jsonResponse(topics, {
@@ -25,13 +28,16 @@ export async function GET(req:Request){
 
 export async function POST(req:Request){
     const body = await req.json();
-    const { name, subjectId,weightage } = body;
+    const { name, subjectId, weightage, slug, orderIndex, estimatedMinutes } = body;
     try {
         await prisma.topic.create({
             data: {
                 name,
                 subjectId,
-                weightage
+                weightage,
+                slug,
+                orderIndex,
+                estimatedMinutes
             },
         });
         return jsonResponse(null, { success: true, message: "Ok", status: 200 })

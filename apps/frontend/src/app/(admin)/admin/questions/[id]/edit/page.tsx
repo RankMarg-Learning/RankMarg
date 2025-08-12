@@ -64,9 +64,6 @@ const EditQuestion = ({ params }: { params: { id: string } }) => {
 
     return (
         <div>
-            <div className="mb-6">
-                <h2 className="text-2xl font-semibold text-gray-800">Edit Question</h2>
-                <p className="text-gray-500">Update question details</p>
                 {
                     !isLoading ? (
                         <QuestionForm
@@ -79,8 +76,6 @@ const EditQuestion = ({ params }: { params: { id: string } }) => {
                         <Loading />
                     )
                 }
-
-            </div>
         </div>
     )
 }
