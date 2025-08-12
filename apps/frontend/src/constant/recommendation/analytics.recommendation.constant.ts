@@ -44,7 +44,7 @@ export function getMetricCardData(metrics: Metric[]): Record<string, FormattedMe
 
             case "MASTERY_LEVEL":
                 valueStr = `${currentValue}`;
-                deltaStr = hasChanged ? `${((diff / (previousValue === 0 ? 1:previousValue)) * 100).toFixed(1)}%}` : '0%';
+                deltaStr = hasChanged ? `${((diff / (previousValue === 0 ? 1:previousValue)) * 100).toFixed(1)}%` : '0%';
                 suggestion = isImproved
                     ? "Improving steadily across subjects"
                     : "Focus more on concept revision";

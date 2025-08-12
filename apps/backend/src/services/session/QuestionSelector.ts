@@ -1,17 +1,21 @@
-import { Subject, QCategory, GradeEnum } from "@prisma/client";
+import { Subject, QCategory, GradeEnum, PrismaClient } from "@prisma/client";
 import { getDifficultyDistributionByGrade } from "./SessionConfig";
-import {
-  SelectectedQuestion,
-  SessionConfig,
-} from "../../type/session.api.types";
-import prisma from "../../lib/prisma";
+import { SelectedQuestion, SessionConfig } from "../../type/session.api.types";
+import { RedisCacheService } from "./RedisCacheService";
 
 export class QuestionSelector {
   private config: SessionConfig;
   private userId: string;
   private grade: GradeEnum;
+  private prisma: PrismaClient;
 
-  constructor(userId: string, grade: GradeEnum, config: SessionConfig) {
+  constructor(
+    prisma: PrismaClient,
+    userId: string,
+    grade: GradeEnum,
+    config: SessionConfig
+  ) {
+    this.prisma = prisma;
     this.userId = userId;
     this.grade = grade;
     this.config = config;
@@ -20,19 +24,38 @@ export class QuestionSelector {
   async selectCurrentTopicQuestions(
     subject: Subject,
     count: number
-  ): Promise<SelectectedQuestion[]> {
+  ): Promise<SelectedQuestion[]> {
     try {
-      const currentTopics = await prisma.currentStudyTopic.findMany({
-        where: {
-          userId: this.userId,
-          subjectId: subject.id,
-          isCurrent: true,
-          isCompleted: false,
-        },
-        include: {
-          topic: true,
-        },
-      });
+      // Try to get cached current topics first
+      const cachedTopics = await RedisCacheService.getCachedCurrentTopics(
+        this.userId,
+        subject.id
+      );
+
+      let currentTopics;
+      if (cachedTopics) {
+        currentTopics = cachedTopics;
+      } else {
+        currentTopics = await this.prisma.currentStudyTopic.findMany({
+          where: {
+            userId: this.userId,
+            subjectId: subject.id,
+            isCurrent: true,
+            isCompleted: false,
+          },
+          include: {
+            topic: true,
+          },
+        });
+
+        // Cache the current topics
+        await RedisCacheService.cacheCurrentTopics(
+          this.userId,
+          subject.id,
+          currentTopics
+        );
+      }
+
       if (currentTopics.length === 0) {
         return [];
       }
@@ -42,12 +65,35 @@ export class QuestionSelector {
       const { difficulty: difficultyDistribution, categories } =
         this.getSelectionParameters(count);
 
-      let selectedQuestions: SelectectedQuestion[] = [];
-      const questions = await prisma.question.findMany({
+      let selectedQuestions: SelectedQuestion[] = [];
+
+      // First, get all previously attempted questions for this user in these topics
+      const previouslyAttemptedQuestions = await this.prisma.attempt.findMany({
+        where: {
+          userId: this.userId,
+          question: {
+            topicId: { in: topicIds },
+            subjectId: subject.id,
+          },
+        },
+        select: {
+          questionId: true,
+        },
+        distinct: ["questionId"],
+      });
+
+      const attemptedQuestionIds = new Set(
+        previouslyAttemptedQuestions.map((a) => a.questionId)
+      );
+
+      const questions = await this.prisma.question.findMany({
         where: {
           topicId: { in: topicIds },
           subjectId: subject.id,
           isPublished: true,
+          id: {
+            notIn: Array.from(attemptedQuestionIds), // Exclude previously attempted questions
+          },
           OR: [
             {
               AND: [
@@ -82,9 +128,8 @@ export class QuestionSelector {
             },
           ],
         },
-        select: {
-          id: true,
-          difficulty: true,
+        include: {
+          options: true,
         },
         take: count * 3,
       });
@@ -98,29 +143,25 @@ export class QuestionSelector {
           (q) => q.difficulty === difficulty
         );
 
-        const filteredQuestionsForDifficulty =
-          await this.filterRecentlyAttemptedQuestions(questionsForDifficulty);
-
         selectedQuestions = [
           ...selectedQuestions,
-          ...filteredQuestionsForDifficulty.slice(
-            0,
-            questionsNeededForThisDifficulty
-          ),
+          ...questionsForDifficulty.slice(0, questionsNeededForThisDifficulty),
         ];
       }
 
       if (selectedQuestions.length < count) {
         const selectedIds = new Set(selectedQuestions.map((q) => q.id));
 
-        const additionalQuestions = await prisma.question.findMany({
+        const additionalQuestions = await this.prisma.question.findMany({
           where: {
             topicId: {
               in: topicIds,
             },
             subjectId: subject.id,
             id: {
-              notIn: Array.from(selectedIds),
+              notIn: Array.from(
+                new Set([...selectedIds, ...attemptedQuestionIds])
+              ), // Exclude both selected and attempted
             },
             OR: [
               { category: { some: { category: { in: categories } } } },
@@ -134,14 +175,28 @@ export class QuestionSelector {
           take: count - selectedQuestions.length,
         });
 
-        const filteredAdditional =
-          await this.filterRecentlyAttemptedQuestions(additionalQuestions);
-
         selectedQuestions = [
           ...selectedQuestions,
-          ...filteredAdditional.slice(0, count - selectedQuestions.length),
+          ...additionalQuestions.slice(0, count - selectedQuestions.length),
         ];
       }
+
+      // If we still don't have enough questions, use fallback
+      if (selectedQuestions.length < count) {
+        const remainingCount = count - selectedQuestions.length;
+        const selectedIds = new Set(selectedQuestions.map((q) => q.id));
+
+        const fallbackQuestions = await this.getFallbackQuestions(
+          topicIds,
+          subject.id,
+          remainingCount,
+          categories,
+          selectedIds
+        );
+
+        selectedQuestions = [...selectedQuestions, ...fallbackQuestions];
+      }
+
       return selectedQuestions.slice(0, count);
     } catch (error) {
       console.error("Error selecting current topic questions:", error);
@@ -152,34 +207,91 @@ export class QuestionSelector {
   public async selectWeakConceptQuestions(
     subject: Subject,
     count: number
-  ): Promise<SelectectedQuestion[]> {
+  ): Promise<SelectedQuestion[]> {
     try {
-      const weakTopics = await prisma.topicMastery.findMany({
-        where: {
-          userId: this.userId,
-          topic: {
-            subjectId: subject.id,
-          },
-          OR: [{ masteryLevel: { lte: 40 } }, { strengthIndex: { lte: 50 } }],
-        },
-        include: {
-          topic: true,
-        },
-        orderBy: {
-          masteryLevel: "asc",
-        },
-        take: 10,
-      });
+      // Try cache first
+      let weakTopics = await RedisCacheService.getCachedWeakConcepts(
+        this.userId,
+        subject.id
+      );
 
-      if (weakTopics.length === 0) {
+      if (!weakTopics) {
+        weakTopics = await this.prisma.topicMastery.findMany({
+          where: {
+            userId: this.userId,
+            topic: {
+              subjectId: subject.id,
+            },
+            OR: [{ masteryLevel: { lte: 40 } }, { strengthIndex: { lte: 50 } }],
+          },
+          include: {
+            topic: true,
+          },
+          orderBy: [{ masteryLevel: "asc" }, { strengthIndex: "asc" }],
+          take: 10,
+        });
+
+        await RedisCacheService.cacheWeakConcepts(
+          this.userId,
+          subject.id,
+          weakTopics.map((t) => ({
+            topicId: t.topicId,
+            masteryLevel: t.masteryLevel,
+            strengthIndex: t.strengthIndex,
+          }))
+        );
+      }
+
+      if (!weakTopics || weakTopics.length === 0) {
         return [];
       }
 
-      const topicIds = weakTopics.map((wt) => wt.topicId);
+      let topicIds = weakTopics.map((wt) => wt.topicId);
+      if (this.config.preferences?.singleTopicPerWeakConcepts) {
+        const strategy = this.config.preferences.weakTopicStrategy || "mixed";
+        const pick = (() => {
+          if (strategy === "lowest_mastery") {
+            return weakTopics
+              .slice()
+              .sort((a, b) => a.masteryLevel - b.masteryLevel)[0];
+          }
+          if (strategy === "lowest_strength") {
+            return weakTopics
+              .slice()
+              .sort((a, b) => a.strengthIndex - b.strengthIndex)[0];
+          }
+          const due = undefined;
+          return (
+            due ||
+            weakTopics
+              .slice()
+              .sort((a, b) => a.masteryLevel - b.masteryLevel)[0]
+          );
+        })();
+        topicIds = pick ? [pick.topicId] : topicIds.slice(0, 1);
+      }
       const { difficulty: difficultyDistribution, categories } =
         this.getSelectionParameters(count);
 
-      let selectedQuestions: SelectectedQuestion[] = [];
+      const previouslyAttemptedQuestions = await this.prisma.attempt.findMany({
+        where: {
+          userId: this.userId,
+          question: {
+            topicId: { in: topicIds },
+            subjectId: subject.id,
+          },
+        },
+        select: {
+          questionId: true,
+        },
+        distinct: ["questionId"],
+      });
+
+      const attemptedQuestionIds = new Set(
+        previouslyAttemptedQuestions.map((a) => a.questionId)
+      );
+
+      let selectedQuestions: SelectedQuestion[] = [];
 
       for (let difficulty = 1; difficulty <= 4; difficulty++) {
         const questionsNeededForThisDifficulty =
@@ -187,13 +299,16 @@ export class QuestionSelector {
 
         if (questionsNeededForThisDifficulty <= 0) continue;
 
-        const questionsForDifficulty = await prisma.question.findMany({
+        const questionsForDifficulty = await this.prisma.question.findMany({
           where: {
             topicId: {
               in: topicIds,
             },
             subjectId: subject.id,
             difficulty: difficulty,
+            id: {
+              notIn: Array.from(attemptedQuestionIds), // Exclude previously attempted questions
+            },
             OR: [
               {
                 category: {
@@ -212,35 +327,31 @@ export class QuestionSelector {
             ],
             isPublished: true,
           },
-          select: {
-            id: true,
+          include: {
+            options: true,
           },
           take: questionsNeededForThisDifficulty * 3,
         });
 
-        const filteredQuestionsForDifficulty =
-          await this.filterRecentlyAttemptedQuestions(questionsForDifficulty);
-
         selectedQuestions = [
           ...selectedQuestions,
-          ...filteredQuestionsForDifficulty.slice(
-            0,
-            questionsNeededForThisDifficulty
-          ),
+          ...questionsForDifficulty.slice(0, questionsNeededForThisDifficulty),
         ];
       }
 
       if (selectedQuestions.length < count) {
         const selectedIds = new Set(selectedQuestions.map((q) => q.id));
 
-        const additionalQuestions = await prisma.question.findMany({
+        const additionalQuestions = await this.prisma.question.findMany({
           where: {
             topicId: {
               in: topicIds,
             },
             subjectId: subject.id,
             id: {
-              notIn: Array.from(selectedIds),
+              notIn: Array.from(
+                new Set([...selectedIds, ...attemptedQuestionIds])
+              ),
             },
             OR: [
               { category: { some: { category: { in: categories } } } },
@@ -254,13 +365,25 @@ export class QuestionSelector {
           take: count - selectedQuestions.length,
         });
 
-        const filteredAdditional =
-          await this.filterRecentlyAttemptedQuestions(additionalQuestions);
-
         selectedQuestions = [
           ...selectedQuestions,
-          ...filteredAdditional.slice(0, count - selectedQuestions.length),
+          ...additionalQuestions.slice(0, count - selectedQuestions.length),
         ];
+      }
+
+      if (selectedQuestions.length < count) {
+        const remainingCount = count - selectedQuestions.length;
+        const selectedIds = new Set(selectedQuestions.map((q) => q.id));
+
+        const fallbackQuestions = await this.getFallbackQuestions(
+          topicIds,
+          subject.id,
+          remainingCount,
+          categories,
+          selectedIds
+        );
+
+        selectedQuestions = [...selectedQuestions, ...fallbackQuestions];
       }
 
       return selectedQuestions.slice(0, count);
@@ -273,9 +396,9 @@ export class QuestionSelector {
   async selectRevisionQuestions(
     subject: Subject,
     count: number
-  ): Promise<SelectectedQuestion[]> {
+  ): Promise<SelectedQuestion[]> {
     try {
-      const completedTopics = await prisma.currentStudyTopic.findMany({
+      const completedTopics = await this.prisma.currentStudyTopic.findMany({
         where: {
           userId: this.userId,
           subjectId: subject.id,
@@ -290,31 +413,85 @@ export class QuestionSelector {
         return [];
       }
 
-      const reviewSchedules = await prisma.reviewSchedule.findMany({
-        where: {
-          userId: this.userId,
-          topicId: {
-            in: completedTopics.map((ct) => ct.topicId),
+      let cachedRevisionTopics =
+        await RedisCacheService.getCachedRevisionTopics(
+          this.userId,
+          subject.id
+        );
+
+      let topicIds: string[];
+      if (cachedRevisionTopics && cachedRevisionTopics.length > 0) {
+        topicIds = cachedRevisionTopics;
+      } else {
+        const reviewSchedules = await this.prisma.reviewSchedule.findMany({
+          where: {
+            userId: this.userId,
+            topicId: {
+              in: completedTopics.map((ct) => ct.topicId),
+            },
           },
-          nextReviewAt: {
-            lte: new Date(),
-          },
-        },
-      });
+        });
 
-      let topicIds = reviewSchedules.map((rs) => rs.topicId);
+        const dueNow = reviewSchedules
+          .filter((rs) => rs.nextReviewAt <= new Date())
+          .map((rs) => rs.topicId);
+        const notDue = reviewSchedules
+          .filter((rs) => rs.nextReviewAt > new Date())
+          .map((rs) => rs.topicId);
 
-      if (topicIds.length < 5) {
-        const otherTopicIds = completedTopics
-          .filter((ct) => !topicIds.includes(ct.topicId))
-          .map((ct) => ct.topicId);
+        topicIds = [...dueNow, ...notDue];
 
-        topicIds = [...topicIds, ...otherTopicIds];
+        if (topicIds.length < 5) {
+          const otherTopicIds = completedTopics
+            .filter((ct) => !topicIds.includes(ct.topicId))
+            .map((ct) => ct.topicId);
+          topicIds = [...topicIds, ...otherTopicIds];
+        }
+
+        await RedisCacheService.cacheRevisionTopics(
+          this.userId,
+          subject.id,
+          topicIds
+        );
+      }
+
+      if (this.config.preferences?.singleTopicPerRevision && topicIds.length) {
+        const strategy =
+          this.config.preferences.revisionTopicStrategy || "due_first";
+        if (strategy === "due_first") {
+          topicIds = [topicIds[0]];
+        } else if (strategy === "oldest_completed") {
+          const earliest = completedTopics
+            .slice()
+            .sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime())[0];
+          topicIds = earliest ? [earliest.topicId] : [topicIds[0]];
+        } else {
+          topicIds = [topicIds[0]];
+        }
       }
 
       const { difficulty: difficultyDistribution, categories } =
         this.getSelectionParameters(count);
-      let selectedQuestions: SelectectedQuestion[] = [];
+
+      const previouslyAttemptedQuestions = await this.prisma.attempt.findMany({
+        where: {
+          userId: this.userId,
+          question: {
+            topicId: { in: topicIds },
+            subjectId: subject.id,
+          },
+        },
+        select: {
+          questionId: true,
+        },
+        distinct: ["questionId"],
+      });
+
+      const attemptedQuestionIds = new Set(
+        previouslyAttemptedQuestions.map((a) => a.questionId)
+      );
+
+      let selectedQuestions: SelectedQuestion[] = [];
 
       for (let difficulty = 1; difficulty <= 4; difficulty++) {
         const questionsNeededForThisDifficulty =
@@ -322,13 +499,16 @@ export class QuestionSelector {
 
         if (questionsNeededForThisDifficulty <= 0) continue;
 
-        const questionsForDifficulty = await prisma.question.findMany({
+        const questionsForDifficulty = await this.prisma.question.findMany({
           where: {
             topicId: {
               in: topicIds,
             },
             subjectId: subject.id,
             difficulty: difficulty,
+            id: {
+              notIn: Array.from(attemptedQuestionIds), // Exclude previously attempted questions
+            },
             OR: [
               {
                 category: {
@@ -347,35 +527,31 @@ export class QuestionSelector {
             ],
             isPublished: true,
           },
-          select: {
-            id: true,
+          include: {
+            options: true,
           },
           take: questionsNeededForThisDifficulty * 3,
         });
 
-        const filteredQuestionsForDifficulty =
-          await this.filterRecentlyAttemptedQuestions(questionsForDifficulty);
-
         selectedQuestions = [
           ...selectedQuestions,
-          ...filteredQuestionsForDifficulty.slice(
-            0,
-            questionsNeededForThisDifficulty
-          ),
+          ...questionsForDifficulty.slice(0, questionsNeededForThisDifficulty),
         ];
       }
 
       if (selectedQuestions.length < count) {
         const selectedIds = new Set(selectedQuestions.map((q) => q.id));
 
-        const additionalQuestions = await prisma.question.findMany({
+        const additionalQuestions = await this.prisma.question.findMany({
           where: {
             topicId: {
               in: topicIds,
             },
             subjectId: subject.id,
             id: {
-              notIn: Array.from(selectedIds),
+              notIn: Array.from(
+                new Set([...selectedIds, ...attemptedQuestionIds])
+              ),
             },
             OR: [
               { category: { some: { category: { in: categories } } } },
@@ -389,13 +565,25 @@ export class QuestionSelector {
           take: count - selectedQuestions.length,
         });
 
-        const filteredAdditional =
-          await this.filterRecentlyAttemptedQuestions(additionalQuestions);
-
         selectedQuestions = [
           ...selectedQuestions,
-          ...filteredAdditional.slice(0, count - selectedQuestions.length),
+          ...additionalQuestions.slice(0, count - selectedQuestions.length),
         ];
+      }
+
+      if (selectedQuestions.length < count) {
+        const remainingCount = count - selectedQuestions.length;
+        const selectedIds = new Set(selectedQuestions.map((q) => q.id));
+
+        const fallbackQuestions = await this.getFallbackQuestions(
+          topicIds,
+          subject.id,
+          remainingCount,
+          categories,
+          selectedIds
+        );
+
+        selectedQuestions = [...selectedQuestions, ...fallbackQuestions];
       }
 
       return selectedQuestions.slice(0, count);
@@ -406,22 +594,16 @@ export class QuestionSelector {
   }
 
   private async filterRecentlyAttemptedQuestions(
-    questions: SelectectedQuestion[]
-  ): Promise<SelectectedQuestion[]> {
+    questions: SelectedQuestion[]
+  ): Promise<SelectedQuestion[]> {
     try {
       if (questions.length === 0) {
         return [];
       }
 
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 15);
-
-      const recentAttempts = await prisma.attempt.findMany({
+      const allAttemptedQuestions = await this.prisma.attempt.findMany({
         where: {
           userId: this.userId,
-          solvedAt: {
-            gte: oneWeekAgo,
-          },
           questionId: {
             in: questions.map((q) => q.id),
           },
@@ -429,16 +611,74 @@ export class QuestionSelector {
         select: {
           questionId: true,
         },
+        distinct: ["questionId"],
       });
 
-      const recentQuestionIds = new Set(
-        recentAttempts.map((a) => a.questionId)
+      const attemptedQuestionIds = new Set(
+        allAttemptedQuestions.map((a) => a.questionId)
       );
 
-      return questions.filter((q) => !recentQuestionIds.has(q.id));
+      return questions.filter((q) => !attemptedQuestionIds.has(q.id));
     } catch (error) {
       console.error("Error filtering recently attempted questions:", error);
       return questions;
+    }
+  }
+
+  private async getFallbackQuestions(
+    topicIds: string[],
+    subjectId: string,
+    count: number,
+    categories: QCategory[],
+    excludeIds: Set<string> = new Set()
+  ): Promise<SelectedQuestion[]> {
+    try {
+      const questionsWithAttempts = await this.prisma.question.findMany({
+        where: {
+          topicId: { in: topicIds },
+          subjectId: subjectId,
+          isPublished: true,
+          id: {
+            notIn: Array.from(excludeIds),
+          },
+          OR: [
+            { category: { some: { category: { in: categories } } } },
+            { category: { none: {} } },
+          ],
+        },
+        include: {
+          options: true,
+          attempts: {
+            where: {
+              userId: this.userId,
+            },
+            orderBy: {
+              solvedAt: "desc",
+            },
+            take: 1,
+            select: {
+              solvedAt: true,
+            },
+          },
+        },
+        take: count * 2,
+      });
+
+      const sortedQuestions = questionsWithAttempts.sort((a, b) => {
+        const aLastAttempt = a.attempts[0]?.solvedAt;
+        const bLastAttempt = b.attempts[0]?.solvedAt;
+
+        if (!aLastAttempt && !bLastAttempt) return 0;
+        if (!aLastAttempt) return -1;
+        if (!bLastAttempt) return 1;
+
+        return aLastAttempt.getTime() - bLastAttempt.getTime();
+      });
+
+      return sortedQuestions.slice(0, count);
+    } catch (error) {
+      console.error("Error getting fallback questions:", error);
+      return [];
     }
   }
 
@@ -452,87 +692,4 @@ export class QuestionSelector {
 
     return { difficulty, categories };
   }
-  // private prioritizeQuestions(questions: Question[]): Question[] {
-  //     // Clone the array to avoid modifying the original
-  //     const prioritizedQuestions = [...questions];
-
-  //     // Sort by multiple criteria
-  //     prioritizedQuestions.sort((a, b) => {
-  //         // First priority: Calculate score based on question attributes
-  //         const scoreA = this.calculateQuestionScore(a);
-  //         const scoreB = this.calculateQuestionScore(b);
-
-  //         // Higher score should come first
-  //         return scoreB - scoreA;
-  //     });
-
-  //     return prioritizedQuestions;
-  // }
-
-  /**
-   * Calculate a score for each question to determine its priority
-   */
-  // private calculateQuestionScore(question: Question): number {
-  //     let score = 0;
-
-  //     // Base score from difficulty (weighted by student's grade)
-  //     const difficultyFactor = this.getDifficultyFactor(question.difficulty);
-  //     score += difficultyFactor * 10;
-
-  //     // Bonus for high accuracy questions (if student's grade is low)
-  //     if (this.grade === 'D' || this.grade === 'C') {
-  //         score += (question. || 0) * 5;
-  //     }
-
-  //     // Penalty for high accuracy questions (if student's grade is high)
-  //     if (this.grade === 'A+' || this.grade === 'A') {
-  //         score -= (question.accuracy || 0) * 3;
-  //     }
-
-  //     // Bonus for PYQs
-  //     if (question.pyqYear) {
-  //         score += 5;
-  //     }
-
-  //     // Bonus for questions with hints (for lower grades)
-  //     if (question.hint && (this.grade === 'D' || this.grade === 'C')) {
-  //         score += 3;
-  //     }
-
-  //     // Random factor to ensure diversity (±2 points)
-  //     score += (Math.random() * 4) - 2;
-
-  //     return score;
-  // }
-
-  /**
-   * Calculate difficulty factor based on student's grade
-   */
-  // private getDifficultyFactor(questionDifficulty: number): number {
-
-  //     const gradeMap: Record<string, number[]> = {
-  //         'A+': [2, 3], // Medium to Hard
-  //         'A': [2, 3],  // Medium to Hard
-  //         'B': [1, 2],  // Easy to Medium
-  //         'C': [1, 2],  // Easy to Medium
-  //         'D': [1, 1]   // Easy
-  //     };
-
-  //     const optimalRange = gradeMap[this.grade] || [1, 2]; // Default to Easy-Medium
-
-  //     // Calculate how close the question difficulty is to the optimal range
-  //     if (questionDifficulty >= optimalRange[0] && questionDifficulty <= optimalRange[1]) {
-  //         return 1.0; // Perfect match
-  //     } else {
-  //         // Penalty for being outside the optimal range
-  //         return 1.0 - (0.2 * Math.min(
-  //             Math.abs(questionDifficulty - optimalRange[0]),
-  //             Math.abs(questionDifficulty - optimalRange[1])
-  //         ));
-  //     }
-  // }
-
-  // /**
-  //  * Get difficulty levels and categories based on student's grade
-  //  */
 }

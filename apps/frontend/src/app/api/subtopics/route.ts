@@ -10,6 +10,16 @@ export async function GET(req: Request) {
             {
                 where: {
                     topicId: topicId ? topicId : undefined
+                },
+                include: {
+                    topic: {
+                        include: {
+                            subject: true
+                        }
+                    }
+                },
+                orderBy: {
+                    orderIndex: "asc"
                 }
             }
         );
@@ -21,12 +31,15 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-    const { name, topicId } = await req.json();
+    const { name, topicId, slug, orderIndex, estimatedMinutes } = await req.json();
     try {
         const subtopic = await prisma.subTopic.create({
             data: {
                 name,
-                topicId
+                topicId,
+                slug,
+                orderIndex,
+                estimatedMinutes
             }
         });
         return jsonResponse(subtopic, { success: true, message: "Ok", status: 200 })

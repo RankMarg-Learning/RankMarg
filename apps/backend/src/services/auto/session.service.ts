@@ -2,15 +2,16 @@ import prisma from "../../lib/prisma";
 import { GradeEnum, Stream } from "@prisma/client";
 import { createDefaultSessionConfig } from "../session/SessionConfig";
 import { PracticeSessionGenerator } from "../session/PracticeSessionGenerator";
+import { RedisCacheService } from "../session/RedisCacheService";
 
 export class PracticeService {
   // ALL USERS PROCESS
   public async processAllUsers() {
     const batchSize = 100;
     let offset = 0;
+    const userCount = await prisma.user.count();
 
     while (true) {
-      const userCount = await prisma.user.count();
       if (offset >= userCount) break;
 
       await this.processUserBatch(batchSize, offset);
@@ -34,19 +35,31 @@ export class PracticeService {
 
   // GENERATE SESSION FOR USER
   public async generateSessionForUser(userId: string) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        stream: true,
-        grade: true,
-        userPerformance: true,
-        currentStudyTopic: true,
-      },
-    });
+    // Try to get cached user performance first
+    let cachedPerformance =
+      await RedisCacheService.getCachedUserPerformance(userId);
 
-    if (!user) {
-      throw new Error(`User with ID ${userId} not found`);
+    let user;
+    if (cachedPerformance) {
+      user = cachedPerformance;
+    } else {
+      user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          stream: true,
+          grade: true,
+          userPerformance: true,
+          currentStudyTopic: true,
+        },
+      });
+
+      if (!user) {
+        throw new Error(`User with ID ${userId} not found`);
+      }
+
+      // Cache the user performance data
+      await RedisCacheService.cacheUserPerformance(userId, user);
     }
 
     const config = createDefaultSessionConfig(
@@ -59,6 +72,7 @@ export class PracticeService {
     const sessionGenerator = new PracticeSessionGenerator(prisma, config);
     await sessionGenerator.generate(userId, config.stream, config.grade);
   }
+
   public async markSessionAsCompleted(userId: string) {
     await prisma.practiceSession.updateMany({
       where: {

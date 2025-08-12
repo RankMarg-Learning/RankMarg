@@ -36,7 +36,7 @@ const RevisionSubtopicsCard = ({ subtopics = [] }) => (
     <CardContent className="p-4 space-y-2">
       <h3 className="font-medium text-sm text-purple-800 flex items-center gap-1">
         <ListTodo className="h-4 w-4" />
-        Today’s Key Concepts
+        Today’s Top Key Concepts
       </h3>
       <div className="flex flex-wrap gap-1">
         {subtopics.length > 0 ? (

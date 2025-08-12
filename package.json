@@ -7,6 +7,7 @@
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "db:generate": "npm run db:generate --workspace=packages/db",
+    "db:studio": "npm run db:studio --workspace=packages/db",
     "db:push": "npm run db:push --workspace=packages/db",
     "db:migrate": "npm run db:dev --workspace=packages/db",
     "backend:dev": "npm run dev --workspace=apps/backend",

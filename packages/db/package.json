@@ -5,6 +5,7 @@
     "main": "index.js",
     "scripts": {
         "db:generate": "prisma generate",
+        "db:studio": "prisma studio --schema=prisma/schema.prisma",
         "db:push": "prisma db push --skip-generate",
         "db:dev": "npx prisma migrate dev && npx prisma generate",
         "db:delpoy": "prisma migrate deploy && next build",

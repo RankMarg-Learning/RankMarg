@@ -30,7 +30,7 @@ const navItems = [
     description: "Practice specific topics",
     href: "/practice", 
     color: "amber",
-    priority: 4,
+    priority: 5,
     comingSoon: true
   },
   { 

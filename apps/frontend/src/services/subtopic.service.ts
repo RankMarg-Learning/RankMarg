@@ -1,9 +1,9 @@
 import api from "@/utils/api";
 
-
-export const getSubtopics = async (topicId: string) => {
+export const getSubtopics = async (topicId?: string) => {
   try {
-    const response = await api.get(`/subtopics?topicId=${topicId}`);
+    const url = topicId ? `/subtopics?topicId=${topicId}` : '/subtopics';
+    const response = await api.get(url);
     return response.data;
 
   } catch (error) {
@@ -17,9 +17,9 @@ export const getSubtopics = async (topicId: string) => {
 
 };
 
-export const addSubtopic = async (name: string, topicId: string) => {
+export const addSubtopic = async (name: string, topicId: string, slug?: string, orderIndex?: number, estimatedMinutes?: number) => {
   try {
-    const response = await api.post('/subtopics', { name, topicId });
+    const response = await api.post('/subtopics', { name, topicId, slug, orderIndex, estimatedMinutes });
     return response.data;
 
   } catch (error) {
@@ -33,9 +33,9 @@ export const addSubtopic = async (name: string, topicId: string) => {
 
 };
 
-export const updateSubtopic = async (id: string, name: string, topicId: string) => {
+export const updateSubtopic = async (id: string, name: string, topicId: string, slug?: string, orderIndex?: number, estimatedMinutes?: number) => {
   try {
-    const response = await api.put(`/subtopics/${id}`, { name, topicId });
+    const response = await api.put(`/subtopics/${id}`, { name, topicId, slug, orderIndex, estimatedMinutes });
     return response.data;
 
   } catch (error) {

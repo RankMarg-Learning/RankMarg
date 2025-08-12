@@ -172,18 +172,53 @@ export interface Blog {
   updatedAt?: string;
 }
 
+export interface Exam {
+  id: string;
+  name: string;
+  fullName?: string;
+  description?: string;
+  category?: string;
+  minDifficulty: number;
+  maxDifficulty: number;
+  totalMarks: number;
+  duration: number;
+  negativeMarking: boolean;
+  negativeMarkingRatio?: number;
+  isActive: boolean;
+  registrationStartAt?: string;
+  registrationEndAt?: string;
+  examDate?: string;
+  examSubjects?: ExamSubject[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExamSubject {
+  examId: string;
+  subjectId: string;
+  weightage: number;
+  subject?: Subject;
+}
+
 export interface Subject {
   id: string;
   name: string;
+  shortName?: string;
   stream: Stream;
   topics?: Topic[];
+  examSubjects?: ExamSubject[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Topic {
   id: string;
   name: string;
+  slug?: string;
   subjectId: string;
   weightage?: number;
+  orderIndex: number;
+  estimatedMinutes?: number;
   subtopics?: Subtopic[];
   createdAt?: string;
   updatedAt?: string;
@@ -192,7 +227,10 @@ export interface Topic {
 export interface Subtopic {
   id: string;
   name: string;
+  slug?: string;
   topicId: string;
+  orderIndex: number;
+  estimatedMinutes?: number;
   createdAt?: string;
   updatedAt?: string;
 }
