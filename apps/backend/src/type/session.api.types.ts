@@ -1,4 +1,11 @@
-import { GradeEnum, QCategory, Stream } from "@prisma/client";
+import { GradeEnum, QCategory, Stream, Question } from "@prisma/client";
+
+export interface TopicSelectionPreferences {
+  singleTopicPerWeakConcepts: boolean;
+  singleTopicPerRevision: boolean;
+  weakTopicStrategy: "lowest_mastery" | "lowest_strength" | "mixed";
+  revisionTopicStrategy: "due_first" | "oldest_completed" | "mixed";
+}
 
 export interface SessionConfig {
   distribution: {
@@ -15,9 +22,7 @@ export interface SessionConfig {
     difficulty: number[];
   };
 
-  // subjects: Record<string, number>;
+  preferences: TopicSelectionPreferences;
 }
 
-export interface SelectectedQuestion {
-  id: string;
-}
+export type SelectedQuestion = Question;

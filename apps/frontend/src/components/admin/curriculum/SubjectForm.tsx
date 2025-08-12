@@ -13,6 +13,7 @@ interface SubjectFormProps {
 
 const SubjectForm = ({ initialSubject, onSave, onCancel }: SubjectFormProps) => {
   const [name, setName] = useState(initialSubject?.name || "");
+  const [shortName, setShortName] = useState(initialSubject?.shortName || "");
   const [stream, setStream] = useState<Stream>(initialSubject?.stream || Stream.JEE);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -20,6 +21,7 @@ const SubjectForm = ({ initialSubject, onSave, onCancel }: SubjectFormProps) => 
 
     onSave({
       name,
+      shortName: shortName || undefined,
       stream,
     });
   };
@@ -33,6 +35,16 @@ const SubjectForm = ({ initialSubject, onSave, onCancel }: SubjectFormProps) => 
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="shortName">Short Name</Label>
+        <Input
+          id="shortName"
+          value={shortName}
+          onChange={(e) => setShortName(e.target.value)}
+          placeholder="e.g., PHY, CHEM, MATH"
         />
       </div>
 

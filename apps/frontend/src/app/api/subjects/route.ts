@@ -11,7 +11,7 @@ export async function GET(req: Request) {
             const subjects = await prisma.subject.findMany({
                 where: {
                     stream: stream as Stream 
-                }
+                },
             });
             return jsonResponse(subjects, { success: true, message: "Ok", status: 200 })
         }
@@ -27,12 +27,13 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     const body = await req.json();
-    const { name, stream } = body;
+    const { name, stream, shortName } = body;
     try {
          await prisma.subject.create({
             data: {
               name,
               stream,
+              shortName,
             },
           });
           return jsonResponse(null, { success: true, message: "Ok", status: 200 })

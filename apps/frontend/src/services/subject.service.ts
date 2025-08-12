@@ -15,9 +15,9 @@ export const getSubjects = async (stream: string) => {
 
 };
 
-export const addSubject = async (name: string, stream: string) => {
+export const addSubject = async (name: string, stream: string, shortName?: string) => {
   try {
-    const response = await api.post('/subjects', { name, stream });
+    const response = await api.post('/subjects', { name, stream, shortName });
     return response.data;
   } catch (error) {
     console.error("Error adding subject:", error);
@@ -30,9 +30,9 @@ export const addSubject = async (name: string, stream: string) => {
 
 };
 
-export const updateSubject = async (id: string, name: string, stream: string) => {
+export const updateSubject = async (id: string, name: string, stream: string, shortName?: string) => {
   try {
-    const response = await api.put(`/subjects/${id}`, { name, stream });
+    const response = await api.put(`/subjects/${id}`, { name, stream, shortName });
     return response.data;
   } catch (error) {
     console.error("Error updating subject:", error);

@@ -23,7 +23,7 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
-  const { data: session } = useSession();
+  const { data: session , status } = useSession();
   const { setStream } = useSessionStore();
 
   useEffect(() => {
@@ -73,12 +73,12 @@ export function Header({ onMenuClick }: HeaderProps) {
             <Search size={20} />
           </Button>
 
-          <Button variant="ghost" size="icon" className="relative">
+          <Button variant="ghost" size="icon" className=" hidden">
             <Bell size={20} />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-accent rounded-full"></span>
           </Button>
           {
-            session?.user?.plan?.status !== "ACTIVE" && (
+            session?.user?.plan?.status !== "ACTIVE" && status === "authenticated" && (
               <Link href={`/pricing?ref=header_upgrade&id=${session?.user?.id}&current_plan=${session?.user?.plan?.status}`} className="md:hidden flex items-center">
                 <Button 
                   variant="outline" 

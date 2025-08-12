@@ -137,7 +137,6 @@ export async function POST(req: Request) {
       !questionData.content ||
       !questionData.difficulty ||
       !questionData.subjectId ||
-      !questionData.class ||
       !questionData.topicId
     ) {
       return jsonResponse(

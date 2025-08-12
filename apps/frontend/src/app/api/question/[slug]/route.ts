@@ -99,7 +99,7 @@ export async function DELETE(req: Request, { params }: { params: { slug: string 
                 slug
             }
         });
-        return jsonResponse(null, { success: true, message: "Ok", status: 204 });
+        return jsonResponse(null, { success: true, message: "Ok", status: 200 });
     } catch (error) {
         console.log("[Question-Dynamic] :", error);
         return jsonResponse(null, { success: false, message: "Internal Server Error", status: 500 });

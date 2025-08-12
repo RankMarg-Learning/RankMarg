@@ -19,11 +19,11 @@ export async function GET(req: Request, {params} : { params: { id: string } }){
 export async function PUT(req: Request, {params} : { params: { id: string } }){
     const {id} = params;
     const body = await req.json();
-    const { name, stream } = body;
+    const { name, stream, shortName } = body;
     try {
         const subject = await prisma.subject.update({
             where: { id },
-            data: { name, stream }
+            data: { name, stream, shortName }
         });
         return jsonResponse(subject, { success: true, message: "Ok", status: 200 })
 
