@@ -1,4 +1,4 @@
-import { ReviewScheduleService } from "../services/auto/reviewSchedule.service";
+import { ReviewScheduleService } from "@/services/learning/LearningReviewScheduler";
 import { Request, Response } from "express";
 
 export const updateReviews = async (req: Request, res: Response) => {

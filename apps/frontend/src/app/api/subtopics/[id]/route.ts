@@ -20,11 +20,11 @@ export async function GET(req: Request, {params} : { params: { id: string } }){
 export async function PUT(req: Request, {params} : { params: { id: string } }){
     const {id} = params;
     const body = await req.json();
-    const { name } = body;
+    const { name, topicId, slug, orderIndex, estimatedMinutes } = body;
     try {
         const subtopics = await prisma.subTopic.update({
             where: { id },
-            data: { name}
+            data: { name, topicId, slug, orderIndex, estimatedMinutes }
         });
         return jsonResponse(subtopics, { success: true, message: "Ok", status: 200 })
 

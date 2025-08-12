@@ -14,11 +14,19 @@ export const useTopics = (subjectId?: string) => {
   });
 
   const saveTopic = useMutation({
-    mutationFn: async (data: { id?: string; name: string; subjectId: string; weightage:number  }) => {
+    mutationFn: async (data: { 
+      id?: string; 
+      name: string; 
+      subjectId: string; 
+      weightage: number;
+      slug?: string;
+      orderIndex?: number;
+      estimatedMinutes?: number;
+    }) => {
       if (data.id) {
-        return updateTopic(data.id, data.name, data.subjectId, data.weightage);
+        return updateTopic(data.id, data.name, data.subjectId, data.weightage, data.slug, data.orderIndex, data.estimatedMinutes);
       } else {
-        return addTopic(data.name, data.subjectId, data.weightage);
+        return addTopic(data.name, data.subjectId, data.weightage, data.slug, data.orderIndex, data.estimatedMinutes);
       }
     },
     onSuccess: () => {

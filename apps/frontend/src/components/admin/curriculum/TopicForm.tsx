@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Topic, Subject } from "@/types/typeAdmin";
 
 interface TopicFormProps {
@@ -14,16 +15,22 @@ interface TopicFormProps {
 
 const TopicForm = ({ initialTopic, subjects, selectedSubjectId, onSave, onCancel }: TopicFormProps) => {
   const [name, setName] = useState(initialTopic?.name || "");
+  const [slug, setSlug] = useState(initialTopic?.slug || "");
   const [subjectId, setSubjectId] = useState(initialTopic?.subjectId || selectedSubjectId || "");
   const [weightage, setWeightage] = useState(initialTopic?.weightage || 0);
+  const [orderIndex, setOrderIndex] = useState(initialTopic?.orderIndex || 0);
+  const [estimatedMinutes, setEstimatedMinutes] = useState(initialTopic?.estimatedMinutes || undefined);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     onSave({
       name,
+      slug: slug || undefined,
       subjectId,
       weightage: weightage,
+      orderIndex,
+      estimatedMinutes,
     });
   };
 
@@ -31,21 +38,21 @@ const TopicForm = ({ initialTopic, subjects, selectedSubjectId, onSave, onCancel
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Label htmlFor="subjectId">Subject *</Label>
-        <select
-          id="subjectId"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        <SearchableSelect
           value={subjectId}
-          onChange={(e) => setSubjectId(e.target.value)}
-          required
+          onValueChange={setSubjectId}
+          placeholder="-- Select Subject --"
           disabled={!!selectedSubjectId}
-        >
-          <option value="">-- Select Subject --</option>
-          {subjects.map((subject) => (
-            <option key={subject.id} value={subject.id}>
-              {subject.name}
-            </option>
-          ))}
-        </select>
+          options={[
+            { value: "", label: "-- Select Subject --" },
+            ...subjects.map((subject) => ({
+              value: subject.id,
+              label: subject.name,
+            }))
+          ]}
+          searchPlaceholder="Search subjects..."
+          emptyMessage="No subjects found."
+        />
       </div>
       
       <div>
@@ -57,6 +64,16 @@ const TopicForm = ({ initialTopic, subjects, selectedSubjectId, onSave, onCancel
           required
         />
       </div>
+
+      <div>
+        <Label htmlFor="slug">Slug</Label>
+        <Input
+          id="slug"
+          value={slug}
+          onChange={(e) => setSlug(e.target.value)}
+          placeholder="e.g., mechanics, thermodynamics"
+        />
+      </div>
       
       <div>
         <Label htmlFor="weightage">Weightage</Label>
@@ -66,7 +83,31 @@ const TopicForm = ({ initialTopic, subjects, selectedSubjectId, onSave, onCancel
           min="0"
           step="0.1"
           value={weightage}
-          onChange={(e) => setWeightage(parseInt(e.target.value))}
+          onChange={(e) => setWeightage(parseFloat(e.target.value))}
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="orderIndex">Order Index *</Label>
+        <Input
+          id="orderIndex"
+          type="number"
+          min="0"
+          value={orderIndex}
+          onChange={(e) => setOrderIndex(parseInt(e.target.value))}
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="estimatedMinutes">Estimated Minutes</Label>
+        <Input
+          id="estimatedMinutes"
+          type="number"
+          min="1"
+          value={estimatedMinutes || ""}
+          onChange={(e) => setEstimatedMinutes(e.target.value ? parseInt(e.target.value) : undefined)}
+          placeholder="e.g., 120"
         />
       </div>
       

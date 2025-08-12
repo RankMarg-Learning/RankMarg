@@ -1,32 +1,33 @@
 import prisma from "@/lib/prisma";
+import { jsonResponse } from "@/utils/api-response";
 
 export async function GET(req: Request, {params} : { params: { id: string } }){
     const {id} = params;
     try {
-        const subject = await prisma.topic.findUnique({
+        const topic = await prisma.topic.findUnique({
             where: { id }
         });
-        if (!subject) return new Response("Topic not found", { status: 404 });
-        return new Response(JSON.stringify(subject), { status: 200 })
+        if (!topic) return jsonResponse(null, { success: false, message: "Topic not found", status: 404 });
+        return jsonResponse(topic, { success: true, message: "Ok", status: 200 })
 
     } catch (error) {
-        return new Response("Internal Server Error", { status: 500 })
+        return jsonResponse(null, { success: false, message: "Internal Server Error", status: 500 })
     }
 }
 
 export async function PUT(req: Request, {params} : { params: { id: string } }){
     const {id} = params;
     const body = await req.json();
-    const { name,weightage } = body;
+    const { name, subjectId, weightage, slug, orderIndex, estimatedMinutes } = body;
     try {
-        const subject = await prisma.topic.update({
+        const topic = await prisma.topic.update({
             where: { id },
-            data: { name,weightage}
+            data: { name, subjectId, weightage, slug, orderIndex, estimatedMinutes }
         });
-        return new Response(JSON.stringify(subject), { status: 200 })
+        return jsonResponse(topic, { success: true, message: "Ok", status: 200 })
 
     } catch (error) {
-        return new Response("Internal Server Error", { status: 500 })
+        return jsonResponse(null, { success: false, message: "Internal Server Error", status: 500 })
     }
 }
 
@@ -36,9 +37,9 @@ export async function DELETE(req: Request, {params} : { params: { id: string } }
         await prisma.topic.delete({
             where: { id }
         });
-        return new Response("Topic deleted", { status: 200 })
+        return jsonResponse(null, { success: true, message: "Topic deleted", status: 200 })
 
     } catch (error) {
-        return new Response("Internal Server Error", { status: 500 })
+        return jsonResponse(null, { success: false, message: "Internal Server Error", status: 500 })
     }
 }

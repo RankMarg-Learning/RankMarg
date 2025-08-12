@@ -6,11 +6,8 @@ import {
   GradeEnum,
 } from "@prisma/client";
 import { QuestionSelector } from "./QuestionSelector";
-import prisma from "../../lib/prisma";
-import {
-  SelectectedQuestion,
-  SessionConfig,
-} from "../../type/session.api.types";
+import { RedisCacheService } from "./RedisCacheService";
+import { SelectedQuestion, SessionConfig } from "../../type/session.api.types";
 
 type QuestionSource =
   | "currentTopic"
@@ -39,10 +36,23 @@ export class PracticeSessionGenerator {
     grade: GradeEnum
   ): Promise<void> {
     try {
-      this.questionSelector = new QuestionSelector(userId, grade, this.config);
+      this.questionSelector = new QuestionSelector(
+        this.prisma,
+        userId,
+        grade,
+        this.config
+      );
       this.userId = userId;
 
-      const subjects = await prisma.subject.findMany({
+      let cachedConfig = await RedisCacheService.getCachedSessionConfig(
+        stream,
+        grade
+      );
+      if (!cachedConfig) {
+        await RedisCacheService.cacheSessionConfig(stream, grade, this.config);
+      }
+
+      const subjects = await this.prisma.subject.findMany({
         where: {
           stream: stream as Stream,
         },
@@ -62,7 +72,7 @@ export class PracticeSessionGenerator {
     subject: Subject
   ): Promise<void> {
     const totalQuestionsForSubject = this.config.totalQuestions;
-    const questionMap = new Map<string, SelectectedQuestion>();
+    const questionMap = new Map<string, SelectedQuestion>();
 
     const distributions = this.calculateDistribution(totalQuestionsForSubject);
 
@@ -96,7 +106,21 @@ export class PracticeSessionGenerator {
     const finalQuestions = Array.from(questionMap.values());
 
     const shuffledQuestions = this.shuffleArray(finalQuestions);
-    await this.createPracticeSession(userId, shuffledQuestions, subject.id);
+    const session = await this.createPracticeSession(
+      userId,
+      shuffledQuestions,
+      subject.id
+    );
+
+    // Cache the practice session
+    if (session) {
+      await RedisCacheService.cachePracticeSession(userId, session.id, {
+        questions: shuffledQuestions,
+        subjectId: subject.id,
+        totalQuestions: shuffledQuestions.length,
+        createdAt: session.createdAt,
+      });
+    }
   }
 
   private calculateDistribution(
@@ -130,10 +154,10 @@ export class PracticeSessionGenerator {
   private async fetchAllCategoryQuestions(
     subject: Subject,
     distributions: QuestionDistribution[]
-  ): Promise<Array<{ question: SelectectedQuestion; priority: number }>> {
+  ): Promise<Array<{ question: SelectedQuestion; priority: number }>> {
     const questionPromises = distributions.map(
       async ({ source, count, priority }) => {
-        let questions: SelectectedQuestion[] = [];
+        let questions: SelectedQuestion[] = [];
 
         switch (source) {
           case "currentTopic":
@@ -167,10 +191,10 @@ export class PracticeSessionGenerator {
   private async backfillQuestions(
     subject: Subject,
     count: number,
-    existingQuestions: SelectectedQuestion[]
-  ): Promise<SelectectedQuestion[]> {
+    existingQuestions: SelectedQuestion[]
+  ): Promise<SelectedQuestion[]> {
     const existingIds = new Set(existingQuestions.map((q) => q.id));
-    const backfilledQuestions: SelectectedQuestion[] = [];
+    const backfilledQuestions: SelectedQuestion[] = [];
 
     const distributions = this.calculateDistribution(count);
 
@@ -205,11 +229,11 @@ export class PracticeSessionGenerator {
     source: QuestionSource,
     count: number,
     existingIds: Set<string>
-  ): Promise<SelectectedQuestion[]> {
+  ): Promise<SelectedQuestion[]> {
     if (count <= 0) return [];
 
     try {
-      let questions: SelectectedQuestion[] = [];
+      let questions: SelectedQuestion[] = [];
       const fetchFactor = 2;
       switch (source) {
         case "currentTopic":
@@ -280,11 +304,11 @@ export class PracticeSessionGenerator {
 
   private async createPracticeSession(
     userId: string,
-    questions: SelectectedQuestion[],
+    questions: SelectedQuestion[],
     subjectId: string
-  ): Promise<void> {
+  ): Promise<any> {
     try {
-      await prisma.practiceSession.create({
+      const session = await this.prisma.practiceSession.create({
         data: {
           userId,
           questionsSolved: 0,
@@ -298,6 +322,7 @@ export class PracticeSessionGenerator {
           },
         },
       });
+      return session;
     } catch (error) {
       console.error("Error creating practice session:", error);
       throw error;

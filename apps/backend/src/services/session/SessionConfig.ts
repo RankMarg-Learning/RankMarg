@@ -20,6 +20,12 @@ export function createDefaultSessionConfig(
       grade,
       totalQuestions
     ),
+    preferences: {
+      singleTopicPerWeakConcepts: true,
+      singleTopicPerRevision: true,
+      weakTopicStrategy: "mixed",
+      revisionTopicStrategy: "due_first",
+    },
   };
 
   return config;
