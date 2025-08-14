@@ -206,7 +206,6 @@ const Questionset: React.FC<QuestionsetProps> = ({
                     <TableRow>
                       {isCheckBox && <TableHead>Select</TableHead>}
                       {!isPublished && <TableHead>Status</TableHead>}
-                      <TableHead>Class</TableHead>
                       <TableHead>Difficulty</TableHead>
                       <TableHead>Question</TableHead>
                       <TableHead>Subject</TableHead>

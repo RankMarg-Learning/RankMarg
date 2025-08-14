@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { ClassEnum, Prisma, QuestionType, Stream } from "@prisma/client";
+import { Prisma, QuestionType, Stream } from "@prisma/client";
 import { QCategory, Question } from "@/types/typeAdmin";
 import { jsonResponse } from "@/utils/api-response";
 import { SubmitStatus } from "@prisma/client";
@@ -12,11 +12,10 @@ interface WhereClauseProps {
   difficulty?: number;
   category?: Prisma.QuestionCategoryListRelationFilter;
   stream?: Stream;
-  class?: ClassEnum;
-  pyqYear?: string;
-  isPublished?: boolean;
   type?: QuestionType;
   OR?: Array<Prisma.QuestionWhereInput>;
+  pyqYear?: string;
+  isPublished?: boolean;
 }
 
 export async function GET(req: Request) {
@@ -28,7 +27,6 @@ export async function GET(req: Request) {
   const subtopicId = searchParams.get("subtopicId");
   const difficulty = parseInt(searchParams.get("difficulty") , 10);
   const category = searchParams.get("category") as QCategory;
-  const className = searchParams.get("class") as ClassEnum;
   const pyqYear = searchParams.get("pyqYear");
   const stream = searchParams.get("stream") as Stream;
   const type = searchParams.get("type") as QuestionType;
@@ -51,7 +49,6 @@ export async function GET(req: Request) {
         },
       };
     }
-    if (className) whereClause.class = className;
     if (pyqYear) whereClause.pyqYear = pyqYear;
     if (stream) whereClause.stream = stream;
     if (type) whereClause.type = type;
@@ -83,7 +80,6 @@ export async function GET(req: Request) {
           content: true,
           difficulty: true,
           isPublished:true,
-          class: true,
           stream: true,
           
           pyqYear: true,
@@ -159,7 +155,6 @@ export async function POST(req: Request) {
         type: questionData.type,
         format: questionData.format,
         difficulty: questionData.difficulty,
-        class: questionData.class,
         stream: questionData.stream,
         subjectId: questionData.subjectId,
         topicId: questionData.topicId,
@@ -167,8 +162,8 @@ export async function POST(req: Request) {
         category:{
           create: questionData.category.map((category: QCategory) => ({
             category: category,})),
-          },
-        
+        },
+      
         pyqYear: questionData.pyqYear,
         book:questionData.book,
         hint: questionData.hint,

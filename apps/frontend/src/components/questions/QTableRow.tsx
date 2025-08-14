@@ -1,7 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { TableCell } from "@/components/ui/table";
 import { QuestionTableProps } from "@/types";
-import { TextFormator } from "@/utils/textFormator";
 import { CircleCheck } from "lucide-react";
 import Link from "next/link";
 
@@ -16,7 +15,7 @@ export const QTableRow = ({ problem, isPublished }: { problem: QuestionTableProp
     <>
 
       <TableCell className={`${!isPublished ? "" : "hidden"}`}>{problem.attempts.length > 0 ? (<CircleCheck className="text-green-400" />) : ("")}</TableCell>
-      <TableCell  >{TextFormator(problem.class)}</TableCell>
+      {/* <TableCell  >{TextFormator(problem.class)}</TableCell> */}
 
       <TableCell >
         <Badge variant={difficultyMap[problem.difficulty] || "default"}>
