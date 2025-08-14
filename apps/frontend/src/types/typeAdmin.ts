@@ -1,4 +1,4 @@
-import { ClassEnum, QuestionType, Stream } from "@prisma/client";
+import { QuestionType, Stream } from "@prisma/client";
 
 
 
@@ -82,7 +82,6 @@ export interface Question {
   subtopicId?: string;
   topicId?: string;
   subjectId?: string;
-  class: ClassEnum;
   stream?: Stream;
   pyqYear?: string;
   book?: string;
@@ -247,7 +246,7 @@ export interface QuestionFilter {
   subtopicId?: string | null;
   difficulty?: number | null;
   category?: QCategory;
-  className?: ClassEnum;
+  className?: string;
   pyqYear?: string | null;
   stream?: Stream;
   type?: QuestionType;
