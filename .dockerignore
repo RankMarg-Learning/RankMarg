@@ -1,3 +1,33 @@
+# Node artifacts
+node_modules
+npm-debug.log
+yarn-error.log
+.pnpm-store
+
+# Build output
+**/dist
+**/.next
+**/out
+
+# Local env files
+.env
+**/.env*
+
+# VCS
+.git
+.gitignore
+
+# OS/editor
+.DS_Store
+*.swp
+*.swo
+.idea
+.vscode
+
+# Logs
+**/logs
+**/*.log
+
 # Dependencies
 node_modules
 npm-debug.log*
