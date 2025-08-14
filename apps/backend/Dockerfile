@@ -1,86 +1,68 @@
-# Alternative Dockerfile - Simpler approach
-FROM node:20
+########## Multi-stage production Dockerfile for backend ##########
 
-# Set workdir at monorepo root
+# ---------- Stage 1: Builder ----------
+FROM node:20 AS builder
+
+# Work at monorepo root
 WORKDIR /app
 
-# Copy everything first
+# Copy manifests first for better caching
+COPY package.json package-lock.json ./
+COPY apps/backend/package.json ./apps/backend/package.json
+COPY packages/db/package.json ./packages/db/package.json
+COPY packages/suggest-engine/package.json ./packages/suggest-engine/package.json
+
+# Install all workspace dependencies
+RUN npm ci
+
+# Copy the entire monorepo
 COPY . .
 
-# Install dependencies
-RUN npm install
+# Generate Prisma client (targets include linux-musl)
+RUN npm run db:generate
 
-# Generate Prisma client
-RUN cd packages/db && npx prisma generate
+# Build internal packages needed at runtime
+RUN npm run build --workspace=packages/suggest-engine
 
-# Build backend
-RUN cd apps/backend && npm run build
+# Build backend (TypeScript -> dist)
+RUN npm run backend:build
 
-# Set working directory to backend
+# Prune dev dependencies to shrink runtime layer
+RUN npm prune --omit=dev
+
+
+# ---------- Stage 2: Runner ----------
+FROM node:20-alpine AS runner
+
+# Prisma on Alpine requires openssl; curl for healthcheck
+RUN apk add --no-cache openssl curl
+
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+# Copy only what we need for runtime
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
+COPY --from=builder /app/apps/backend/package.json ./apps/backend/package.json
+COPY --from=builder /app/packages ./packages
+COPY apps/backend/docker-entrypoint.sh ./apps/backend/docker-entrypoint.sh
+
+# Ensure entrypoint is executable
+RUN chmod +x ./apps/backend/docker-entrypoint.sh
+
+# Set backend working directory
 WORKDIR /app/apps/backend
 
-# Expose port
-EXPOSE 8080
+# Expose backend port (defaults to 3001 in code)
+EXPOSE 3001
 
-# Start the application
-CMD ["npm", "run", "start"]
-# # ---------- Stage 1: Build ----------
-#     FROM node:20 AS builder
+# Basic healthcheck (simple, does not depend on Redis)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:${PORT:-3001}/healthz || exit 1
 
-#     # Set workdir at monorepo root
-#     WORKDIR /app
-    
-#     # Copy package files first for better caching
-#     COPY package*.json turbo.json ./
-#     COPY apps/backend/package.json ./apps/backend/
-#     COPY packages/db/package.json ./packages/db/
-    
-#     # Install dependencies
-#     RUN npm install
-    
-#     # Copy the entire monorepo source code
-#     COPY . .
-    
-#     # Verify schema file exists (debugging step)
-#     RUN ls -la packages/db/prisma/
-    
-#     # Generate Prisma client from the db package
-#     WORKDIR /app/packages/db
-#     RUN npx prisma generate
-    
-#     # Build the backend application
-#     WORKDIR /app/apps/backend
-#     RUN npm run build
-    
-#     # ---------- Stage 2: Runtime ----------
-#     FROM node:20-alpine AS runner
-    
-#     # Install necessary packages for Prisma
-#     RUN apk add --no-cache openssl
+# Run migrations then start server
+ENTRYPOINT ["/app/apps/backend/docker-entrypoint.sh"]
 
-#     # Create non-root user
-#     RUN addgroup --system --gid 1001 nodejs
-#     RUN adduser --system --uid 1001 backend
-    
-#     # Set working directory
-#     WORKDIR /app
-    
-#     # Copy package files
-#     COPY --from=builder /app/package*.json ./
-#     COPY --from=builder /app/apps/backend/package.json ./apps/backend/
-#     COPY --from=builder /app/packages/db/package.json ./packages/db/
-    
-#     # Copy built application and dependencies
-#     COPY --from=builder /app/node_modules ./node_modules
-#     COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
-#     COPY --from=builder /app/apps/backend/package.json ./apps/backend/
-#     COPY --from=builder /app/packages ./packages
-    
-#     # Set backend as working directory
-#     WORKDIR /app/apps/backend
-    
-#     # Expose the backend port
-#     EXPOSE 3001
-    
-#     # Start backend server
-#     CMD ["npm", "run", "start"]
+

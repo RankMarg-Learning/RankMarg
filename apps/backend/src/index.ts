@@ -176,6 +176,11 @@ app.use("/api/update-review", reviews);
 
 const PORT = process.env.PORT || 3001;
 
+// Basic health endpoint for container orchestration
+app.get("/healthz", (_req, res) => {
+  res.status(200).json({ ok: true });
+});
+
 initializeRedis().then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 API running on port ${PORT}`);
