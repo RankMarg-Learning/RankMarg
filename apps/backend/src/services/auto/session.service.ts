@@ -49,7 +49,7 @@ export class PracticeService {
           id: true,
           stream: true,
           grade: true,
-          userPerformance: true,
+          questionsPerDay: true,
           currentStudyTopic: true,
         },
       });
@@ -64,7 +64,7 @@ export class PracticeService {
 
     const config = createDefaultSessionConfig(
       (user.stream as Stream) || Stream.NEET,
-      user.userPerformance?.dailyQuestions || 10,
+      user.questionsPerDay || 10,
       (user.grade as GradeEnum) || GradeEnum.C
     );
 
