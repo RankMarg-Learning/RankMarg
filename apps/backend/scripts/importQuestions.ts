@@ -2,7 +2,6 @@ import {
   PrismaClient,
   QuestionType,
   QuestionFormat,
-  ClassEnum,
   Stream,
 } from "@prisma/client";
 import * as fs from "fs";
@@ -25,7 +24,6 @@ interface QuestionData {
   format: QuestionFormat;
   content: string;
   difficulty: number;
-  class: ClassEnum;
   stream: Stream;
   pyqYear: string;
   questionTime: number;
@@ -76,7 +74,6 @@ async function main() {
         format: question.format,
         content: question.content,
         difficulty: question.difficulty,
-        class: question.class,
         stream: question.stream,
         pyqYear: question.pyqYear,
         questionTime: question.questionTime,
