@@ -31,7 +31,7 @@ export const resetStreakJob = async () => {
         },
       },
       data: {
-        dailyQuestions: 0,
+        streak: 0,
       },
     });
 

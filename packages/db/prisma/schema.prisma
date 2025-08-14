@@ -33,13 +33,6 @@ enum StandardEnum {
   CLASS_14
 }
 
-enum ClassEnum {
-  CLASS_10
-  CLASS_11
-  CLASS_12
-  CLASS_13
-}
-
 enum GradeEnum {
   A_PLUS
   A
@@ -65,14 +58,14 @@ model User {
   coins               Int           @default(0)
   xp                  Int           @default(0)
   grade               GradeEnum     @default(C)
-  role                Role?         @default(USER)
+  role                Role          @default(USER)
   provider            Provider
   location            String?
   targetYear          Int?
   studyHoursPerDay    Int?
-  questionsPerDay     Int?          @default(5)
-  onboardingCompleted Boolean?      @default(false)
-  isActive            Boolean?      @default(true)
+  questionsPerDay     Int           @default(5)
+  onboardingCompleted Boolean       @default(false)
+  isActive            Boolean       @default(true)
 
   // Relations
   attempts          Attempt[]
@@ -93,9 +86,12 @@ model User {
   studySuggestion   StudySuggestion[]
   payments          Payment[]
   subscription      Subscription?
+  examRegistrations ExamRegistration[]
+  testsCreated      Test[]              @relation("TestsCreated")
+  testsAuthored     Test[]              @relation("TestsAuthored")
 
-  updatedAt DateTime? @updatedAt
-  createdAt DateTime  @default(now())
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 
   @@index([id])
   @@index([username])
@@ -126,6 +122,7 @@ model UserPerformance {
   updatedAt DateTime @updatedAt
 
   @@index([accuracy])
+  @@index([streak])
 }
 
 model CurrentStudyTopic {
@@ -164,7 +161,8 @@ model Exam {
   updatedAt            DateTime  @updatedAt
 
   // Relations
-  examSubjects ExamSubject[]
+  examSubjects  ExamSubject[]
+  registrations ExamRegistration[]
 
   @@index([name])
   @@index([examDate])
@@ -181,6 +179,28 @@ model ExamSubject {
 
   @@id([examId, subjectId])
   @@index([subjectId])
+}
+
+enum ExamRegistrationStatus {
+  APPLIED
+  CONFIRMED
+  CANCELLED
+}
+
+model ExamRegistration {
+  id           String                 @id @default(uuid())
+  userId       String
+  examId       String
+  status       ExamRegistrationStatus @default(APPLIED)
+  registeredAt DateTime               @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam Exam @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, examId])
+  @@index([examId])
+  @@index([userId, status])
 }
 
 model Subject {
@@ -289,7 +309,6 @@ model Question {
   subtopicId    String?
   topicId       String?
   subjectId     String?
-  class         ClassEnum?
   stream        Stream?
   pyqYear       String?
   book          String?
@@ -312,6 +331,13 @@ model Question {
   subTopic          SubTopic?                  @relation(fields: [subtopicId], references: [id], onDelete: Cascade)
   topic             Topic?                     @relation(fields: [topicId], references: [id], onDelete: Cascade)
   subject           Subject?                   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@index([subjectId])
+  @@index([topicId])
+  @@index([subtopicId])
+  @@index([stream])
+  @@index([isPublished])
+  @@index([difficulty])
 }
 
 model QuestionCategory {
@@ -395,6 +421,8 @@ model Attempt {
   practiceSession   PracticeSession?   @relation("RevisionSessionAttempts", references: [id], fields: [practiceSessionId])
 
   @@index([userId, questionId])
+  @@index([testParticipationId])
+  @@index([practiceSessionId])
 }
 
 model PracticeSession {
@@ -421,6 +449,9 @@ model PracticeSessionQuestions {
 
   question        Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
   practiceSession PracticeSession @relation(fields: [practiceSessionId], references: [id], onDelete: Cascade)
+
+  @@unique([practiceSessionId, questionId])
+  @@index([questionId])
 }
 
 // ============================================
@@ -483,6 +514,11 @@ model Test {
   // Relations
   testParticipation TestParticipation[]
   testSection       TestSection[]
+  creator           User                @relation("TestsCreated", fields: [createdBy], references: [id], onDelete: Cascade)
+  author            User?               @relation("TestsAuthored", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([createdBy])
+  @@index([authorId])
 }
 
 model TestSection {
@@ -534,6 +570,8 @@ model TestParticipation {
   attempt Attempt[] @relation("TestSubmissionAttempts")
 
   @@unique([userId, testId])
+  @@index([testId])
+  @@index([userId])
 }
 
 // ============================================
@@ -878,6 +916,8 @@ model Subscription {
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   plan     Plan?     @relation(fields: [planId], references: [id])
   payments Payment[]
+
+  @@index([planId])
 }
 
 model Payment {
@@ -895,8 +935,11 @@ model Payment {
   updatedAt      DateTime        @updatedAt
 
   // Relations
-  user         User         @relation(fields: [userId], references: [id])
-  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([subscriptionId])
 }
 
 // !Add this in user model
