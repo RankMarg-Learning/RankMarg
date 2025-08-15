@@ -12,7 +12,7 @@ else
 fi
 
 echo "Starting backend..."
-cd /app/apps/backend
+cd /app
 exec node dist/index.js
 
 
