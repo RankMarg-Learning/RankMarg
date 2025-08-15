@@ -32,7 +32,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { generateSlug } from "@/lib/generateSlug";
 import { TextFormator } from "@/utils/textFormator";
 import { CategoryMultiSelect } from "./CategoryMultiSelect";
-import { PYQ_Year } from "@/constant/pyqYear";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import axios from "axios";
 
@@ -1061,29 +1060,24 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
           <div className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="tag" className="text-sm">PYQ Year</Label>
+                <Label htmlFor="pyqYear" className="text-sm">PYQ Year</Label>
                 <Controller
                   name="pyqYear"
                   control={control}
+                  rules={{
+                    required: "PYQ Year is required",
+                    pattern: {
+                      value: /^\[.*\]\s*-\s*\d{4}$/,
+                      message: "Format must be [Exam Name] - Year (e.g., [JEE Main] - 2024)"
+                    }
+                  }}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className={`border h-9 ${errors.pyqYear ? "border-red-500" : "border-gray-300"}`}>
-                        <SelectValue placeholder="Select PYQ Year" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PYQ_Year?.length > 0 ? (
-                          PYQ_Year.map((year) => (
-                            <SelectItem key={year} value={year}>
-                              {year}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem disabled value="none">
-                            No Years Available
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      {...field}
+                      id="pyqYear"
+                      placeholder="[Exam Name] - Year"
+                      className={`${errors.pyqYear ? "border-red-500" : "border-gray-300"}`}
+                    />
                   )}
                 />
                 {errors.pyqYear && <p className="text-red-500 text-xs">{errors.pyqYear.message}</p>}
