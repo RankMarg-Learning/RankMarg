@@ -1,5 +1,5 @@
 # Node artifacts
-node_modules
+# node_modules  # Commented out to allow Docker build to access dependencies
 npm-debug.log
 yarn-error.log
 .pnpm-store

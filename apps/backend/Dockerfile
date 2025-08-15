@@ -6,63 +6,57 @@ FROM node:20 AS builder
 # Work at monorepo root
 WORKDIR /app
 
-# Copy manifests first for better caching
+# Copy package files for dependency installation
 COPY package.json package-lock.json ./
 COPY apps/backend/package.json ./apps/backend/package.json
 COPY packages/db/package.json ./packages/db/package.json
 COPY packages/suggest-engine/package.json ./packages/suggest-engine/package.json
 
-# Install all workspace dependencies
-RUN npm ci
+# Copy Prisma schema
+COPY packages/db/prisma ./packages/db/prisma
 
-# Copy the entire monorepo
+# Install dependencies
+RUN npm ci
+RUN npm install --workspace=apps/backend
+
+# Copy source code
 COPY . .
 
-# Generate Prisma client (targets include linux-musl)
-RUN npm run db:generate
+# Generate Prisma client
+RUN cd packages/db && npm run db:generate
 
-# Build internal packages needed at runtime
+# Build packages
 RUN npm run build --workspace=packages/suggest-engine
-
-# Build backend (TypeScript -> dist)
 RUN npm run backend:build
-
-# Prune dev dependencies to shrink runtime layer
-RUN npm prune --omit=dev
-
 
 # ---------- Stage 2: Runner ----------
 FROM node:20-alpine AS runner
 
-# Prisma on Alpine requires openssl; curl for healthcheck
+# Install required system packages
 RUN apk add --no-cache openssl curl
 
 ENV NODE_ENV=production
 
 WORKDIR /app
 
-# Copy only what we need for runtime
+# Copy built application and dependencies
+COPY --from=builder /app/apps/backend/dist ./dist
+COPY --from=builder /app/apps/backend/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
-COPY --from=builder /app/apps/backend/package.json ./apps/backend/package.json
 COPY --from=builder /app/packages ./packages
-COPY apps/backend/docker-entrypoint.sh ./apps/backend/docker-entrypoint.sh
+COPY --from=builder /app/apps/backend/docker-entrypoint.sh ./docker-entrypoint.sh
 
-# Ensure entrypoint is executable
-RUN chmod +x ./apps/backend/docker-entrypoint.sh
+# Make entrypoint executable
+RUN chmod +x ./docker-entrypoint.sh
 
-# Set backend working directory
-WORKDIR /app/apps/backend
-
-# Expose backend port (defaults to 3001 in code)
+# Expose port
 EXPOSE 3001
 
-# Basic healthcheck (simple, does not depend on Redis)
+# Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD curl -fsS http://127.0.0.1:${PORT:-3001}/healthz || exit 1
 
-# Run migrations then start server
-ENTRYPOINT ["/app/apps/backend/docker-entrypoint.sh"]
+# Run entrypoint
+ENTRYPOINT ["./docker-entrypoint.sh"]
 
 

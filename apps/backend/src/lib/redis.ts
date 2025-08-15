@@ -1,9 +1,14 @@
 import { createClient, RedisClientType } from "redis";
-import dotenv from "dotenv";
 import path from "path";
 import { logger } from "./logger";
 
-dotenv.config({ path: path.resolve(__dirname, "../../../../.env") });
+// Load environment variables from .env file if it exists, otherwise use system environment variables
+try {
+  const dotenv = require("dotenv");
+  dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+} catch (error) {
+  console.log("No .env file found, using system environment variables");
+}
 
 class RedisService {
   private client: RedisClientType;

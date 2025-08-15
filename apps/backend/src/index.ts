@@ -22,7 +22,12 @@ import { createSuggestion } from "./jobs/suggest.create.job";
 import redisService from "./lib/redis";
 import { RedisCacheService } from "./services/session/RedisCacheService";
 
-dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
+// Load environment variables from .env file if it exists, otherwise use system environment variables
+try {
+  dotenv.config({ path: path.resolve(__dirname, "../.env") });
+} catch (error) {
+  console.log("No .env file found, using system environment variables");
+}
 
 const app = express();
 
