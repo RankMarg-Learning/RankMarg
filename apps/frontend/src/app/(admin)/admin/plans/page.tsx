@@ -254,6 +254,7 @@ const PlansPage = () => {
     if (days === 90) return "3 Months"
     if (days === 180) return "6 Months"
     if (days === 365) return "1 Year"
+    if (days === 730) return "2 Years"
     return `${days} Days`
   }
 
@@ -454,12 +455,12 @@ const PlansPage = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPlans.map((plan) => (
-            <Card key={plan.id} className="relative">
+            <Card key={plan?.id} className="relative">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-xl">{plan.name}</CardTitle>
-                    <CardDescription className="mt-2">{plan.description}</CardDescription>
+                    <CardTitle className="text-xl">{plan?.name}</CardTitle>
+                    <CardDescription className="mt-2">{plan?.description}</CardDescription>
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -472,11 +473,11 @@ const PlansPage = () => {
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleToggleStatus(plan.id)}>
-                        {plan.isActive ? "Deactivate" : "Activate"}
+                      <DropdownMenuItem onClick={() => handleToggleStatus(plan?.id)}>
+                        {plan?.isActive ? "Deactivate" : "Activate"}
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => handleDeletePlan(plan.id)}
+                        onClick={() => handleDeletePlan(plan?.id)}
                         className="text-red-600"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
@@ -486,11 +487,11 @@ const PlansPage = () => {
                   </DropdownMenu>
                 </div>
                 <div className="flex items-center gap-2 mt-4">
-                  <Badge variant={plan.isActive ? "default" : "secondary"}>
-                    {plan.isActive ? "Active" : "Inactive"}
+                  <Badge variant={plan?.isActive ? "default" : "secondary"}>
+                    {plan?.isActive ? "Active" : "Inactive"}
                   </Badge>
                   <Badge variant="outline">
-                    {formatDuration(plan.duration)}
+                    {formatDuration(plan?.duration)}
                   </Badge>
                 </div>
               </CardHeader>
@@ -498,17 +499,17 @@ const PlansPage = () => {
                 <div className="space-y-4">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-primary">
-                      {formatCurrency(plan.amount, plan.currency)}
+                      {formatCurrency(plan?.amount, plan?.currency)}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      per {formatDuration(plan.duration)}
+                      per {formatDuration(plan?.duration)}
                     </div>
                   </div>
                   
                   <div className="space-y-2">
                     <h4 className="font-medium text-sm">Features:</h4>
                     <ul className="space-y-1">
-                      {plan.features.map((feature, index) => (
+                      {Array.isArray(plan?.features) && plan.features.map((feature, index) => (
                         <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
                           <div className="w-1.5 h-1.5 bg-primary rounded-full" />
                           {feature}
@@ -518,7 +519,7 @@ const PlansPage = () => {
                   </div>
 
                   <div className="text-xs text-muted-foreground">
-                    Created: {new Date(plan.createdAt).toLocaleDateString()}
+                    Created: {new Date(plan?.createdAt).toLocaleDateString()}
                   </div>
                 </div>
               </CardContent>

@@ -1,0 +1,19 @@
+[
+    {
+        "id": "0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5",
+        "name": "Aniket Sudke",
+        "username": "aniketsudke3",
+        "email": "aniketsudke3@gmail.com",
+        "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIY8-AFAuwp8-3lRhfBa46kB-4HOGoSbTyHit9qaRJbh-XCS4ws=s96-c",
+        "role": "ADMIN",
+        "provider": "GOOGLE",
+        "location": "India",
+        "targetYear": 2027,
+        "studyHoursPerDay": 10,
+        "standard": "12th",
+        "grade": "A",
+        "coins": 100,
+        "xp": 100,
+        "streak": 10
+    }
+]
