@@ -5,7 +5,7 @@ import { jsonResponse } from "@/utils/api-response";
 
 export async function POST(req: Request) {
     const body = await req.json();
-    const { title, description, stream, duration, testKey, testSection, startTime, endTime, examType, difficulty, status, visibility } = body;
+    const { title, description, examCode, duration, testKey, testSection, startTime, endTime, examType, difficulty, status, visibility } = body;
     try {
 
         // if (!session?.user?.id) {
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
             data: {
                 title,
                 description,
-                stream,
+                examCode,
                 totalMarks,
                 totalQuestions,
                 status,

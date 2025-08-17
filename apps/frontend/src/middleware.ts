@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { NextApiRequest } from "next";
 import { Method, protectedApiRoutes, protectedPages } from "./lib/auth-routes";
-import { Role } from "@prisma/client";
+import { Role } from "@repo/db/enums";
 
 /**
  * Redirects the user to the sign-in page

@@ -2,9 +2,8 @@ import {
   AttemptType,
   SubmitStatus,
   MistakeType,
-  Stream,
   GradeEnum,
-} from "@prisma/client";
+} from "@repo/db/enums";
 
 export interface MasteryAttempt {
   userId: string;
@@ -29,7 +28,7 @@ export interface MasteryAttempt {
 
 export interface UserProfileData {
   id: string;
-  stream: Stream | null;
+  // stream removed in flexible exam model
   targetYear: number | null;
   studyHoursPerDay: number | null;
   questionsPerDay: number | null;
@@ -130,7 +129,7 @@ export type SubjectMasteryResponseProps = {
   subject: {
     id: string;
     name: string;
-    stream: string;
+    examCode: string;
   };
   overallMastery: number;
   topics: {

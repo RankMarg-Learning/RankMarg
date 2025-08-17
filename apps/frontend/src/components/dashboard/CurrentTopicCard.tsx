@@ -106,7 +106,7 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
     });
   };
 
-  const { subjects, isLoading: isLoadingSubjects } = useSubjects(session?.user?.stream || "NEET");
+  const { subjects, isLoading: isLoadingSubjects } = useSubjects(session?.user?.examCode || "NEET");
 
   const { topics: filteredTopics, isLoading: isLoadingTopics } = useTopics(selectedSubject);
 

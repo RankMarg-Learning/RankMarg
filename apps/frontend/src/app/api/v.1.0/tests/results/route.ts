@@ -34,7 +34,7 @@ const getCompletedTestResults = cache(async (userId: string, limit: number) => {
                         testId: true,
                         title: true,
                         description: true,
-                        stream: true,
+                        examCode: true,
                         totalMarks: true,
                         totalQuestions: true,
                         difficulty: true,

@@ -1,5 +1,5 @@
 import prisma from "../../lib/prisma";
-import { GradeEnum, Stream } from "@prisma/client";
+import { GradeEnum } from "@repo/db/enums";
 import { createDefaultSessionConfig } from "../session/SessionConfig";
 import { PracticeSessionGenerator } from "../session/PracticeSessionGenerator";
 import { RedisCacheService } from "../session/RedisCacheService";
@@ -47,7 +47,6 @@ export class PracticeService {
         where: { id: userId },
         select: {
           id: true,
-          stream: true,
           grade: true,
           questionsPerDay: true,
           currentStudyTopic: true,
@@ -62,15 +61,21 @@ export class PracticeService {
       await RedisCacheService.cacheUserPerformance(userId, user);
     }
 
+    const examReg = await prisma.examUser.findFirst({
+      where: { userId },
+      select: { exam: { select: { code: true } } },
+      orderBy: { registeredAt: "desc" },
+    });
+
     const config = createDefaultSessionConfig(
-      (user.stream as Stream) || Stream.NEET,
+      examReg?.exam.code || "DEFAULT",
       user.questionsPerDay || 10,
       (user.grade as GradeEnum) || GradeEnum.C
     );
 
     await this.markSessionAsCompleted(userId);
     const sessionGenerator = new PracticeSessionGenerator(prisma, config);
-    await sessionGenerator.generate(userId, config.stream, config.grade);
+    await sessionGenerator.generate(userId, config.examCode, config.grade);
   }
 
   public async markSessionAsCompleted(userId: string) {

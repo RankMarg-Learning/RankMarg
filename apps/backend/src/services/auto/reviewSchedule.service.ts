@@ -1,6 +1,5 @@
 import prisma from "../../lib/prisma";
 import { addDays, differenceInCalendarDays, startOfDay } from "date-fns";
-import { Stream } from "@prisma/client";
 import { masteryConfig } from "../mastery/MasteryConfig";
 
 interface ReviewSchedulingInput {
@@ -9,7 +8,7 @@ interface ReviewSchedulingInput {
   lastReviewedAt: Date;
   completedReviews: number;
   retentionStrength: number;
-  stream: Stream;
+  examCode: string;
 }
 
 export class ReviewScheduleService {
@@ -66,10 +65,10 @@ export class ReviewScheduleService {
       lastReviewedAt,
       completedReviews,
       retentionStrength,
-      stream,
+      examCode,
     } = params;
 
-    const streamCfg = masteryConfig.getStreamConfig(stream);
+    const streamCfg = masteryConfig.getExamConfig(examCode);
 
     const baseMultiplier =
       1 + masteryLevel / 20 + streamCfg.masteryThresholdAdjustment;
@@ -104,12 +103,12 @@ export class ReviewScheduleService {
     correctAttempts: number,
     totalAttempts: number,
     avgTime: number,
-    stream: Stream
+    examCode: string
   ): number {
     if (totalAttempts === 0) return 0.5;
 
     const idealTime =
-      masteryConfig.getStreamConfig(stream).idealTimePerQuestion;
+      masteryConfig.getExamConfig(examCode).idealTimePerQuestion;
 
     const accuracy = correctAttempts / totalAttempts; // [0,1]
     const timeRatio = idealTime / Math.max(avgTime, 1); // > 0, higher is better
@@ -153,9 +152,10 @@ export class ReviewScheduleService {
       prisma.reviewSchedule.findUnique({
         where: { userId_topicId: { userId, topicId } },
       }),
-      prisma.user.findUnique({
-        where: { id: userId },
-        select: { stream: true },
+      prisma.examUser.findFirst({
+        where: { userId },
+        select: { exam: { select: { code: true } } },
+        orderBy: { registeredAt: "desc" },
       }),
     ]);
 
@@ -165,7 +165,7 @@ export class ReviewScheduleService {
       );
     }
 
-    const stream = (user?.stream ?? Stream.NEET) as Stream;
+    const examCode = user?.exam.code || "DEFAULT";
 
     const now = new Date();
     let lastReviewedAt = now;
@@ -188,7 +188,7 @@ export class ReviewScheduleService {
     const avgTime =
       attempts.length > 0
         ? totalTime / attempts.length
-        : masteryConfig.getStreamConfig(stream).idealTimePerQuestion;
+        : masteryConfig.getExamConfig(examCode).idealTimePerQuestion;
     const correctAttempts = attempts.filter(
       (a) => a.status === "CORRECT"
     ).length;
@@ -198,7 +198,7 @@ export class ReviewScheduleService {
         correctAttempts,
         attempts.length,
         avgTime,
-        stream
+        examCode
       );
     }
 
@@ -220,7 +220,7 @@ export class ReviewScheduleService {
       lastReviewedAt,
       completedReviews,
       retentionStrength: retentionAdjusted,
-      stream,
+      examCode,
     });
 
     return prisma.reviewSchedule.upsert({

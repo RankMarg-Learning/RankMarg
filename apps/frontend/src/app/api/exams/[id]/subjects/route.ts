@@ -2,14 +2,14 @@ import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
-  const { id: examId } = params;
+  const { id: examCode } = params;
   const body = await req.json();
   const { subjectId, weightage } = body;
 
   try {
     const examSubject = await prisma.examSubject.create({
       data: {
-        examId,
+        examCode,
         subjectId,
         weightage,
       },
@@ -34,7 +34,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 }
 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-  const { id: examId } = params;
+  const { id: examCode } = params;
   const { searchParams } = new URL(req.url);
   const subjectId = searchParams.get("subjectId");
 
@@ -49,8 +49,8 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   try {
     await prisma.examSubject.delete({
       where: {
-        examId_subjectId: {
-          examId,
+        examCode_subjectId: {
+          examCode,
           subjectId,
         },
       },

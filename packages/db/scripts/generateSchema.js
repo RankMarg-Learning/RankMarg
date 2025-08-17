@@ -1,0 +1,770 @@
+const fs = require("fs");
+const path = require("path");
+
+function generateSchema() {
+  return `generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER MANAGEMENT
+// ============================================
+
+model User {
+  id                  String        @id @default(uuid())
+  name                String?
+  username            String?       @unique
+  email               String?       @unique
+  password            String?
+  phone               String?       @unique
+  standard            String?       @db.Text
+  avatar              String?
+  coins               Int           @default(0)
+  xp                  Int           @default(0)
+  grade               String        @default("C") @db.Text
+  role                String        @default("USER") @db.Text
+  provider            String        @db.Text
+  location            String?
+  targetYear          Int?
+  studyHoursPerDay    Int?
+  questionsPerDay     Int           @default(5)
+  onboardingCompleted Boolean       @default(false)
+  isActive            Boolean       @default(true)
+
+  // Relations
+  attempts          Attempt[]
+  testParticipated  TestParticipation[]
+  userPerformance   UserPerformance?
+  metric            Metric[]
+  subjectMastery    SubjectMastery[]
+  topicMastery      TopicMastery[]
+  subtopicMastery   SubtopicMastery[]
+  reviewSchedule    ReviewSchedule[]
+  masteryHistory    MasteryHistory[]
+  practiceSession   PracticeSession[]
+  currentStudyTopic CurrentStudyTopic[]
+  activity          activity[]
+  coinTransaction   CoinTransaction[]
+  userAchievement   UserAchievement[]
+  userNotification  UserNotification[]
+  studySuggestion   StudySuggestion[]
+  payments          Payment[]
+  subscription      Subscription?
+  examRegistrations ExamUser[]
+  testsCreated      Test[]              @relation("TestsCreated")
+  testsAuthored     Test[]              @relation("TestsAuthored")
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@index([id])
+  @@index([username])
+  @@index([email])
+  @@index([phone])
+  @@index([targetYear])
+  @@index([xp])
+}
+
+model UserPerformance {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  dailyQuestions      Int       @default(5)
+  streak              Int       @default(0)
+  totalAttempts       Int       @default(0)
+  correctAttempts     Int       @default(0)
+  accuracy            Float     @default(0)
+  subjectWiseAccuracy Json?
+  recentTestScores    Json?
+  highestScore        Float     @default(0.0)
+  lowestScore         Float     @default(0.0)
+  avgScore            Float     @default(0.0)
+  lastExamDate        DateTime?
+  avgDailyStudyHours  Float?    @default(0)
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @updatedAt
+
+  @@index([accuracy])
+  @@index([streak])
+}
+
+model CurrentStudyTopic {
+  id          String   @id @default(uuid())
+  userId      String
+  subjectId   String
+  topicId     String
+  isCurrent   Boolean  @default(true)
+  isCompleted Boolean  @default(false)
+  startedAt   DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topic   Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, subjectId, topicId])
+}
+
+model Exam {
+  code                 String    @id @unique  //JEE, NEET, etc.
+  name                 String
+  fullName             String?
+  description          String?
+  category             String?
+  minDifficulty        Int       @default(1)
+  maxDifficulty        Int       @default(4)
+  totalMarks           Int
+  duration             Int
+  negativeMarking      Boolean   @default(false)
+  negativeMarkingRatio Float?    @default(0)
+  isActive             Boolean   @default(true)
+  registrationStartAt  DateTime?
+  registrationEndAt    DateTime?
+  examDate             DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  // Relations
+  examSubjects  ExamSubject[]
+  registrations ExamUser[]
+
+  @@index([name])
+  @@index([code])
+  @@index([examDate])
+}
+
+model ExamSubject {
+  examCode  String
+  subjectId String
+  weightage Float  @default(0)
+
+  // Relations
+  exam    Exam    @relation(fields: [examCode], references: [code], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([examCode, subjectId])
+  @@index([subjectId])
+}
+
+model ExamUser {
+  id           String                 @id @default(uuid())
+  userId       String
+  examCode     String
+  registeredAt DateTime               @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam Exam @relation(fields: [examCode], references: [code], onDelete: Cascade)
+
+  @@unique([userId, examCode])
+  @@index([examCode])
+  @@index([userId])
+}
+
+model Subject {
+  id        String  @id @default(uuid())
+  name      String
+  shortName String?
+
+  // Relations
+  topics            Topic[]
+  questions         Question[]
+  subjectMastery    SubjectMastery[]
+  masteryHistory    MasteryHistory[]
+  currentStudyTopic CurrentStudyTopic[]
+  examSubjects      ExamSubject[]
+
+  @@unique([name])
+  @@unique([shortName])
+}
+
+model Topic {
+  id               String  @id @default(uuid())
+  name             String
+  slug             String?
+  subjectId        String
+  weightage        Float   @default(0.0)
+  orderIndex       Int     @default(0)
+  estimatedMinutes Int?
+
+  // Relations
+  subject           Subject             @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subTopics         SubTopic[]
+  questions         Question[]
+  topicMastery      TopicMastery[]
+  currentStudyTopic CurrentStudyTopic[]
+
+  @@unique([name, subjectId])
+  @@unique([slug, subjectId])
+  @@index([subjectId, orderIndex])
+}
+
+model SubTopic {
+  id               String  @id @default(uuid())
+  name             String
+  slug             String?
+  topicId          String
+  orderIndex       Int     @default(0)
+  estimatedMinutes Int?
+
+  // Relations
+  topic           Topic             @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  questions       Question[]
+  subtopicMastery SubtopicMastery[]
+
+  @@unique([name, topicId])
+  @@unique([slug, topicId])
+  @@index([topicId, orderIndex])
+}
+
+// ============================================
+// QUESTIONS & OPTIONS
+// ============================================
+
+model Question {
+  id            String         @id @default(uuid())
+  slug          String         @unique
+  title         String
+  type          String         @db.Text
+  format        String         @db.Text
+  content       String
+  difficulty    Int            @default(1)
+  subtopicId    String?
+  topicId       String?
+  subjectId     String?
+  pyqYear       String?
+  book          String?
+  commonMistake String?
+  isNumerical   Float?
+  solution      String?
+  questionTime  Int?           @default(2)
+  hint          String?
+  isPublished   Boolean?       @default(false)
+  createdBy     String?
+  createdAt     DateTime       @default(now())
+
+  // Relations
+  category          QuestionCategory[]
+  questionInsights  QuestionInsights?
+  attempts          Attempt[]
+  options           Option[]
+  testQuestions     TestQuestion[]
+  practiceQuestions PracticeSessionQuestions[]
+  subTopic          SubTopic?                  @relation(fields: [subtopicId], references: [id], onDelete: Cascade)
+  topic             Topic?                     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  subject           Subject?                   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@index([subjectId])
+  @@index([topicId])
+  @@index([subtopicId])
+  @@index([isPublished])
+  @@index([difficulty])
+}
+
+model QuestionCategory {
+  questionId String
+  category   String @db.Text
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([questionId, category])
+}
+
+model Option {
+  id         String  @id @default(uuid())
+  content    String
+  isCorrect  Boolean @default(false)
+  questionId String
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model QuestionInsights {
+  id             String   @id @default(uuid())
+  questionId     String   @unique
+  totalAttempts  Int      @default(0)
+  correctCount   Int      @default(0)
+  incorrectCount Int      @default(0)
+  skippedCount   Int      @default(0)
+  avgHintsUsed   Float    @default(0)
+  accuracy       Float    @default(0)
+  updatedAt      DateTime @updatedAt
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// ATTEMPTS & PRACTICE SESSIONS
+// ============================================
+
+model Attempt {
+  id                  String       @id @default(uuid())
+  userId              String
+  questionId          String
+  type                String       @db.Text
+  answer              String?
+  mistake             String?      @db.Text
+  timing              Float?       @default(0)
+  reactionTime        Float?
+  status              String       @default("NOT_ANSWERED") @db.Text
+  hintsUsed           Boolean      @default(false)
+  solvedAt            DateTime     @default(now())
+  testParticipationId String?
+  practiceSessionId   String?
+
+  // Relations
+  question          Question           @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testParticipation TestParticipation? @relation("TestSubmissionAttempts", fields: [testParticipationId], references: [id])
+  practiceSession   PracticeSession?   @relation("RevisionSessionAttempts", references: [id], fields: [practiceSessionId])
+
+  @@index([userId, questionId])
+  @@index([testParticipationId])
+  @@index([practiceSessionId])
+}
+
+model PracticeSession {
+  id              String    @id @default(uuid())
+  userId          String
+  subjectId       String?
+  questionsSolved Int?      @default(0)
+  correctAnswers  Int?      @default(0)
+  isCompleted     Boolean   @default(false)
+  startTime       DateTime?
+  duration        Int?
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  user      User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions PracticeSessionQuestions[]
+  attempts  Attempt[]                  @relation("RevisionSessionAttempts")
+}
+
+model PracticeSessionQuestions {
+  id                String @id @default(uuid())
+  practiceSessionId String
+  questionId        String
+
+  question        Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  practiceSession PracticeSession @relation(fields: [practiceSessionId], references: [id], onDelete: Cascade)
+
+  @@unique([practiceSessionId, questionId])
+  @@index([questionId])
+}
+
+// ============================================
+// TESTS & TEST MANAGEMENT
+// ============================================
+
+model Test {
+  testId         String     @id @default(uuid())
+  title          String
+  description    String?
+  examCode       String?
+  totalMarks     Int?
+  totalQuestions Int?
+  referenceId    String?
+  testKey        String?
+  difficulty     String?    @default("MEDIUM")
+  duration       Int
+  status         String     @default("DRAFT") @db.Text
+  visibility     String     @default("PUBLIC") @db.Text
+  examType       String?    @db.Text
+  startTime      DateTime?
+  endTime        DateTime?
+  createdBy      String
+  authorId       String?
+  updatedAt      DateTime?  @updatedAt
+  createdAt      DateTime   @default(now())
+
+  // Relations
+  testParticipation TestParticipation[]
+  testSection       TestSection[]
+  creator           User                @relation("TestsCreated", fields: [createdBy], references: [id], onDelete: Cascade)
+  author            User?               @relation("TestsAuthored", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([createdBy])
+  @@index([authorId])
+}
+
+model TestSection {
+  id            String  @id @default(uuid())
+  testId        String
+  name          String
+  isOptional    Boolean @default(false)
+  maxQuestions  Int?
+  correctMarks  Float?
+  negativeMarks Float?
+
+  // Relations
+  test         Test           @relation(fields: [testId], references: [testId], onDelete: Cascade)
+  testQuestion TestQuestion[]
+}
+
+model TestQuestion {
+  questionId    String
+  testSectionId String
+
+  // Relations
+  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  testSection TestSection? @relation(fields: [testSectionId], references: [id], onDelete: Cascade)
+
+  @@id([testSectionId, questionId])
+}
+
+model TestParticipation {
+  id               String                  @id @default(uuid())
+  userId           String
+  testId           String
+  score            Int?                    @default(0)
+  status           String                  @default("JOIN") @db.Text
+  accuracy         Float?                  @default(0)
+  timing           Int?                    @default(0)
+  maxStreakCorrect Int?                    @default(0)
+  maxStreakWrong   Int?                    @default(0)
+  cntMinmize       Int?                    @default(0)
+  cntAnsweredMark  Int?                    @default(0)
+  cntAnswered      Int?                    @default(0)
+  cntNotAnswered   Int?                    @default(0)
+  cntMarkForReview Int?                    @default(0)
+  startTime        DateTime                @default(now())
+  endTime          DateTime                @default(now())
+
+  // Relations
+  test    Test      @relation(fields: [testId], references: [testId], onDelete: Cascade)
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attempt Attempt[] @relation("TestSubmissionAttempts")
+
+  @@unique([userId, testId])
+  @@index([testId])
+  @@index([userId])
+}
+
+// ============================================
+// MASTERY & PERFORMANCE TRACKING
+// ============================================
+
+model Metric {
+  id            String     @id @default(uuid())
+  userId        String
+  metricType    String     @db.Text
+  currentValue  Int
+  previousValue Int
+  updatedAt     DateTime   @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, metricType])
+}
+
+model SubjectMastery {
+  id              String @id @default(uuid())
+  userId          String
+  subjectId       String
+  masteryLevel    Int    @default(0)
+  totalAttempts   Int    @default(0)
+  correctAttempts Int    @default(0)
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, subjectId])
+}
+
+model TopicMastery {
+  id              String @id @default(uuid())
+  userId          String
+  topicId         String
+  masteryLevel    Int    @default(0)
+  strengthIndex   Float  @default(0.0)
+  totalAttempts   Int    @default(0)
+  correctAttempts Int    @default(0)
+
+  // Relations
+  topic          Topic           @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewSchedule ReviewSchedule?
+
+  @@unique([userId, topicId])
+}
+
+model SubtopicMastery {
+  id              String @id @default(uuid())
+  userId          String
+  subtopicId      String
+  topicId         String
+  masteryLevel    Int    @default(0)
+  strengthIndex   Float  @default(0.0)
+  totalAttempts   Int    @default(0)
+  correctAttempts Int    @default(0)
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subtopic SubTopic @relation(fields: [subtopicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, subtopicId])
+}
+
+model ReviewSchedule {
+  id                String   @id @default(cuid())
+  userId            String
+  topicId           String
+  lastReviewedAt    DateTime
+  nextReviewAt      DateTime
+  reviewInterval    Int?
+  retentionStrength Float
+  completedReviews  Int      @default(0)
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicMastery TopicMastery @relation(fields: [userId, topicId], references: [userId, topicId], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+}
+
+model MasteryHistory {
+  id              String   @id @default(uuid())
+  userId          String
+  subjectId       String?
+  masteryLevel    Int      @default(0)
+  strengthIndex   Float    @default(0)
+  totalAttempts   Int      @default(0)
+  correctAttempts Int      @default(0)
+  totalTimeSpent  Float    @default(0) // in minutes or seconds
+  recordedAt      DateTime @default(now())
+
+  // Relations
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject? @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@index([userId, subjectId, recordedAt])
+}
+
+// ============================================
+// GAMIFICATION & REWARDS
+// ============================================
+
+model Achievement {
+  id               String   @id @default(uuid())
+  type             String   @unique
+  name             String
+  description      String
+  badgeName        String
+  badgeDescription String
+  criteriaValue    Int
+  coinReward       Int      @default(0)
+  xpReward         Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
+  id            String   @id @default(uuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now())
+
+  // Relations
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId, unlockedAt])
+}
+
+model activity {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String?
+  message   String?
+  earnCoin  Int?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CoinTransaction {
+  id          String   @id @default(uuid())
+  userId      String
+  amount      Int
+  type        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+// ============================================
+// NOTIFICATIONS & SUGGESTIONS
+// ============================================
+
+model StudySuggestion {
+  id           String           @id @default(uuid())
+  userId       String
+  type         String           @db.Text
+  triggerType  String           @db.Text
+  suggestion   String
+  category     String
+  priority     Int
+  displayUntil DateTime?
+  actionName   String?
+  actionUrl    String?
+  status       String           @default("ACTIVE") @db.Text
+  createdAt    DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status, createdAt])
+  @@index([userId, triggerType])
+}
+
+model Notification {
+  id          String    @id @default(uuid())
+  type        String
+  title       String
+  message     String
+  scheduledAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  userNotifications UserNotification[]
+
+  @@index([type, createdAt])
+}
+
+model UserNotification {
+  id             String             @id @default(uuid())
+  userId         String
+  notificationId String
+  status         String             @default("UNREAD") @db.Text
+  deliveredAt    DateTime           @default(now())
+  readAt         DateTime?
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, notificationId])
+  @@index([userId, status])
+}
+
+// ============================================
+// SUBSCRIPTION & PAYMENT MANAGEMENT
+// ============================================
+
+model Plan {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  amount      Float
+  currency    String   @default("INR")
+  duration    Int
+  features    Json?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  subscriptions Subscription[]
+  promoCodes    PromoCode[]    @relation("PlanPromoCodes")
+
+  @@unique([id, name])
+  @@index([isActive])
+  @@index([name, duration])
+  @@index([name])
+  @@index([id])
+  @@index([name, duration, isActive])
+}
+
+model PromoCode {
+  id                String   @id @default(uuid())
+  code              String   @unique
+  description       String?
+  discount          Float
+  maxUsageCount     Int?
+  currentUsageCount Int      @default(0)
+  validFrom         DateTime
+  validUntil        DateTime
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  applicablePlans Plan[] @relation("PlanPromoCodes")
+}
+
+model Subscription {
+  id                String             @id @default(uuid())
+  userId            String             @unique
+  planId            String?
+  duration          Int?
+  status            String             @default("TRIAL") @db.Text
+  provider          String             @db.Text
+  providerId        String?
+  amount            Float
+  discountApplied   Float?             @default(0)
+  promoCodeUsed     String?
+  trialEndsAt       DateTime?
+  currentPeriodEnd  DateTime?
+  cancelAtPeriodEnd Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan     Plan?     @relation(fields: [planId], references: [id])
+  payments Payment[]
+
+  @@index([planId])
+}
+
+model Payment {
+  id             String          @id @default(uuid())
+  userId         String
+  subscriptionId String
+  amount         Float
+  currency       String          @default("INR")
+  status         String          @db.Text
+  provider       String          @db.Text
+  orderId        String?
+  paymentMethod  String?
+  paidAt         DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([subscriptionId])
+}
+`;
+}
+
+async function main() {
+  const schemaPath = path.join(__dirname, "..", "prisma", "schema.prisma");
+  const schema = generateSchema();
+
+  try {
+    fs.writeFileSync(schemaPath, schema, "utf-8");
+    console.log("✅ Schema generated successfully!");
+    console.log(`📁 Schema saved to: ${schemaPath}`);
+  } catch (error) {
+    console.error("❌ Error generating schema:", error);
+    process.exit(1);
+  }
+}
+
+main();

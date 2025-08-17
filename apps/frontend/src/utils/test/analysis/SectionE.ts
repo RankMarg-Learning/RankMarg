@@ -1,5 +1,5 @@
 import { AnalysisSectionE,  TestWithIncludes } from "@/types/typeTest"
-import { Stream, SubmitStatus } from "@prisma/client"
+import {  SubmitStatus } from "@repo/db/enums"
 
 
 
@@ -26,7 +26,6 @@ export const SectionE = (test: TestWithIncludes):AnalysisSectionE[] => {
         subject: {
             name:string;
             id:string;
-            stream:Stream
         };
         topic: {
             id:string;

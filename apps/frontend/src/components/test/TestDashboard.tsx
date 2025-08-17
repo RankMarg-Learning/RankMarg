@@ -52,7 +52,7 @@ const TestDashboard = () => {
               examType={recommended?.data?.examType}
               totalQuestions={recommended?.data?.totalQuestions}
               totalMarks={recommended?.data?.totalMarks}
-              stream={recommended?.data?.stream}
+              examCode={recommended?.data?.examCode}
               duration={recommended?.data?.duration}
               difficulty={recommended?.data?.difficulty}
               onStartTest={handleStartTest}

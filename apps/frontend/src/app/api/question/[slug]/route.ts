@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
-import { QCategory } from "@prisma/client";
+import { QCategory } from "@repo/db/enums";
 
 export async function GET(req: Request, { params }: { params: { slug: string } }) {
 

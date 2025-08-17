@@ -1,5 +1,4 @@
 import { MasteryService } from "../services/auto/mastery.service";
-import { Stream } from "@prisma/client";
 import { Request, Response } from "express";
 
 enum TypeProps {
@@ -44,7 +43,7 @@ export const updateMastery = async (req: Request, res: Response) => {
     const masteryService = new MasteryService();
 
     if (type === TypeProps.USER) {
-      const { userId, stream } = req.body || {};
+      const { userId, examCode } = req.body || {};
       if (!userId) {
         res.status(400).json({
           success: false,
@@ -55,7 +54,7 @@ export const updateMastery = async (req: Request, res: Response) => {
         return;
       }
 
-      await masteryService.processOneUser(userId, stream as Stream);
+      await masteryService.processOneUser(userId, examCode);
       res.status(200).json({
         success: true,
         message: "Session generated for user",

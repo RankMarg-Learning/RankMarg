@@ -27,14 +27,13 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import { Stream, QuestionType } from "@prisma/client";
+import { QuestionType } from "@repo/db/enums";
 import { useSubjects } from "@/hooks/useSubject";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { usePathname } from "next/navigation";
 import {  getQuestionByFilter } from "@/services/question.service";
 import { PYQ_Year } from "@/constant/pyqYear";
-import useSessionStore from "@/store/sessionStore";
 
 interface QuestionsetProps {
   selectedQuestions?: {
@@ -44,7 +43,7 @@ interface QuestionsetProps {
   onSelectedQuestionsChange?: (selected: { id: string; title?: string; }[]) => void;
   isCheckBox?: boolean;
   isPublished?: boolean;
-  IPstream?: Stream;
+  examCode?: string;
 }
 
 const Questionset: React.FC<QuestionsetProps> = ({
@@ -52,7 +51,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
   onSelectedQuestionsChange,
   isCheckBox = false,
   isPublished = false,
-  IPstream
+  examCode
 }) => {
   const [subject, setSubject] = useState("");
   const [difficulty, setDifficulty] = useState<number | null>(null);
@@ -64,23 +63,6 @@ const Questionset: React.FC<QuestionsetProps> = ({
   const pathname = usePathname();
   const isAdminPage = pathname.startsWith("/admin");
 
-  const { stream: sessionStream } = useSessionStore();
-
-  const getInitialStream = (): Stream => {
-    if (IPstream) return IPstream;
-    if (sessionStream) return sessionStream;
-    return (typeof window !== "undefined" && localStorage.getItem("stream") as Stream) || "NEET";
-  };
-
-  const [stream, setStream] = useState<Stream>(getInitialStream());
-
-  useEffect(() => {
-    if (IPstream) {
-      setStream(IPstream);
-    } else if (sessionStream) {
-      setStream(sessionStream);
-    }
-  }, [IPstream, sessionStream]);
 
   const handleDifficulty = (value: string[]) => {
     const difficultyMap: Record<string, number | null> = {
@@ -102,13 +84,13 @@ const Questionset: React.FC<QuestionsetProps> = ({
   };
 
   const { data:questions, isLoading, refetch } = useQuery({
-    queryKey: ["questions", currentPage, subject, difficulty, pyqYear, search, isPublished,stream],
-    queryFn: async () => getQuestionByFilter({isPublished, page: currentPage, subjectId: subject, difficulty,  pyqYear, search, stream ,type }),
+    queryKey: ["questions", currentPage, subject, difficulty, pyqYear, search, isPublished,  examCode],
+    queryFn: async () => getQuestionByFilter({isPublished, page: currentPage, subjectId: subject, difficulty,  pyqYear, search, type, examCode }),
   });
 
   useEffect(() => {
     refetch();
-  }, [currentPage, subject, difficulty, pyqYear, search, stream, type, refetch]);
+  }, [currentPage, subject, difficulty, pyqYear, search,  type, examCode, refetch]);
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
@@ -134,7 +116,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
     onSelectedQuestionsChange(updatedSelection);
   };
 
-  const { subjects, isLoading: isSubjectLoading } = useSubjects(stream);
+  const { subjects, isLoading: isSubjectLoading } = useSubjects(examCode);
 
   return (
     <div className="w-full">
@@ -197,7 +179,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
 
           </div>
         </div>
-        <TabsContent value={subject.toLowerCase() || "all"}>
+        <TabsContent value={subject || "all"}>
           <Card>
             <CardContent>
               <div className="overflow-x-auto">

@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
-import { AttemptType, SubmitStatus, Prisma, MetricType } from "@prisma/client";
+import { AttemptType, SubmitStatus, MetricType } from "@repo/db/enums";
+import { Prisma } from "@prisma/client";
 import { getAuthSession } from "@/utils/session";
 import { AttemptCreateData, AttemptRequestBody } from "@/types";
 import { getDayWindow } from "@/lib/dayRange";

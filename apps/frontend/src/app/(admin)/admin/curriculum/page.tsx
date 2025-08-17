@@ -31,7 +31,6 @@ import { useSubjects } from "@/hooks/useSubject";
 import { useTopics } from "@/hooks/useTopics";
 import { useSubtopics } from "@/hooks/useSubtopics";
 import { useExams } from "@/hooks/useExams";
-import { Stream } from "@prisma/client";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
@@ -69,9 +68,8 @@ const Curriculum = () => {
   const [selectedTopic, setSelectedTopic] = useState<Topic | undefined>();
   const [selectedSubtopic, setSelectedSubtopic] = useState<Subtopic | undefined>();
   const [selectedExam, setSelectedExam] = useState<Exam | undefined>();
-  const [selectedSubjectForTopics, setSelectedSubjectForTopics] = useState<string | "">("");
-  const [selectedTopicForSubtopics, setSelectedTopicForSubtopics] = useState<string | "">("");
-  const [selectedStreamForSubjects, setSelectedStreamForSubjects] = useState<string | "">("");
+  const [selectedSubjectForTopics, setSelectedSubjectForTopics] = useState<string | undefined>(undefined);
+  const [selectedTopicForSubtopics, setSelectedTopicForSubtopics] = useState<string | undefined>(undefined);
 
   // Delete confirmation
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -82,7 +80,7 @@ const Curriculum = () => {
   } | null>(null);
 
   // Hooks - Initialize with proper default values
-  const { saveSubject, isLoading: isLoadingSubjects, removeSubject, subjects } = useSubjects(selectedStreamForSubjects)
+  const { saveSubject, isLoading: isLoadingSubjects, removeSubject, subjects } = useSubjects()
   const { removeTopic, saveTopic, isLoading: isLoadingTopics, topics } = useTopics(selectedSubjectForTopics)
   const { removeSubTopic, isLoading: isLoadingSubtopics, saveSubTopic, subtopics } = useSubtopics(selectedTopicForSubtopics)
   const { exams, saveExam, updateExam, removeExam, addSubjectToExam, removeSubjectFromExam, isLoading: isLoadingExams } = useExams()
@@ -92,9 +90,7 @@ const Curriculum = () => {
   // Memoized filtered data for performance
   const filteredSubjects = useMemo(() =>
     subjects?.data?.filter(subject =>
-      subject.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (filters.stream === "" || subject.stream === filters.stream)
-    ) || [], [subjects?.data, searchTerm, filters.stream]
+      subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ) || [], [subjects?.data, searchTerm]
   );
 
   const filteredTopics = useMemo(() =>
@@ -202,14 +198,14 @@ const Curriculum = () => {
   const handleDeleteExam = useCallback((exam: Exam) => {
     setItemToDelete({
       type: 'exam',
-      id: exam.id,
+      id: exam.code,
       name: exam.name,
     });
     setDeleteDialogOpen(true);
   }, []);
 
-  const handleAddSubjectToExam = useCallback((examId: string) => {
-    setSelectedExam(filteredExams.find(e => e.id === examId));
+  const handleAddSubjectToExam = useCallback((examCode: string) => {
+    setSelectedExam(filteredExams.find(e => e.code === examCode));
     setExamSubjectDialogOpen(true);
   }, [filteredExams]);
 
@@ -221,7 +217,6 @@ const Curriculum = () => {
           id: selectedSubject.id,
           name: subject.name,
           shortName: subject.shortName,
-          stream: subject.stream,
         },
         {
           onSuccess: () => {
@@ -245,8 +240,7 @@ const Curriculum = () => {
       saveSubject.mutate(
         {
           name: subject.name,
-          shortName: subject.shortName,
-          stream: subject.stream,
+          shortName: subject.shortName, 
         },
         {
           onSuccess: () => {
@@ -349,9 +343,9 @@ const Curriculum = () => {
     }
   }, [selectedSubtopic, saveSubTopic]);
 
-  const handleSaveExam = useCallback((exam: Omit<Exam, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleSaveExam = useCallback((exam: Omit<Exam, 'createdAt' | 'updatedAt'>) => {
     if (selectedExam) {
-      updateExam(selectedExam.id, exam);
+      updateExam(selectedExam.code, exam);
       setExamDialogOpen(false);
     } else {
       saveExam(exam);
@@ -359,9 +353,9 @@ const Curriculum = () => {
     }
   }, [selectedExam, updateExam, saveExam]);
 
-  const handleSaveExamSubject = useCallback((examSubject: Omit<ExamSubject, 'examId'>) => {
+  const handleSaveExamSubject = useCallback((examSubject: Omit<ExamSubject, 'examCode'>) => {
     if (selectedExam) {
-      addSubjectToExam(selectedExam.id, examSubject.subjectId, examSubject.weightage);
+      addSubjectToExam(selectedExam.code, examSubject.subjectId, examSubject.weightage);
       setExamSubjectDialogOpen(false);
     }
   }, [selectedExam, addSubjectToExam]);
@@ -589,25 +583,7 @@ const Curriculum = () => {
                   <CardDescription>Manage subjects for different streams</CardDescription>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Select
-                    value={selectedStreamForSubjects || "all"}
-                    onValueChange={(value) =>
-                      setSelectedStreamForSubjects(value === "all" ? "" : value)
-                    }
-                    disabled={isLoadingSubjects}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Streams" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Streams</SelectItem>
-                      {Object.values(Stream).map((stream) => (
-                        <SelectItem key={stream} value={stream}>
-                          {stream}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  
 
                   <Button onClick={handleAddSubject} disabled={isLoadingSubjects}>
                     <Plus className="w-4 h-4 mr-2" />
@@ -628,7 +604,6 @@ const Curriculum = () => {
                     <TableRow className="hover:bg-gray-50">
                       <TableHead className="font-semibold text-gray-700">Name</TableHead>
                       <TableHead className="font-semibold text-gray-700">Short Name</TableHead>
-                      <TableHead className="font-semibold text-gray-700">Stream</TableHead>
                       <TableHead className="font-semibold text-gray-700">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -665,9 +640,7 @@ const Curriculum = () => {
                             </div>
                           </TableCell>
                           <TableCell>{subject.shortName || "-"}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{subject.stream}</Badge>
-                          </TableCell>
+                         
 
 
                           <TableCell>
@@ -715,7 +688,7 @@ const Curriculum = () => {
                 <div className="flex items-center space-x-2">
                   <SearchableSelect
                     value={selectedSubjectForTopics || "all"}
-                    onValueChange={(value) => setSelectedSubjectForTopics(value)}
+                    onValueChange={(value) => setSelectedSubjectForTopics(value === "all" ? undefined : value)}
                     disabled={isLoadingSubjects}
                     placeholder="All Subjects"
                     options={[
@@ -860,7 +833,7 @@ const Curriculum = () => {
                 <div className="flex items-center space-x-2">
                   <SearchableSelect
                     value={selectedTopicForSubtopics || "all"}
-                    onValueChange={(value) => setSelectedTopicForSubtopics(value)}
+                    onValueChange={(value) => setSelectedTopicForSubtopics(value === "all" ? undefined : value)}
                     disabled={isLoadingTopics}
                     placeholder="All Topics"
                     options={[
@@ -1004,7 +977,7 @@ const Curriculum = () => {
               ) : (
                 <div className="space-y-6">
                   {filteredExams.map((exam) => (
-                    <Card key={exam.id} >
+                    <Card key={exam.code} >
                       <CardHeader className="pb-3">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
@@ -1035,7 +1008,7 @@ const Curriculum = () => {
                                 <Pencil className="w-4 h-4 mr-2" />
                                 Edit Exam
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleAddSubjectToExam(exam.id)}>
+                              <DropdownMenuItem onClick={() => handleAddSubjectToExam(exam.code)}>
                                 <Plus className="w-4 h-4 mr-2" />
                                 Add Subject
                               </DropdownMenuItem>
@@ -1090,7 +1063,7 @@ const Curriculum = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleAddSubjectToExam(exam.id)}
+                              onClick={() => handleAddSubjectToExam(exam.code)}
                             >
                               <Plus className="w-4 h-4 mr-2" />
                               Add Subject
@@ -1101,7 +1074,7 @@ const Curriculum = () => {
                             <div className="space-y-2">
                               {exam.examSubjects.map((examSubject) => (
                                 <div
-                                  key={`${examSubject.examId}-${examSubject.subjectId}`}
+                                  key={`${examSubject.examCode}-${examSubject.subjectId}`}
                                   className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
                                 >
                                   <div className="flex items-center gap-3">
@@ -1115,9 +1088,7 @@ const Curriculum = () => {
                                           </span>
                                         )}
                                       </div>
-                                      <div className="text-sm text-muted-foreground">
-                                        Stream: {examSubject.subject?.stream}
-                                      </div>
+                                     
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-3">
@@ -1130,7 +1101,7 @@ const Curriculum = () => {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => removeSubjectFromExam(exam.id, examSubject.subjectId)}
+                                      onClick={() => removeSubjectFromExam(exam.code, examSubject.subjectId)}
                                       className="text-red-600 hover:text-red-700"
                                     >
                                       <Trash2 className="w-4 h-4" />
@@ -1147,7 +1118,7 @@ const Curriculum = () => {
                                 variant="outline"
                                 size="sm"
                                 className="mt-2"
-                                onClick={() => handleAddSubjectToExam(exam.id)}
+                                onClick={() => handleAddSubjectToExam(exam.code)}
                               >
                                 <Plus className="w-4 h-4 mr-2" />
                                 Add First Subject
@@ -1249,7 +1220,7 @@ const Curriculum = () => {
             <DialogTitle>Add Subject to Exam</DialogTitle>
           </DialogHeader>
           <ExamSubjectForm
-            examId={selectedExam?.id || ""}
+            examCode={selectedExam?.code || ""}
             subjects={subjects?.data || []}
             existingExamSubjects={selectedExam?.examSubjects}
             onSave={handleSaveExamSubject}

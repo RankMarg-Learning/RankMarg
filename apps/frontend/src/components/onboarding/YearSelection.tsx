@@ -7,7 +7,7 @@ import OnboardingLayout from './OnboardingLayout';
 import { Card } from '@/components/ui/card';
 
 const YearSelection: React.FC = () => {
-  const { targetYear, setTargetYear, stream } = useOnboardingStore();
+  const { targetYear, setTargetYear, examCode } = useOnboardingStore();
   const targetYears = getTargetYears();
   const currentYear = new Date().getFullYear();
 
@@ -18,7 +18,7 @@ const YearSelection: React.FC = () => {
   return (
     <OnboardingLayout
       title="Target Exam Year"
-      subtitle={`When do you plan to take the ${stream} exam?`}
+      subtitle={`When do you plan to take the ${examCode} exam?`}
       nextDisabled={!targetYear}
     >
       <div className="max-w-xl mx-auto w-full">

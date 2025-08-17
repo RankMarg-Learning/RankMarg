@@ -1,4 +1,4 @@
-import { QCategory, Stream } from "@prisma/client";
+import { QCategory } from "@repo/db/enums";
 
 export interface SessionConfig {
 
@@ -8,7 +8,6 @@ export interface SessionConfig {
         revisionTopics: number;
         pyq: number;
     };
-    stream:Stream;
     totalQuestions: number;
     questionCategoriesDistribution: Record<string, QCategory[]>;
 

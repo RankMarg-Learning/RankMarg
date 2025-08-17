@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -40,6 +41,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const body = await req.json();
   const {
+    code,
     name,
     fullName,
     description,
@@ -59,6 +61,7 @@ export async function POST(req: Request) {
   try {
     const exam = await prisma.exam.create({
       data: {
+        code,
         name,
         fullName,
         description,
@@ -90,6 +93,16 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error("Error creating exam:", error);
+    
+    // Handle unique constraint violation for exam code
+    if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+      return jsonResponse(null, { 
+        success: false, 
+        message: `Exam with code '${code}' already exists. Please use a different code.`, 
+        status: 409 
+      });
+    }
+    
     return jsonResponse(null, { 
       success: false, 
       message: "Internal Server Error", 

@@ -1,5 +1,5 @@
 import prisma from "../../lib/prisma";
-import { MetricType, Stream } from "@prisma/client";
+import { MetricType } from "@repo/db/enums";
 import { MasteryProcessor } from "../mastery/MasteryProcessor";
 
 export class MasteryService {
@@ -12,12 +12,7 @@ export class MasteryService {
   public async processAllUsers() {
     const batchSize = 50; // Reduced batch size for better performance
     let offset = 0;
-    const count = await prisma.user.count({
-      where: {
-        isActive: true, // Only process active users
-        stream: { not: null }, // Only users with stream defined
-      },
-    });
+    const count = await prisma.examUser.count();
 
     console.log(`Starting mastery processing for ${count} active users`);
 
@@ -40,31 +35,28 @@ export class MasteryService {
   }
 
   public async processUserBatch(batchSize: number, offset: number) {
-    // Get active users with stream defined
-    const users = await prisma.user.findMany({
+    // Get active exam-user pairs
+    const users = await prisma.examUser.findMany({
       select: {
-        id: true,
-        stream: true,
-        isActive: true,
-        updatedAt: true, // Use updatedAt to track user activity
-      },
-      where: {
-        isActive: true,
-        stream: { not: null },
+        userId: true,
+        exam: { select: { code: true } },
+        user: { select: { isActive: true, updatedAt: true } },
       },
       skip: offset,
       take: batchSize,
-      orderBy: { updatedAt: "desc" }, // Process recently active users first
+      orderBy: { registeredAt: "desc" },
     });
 
-    const processingPromises = users.map(async (user) => {
-      try {
-        await this.processOneUser(user.id, user.stream as Stream);
-      } catch (error) {
-        console.error(`Error processing user ${user.id}:`, error);
-        // Don't throw here to continue processing other users
-      }
-    });
+    const processingPromises = users
+      .filter((eu) => eu.user?.isActive)
+      .map(async (eu) => {
+        try {
+          await this.processOneUser(eu.userId, eu.exam.code);
+        } catch (error) {
+          console.error(`Error processing user ${eu.userId}:`, error);
+          // Don't throw here to continue processing other users
+        }
+      });
 
     // Process users in parallel with concurrency limit
     await this.processWithConcurrencyLimit(processingPromises, 5);
@@ -74,7 +66,7 @@ export class MasteryService {
     promises: Promise<void>[],
     concurrencyLimit: number
   ) {
-    const chunks = [];
+    const chunks = [] as Promise<void>[][];
     for (let i = 0; i < promises.length; i += concurrencyLimit) {
       chunks.push(promises.slice(i, i + concurrencyLimit));
     }
@@ -84,10 +76,10 @@ export class MasteryService {
     }
   }
 
-  public async processOneUser(userId: string, stream: Stream) {
+  public async processOneUser(userId: string, examCode: string) {
     try {
       // Update user mastery
-      await this.MasteryProcessor.updateUserMastery(userId, stream);
+      await this.MasteryProcessor.updateUserMastery(userId, examCode);
 
       // Update metrics for all metric types
       await Promise.all(
@@ -219,7 +211,6 @@ export class MasteryService {
         select: {
           id: true,
           name: true,
-          stream: true,
           grade: true,
         },
       });
@@ -299,15 +290,15 @@ export class MasteryService {
   }
 
   // Method to process specific user with detailed logging
-  public async processUserWithLogging(userId: string, stream: Stream) {
+  public async processUserWithLogging(userId: string, examCode: string) {
     console.log(
-      `Starting mastery processing for user ${userId} with stream ${stream}`
+      `Starting mastery processing for user ${userId} with exam ${examCode}`
     );
 
     const startTime = Date.now();
 
     try {
-      await this.processOneUser(userId, stream);
+      await this.processOneUser(userId, examCode);
 
       const endTime = Date.now();
       const duration = endTime - startTime;

@@ -1,5 +1,3 @@
-import { Stream, GradeEnum } from "@prisma/client";
-
 export interface MasteryConfigOptions {
   decayFactor: number;
   timeWindow: number;
@@ -14,7 +12,7 @@ export interface MasteryConfigOptions {
   };
   spaceReviewBonus: number;
   maxSpaceReviewBonusPerWindow: number;
-  stream?: Stream;
+  examCode?: string;
   // New parameters for enhanced algorithm
   adaptiveLearningFactor: number;
   difficultyWeighting: {
@@ -38,13 +36,14 @@ export interface MasteryConfigOptions {
     consistencyWeight: number;
     improvementWeight: number;
   };
-  streamSpecificConfig: {
-    [key in Stream]: {
+  examSpecificConfig: Record<
+    string,
+    {
       idealTimePerQuestion: number;
       difficultyMultiplier: number;
       masteryThresholdAdjustment: number;
-    };
-  };
+    }
+  >;
 }
 
 export class MasteryConfig {
@@ -61,7 +60,7 @@ export class MasteryConfig {
   };
   public readonly spaceReviewBonus: number;
   public readonly maxSpaceReviewBonusPerWindow: number;
-  public stream: Stream;
+  public examCode: string;
 
   // Enhanced parameters
   public readonly adaptiveLearningFactor: number;
@@ -86,13 +85,14 @@ export class MasteryConfig {
     consistencyWeight: number;
     improvementWeight: number;
   };
-  public readonly streamSpecificConfig: {
-    [key in Stream]: {
+  public readonly examSpecificConfig: Record<
+    string,
+    {
       idealTimePerQuestion: number;
       difficultyMultiplier: number;
       masteryThresholdAdjustment: number;
-    };
-  };
+    }
+  >;
 
   constructor(options: MasteryConfigOptions) {
     this.decayFactor = options.decayFactor;
@@ -104,7 +104,7 @@ export class MasteryConfig {
     this.masteryThresholds = options.masteryThresholds;
     this.spaceReviewBonus = options.spaceReviewBonus;
     this.maxSpaceReviewBonusPerWindow = options.maxSpaceReviewBonusPerWindow;
-    this.stream = options.stream as Stream;
+    this.examCode = options.examCode ?? "DEFAULT";
 
     // Enhanced parameters
     this.adaptiveLearningFactor = options.adaptiveLearningFactor;
@@ -112,7 +112,7 @@ export class MasteryConfig {
     this.userProfileWeighting = options.userProfileWeighting;
     this.forgettingCurveParams = options.forgettingCurveParams;
     this.performanceMetrics = options.performanceMetrics;
-    this.streamSpecificConfig = options.streamSpecificConfig;
+    this.examSpecificConfig = options.examSpecificConfig;
   }
 
   // Helper methods for dynamic configuration
@@ -122,8 +122,15 @@ export class MasteryConfig {
     return this.difficultyWeighting.hard;
   }
 
-  public getStreamConfig(stream: Stream) {
-    return this.streamSpecificConfig[stream];
+  public getExamConfig(examCode: string) {
+    return (
+      this.examSpecificConfig[examCode] ||
+      this.examSpecificConfig.DEFAULT || {
+        idealTimePerQuestion: 90,
+        difficultyMultiplier: 1.0,
+        masteryThresholdAdjustment: 0.0,
+      }
+    );
   }
 
   public calculateForgettingCurve(daysSinceLastAttempt: number): number {
@@ -146,7 +153,7 @@ export const masteryConfig = new MasteryConfig({
   },
   spaceReviewBonus: 0.1,
   maxSpaceReviewBonusPerWindow: 0.25,
-  stream: Stream.NEET,
+  examCode: "NEET",
 
   // Enhanced parameters
   adaptiveLearningFactor: 0.3,
@@ -171,14 +178,19 @@ export const masteryConfig = new MasteryConfig({
     consistencyWeight: 0.25,
     improvementWeight: 0.15,
   },
-  streamSpecificConfig: {
-    [Stream.JEE]: {
+  examSpecificConfig: {
+    JEE: {
       idealTimePerQuestion: 144,
       difficultyMultiplier: 1.2,
       masteryThresholdAdjustment: 0.05,
     },
-    [Stream.NEET]: {
+    NEET: {
       idealTimePerQuestion: 70,
+      difficultyMultiplier: 1.0,
+      masteryThresholdAdjustment: 0.0,
+    },
+    DEFAULT: {
+      idealTimePerQuestion: 90,
       difficultyMultiplier: 1.0,
       masteryThresholdAdjustment: 0.0,
     },

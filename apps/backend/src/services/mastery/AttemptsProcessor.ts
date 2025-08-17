@@ -1,3 +1,9 @@
+import {
+  AttemptType,
+  GradeEnum,
+  MistakeType,
+  SubmitStatus,
+} from "@repo/db/enums";
 import prisma from "../../lib/prisma";
 import {
   MasteryAttempt,
@@ -36,10 +42,11 @@ export class AttemptsProcessor {
       orderBy: { solvedAt: "desc" },
     });
 
-    // Transform to match MasteryAttempt interface
     return attempts.map((attempt) => ({
       ...attempt,
-      mistake: attempt.mistake || undefined, // Convert null to undefined
+      status: attempt.status as SubmitStatus,
+      type: attempt.type as AttemptType,
+      mistake: attempt.mistake as MistakeType,
     }));
   }
 
@@ -48,7 +55,6 @@ export class AttemptsProcessor {
       where: { id: userId },
       select: {
         id: true,
-        stream: true,
         targetYear: true,
         studyHoursPerDay: true,
         questionsPerDay: true,
@@ -65,7 +71,8 @@ export class AttemptsProcessor {
 
     return {
       ...user,
-      isActive: user.isActive ?? true, // Provide default value for null
+      grade: user.grade as GradeEnum,
+      isActive: user.isActive ?? true,
     };
   }
 
@@ -77,7 +84,6 @@ export class AttemptsProcessor {
     const weekAgo = startOfDay(subDays(new Date(), 7));
     const monthAgo = startOfDay(subDays(new Date(), 30));
 
-    // Get recent attempts for trend analysis
     const recentAttempts = await prisma.attempt.findMany({
       where: {
         userId,

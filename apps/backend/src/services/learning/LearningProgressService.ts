@@ -1,5 +1,4 @@
 import prisma from "@/lib/prisma";
-import { Stream } from "@prisma/client";
 import { MasteryService } from "@/services/auto/mastery.service";
 import { ReviewScheduleService } from "@/services/auto/reviewSchedule.service";
 
@@ -16,9 +15,7 @@ export class LearningProgressService {
     const batchSize = 50;
     let offset = 0;
 
-    const count = await prisma.user.count({
-      where: { isActive: true, stream: { not: null } },
-    });
+    const count = await prisma.examUser.count();
 
     while (offset < count) {
       await this.processUserBatch(batchSize, offset);
@@ -30,29 +27,33 @@ export class LearningProgressService {
     batchSize: number,
     offset: number
   ): Promise<void> {
-    const users = await prisma.user.findMany({
-      select: { id: true, stream: true },
-      where: { isActive: true, stream: { not: null } },
-      orderBy: { updatedAt: "desc" },
+    const users = await prisma.examUser.findMany({
+      select: {
+        userId: true,
+        exam: { select: { code: true } },
+        user: { select: { isActive: true, updatedAt: true } },
+      },
+      orderBy: { registeredAt: "desc" },
       skip: offset,
       take: batchSize,
     });
 
     const concurrency = 5;
     for (let i = 0; i < users.length; i += concurrency) {
-      const chunk = users.slice(i, i + concurrency);
+      const chunk = users
+        .slice(i, i + concurrency)
+        .filter((eu) => eu.user?.isActive);
       await Promise.all(
-        chunk.map(async (u) => {
-          const stream = u.stream as Stream;
-          await this.processOneUser(u.id, stream);
+        chunk.map(async (eu) => {
+          await this.processOneUser(eu.userId, eu.exam.code);
         })
       );
     }
   }
 
-  public async processOneUser(userId: string, stream: Stream): Promise<void> {
+  public async processOneUser(userId: string, examCode: string): Promise<void> {
     // 1) Update mastery and metrics
-    await this.masteryService.processOneUser(userId, stream);
+    await this.masteryService.processOneUser(userId, examCode);
 
     // 2) Update review schedules based on latest mastery
     await this.reviewService.updateSchedulesForUser(userId);

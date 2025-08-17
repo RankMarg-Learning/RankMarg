@@ -17,7 +17,9 @@ export async function GET(req: Request, { params }: { params: { username: string
                 avatar: true,
                 phone:true,
                 standard: true,
-                stream: true,
+                examRegistrations:{
+                    select:{exam:{select:{code:true, name:true}}}
+                },
                 coins:true,
                 location:true,
                 targetYear:true,

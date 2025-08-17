@@ -1,4 +1,4 @@
-import { SubmitStatus } from "@prisma/client";
+import { SubmitStatus } from "@repo/db/enums";
 
 export interface SubmissionProps {
     questionId: string;

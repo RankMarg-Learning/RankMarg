@@ -1,0 +1,374 @@
+[
+  {
+    "id": "069a618b-bdf2-4c79-b619-d1f9ac290fd4",
+    "name": "Dual Nature of Radiation and Matter",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 4
+  },
+  {
+    "id": "0ef966ee-ae84-4aa0-b99e-f3386fd8fd2e",
+    "name": "Motion in a Straight Line",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 2
+  },
+  {
+    "id": "0fe4e399-a758-4b4b-b98f-41b19d348a69",
+    "name": "Electromagnetic Induction",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 4
+  },
+  {
+    "id": "11046a7d-b336-47e6-a4a1-696011df2d0a",
+    "name": "Electromagnetic Waves",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 2
+  },
+  {
+    "id": "1391d72c-4c48-4103-a0e4-b47b4d9c94fe",
+    "name": "Classification of Elements and Periodicity",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 3
+  },
+  {
+    "id": "186f32d0-eef9-46e0-9aa0-1c8e8d0aecc1",
+    "name": "Binomial Theorem",
+    "subjectId": "c47c9c14-2dd7-42fc-823d-d3f550a0e471",
+    "weightage": 2
+  },
+  {
+    "id": "1baa612d-5ae0-4dc7-b0b1-308b528ee905",
+    "name": "Chemical Coordination and Integration",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 4
+  },
+  {
+    "id": "20bf8ed5-a432-4236-b7a7-0db5527fbe59",
+    "name": " Anatomy of Flowering Plants ",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 4
+  },
+  {
+    "id": "22728998-08ba-4a24-b742-604ebd6faa1a",
+    "name": "The Living World",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 2
+  },
+  {
+    "id": "272ff019-3daf-4636-ac72-4cc7e1389d51",
+    "name": "Laws of Motion",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 6
+  },
+  {
+    "id": "2be89580-938e-4507-a081-232b1bc139f9",
+    "name": "Evolution",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 4
+  },
+  {
+    "id": "2fc5d4ef-699f-49f9-816f-63e948289ea5",
+    "name": "Reproductive Health",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 2
+  },
+  {
+    "id": "3017dc74-6dea-45e7-b60e-78154063cc68",
+    "name": "Plant Growth and Development",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 0
+  },
+  {
+    "id": "33d8bfec-55db-44d6-bc88-aedb0650a290",
+    "name": "Kinetic Theory of Gases",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 3
+  },
+  {
+    "id": "3451965e-23bc-46f0-bc45-e94ae123a82e",
+    "name": "Solution",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 4
+  },
+  {
+    "id": "364f5d05-3b55-4999-94c0-ff1aa8dadcea",
+    "name": "Alternating Current",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 4
+  },
+  {
+    "id": "390b4798-24c9-4a81-84f0-24b16fd21e5b",
+    "name": "Molecular Basis of Inheritance",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 5
+  },
+  {
+    "id": "393a9cdf-c197-4d9e-b551-4c0339d3abd6",
+    "name": "Biotechnology and It's Applications",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 4
+  },
+  {
+    "id": "4a72322b-f386-4db1-9ca2-a1844e8e118e",
+    "name": "Work, Energy and Power",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 4
+  },
+  {
+    "id": "4b162d87-5907-4399-ae9e-894d534c3d77",
+    "name": "Thermodynamics",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 4
+  },
+  {
+    "id": "4fbe8158-5785-4e27-b724-dec44399c6cd",
+    "name": "Oscillations",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 3
+  },
+  {
+    "id": "5110abf5-a219-462a-824d-27520e95619e",
+    "name": "Application of Integrals",
+    "subjectId": "c47c9c14-2dd7-42fc-823d-d3f550a0e471",
+    "weightage": 4
+  },
+  {
+    "id": "52a2d7d1-7d63-448f-9c50-b14bda1d203e",
+    "name": "Excretory Products and Their Elimination ",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 4
+  },
+  {
+    "id": "5583ea88-d37b-481a-896d-2f09936cc75f",
+    "name": "Chemistry (Misc.)",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 3
+  },
+  {
+    "id": "57ee694a-1860-44a4-a51b-32829d2e2dda",
+    "name": "Human Health and Disease",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 4
+  },
+  {
+    "id": "59381b77-36e5-4b91-95fb-0d163340b3e5",
+    "name": "Conic Sections",
+    "subjectId": "c47c9c14-2dd7-42fc-823d-d3f550a0e471",
+    "weightage": 7
+  },
+  {
+    "id": "60d27246-2f2f-4e0c-a54c-e823554d6b75",
+    "name": "Chemical Kinetics",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 4
+  },
+  {
+    "id": "629dc7f7-c96c-444e-95ee-63ea728a589e",
+    "name": "Units and Measurements",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 1
+  },
+  {
+    "id": "725e60b9-c519-499b-bac7-33e23dee0e89",
+    "name": "Biotechnology - Principles and Processes",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 4
+  },
+  {
+    "id": "743c5271-190e-4488-803c-bd9ca6eb42e9",
+    "name": "Atoms and Nuclei",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 2
+  },
+  {
+    "id": "75338c65-8e7c-49a8-9c64-249f8574f0fb",
+    "name": "Haloalkanes and Haloarenes",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 4
+  },
+  {
+    "id": "762122d6-c194-4084-9249-5bc6d0d39f55",
+    "name": "Complex Numbers and Quadratic Equations",
+    "subjectId": "c47c9c14-2dd7-42fc-823d-d3f550a0e471",
+    "weightage": 5
+  },
+  {
+    "id": "7b7ba8b3-7fe8-4906-9d9e-850a1e16658b",
+    "name": "Organisms and Populations",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 4
+  },
+  {
+    "id": "81c0aabd-c944-4962-afe0-2efe06d4b8fc",
+    "name": "Wave Optics",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 2
+  },
+  {
+    "id": "8a7b73f4-a194-4856-88e7-a0b9dd4ea891",
+    "name": "Magnetic Effects Of Current And Magnetism",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 6
+  },
+  {
+    "id": "8f0f582d-7628-4c88-8bf3-435fcb351c73",
+    "name": "Gravitation",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 3
+  },
+  {
+    "id": "9b2e267b-8190-4a70-b162-0b23191fd5b9",
+    "name": "Structure of Atom",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 4
+  },
+  {
+    "id": "9cbca543-1ec3-45bc-b395-4d1b85d862de",
+    "name": "Biological Classification",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 2
+  },
+  {
+    "id": "9d9e1d13-fba0-4cdb-92c0-4330d8a2d866",
+    "name": "Sets, Relations And Functions",
+    "subjectId": "c47c9c14-2dd7-42fc-823d-d3f550a0e471",
+    "weightage": 0
+  },
+  {
+    "id": "9e49c7c0-ac1e-41ff-acf3-8eab996b6c26",
+    "name": "Ecosystem",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 4
+  },
+  {
+    "id": "9ec44792-8252-41a6-97f2-a18926935e72",
+    "name": "Some Basic Concepts In Chemistry",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 4
+  },
+  {
+    "id": "9f324fce-45d9-405d-9918-6ad5ebb3c824",
+    "name": "Human Reproduction",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 4
+  },
+  {
+    "id": "a43a5ae4-af99-44e9-a657-929a4a5cae25",
+    "name": "System of Particles and Rotational Motion",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 4
+  },
+  {
+    "id": "a5648b00-53b1-462e-aca6-8c6fa82dc6d0",
+    "name": "Biodiversity and conservation",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 0
+  },
+  {
+    "id": "a5790f1e-ffd9-42f6-b877-7a0f653899ec",
+    "name": "Continuity and Differentiability",
+    "subjectId": "c47c9c14-2dd7-42fc-823d-d3f550a0e471",
+    "weightage": 8
+  },
+  {
+    "id": "b31ed6a1-893d-4a24-b10f-0c98504e4906",
+    "name": "Animal Kingdom",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 4
+  },
+  {
+    "id": "bb4b2c7e-7c2a-40d5-b0f2-e20efbde5f22",
+    "name": "Thermodynamics",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 6
+  },
+  {
+    "id": "bcd2fda3-866b-43b9-81e1-b31dac67f951",
+    "name": "Solid State",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 3
+  },
+  {
+    "id": "c2c4f4b2-fd33-4325-b21e-b2f688f85bcc",
+    "name": "Respiration in Plants",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 2
+  },
+  {
+    "id": "c34b8be0-6b1a-4a58-aaf8-a5525112f898",
+    "name": "Plant Kingdom",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 7
+  },
+  {
+    "id": "c48261b2-358b-42f6-b651-d25becc2954b",
+    "name": "Current Electricity",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 6
+  },
+  {
+    "id": "ce3efbcc-69ea-4ff9-a148-804b5dc4e43b",
+    "name": "Organic Chemistry: Basic Principles & Techniques",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 8
+  },
+  {
+    "id": "cf667126-b9d1-441c-81c3-68076997563b",
+    "name": "Chemical Bonding and Molecular Structure",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 5
+  },
+  {
+    "id": "d0c0a53e-99af-4d06-b3a4-4247d9553432",
+    "name": "States of Matter",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 3
+  },
+  {
+    "id": "d250246f-ab88-414a-85e2-4861defe68a9",
+    "name": "The d- and f-Block Elements",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 4
+  },
+  {
+    "id": "d60819df-c335-45b8-93b6-92c27d53e3e7",
+    "name": "Morphology Of Flowering Plants",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 4
+  },
+  {
+    "id": "d66f81e6-5c6f-4124-a375-c4ade18d6c75",
+    "name": "Electrostatics",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 4
+  },
+  {
+    "id": "e04a4e98-9cb3-4fe9-94dc-4c1fa12ab587",
+    "name": "The p-Block Element",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 5
+  },
+  {
+    "id": "e0a356e8-57d3-4b40-b9ec-a5704ce0eab7",
+    "name": "Hydrocarbons",
+    "subjectId": "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    "weightage": 3
+  },
+  {
+    "id": "e21a55dc-0ae9-43ef-a4e9-0083e192cd5d",
+    "name": "Sexual Reproduction in Flowering Plants",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 4
+  },
+  {
+    "id": "f2b3700d-a089-4e39-ac0a-dd77f41f2da4",
+    "name": "Semiconductor Electronics: Materials, Devices, and Simple Circuits",
+    "subjectId": "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    "weightage": 6
+  },
+  {
+    "id": "ffd0a7f1-6c97-48e2-94a7-fd29ae8e36a3",
+    "name": "Microbes in Human Welfare",
+    "subjectId": "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    "weightage": 2
+  }
+]

@@ -68,7 +68,7 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
     previousStep();
   };
 
-  const steps: OnboardingStep[] = ['phone','stream', 'grade', 'year', 'studyHours', 'topics'];
+  const steps: OnboardingStep[] = ['phone','exam', 'grade', 'year', 'studyHours', 'topics'];
   const currentStepIndex = steps.indexOf(currentStep);
 
   return (

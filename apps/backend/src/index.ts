@@ -4,35 +4,21 @@ moduleAlias.addAliases({
 });
 
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
-import cron from "node-cron";
 import session from "./routes/session";
 import mastery from "./routes/mastery";
 import performance from "./routes/performance";
 import reviews from "./routes/reviews";
-import path from "path";
-import { updatePerformanceJob } from "./jobs/updatePerformance.job";
-import { resetStreakJob } from "./jobs/resetStreak.job";
-import { updateReviewJob } from "./jobs/review.update.job";
-import { updateMasteryJob } from "./jobs/mastery.update.job";
-import { updateLearningProgressJob } from "./jobs/learning.update.job";
-import { createSessionJob } from "./jobs/session.create.job";
-import { createSuggestion } from "./jobs/suggest.create.job";
+import cronRoutes from "./routes/cron.routes";
+import { ServerConfig } from "./config/server.config";
+import { cronManager } from "./config/cron.config";
 import redisService from "./lib/redis";
 import { RedisCacheService } from "./services/session/RedisCacheService";
 
-// Load environment variables from .env file if it exists, otherwise use system environment variables
-try {
-  dotenv.config({ path: path.resolve(__dirname, "../.env") });
-} catch (error) {
-  console.log("No .env file found, using system environment variables");
-}
-
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+app.use(cors(ServerConfig.cors));
+app.use(express.json({ limit: ServerConfig.performance.maxPayloadSize }));
 
 async function initializeRedis() {
   try {
@@ -55,7 +41,7 @@ async function initializeRedis() {
   }
 }
 
-app.get("/api/health/redis", async (req, res) => {
+app.get(`${ServerConfig.api.routes.redis}`, async (req, res) => {
   try {
     const isHealthy = await RedisCacheService.healthCheck();
     const stats = await RedisCacheService.getCacheStats();
@@ -84,7 +70,7 @@ app.get("/api/health/redis", async (req, res) => {
   }
 });
 
-app.get("/api/upstash/stats", async (req, res) => {
+app.get(`${ServerConfig.api.routes.upstash}/stats`, async (req, res) => {
   try {
     const detailedStats = await RedisCacheService.getDetailedStats();
     res.json(detailedStats);
@@ -96,7 +82,7 @@ app.get("/api/upstash/stats", async (req, res) => {
   }
 });
 
-app.get("/api/upstash/test", async (req, res) => {
+app.get(`${ServerConfig.api.routes.upstash}/test`, async (req, res) => {
   try {
     const connectionTest = await RedisCacheService.testConnection();
     res.json(connectionTest);
@@ -108,7 +94,7 @@ app.get("/api/upstash/test", async (req, res) => {
   }
 });
 
-app.post("/api/upstash/warm-cache", async (req, res) => {
+app.post(`${ServerConfig.api.routes.upstash}/warm-cache`, async (req, res) => {
   try {
     const { userId, subjectId } = req.body;
 
@@ -132,7 +118,7 @@ app.post("/api/upstash/warm-cache", async (req, res) => {
   }
 });
 
-app.post("/api/cache/clear", async (req, res) => {
+app.post(`${ServerConfig.api.routes.cache}/clear`, async (req, res) => {
   try {
     const { userId, subjectId } = req.body;
 
@@ -154,7 +140,7 @@ app.post("/api/cache/clear", async (req, res) => {
   }
 });
 
-app.get("/api/cache/stats", async (req, res) => {
+app.get(`${ServerConfig.api.routes.cache}/stats`, async (req, res) => {
   try {
     const stats = await RedisCacheService.getCacheStats();
     res.json(stats);
@@ -166,32 +152,36 @@ app.get("/api/cache/stats", async (req, res) => {
   }
 });
 
-cron.schedule("0 0 * * *", resetStreakJob); //(Daily at Midnight)
-cron.schedule("0 0 * * *", updatePerformanceJob); // (Every 5 minutes)
-cron.schedule("*/3 * * * *", createSessionJob); // (Daily at Midnight)
-cron.schedule("0 0 * * *", createSuggestion); // (Daily at Midnight)
-cron.schedule("0 0 * * 0", updateReviewJob);
-cron.schedule("0 0 * * 0", updateMasteryJob);
-cron.schedule("0 1  * * 0", updateLearningProgressJob); // unified (1 AM Sunday)
+// Initialize cron jobs
+cronManager.initialize();
 
-app.use("/api/create-practice", session);
-app.use("/api/update-mastery", mastery);
-app.use("/api/update-performance", performance);
-app.use("/api/update-review", reviews);
-
-const PORT = process.env.PORT || 3001;
+// API routes
+app.use(`${ServerConfig.api.routes.session}`, session);
+app.use(`${ServerConfig.api.routes.mastery}`, mastery);
+app.use(`${ServerConfig.api.routes.performance}`, performance);
+app.use(`${ServerConfig.api.routes.reviews}`, reviews);
+app.use(`${ServerConfig.api.prefix}/cron`, cronRoutes);
 
 // Basic health endpoint for container orchestration
-app.get("/healthz", (_req, res) => {
+app.get(ServerConfig.api.routes.health, (_req, res) => {
   res.status(200).json({ ok: true });
 });
 
 initializeRedis().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 API running on port ${PORT}`);
-    console.log(`📊 Redis health check available at /api/health/redis`);
-    console.log(`🗑️  Cache management available at /api/cache/*`);
-    console.log(`☁️  Upstash specific endpoints available at /api/upstash/*`);
+  app.listen(ServerConfig.port, () => {
+    console.log(`🚀 API running on port ${ServerConfig.port}`);
+    console.log(
+      `📊 Redis health check available at ${ServerConfig.api.routes.redis}`
+    );
+    console.log(
+      `🗑️  Cache management available at ${ServerConfig.api.routes.cache}/*`
+    );
+    console.log(
+      `☁️  Upstash specific endpoints available at ${ServerConfig.api.routes.upstash}/*`
+    );
+    console.log(
+      `⏰ Cron job management available at ${ServerConfig.api.prefix}/cron/*`
+    );
   });
 });
 

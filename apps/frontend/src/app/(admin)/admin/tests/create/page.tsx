@@ -24,7 +24,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/hooks/use-toast"
 import Questionset from "@/components/questions/QuestionTable"
 import SelectFilter from "@/components/SelectFilter";
-import { Stream } from "@prisma/client"
 // Zod Schemas
 
 
@@ -61,10 +60,10 @@ export default function CreateTest() {
   const [currentSectionIncorrectMarks, setCurrentSectionIncorrectMarks] = useState(1)
   const [examType, setExamType] = useState("")
   const [difficulty, setDifficulty] = useState("")
-  const [stream, setStream] = useState<Stream>("JEE")
+  const [examCode, setExamCode] = useState("")
   const testSchema = z.object({
     title: z.string().min(1, { message: "Test Title is required" }),
-    stream: z.enum(["NEET", "JEE"]).optional(),
+    examCode: z.string().min(1, { message: "Exam Code is required" }),
     examType: z.enum(["Mock-Test", "Topic-wise", "Subject-wise"]).optional(),
     difficulty: z.enum(["EASY", "MEDIUM", "HARD"]).optional(),
     duration: z.number().min(1, { message: "Duration must be greater than 0" }),
@@ -86,7 +85,7 @@ export default function CreateTest() {
         title,
         description,
         testKey: testKey || null,
-        stream: stream || null,
+        examCode: examCode || null,
         difficulty: difficulty || "MEDIUM",
         duration: parseInt(duration),
         startTime: startDate || null,
@@ -131,8 +130,8 @@ export default function CreateTest() {
     setSelectedQuestions(questions)
   }
 
-  const handleStream = (value: string[]) => {
-    setStream(value[0] === "Default" ? "JEE" : value[0] as Stream);
+  const handleExamCode = (value: string[]) => {
+    setExamCode(value[0] === "Default" ? "" : value[0]);
   };
 
   const handleAddSection = () => {
@@ -193,12 +192,12 @@ export default function CreateTest() {
             </div>
             <div className="flex flex-wrap  mb-6 w-full">
               <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                <Label htmlFor="stream">Stream*</Label>
+                <Label htmlFor="stream">Exam Code*</Label>
                 <SelectFilter
                   width={"full"}
                   placeholder="Stream"
                   selectName={["Default", "NEET", "JEE"]}
-                  onChange={handleStream}
+                  onChange={handleExamCode}
                 />
               </div>
               <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
@@ -348,7 +347,7 @@ export default function CreateTest() {
                 selectedQuestions={selectedQuestions}
                 isCheckBox={true}
                 isPublished={true}
-                IPstream={stream}
+                examCode={examCode}
               />
             </div>
             <Button type="button" onClick={handleAddSection}>Add Section</Button>

@@ -1,4 +1,4 @@
-import { SubscriptionStatus } from '@prisma/client';
+import { Role, SubscriptionStatus } from '@repo/db/enums';
 import 'next-auth';
 import { DefaultSession } from 'next-auth';
 
@@ -7,8 +7,8 @@ declare module 'next-auth' {
     id: string;
     username?: string;
     createdAt?: Date; 
-    stream?: string;
-    role?: 'ADMIN' | 'USER' | 'INSTRUCTOR';
+    examCode?: string;
+    role?: Role;
     isNewUser?: boolean;
     plan?: UserPlan;
   }
@@ -18,8 +18,8 @@ declare module 'next-auth' {
       id: string;
       username?: string;
       createdAt?: Date;
-      stream?: string;
-      role?: 'ADMIN' | 'USER' | 'INSTRUCTOR';
+      examCode?: string;
+      role?: Role;
       isNewUser?: boolean;
       plan?: UserPlan;
     };
@@ -31,8 +31,8 @@ declare module 'next-auth/jwt' {
     id: string;
     username?: string;
     createdAt?: Date;
-    stream?: string;
-    role?: 'ADMIN' | 'USER' | 'INSTRUCTOR';
+    examCode?: string;
+    role?: Role;
     isNewUser?: boolean;
     plan?: UserPlan;
   }

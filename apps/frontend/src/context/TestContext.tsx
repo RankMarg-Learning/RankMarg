@@ -2,7 +2,7 @@
 import { QuestionWithOptions } from '@/types';
 import { QuestionStatus } from '@/utils';
 import { calculateMarks } from '@/utils/test/calculateMarks';
-import { SubmitStatus } from '@prisma/client';
+import { SubmitStatus } from '@repo/db/enums';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback } from 'react';

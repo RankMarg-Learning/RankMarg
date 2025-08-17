@@ -23,13 +23,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const TopicSelection: React.FC = () => {
   const {
-    stream,
+    examCode,
     selectedTopics,
     addTopic,
     removeTopic
   } = useOnboardingStore();
 
-  const { subjects, isLoading: isLoadingSubjects } = useSubjects(stream);
+  const { subjects, isLoading: isLoadingSubjects } = useSubjects(examCode);
   const [open, setOpen] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const { topics ,isLoading:isLoadingTopics} = useTopics(selectedSubjectId);

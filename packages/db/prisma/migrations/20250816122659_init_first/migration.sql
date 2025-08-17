@@ -1,75 +1,3 @@
--- CreateEnum
-CREATE TYPE "Stream" AS ENUM ('JEE', 'NEET');
-
--- CreateEnum
-CREATE TYPE "Role" AS ENUM ('USER', 'INSTRUCTOR', 'ADMIN');
-
--- CreateEnum
-CREATE TYPE "Provider" AS ENUM ('google', 'credentials');
-
--- CreateEnum
-CREATE TYPE "StandardEnum" AS ENUM ('CLASS_9', 'CLASS_10', 'CLASS_11', 'CLASS_12', 'CLASS_13', 'CLASS_14');
-
--- CreateEnum
-CREATE TYPE "ClassEnum" AS ENUM ('CLASS_10', 'CLASS_11', 'CLASS_12', 'CLASS_13');
-
--- CreateEnum
-CREATE TYPE "GradeEnum" AS ENUM ('A_PLUS', 'A', 'B', 'C', 'D');
-
--- CreateEnum
-CREATE TYPE "QuestionType" AS ENUM ('MULTIPLE_CHOICE', 'INTEGER', 'SUBJECTIVE');
-
--- CreateEnum
-CREATE TYPE "QuestionFormat" AS ENUM ('SINGLE_SELECT', 'MULTIPLE_SELECT', 'TRUE_FALSE', 'MATCHING', 'ASSERTION_REASON', 'COMPREHENSION', 'MATRIX_MATCH');
-
--- CreateEnum
-CREATE TYPE "QCategory" AS ENUM ('CALCULATION', 'APPLICATION', 'THEORETICAL', 'TRICKY', 'FACTUAL', 'TRAP', 'GUESS_BASED', 'MULTI_STEP', 'OUT_OF_THE_BOX', 'ELIMINATION_BASED', 'MEMORY_BASED', 'CONFIDENCE_BASED', 'HIGH_WEIGHTAGE', 'CONCEPTUAL', 'FORMULA_BASED');
-
--- CreateEnum
-CREATE TYPE "AttemptType" AS ENUM ('NONE', 'SESSION', 'TEST');
-
--- CreateEnum
-CREATE TYPE "SubmitStatus" AS ENUM ('CORRECT', 'INCORRECT', 'MARK_FOR_REVIEW', 'ANSWERED_MARK', 'NOT_ANSWERED');
-
--- CreateEnum
-CREATE TYPE "MistakeType" AS ENUM ('NONE', 'CONCEPTUAL', 'CALCULATION', 'READING', 'OVERCONFIDENCE', 'OTHER');
-
--- CreateEnum
-CREATE TYPE "TestStatus" AS ENUM ('DRAFT', 'ACTIVE', 'COMPLETED');
-
--- CreateEnum
-CREATE TYPE "Visibility" AS ENUM ('PUBLIC', 'PRIVATE', 'RESTRICTED');
-
--- CreateEnum
-CREATE TYPE "ExamType" AS ENUM ('FULL_LENGTH', 'SUBJECT_WISE', 'CHAPTER_WISE', 'ONBOARDING', 'CUSTOM', 'PYQ', 'SPEED_TEST', 'WEAKNESS_BASED', 'ADAPTIVE', 'DAILY_CHALLENGE', 'SIMULATION');
-
--- CreateEnum
-CREATE TYPE "TestParticipationStatus" AS ENUM ('JOIN', 'STARTED', 'COMPLETED');
-
--- CreateEnum
-CREATE TYPE "MetricType" AS ENUM ('TOTAL_QUESTIONS', 'CORRECT_ATTEMPTS', 'MASTERY_LEVEL', 'TEST_SCORE');
-
--- CreateEnum
-CREATE TYPE "SuggestionType" AS ENUM ('ENCOURAGEMENT', 'WARNING', 'CELEBRATION', 'GUIDANCE', 'REMINDER', 'MOTIVATION', 'WELLNESS');
-
--- CreateEnum
-CREATE TYPE "TriggerType" AS ENUM ('POST_EXAM', 'SESSION_ANALYSIS', 'DAILY_ANALYSIS', 'WEEKLY_ANALYSIS', 'MONTHLY_ANALYSIS', 'STREAK_MILESTONE', 'INACTIVITY', 'EXAM_PROXIMITY');
-
--- CreateEnum
-CREATE TYPE "SuggestionStatus" AS ENUM ('ACTIVE', 'VIEWED', 'DISMISSED');
-
--- CreateEnum
-CREATE TYPE "NotificationStatus" AS ENUM ('UNREAD', 'READ', 'DISMISSED');
-
--- CreateEnum
-CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'COMPLETED', 'FAILED', 'REFUNDED', 'CANCELLED');
-
--- CreateEnum
-CREATE TYPE "SubscriptionStatus" AS ENUM ('TRIAL', 'ACTIVE', 'CANCELLED', 'EXPIRED', 'PAST_DUE');
-
--- CreateEnum
-CREATE TYPE "PaymentProvider" AS ENUM ('PLATFORM', 'SALES_AGENT', 'NONE');
-
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -78,21 +6,20 @@ CREATE TABLE "User" (
     "email" TEXT,
     "password" TEXT,
     "phone" TEXT,
-    "standard" "StandardEnum",
+    "standard" TEXT,
     "avatar" TEXT,
-    "stream" "Stream",
     "coins" INTEGER NOT NULL DEFAULT 0,
     "xp" INTEGER NOT NULL DEFAULT 0,
-    "grade" "GradeEnum" NOT NULL DEFAULT 'C',
-    "role" "Role" DEFAULT 'USER',
-    "provider" "Provider" NOT NULL,
+    "grade" TEXT NOT NULL DEFAULT 'C',
+    "role" TEXT NOT NULL DEFAULT 'USER',
+    "provider" TEXT NOT NULL,
     "location" TEXT,
     "targetYear" INTEGER,
     "studyHoursPerDay" INTEGER,
-    "questionsPerDay" INTEGER DEFAULT 5,
-    "onboardingCompleted" BOOLEAN DEFAULT false,
-    "isActive" BOOLEAN DEFAULT true,
-    "updatedAt" TIMESTAMP(3),
+    "questionsPerDay" INTEGER NOT NULL DEFAULT 5,
+    "onboardingCompleted" BOOLEAN NOT NULL DEFAULT false,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -134,7 +61,7 @@ CREATE TABLE "CurrentStudyTopic" (
 
 -- CreateTable
 CREATE TABLE "Exam" (
-    "id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "fullName" TEXT,
     "description" TEXT,
@@ -152,22 +79,31 @@ CREATE TABLE "Exam" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Exam_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Exam_pkey" PRIMARY KEY ("code")
 );
 
 -- CreateTable
 CREATE TABLE "ExamSubject" (
-    "examId" TEXT NOT NULL,
+    "examCode" TEXT NOT NULL,
     "subjectId" TEXT NOT NULL,
     "weightage" DOUBLE PRECISION NOT NULL DEFAULT 0,
 
-    CONSTRAINT "ExamSubject_pkey" PRIMARY KEY ("examId","subjectId")
+    CONSTRAINT "ExamSubject_pkey" PRIMARY KEY ("examCode","subjectId")
+);
+
+-- CreateTable
+CREATE TABLE "ExamUser" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "examCode" TEXT NOT NULL,
+    "registeredAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ExamUser_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Subject" (
     "id" TEXT NOT NULL,
-    "stream" "Stream" NOT NULL,
     "name" TEXT NOT NULL,
     "shortName" TEXT,
 
@@ -204,15 +140,13 @@ CREATE TABLE "Question" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "type" "QuestionType" NOT NULL,
-    "format" "QuestionFormat" NOT NULL,
+    "type" TEXT NOT NULL,
+    "format" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "difficulty" INTEGER NOT NULL DEFAULT 1,
     "subtopicId" TEXT,
     "topicId" TEXT,
     "subjectId" TEXT,
-    "class" "ClassEnum",
-    "stream" "Stream",
     "pyqYear" TEXT,
     "book" TEXT,
     "commonMistake" TEXT,
@@ -230,7 +164,7 @@ CREATE TABLE "Question" (
 -- CreateTable
 CREATE TABLE "QuestionCategory" (
     "questionId" TEXT NOT NULL,
-    "category" "QCategory" NOT NULL,
+    "category" TEXT NOT NULL,
 
     CONSTRAINT "QuestionCategory_pkey" PRIMARY KEY ("questionId","category")
 );
@@ -265,12 +199,12 @@ CREATE TABLE "Attempt" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "questionId" TEXT NOT NULL,
-    "type" "AttemptType" NOT NULL,
+    "type" TEXT NOT NULL,
     "answer" TEXT,
-    "mistake" "MistakeType" DEFAULT 'NONE',
+    "mistake" TEXT,
     "timing" DOUBLE PRECISION DEFAULT 0,
     "reactionTime" DOUBLE PRECISION,
-    "status" "SubmitStatus" NOT NULL DEFAULT 'NOT_ANSWERED',
+    "status" TEXT NOT NULL DEFAULT 'NOT_ANSWERED',
     "hintsUsed" BOOLEAN NOT NULL DEFAULT false,
     "solvedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "testParticipationId" TEXT,
@@ -308,16 +242,16 @@ CREATE TABLE "Test" (
     "testId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "stream" "Stream",
+    "examCode" TEXT,
     "totalMarks" INTEGER,
     "totalQuestions" INTEGER,
     "referenceId" TEXT,
     "testKey" TEXT,
     "difficulty" TEXT DEFAULT 'MEDIUM',
     "duration" INTEGER NOT NULL,
-    "status" "TestStatus" NOT NULL DEFAULT 'DRAFT',
-    "visibility" "Visibility" NOT NULL DEFAULT 'PUBLIC',
-    "examType" "ExamType",
+    "status" TEXT NOT NULL DEFAULT 'DRAFT',
+    "visibility" TEXT NOT NULL DEFAULT 'PUBLIC',
+    "examType" TEXT,
     "startTime" TIMESTAMP(3),
     "endTime" TIMESTAMP(3),
     "createdBy" TEXT NOT NULL,
@@ -355,7 +289,7 @@ CREATE TABLE "TestParticipation" (
     "userId" TEXT NOT NULL,
     "testId" TEXT NOT NULL,
     "score" INTEGER DEFAULT 0,
-    "status" "TestParticipationStatus" NOT NULL DEFAULT 'JOIN',
+    "status" TEXT NOT NULL DEFAULT 'JOIN',
     "accuracy" DOUBLE PRECISION DEFAULT 0,
     "timing" INTEGER DEFAULT 0,
     "maxStreakCorrect" INTEGER DEFAULT 0,
@@ -375,7 +309,7 @@ CREATE TABLE "TestParticipation" (
 CREATE TABLE "Metric" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "metricType" "MetricType" NOT NULL,
+    "metricType" TEXT NOT NULL,
     "currentValue" INTEGER NOT NULL,
     "previousValue" INTEGER NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -506,15 +440,15 @@ CREATE TABLE "CoinTransaction" (
 CREATE TABLE "StudySuggestion" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "type" "SuggestionType" NOT NULL,
-    "triggerType" "TriggerType" NOT NULL,
+    "type" TEXT NOT NULL,
+    "triggerType" TEXT NOT NULL,
     "suggestion" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "priority" INTEGER NOT NULL,
     "displayUntil" TIMESTAMP(3),
     "actionName" TEXT,
     "actionUrl" TEXT,
-    "status" "SuggestionStatus" NOT NULL DEFAULT 'ACTIVE',
+    "status" TEXT NOT NULL DEFAULT 'ACTIVE',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "StudySuggestion_pkey" PRIMARY KEY ("id")
@@ -537,7 +471,7 @@ CREATE TABLE "UserNotification" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "notificationId" TEXT NOT NULL,
-    "status" "NotificationStatus" NOT NULL DEFAULT 'UNREAD',
+    "status" TEXT NOT NULL DEFAULT 'UNREAD',
     "deliveredAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "readAt" TIMESTAMP(3),
 
@@ -583,8 +517,8 @@ CREATE TABLE "Subscription" (
     "userId" TEXT NOT NULL,
     "planId" TEXT,
     "duration" INTEGER,
-    "status" "SubscriptionStatus" NOT NULL DEFAULT 'TRIAL',
-    "provider" "PaymentProvider" NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'TRIAL',
+    "provider" TEXT NOT NULL,
     "providerId" TEXT,
     "amount" DOUBLE PRECISION NOT NULL,
     "discountApplied" DOUBLE PRECISION DEFAULT 0,
@@ -605,8 +539,8 @@ CREATE TABLE "Payment" (
     "subscriptionId" TEXT NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
     "currency" TEXT NOT NULL DEFAULT 'INR',
-    "status" "PaymentStatus" NOT NULL,
-    "provider" "PaymentProvider" NOT NULL,
+    "status" TEXT NOT NULL,
+    "provider" TEXT NOT NULL,
     "orderId" TEXT,
     "paymentMethod" TEXT,
     "paidAt" TIMESTAMP(3),
@@ -644,9 +578,6 @@ CREATE INDEX "User_email_idx" ON "User"("email");
 CREATE INDEX "User_phone_idx" ON "User"("phone");
 
 -- CreateIndex
-CREATE INDEX "User_stream_idx" ON "User"("stream");
-
--- CreateIndex
 CREATE INDEX "User_targetYear_idx" ON "User"("targetYear");
 
 -- CreateIndex
@@ -659,10 +590,19 @@ CREATE UNIQUE INDEX "UserPerformance_userId_key" ON "UserPerformance"("userId");
 CREATE INDEX "UserPerformance_accuracy_idx" ON "UserPerformance"("accuracy");
 
 -- CreateIndex
+CREATE INDEX "UserPerformance_streak_idx" ON "UserPerformance"("streak");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "CurrentStudyTopic_userId_subjectId_topicId_key" ON "CurrentStudyTopic"("userId", "subjectId", "topicId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Exam_code_key" ON "Exam"("code");
+
+-- CreateIndex
 CREATE INDEX "Exam_name_idx" ON "Exam"("name");
+
+-- CreateIndex
+CREATE INDEX "Exam_code_idx" ON "Exam"("code");
 
 -- CreateIndex
 CREATE INDEX "Exam_examDate_idx" ON "Exam"("examDate");
@@ -671,10 +611,19 @@ CREATE INDEX "Exam_examDate_idx" ON "Exam"("examDate");
 CREATE INDEX "ExamSubject_subjectId_idx" ON "ExamSubject"("subjectId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Subject_name_stream_key" ON "Subject"("name", "stream");
+CREATE INDEX "ExamUser_examCode_idx" ON "ExamUser"("examCode");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Subject_shortName_stream_key" ON "Subject"("shortName", "stream");
+CREATE INDEX "ExamUser_userId_idx" ON "ExamUser"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ExamUser_userId_examCode_key" ON "ExamUser"("userId", "examCode");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Subject_name_key" ON "Subject"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Subject_shortName_key" ON "Subject"("shortName");
 
 -- CreateIndex
 CREATE INDEX "Topic_subjectId_orderIndex_idx" ON "Topic"("subjectId", "orderIndex");
@@ -698,10 +647,49 @@ CREATE UNIQUE INDEX "SubTopic_slug_topicId_key" ON "SubTopic"("slug", "topicId")
 CREATE UNIQUE INDEX "Question_slug_key" ON "Question"("slug");
 
 -- CreateIndex
+CREATE INDEX "Question_subjectId_idx" ON "Question"("subjectId");
+
+-- CreateIndex
+CREATE INDEX "Question_topicId_idx" ON "Question"("topicId");
+
+-- CreateIndex
+CREATE INDEX "Question_subtopicId_idx" ON "Question"("subtopicId");
+
+-- CreateIndex
+CREATE INDEX "Question_isPublished_idx" ON "Question"("isPublished");
+
+-- CreateIndex
+CREATE INDEX "Question_difficulty_idx" ON "Question"("difficulty");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "QuestionInsights_questionId_key" ON "QuestionInsights"("questionId");
 
 -- CreateIndex
 CREATE INDEX "Attempt_userId_questionId_idx" ON "Attempt"("userId", "questionId");
+
+-- CreateIndex
+CREATE INDEX "Attempt_testParticipationId_idx" ON "Attempt"("testParticipationId");
+
+-- CreateIndex
+CREATE INDEX "Attempt_practiceSessionId_idx" ON "Attempt"("practiceSessionId");
+
+-- CreateIndex
+CREATE INDEX "PracticeSessionQuestions_questionId_idx" ON "PracticeSessionQuestions"("questionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PracticeSessionQuestions_practiceSessionId_questionId_key" ON "PracticeSessionQuestions"("practiceSessionId", "questionId");
+
+-- CreateIndex
+CREATE INDEX "Test_createdBy_idx" ON "Test"("createdBy");
+
+-- CreateIndex
+CREATE INDEX "Test_authorId_idx" ON "Test"("authorId");
+
+-- CreateIndex
+CREATE INDEX "TestParticipation_testId_idx" ON "TestParticipation"("testId");
+
+-- CreateIndex
+CREATE INDEX "TestParticipation_userId_idx" ON "TestParticipation"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "TestParticipation_userId_testId_key" ON "TestParticipation"("userId", "testId");
@@ -779,6 +767,15 @@ CREATE UNIQUE INDEX "PromoCode_code_key" ON "PromoCode"("code");
 CREATE UNIQUE INDEX "Subscription_userId_key" ON "Subscription"("userId");
 
 -- CreateIndex
+CREATE INDEX "Subscription_planId_idx" ON "Subscription"("planId");
+
+-- CreateIndex
+CREATE INDEX "Payment_userId_idx" ON "Payment"("userId");
+
+-- CreateIndex
+CREATE INDEX "Payment_subscriptionId_idx" ON "Payment"("subscriptionId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "_PlanPromoCodes_AB_unique" ON "_PlanPromoCodes"("A", "B");
 
 -- CreateIndex
@@ -797,10 +794,16 @@ ALTER TABLE "CurrentStudyTopic" ADD CONSTRAINT "CurrentStudyTopic_subjectId_fkey
 ALTER TABLE "CurrentStudyTopic" ADD CONSTRAINT "CurrentStudyTopic_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "Topic"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ExamSubject" ADD CONSTRAINT "ExamSubject_examId_fkey" FOREIGN KEY ("examId") REFERENCES "Exam"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "ExamSubject" ADD CONSTRAINT "ExamSubject_examCode_fkey" FOREIGN KEY ("examCode") REFERENCES "Exam"("code") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ExamSubject" ADD CONSTRAINT "ExamSubject_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "Subject"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ExamUser" ADD CONSTRAINT "ExamUser_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ExamUser" ADD CONSTRAINT "ExamUser_examCode_fkey" FOREIGN KEY ("examCode") REFERENCES "Exam"("code") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Topic" ADD CONSTRAINT "Topic_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "Subject"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -846,6 +849,12 @@ ALTER TABLE "PracticeSessionQuestions" ADD CONSTRAINT "PracticeSessionQuestions_
 
 -- AddForeignKey
 ALTER TABLE "PracticeSessionQuestions" ADD CONSTRAINT "PracticeSessionQuestions_practiceSessionId_fkey" FOREIGN KEY ("practiceSessionId") REFERENCES "PracticeSession"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Test" ADD CONSTRAINT "Test_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Test" ADD CONSTRAINT "Test_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TestSection" ADD CONSTRAINT "TestSection_testId_fkey" FOREIGN KEY ("testId") REFERENCES "Test"("testId") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -923,10 +932,10 @@ ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_userId_fkey" FOREIGN KEY
 ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_planId_fkey" FOREIGN KEY ("planId") REFERENCES "Plan"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Payment" ADD CONSTRAINT "Payment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Payment" ADD CONSTRAINT "Payment_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "Subscription"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "Subscription"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_PlanPromoCodes" ADD CONSTRAINT "_PlanPromoCodes_A_fkey" FOREIGN KEY ("A") REFERENCES "Plan"("id") ON DELETE CASCADE ON UPDATE CASCADE;

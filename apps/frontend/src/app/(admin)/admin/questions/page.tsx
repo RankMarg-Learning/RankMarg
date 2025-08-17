@@ -30,7 +30,7 @@ import { useQuery } from "@tanstack/react-query";
 import { deleteQuestion, getAllQuestions } from "@/services/question.service";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
-import { QuestionType } from "@prisma/client";
+import { QuestionType } from "@repo/db/enums";
 
 
 export default function Tests() {
@@ -135,7 +135,6 @@ export default function Tests() {
                 <TableHead>Title</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Difficulty</TableHead>
-                <TableHead>Stream</TableHead>
                 <TableHead>Subject</TableHead>
                 <TableHead className="text-center">Topic</TableHead>
                 <TableHead className="text-center">Published</TableHead>
@@ -179,7 +178,6 @@ export default function Tests() {
                       <TableCell className="max-w-[250px] truncate">{question.title}</TableCell>
                       <TableCell>{getTypeBadge(question.type)}</TableCell>
                       <TableCell>{getDifficultyBadge(question.difficulty)}</TableCell>
-                      <TableCell>{question.stream || "-"}</TableCell>
                       <TableCell>{question?.subject?.name || "-"}</TableCell>
                       <TableCell className="max-w-[150px] truncate">
                       {question?.topic?.name || "-"}

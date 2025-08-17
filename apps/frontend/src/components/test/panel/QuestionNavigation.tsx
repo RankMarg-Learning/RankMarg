@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTestContext } from "@/context/TestContext";
 import { QuestionStatus } from "@/utils";
 import { TestSummaryPopup } from "./TestSubmitPop";
+import { TextFormator } from "@/utils/textFormator";
 
 
 
@@ -62,7 +63,7 @@ export function QuestionNavigation() {
             <div className={`h-5 w-5 text-center text-sm rounded-sm justify-center  ${statusClasses[status as QuestionStatus]}`} >
               {count}
             </div>
-            <span className="text-sm "> {status.replace(/([A-Z])/g, ' $1').replace(/-/g, ' ').trim().toLocaleUpperCase()}</span>
+            <span className="text-sm "> {TextFormator(status.replace(/-/g, ' '))}</span>
           </div>
         ))}
       </div>

@@ -7,11 +7,8 @@ import { v4 as uuidv4 } from "uuid";
  * @param stream - The type of the question (e.g., MCQ, TRUE_FALSE)
  * @returns A unique slug for the question
  */
-export function generateSlug(title: string, stream: string) {
-  const baseSlug = `${slugify(stream, {
-    lower: true,
-    strict: true,
-  })}-${slugify(title, { lower: true, strict: true })}`;
+export function generateSlug(title: string) {
+  const baseSlug = `${slugify(title, { lower: true, strict: true })}`;
 
   const uniqueId = uuidv4().slice(0, 8);
   return `${baseSlug}-${uniqueId}`;

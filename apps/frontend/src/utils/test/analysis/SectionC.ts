@@ -1,11 +1,10 @@
 import { AnalysisSectionC, SectioncQuestionTiming, SectionCTiming, TestWithIncludes } from "@/types/typeTest";
-import { Stream } from "@prisma/client";
 
 
 
 export const SectionC = (test: TestWithIncludes): AnalysisSectionC => {
     // Initialize section timings based on stream
-    const sectionTimings: SectionCTiming[] = test.test.stream === Stream.JEE 
+    const sectionTimings: SectionCTiming[] = test.test.examCode === "JEE" 
         ? [
             { name: "Physics", totalTime: 0, maxTime: 60 },
             { name: "Chemistry", totalTime: 0, maxTime: 60 },
@@ -33,7 +32,7 @@ export const SectionC = (test: TestWithIncludes): AnalysisSectionC => {
         }
 
         // Initialize question timing based on stream
-        const questionTiming: SectioncQuestionTiming = test.test.stream === Stream.JEE 
+        const questionTiming: SectioncQuestionTiming = test.test.examCode === "JEE" 
             ? {
                 question: questionNumber,
                 physics: 0,
@@ -50,12 +49,12 @@ export const SectionC = (test: TestWithIncludes): AnalysisSectionC => {
         // Add timing to appropriate subject
         switch (subject) {
             case 'mathematics':
-                if (test.test.stream === Stream.JEE) {
+                if (test.test.examCode === "JEE") {
                     questionTiming.mathematics = timing;
                 }
                 break;
             case 'biology':
-                if (test.test.stream === Stream.NEET) {
+                if (test.test.examCode === "NEET") {
                     questionTiming.biology = timing;
                 }
                 break;

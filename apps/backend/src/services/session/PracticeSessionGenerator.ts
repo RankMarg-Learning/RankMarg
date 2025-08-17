@@ -1,10 +1,5 @@
-import {
-  PrismaClient,
-  Subject,
-  Question,
-  Stream,
-  GradeEnum,
-} from "@prisma/client";
+import { PrismaClient, Subject, Question } from "@prisma/client";
+import { GradeEnum } from "@repo/db/enums";
 import { QuestionSelector } from "./QuestionSelector";
 import { RedisCacheService } from "./RedisCacheService";
 import { SelectedQuestion, SessionConfig } from "../../type/session.api.types";
@@ -32,7 +27,7 @@ export class PracticeSessionGenerator {
 
   async generate(
     userId: string,
-    stream: Stream,
+    examCode: string,
     grade: GradeEnum
   ): Promise<void> {
     try {
@@ -45,18 +40,36 @@ export class PracticeSessionGenerator {
       this.userId = userId;
 
       let cachedConfig = await RedisCacheService.getCachedSessionConfig(
-        stream,
+        examCode,
         grade
       );
       if (!cachedConfig) {
-        await RedisCacheService.cacheSessionConfig(stream, grade, this.config);
+        await RedisCacheService.cacheSessionConfig(
+          examCode,
+          grade,
+          this.config
+        );
       }
 
-      const subjects = await this.prisma.subject.findMany({
-        where: {
-          stream: stream as Stream,
-        },
+      const examReg = await this.prisma.examUser.findFirst({
+        where: { userId },
+        select: { examCode: true },
+        orderBy: { registeredAt: "desc" },
       });
+
+      let subjects: Subject[] = [];
+      if (examReg?.examCode) {
+        const examSubjects = await this.prisma.examSubject.findMany({
+          where: { examCode: examReg.examCode },
+          select: { subjectId: true },
+        });
+        const subjectIds = examSubjects.map((es) => es.subjectId);
+        subjects = await this.prisma.subject.findMany({
+          where: { id: { in: subjectIds } },
+        });
+      } else {
+        subjects = await this.prisma.subject.findMany();
+      }
 
       await Promise.all(
         subjects.map((subject) => this.generateSubjectSession(userId, subject))

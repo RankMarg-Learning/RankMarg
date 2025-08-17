@@ -1,8 +1,8 @@
 import { SessionConfig } from "../../type/session.api.types";
-import { GradeEnum, QCategory, Stream } from "@prisma/client";
+import { GradeEnum, QCategory } from "@repo/db/enums";
 
 export function createDefaultSessionConfig(
-  stream: Stream,
+  examCode: string,
   totalQuestions: number,
   grade: GradeEnum
 ): SessionConfig {
@@ -12,7 +12,7 @@ export function createDefaultSessionConfig(
       weakConcepts: 0.3,
       revisionTopics: 0.3,
     },
-    stream: stream,
+    examCode,
     grade: grade,
     totalQuestions: totalQuestions,
     questionCategoriesDistribution: getQuestionCategoriesByGrade(grade),
@@ -103,18 +103,18 @@ export function getDifficultyDistributionByGrade(
 }
 
 export function getSubjectDistribution(
-  stream: Stream,
+  examCode: string,
   totalQuestions: number
 ): Record<string, number> {
   let distribution: Record<string, number> = {};
 
-  if (stream === "JEE") {
+  if (examCode === "JEE") {
     distribution = {
       Physics: Math.floor(totalQuestions * 0.33),
       Chemistry: Math.floor(totalQuestions * 0.33),
       Mathematics: Math.floor(totalQuestions * 0.34),
     };
-  } else if (stream === "NEET") {
+  } else if (examCode === "NEET") {
     distribution = {
       Physics: Math.floor(totalQuestions * 0.25),
       Chemistry: Math.floor(totalQuestions * 0.25),

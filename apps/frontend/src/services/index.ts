@@ -1,6 +1,6 @@
 import { attempDataProps } from "@/types";
 import api from "@/utils/api";
-import { AttemptType } from "@prisma/client";
+import { AttemptType } from "@repo/db/enums";
 
 export * from "./session.service";
 export * from "./user.service";

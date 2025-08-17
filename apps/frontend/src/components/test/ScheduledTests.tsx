@@ -11,7 +11,7 @@ export interface ScheduledTestAPI {
   duration: number; // in minutes
   difficulty: string;
   examType: string;
-  stream: string;
+  examCode: string;
 }
 
 interface ScheduledTestsProps {
@@ -31,10 +31,10 @@ const ScheduledTestItem: React.FC<{ test: ScheduledTestAPI; onStartTest: (id: st
   test,
   onStartTest,
 }) => {
-  const formattedDate = format(new Date(test.startTime), 'dd MMM, yyyy');
-  const formattedTime = format(new Date(test.startTime), 'hh:mm a');
+  const formattedDate = format(new Date(test?.startTime), 'dd MMM, yyyy');
+  const formattedTime = format(new Date(test?.startTime), 'hh:mm a');
 
-  const type = test.examType.toUpperCase();
+  const type = test?.examType.toUpperCase();
   const typeColorClass = typeColors[type as keyof typeof typeColors] || 'bg-gray-100 text-gray-700 border-gray-200';
 
   return (
@@ -44,12 +44,12 @@ const ScheduledTestItem: React.FC<{ test: ScheduledTestAPI; onStartTest: (id: st
           {type === 'FULL_LENGTH' ? 'Full Mock Test' : type.replace('_', ' ')}
         </Badge>
         <Badge variant="outline" className="text-xs capitalize">
-          {test.difficulty.toLowerCase()}
+          {test?.difficulty.toLowerCase()}
         </Badge>
       </div>
 
       <h3 className="text-base font-semibold text-gray-900 mb-3">
-        {test.title.length > 0 ? test.title : 'Untitled Test'}
+        {test?.title?.length > 0 ? test?.title : 'Untitled Test'}
       </h3>
 
       <div className="flex flex-col md:flex-row md:justify-between gap-4">
@@ -67,7 +67,7 @@ const ScheduledTestItem: React.FC<{ test: ScheduledTestAPI; onStartTest: (id: st
         <div className="flex flex-wrap gap-2">
           <Button
             disabled={test?.startTime > new Date().toISOString()}
-            onClick={() => onStartTest(test.testId)}
+            onClick={() => onStartTest(test?.testId)}
             className="bg-primary-600 hover:bg-primary-700 text-white transition-all duration-150"
           >
             Start Test 

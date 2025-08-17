@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { authOptions } from "../../auth/[...nextauth]/options";
 import { getServerSession } from "next-auth";
-import { ExamType } from "@prisma/client";
+import { ExamType } from "@repo/db/enums";
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);

@@ -1,4 +1,5 @@
-import { GradeEnum, QCategory, Stream, Question } from "@prisma/client";
+import { GradeEnum, QCategory } from "@repo/db/enums";
+import { Question } from "@prisma/client";
 
 export interface TopicSelectionPreferences {
   singleTopicPerWeakConcepts: boolean;
@@ -13,7 +14,7 @@ export interface SessionConfig {
     weakConcepts: number;
     revisionTopics: number;
   };
-  stream: Stream;
+  examCode: string;
   totalQuestions: number;
   grade: GradeEnum;
   questionCategoriesDistribution: Record<string, QCategory[]>;

@@ -1,25 +1,22 @@
 import {  SubjectData, TopicData } from "@/utils/constants";
-import { StandardEnum, Stream } from "@prisma/client";
+import { StandardEnum } from "@repo/db/enums";
 import { create } from "zustand";
 
-export type OnboardingStep = 'phone' | 'stream' | 'grade' | 'year' | 'studyHours' | 'subjects' | 'topics';
+export type OnboardingStep = 'phone' | 'exam' | 'subjects' | 'grade' | 'year' | 'studyHours' | 'topics';
 
 interface OnboardingState {
   currentStep: OnboardingStep;
   isCompleted: boolean;
-
-  // User selections
   phone: string;
-  stream: Stream | null;
+  examCode: string | null;
   gradeLevel: StandardEnum | null;
   targetYear: number | null;
   studyHoursPerDay: number | null;
   selectedSubjects: SubjectData[];
   selectedTopics: TopicData[];
 
-  // Actions
   setPhone: (phone: string) => void; 
-  setStream: (stream: Stream) => void;
+  setExamCode: (examCode: string) => void;
   setGradeLevel: (grade: StandardEnum) => void;
   setTargetYear: (year: number) => void;
   setStudyHoursPerDay: (hours: number) => void;
@@ -37,19 +34,20 @@ const useOnboardingStore = create<OnboardingState>((set) => ({
   currentStep: 'phone',
   isCompleted: false,
   phone: '',
-  stream: null,
+  examCode: null,
   gradeLevel: null,
   targetYear: null,
   studyHoursPerDay: null,
   selectedSubjects: [],
   selectedTopics: [],
 
-  // Actions
   setPhone: (phone) => set({ phone }),
-  setStream: (stream) => set((state) => ({ 
-    stream, 
+ 
+  setExamCode: (examCode) => set(() => ({ 
+    examCode,
+    // Reset subjects and topics when exam changes
     selectedSubjects: [],
-    selectedTopics: [] 
+    selectedTopics: []
   })),
   setGradeLevel: (gradeLevel) => set({ gradeLevel }),
   
@@ -70,8 +68,8 @@ const useOnboardingStore = create<OnboardingState>((set) => ({
     const subjectExists = state.selectedSubjects.some(s => s.id === topic.subjectId);
     
     let updatedSubjects = [...state.selectedSubjects];
-    if (!subjectExists && state.stream) {
-      const subjects = getSubjectsByStream(state.stream);
+    if (!subjectExists && state.examCode) {
+      const subjects = getSubjectsByExam(state.examCode);
       const subject = subjects.find(s => s.id === topic.subjectId);
       if (subject) {
         updatedSubjects = [...updatedSubjects, subject];
@@ -89,7 +87,7 @@ const useOnboardingStore = create<OnboardingState>((set) => ({
   })),
   
   nextStep: () => set((state) => {
-    const steps: OnboardingStep[] = ['phone','stream', 'grade', 'year', 'studyHours', 'topics'];
+    const steps: OnboardingStep[] = ['phone','exam', 'grade', 'year', 'studyHours', 'topics'];
     const currentIndex = steps.indexOf(state.currentStep);
     
     if (currentIndex === steps.length - 1) {
@@ -102,7 +100,7 @@ const useOnboardingStore = create<OnboardingState>((set) => ({
   
   previousStep: () => set((state) => {
 
-    const steps: OnboardingStep[] = ['phone','stream', 'grade', 'year', 'studyHours', 'topics'];
+    const steps: OnboardingStep[] = ['phone','exam', 'grade', 'year', 'studyHours', 'topics'];
     const currentIndex = steps.indexOf(state.currentStep);
     
     if (currentIndex === 0) {
@@ -118,7 +116,7 @@ const useOnboardingStore = create<OnboardingState>((set) => ({
   resetOnboarding: () => set({
     currentStep: 'phone',
     isCompleted: false,
-    stream: null,
+    examCode: null,
     gradeLevel: null,
     targetYear: null,
     studyHoursPerDay: null,
@@ -127,7 +125,7 @@ const useOnboardingStore = create<OnboardingState>((set) => ({
   })
 }));
 
-const getSubjectsByStream = (stream: Stream) => {
+const getSubjectsByExam = (examCode: string) => {
   return [];
 };
 

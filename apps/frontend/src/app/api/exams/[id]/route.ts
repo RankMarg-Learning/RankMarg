@@ -2,11 +2,11 @@ import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+  const { id:examCode } = params;
 
   try {
     const exam = await prisma.exam.findUnique({
-      where: { id },
+      where: { code:examCode },
       include: {
         examSubjects: {
           include: {
@@ -61,7 +61,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
   try {
     const exam = await prisma.exam.update({
-      where: { id },
+      where: { code:id },
       data: {
         name,
         fullName,
@@ -107,7 +107,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
 
   try {
     await prisma.exam.delete({
-      where: { id },
+      where: { code:id },
     });
 
     return jsonResponse(null, { 

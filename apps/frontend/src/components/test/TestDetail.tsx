@@ -14,7 +14,7 @@ import { useTestContext } from '@/context/TestContext'
 import { ScrollArea } from '../ui/scroll-area'
 import Loading from '../Loading'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
-import { TestStatus } from '@prisma/client'
+import { TestStatus } from '@repo/db/enums'
 import { TextFormator } from '@/utils/textFormator'
 import { getTestDetails } from '@/services/testPanel.service'
 

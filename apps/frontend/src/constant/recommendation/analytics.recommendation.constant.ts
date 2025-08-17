@@ -1,4 +1,4 @@
-import { MetricType } from "@prisma/client";
+import { MetricType } from "@repo/db/enums";
 
 type Metric = {
     metricType: MetricType

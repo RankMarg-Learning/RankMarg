@@ -1,4 +1,4 @@
-import { QuestionType, Stream } from "@prisma/client";
+import { QuestionType } from "@repo/db/enums";
 
 
 
@@ -82,7 +82,6 @@ export interface Question {
   subtopicId?: string;
   topicId?: string;
   subjectId?: string;
-  stream?: Stream;
   pyqYear?: string;
   book?: string;
   commonMistake?: string;
@@ -121,7 +120,7 @@ export interface test {
   testId: string;
   title: string;
   description?: string;
-  stream?: Stream;
+  examCode?: string;
   totalMarks?: number;
   totalQuestions?: number;
   status?: TestStatus;
@@ -172,7 +171,7 @@ export interface Blog {
 }
 
 export interface Exam {
-  id: string;
+  code: string;
   name: string;
   fullName?: string;
   description?: string;
@@ -193,7 +192,7 @@ export interface Exam {
 }
 
 export interface ExamSubject {
-  examId: string;
+  examCode: string;
   subjectId: string;
   weightage: number;
   subject?: Subject;
@@ -203,7 +202,6 @@ export interface Subject {
   id: string;
   name: string;
   shortName?: string;
-  stream: Stream;
   topics?: Topic[];
   examSubjects?: ExamSubject[];
   createdAt?: string;
@@ -248,10 +246,10 @@ export interface QuestionFilter {
   category?: QCategory;
   className?: string;
   pyqYear?: string | null;
-  stream?: Stream;
   type?: QuestionType;
   search?: string | null;
   isPublished?: boolean;
+  examCode?: string | null;
   skip: number;
   limit: number;
 }

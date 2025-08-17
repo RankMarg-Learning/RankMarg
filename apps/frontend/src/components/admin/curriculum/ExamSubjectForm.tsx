@@ -6,14 +6,14 @@ import { SearchableSelect } from "@/components/ui/searchable-select";
 import { ExamSubject, Subject } from "@/types/typeAdmin";
 
 interface ExamSubjectFormProps {
-  examId: string;
+  examCode: string;
   subjects: Subject[];
   existingExamSubjects?: ExamSubject[];
-  onSave: (examSubject: Omit<ExamSubject, 'examId'>) => void;
+  onSave: (examSubject: Omit<ExamSubject, 'examCode'>) => void;
   onCancel: () => void;
 }
 
-const ExamSubjectForm = ({ examId, subjects, existingExamSubjects = [], onSave, onCancel }: ExamSubjectFormProps) => {
+const ExamSubjectForm = ({ examCode, subjects, existingExamSubjects = [], onSave, onCancel }: ExamSubjectFormProps) => {
   const [subjectId, setSubjectId] = useState("");
   const [weightage, setWeightage] = useState(0);
 
@@ -58,7 +58,7 @@ const ExamSubjectForm = ({ examId, subjects, existingExamSubjects = [], onSave, 
           type="number"
           min="0"
           max="100"
-          step="0.1"
+          step="0.01"
           value={weightage}
           onChange={(e) => setWeightage(parseFloat(e.target.value))}
           required

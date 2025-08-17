@@ -1,7 +1,7 @@
 import React from "react";
 import { Controller } from "react-hook-form";
 import Select from "react-select";
-import { QCategory } from "@prisma/client"; // Adjust if necessary
+import { QCategory } from "@repo/db/enums"; // Adjust if necessary
 import { TextFormator } from "@/utils/textFormator";
 
 type Props = {

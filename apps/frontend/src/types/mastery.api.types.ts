@@ -1,4 +1,4 @@
-import { AttemptType, SubmitStatus } from "@prisma/client";
+import { AttemptType, SubmitStatus } from "@repo/db/enums";
 
 export interface MasteryAttempt {
     userId: string;
@@ -23,7 +23,7 @@ export interface MasteryAttempt {
   subject: {
     id: string;
     name: string;
-    stream: string;
+    examCode: string;
   };
   overallMastery: number;
   topics: {

@@ -2,7 +2,8 @@ import api from "@/utils/api";
 
 export const getTopics = async (subjectId?: string) => {
   try {
-    const response = await api.get(`/topics?subjectId=${subjectId}`);
+    const url = subjectId ? `/topics?subjectId=${subjectId}` : '/topics';
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     console.error("Error fetching topics:", error);

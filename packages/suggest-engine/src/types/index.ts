@@ -1,4 +1,4 @@
-import { TriggerType } from "@prisma/client";
+import { TriggerType } from "@repo/db/enums";
 
 export interface UserActivity {
   userId: string;

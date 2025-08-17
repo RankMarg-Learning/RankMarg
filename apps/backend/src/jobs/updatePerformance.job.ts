@@ -3,7 +3,7 @@ import { PerformanceService } from "@/services/auto/performance.service";
 
 export const updatePerformanceJob = async () => {
   try {
-    logger.info("Running performance update for JEE/NEET students");
+    logger.info("Running performance update for users with registered exams");
 
     const performanceService = new PerformanceService();
     await performanceService.processAllUsers();

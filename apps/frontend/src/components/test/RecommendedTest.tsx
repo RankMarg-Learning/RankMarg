@@ -3,14 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lightbulb } from 'lucide-react';
 import MarkdownRenderer from '@/lib/MarkdownRenderer';
-import { ExamType, Stream } from '@prisma/client';
+import { ExamType } from '@repo/db/enums';
 
 interface RecommendedTestProps {
   testId: string;
   testName: string;
   duration: string;
   difficulty: string;
-  stream: Stream;
+  examCode: string;
   examType: ExamType
   totalMarks: number;
   totalQuestions: number;
@@ -22,13 +22,13 @@ const RecommendedTest: React.FC<RecommendedTestProps> = ({
   testName,
   duration,
   difficulty,
-  stream,
+  examCode,
   examType,
   totalMarks,
   totalQuestions,
   onStartTest,
 }) => {
-  const streamLabel = stream === 'JEE' ? 'JEE Aspirants' : stream === 'NEET' ? 'NEET Aspirants' : 'Aspirants';
+  const examLabel = examCode === 'JEE' ? 'JEE Aspirants' : examCode === 'NEET' ? 'NEET Aspirants' : 'Aspirants';
   const diffLabel = difficulty?.charAt(0)?.toUpperCase() + difficulty?.slice(1)?.toLowerCase();
 
   const examTypeCopy: Record<string, string> = {
@@ -63,7 +63,7 @@ const RecommendedTest: React.FC<RecommendedTestProps> = ({
   const whyItMatters = examTypeCopy[examType] || 'Designed to improve your prep.';
   const stats = `${totalQuestions} Qs • ${duration} min • ${totalMarks} marks`;
 
-  const copy = `**${hook}** ${testName} is a ${diffLabel} level test for ${streamLabel}. ${whyItMatters} ${stats}.`;
+  const copy = `**${hook}** ${testName} is a ${diffLabel} level test for ${examLabel}. ${whyItMatters} ${stats}.`;
 
   return (
     <div className="bg-primary-50 rounded-lg p-2 md:p-4 border border-primary-100 shadow-sm">
@@ -80,7 +80,7 @@ const RecommendedTest: React.FC<RecommendedTestProps> = ({
             <div className="flex flex-wrap gap-2 mt-3">
               <Badge variant="outline" className="bg-primary-100 text-primary-700 border-primary-200">{duration} Min</Badge>
               <Badge variant="outline" className="bg-primary-100 text-primary-700 border-primary-200">{diffLabel}</Badge>
-              <Badge variant="outline" className="bg-primary-100 text-primary-700 border-primary-200">{streamLabel}</Badge>
+              <Badge variant="outline" className="bg-primary-100 text-primary-700 border-primary-200">{examLabel}</Badge>
             </div>
           </div>
         </div>

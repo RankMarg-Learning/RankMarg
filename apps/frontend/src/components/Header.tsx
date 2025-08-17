@@ -16,7 +16,6 @@ import { Badge } from './ui/badge';
 import { signOut, useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import useSessionStore from '@/store/sessionStore';
-import { Stream } from '@prisma/client';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -27,10 +26,10 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { setStream } = useSessionStore();
 
   useEffect(() => {
-    if (session?.user?.stream) {
-      setStream(session.user.stream as Stream);
+    if (session?.user?.examCode) {
+      setStream(session.user.examCode as string);
     }
-  }, [session?.user?.stream, setStream]);
+  }, [session?.user?.examCode, setStream]);
 
   return (
     <>

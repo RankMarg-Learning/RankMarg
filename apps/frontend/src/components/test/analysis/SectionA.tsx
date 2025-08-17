@@ -19,7 +19,7 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
             <div className="space-y-1">
                 <h1 className="text-2xl font-bold">{analysis?.testTitle}</h1>
                 {
-                    analysis?.stream === "JEE" ?
+                    analysis?.examCode === "JEE" ?
                 
                 <div className="flex gap-2">
                     <span className="text-yellow-600">Physics</span>

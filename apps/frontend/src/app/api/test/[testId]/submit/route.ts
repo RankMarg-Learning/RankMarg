@@ -1,6 +1,6 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import prisma from "@/lib/prisma";
-import { AttemptType, SubmitStatus } from "@prisma/client";
+import { AttemptType, SubmitStatus } from "@repo/db/enums";
 import { getServerSession } from "next-auth";
 
 

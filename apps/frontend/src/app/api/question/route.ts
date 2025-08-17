@@ -1,8 +1,8 @@
 import prisma from "@/lib/prisma";
-import { Prisma, QuestionType, Stream } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { QCategory, Question } from "@/types/typeAdmin";
 import { jsonResponse } from "@/utils/api-response";
-import { SubmitStatus } from "@prisma/client";
+import { SubmitStatus , QuestionType} from "@repo/db/enums";
 import { getAuthSession } from "@/utils/session";
 
 interface WhereClauseProps {
@@ -11,7 +11,6 @@ interface WhereClauseProps {
   subtopicId?: string;
   difficulty?: number;
   category?: Prisma.QuestionCategoryListRelationFilter;
-  stream?: Stream;
   type?: QuestionType;
   OR?: Array<Prisma.QuestionWhereInput>;
   pyqYear?: string;
@@ -22,13 +21,13 @@ export async function GET(req: Request) {
   const limit = 25;
   const { searchParams } = new URL(req.url);
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+  const examCode = searchParams.get("examCode") || undefined;
   const subjectId = searchParams.get("subjectId");
   const topicId = searchParams.get("topicId");
   const subtopicId = searchParams.get("subtopicId");
   const difficulty = parseInt(searchParams.get("difficulty") , 10);
   const category = searchParams.get("category") as QCategory;
   const pyqYear = searchParams.get("pyqYear");
-  const stream = searchParams.get("stream") as Stream;
   const type = searchParams.get("type") as QuestionType;
   const search = searchParams.get("search");
   const isPublished = searchParams.get("isPublished") === "true" ? true : false; 
@@ -50,8 +49,11 @@ export async function GET(req: Request) {
       };
     }
     if (pyqYear) whereClause.pyqYear = pyqYear;
-    if (stream) whereClause.stream = stream;
     if (type) whereClause.type = type;
+
+    if(examCode){
+      whereClause
+    }
     
     if (search) {
       whereClause.OR = [
@@ -80,7 +82,6 @@ export async function GET(req: Request) {
           content: true,
           difficulty: true,
           isPublished:true,
-          stream: true,
           
           pyqYear: true,
           createdBy: true,
@@ -127,7 +128,6 @@ export async function POST(req: Request) {
   const questionData: Question = body;
   try {
     if (
-      !questionData.stream ||
       !questionData.slug ||
       !questionData.type ||
       !questionData.content ||
@@ -155,7 +155,6 @@ export async function POST(req: Request) {
         type: questionData.type,
         format: questionData.format,
         difficulty: questionData.difficulty,
-        stream: questionData.stream,
         subjectId: questionData.subjectId,
         topicId: questionData.topicId,
         subtopicId:questionData.subtopicId as string | undefined,
