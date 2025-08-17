@@ -3,7 +3,6 @@ import { jsonResponse } from "@/utils/api-response";
 import { getAuthSession } from "@/utils/session";
 
 interface SubjectData {
-  subject: any;
   topicIds: string[];
 }
 
@@ -22,9 +21,9 @@ export async function POST(req: Request) {
                 isCurrent: true,
                 isCompleted: false
             },
-            include: {
-                subject: true,
-                topic: true,
+            select: {
+                subjectId: true,
+                topicId: true,
             },
         });
 
@@ -36,97 +35,104 @@ export async function POST(req: Request) {
         currentTopics.forEach(cst => {
             if (!subjectTopicsMap.has(cst.subjectId)) {
                 subjectTopicsMap.set(cst.subjectId, {
-                    subject: cst.subject,
                     topicIds: []
                 });
             }
             subjectTopicsMap.get(cst.subjectId)?.topicIds.push(cst.topicId);
         });
 
-        const createdSessions = [];
-        const sessionErrors = [];
+        const createdSessionIds: string[] = [];
+        const sessionErrors: Array<{ subjectId: string, error: string }> = [];
 
-        for (const [subjectId, subjectData] of Array.from(subjectTopicsMap.entries())) {
-            try {
-                const questionsFromTopics = await prisma.question.findMany({
-                    where: {
-                        topicId: { in: subjectData.topicIds },
-                        isPublished: true,
-                        difficulty: { lte: 2 }
-                    },
-                    take: 5,
-                    orderBy: { createdAt: 'desc' }
-                });
-
-                const remainingCount = Math.max(0, 5 - questionsFromTopics.length);
-                const questionsFromSubject = remainingCount > 0 
-                    ? await prisma.question.findMany({
+        await Promise.all(
+            Array.from(subjectTopicsMap.entries()).map(async ([subjectId, subjectData]) => {
+                try {
+                    const questionsFromTopics = await prisma.question.findMany({
                         where: {
-                            subjectId,
+                            topicId: { in: subjectData.topicIds },
                             isPublished: true,
-                            difficulty: { lte: 2 },
-                            id: { notIn: questionsFromTopics.map(q => q.id) }
+                            difficulty: { lte: 2 }
                         },
-                        take: remainingCount,
+                        select: { id: true },
+                        take: 5,
                         orderBy: { createdAt: 'desc' }
-                    })
-                    : [];
+                    });
 
-                const subjectQuestions = [...questionsFromTopics, ...questionsFromSubject];
+                    const remainingCount = Math.max(0, 5 - questionsFromTopics.length);
+                    const questionsFromSubject = remainingCount > 0 
+                        ? await prisma.question.findMany({
+                            where: {
+                                subjectId,
+                                isPublished: true,
+                                difficulty: { lte: 2 },
+                                id: { notIn: questionsFromTopics.map(q => q.id) }
+                            },
+                            select: { id: true },
+                            take: remainingCount,
+                            orderBy: { createdAt: 'desc' }
+                        })
+                        : [];
 
-                if (!subjectQuestions.length) {
-                    console.warn(`No questions found for subject: ${subjectData.subject.name}`);
-                    continue;
-                }
+                    const subjectQuestionIds = [...questionsFromTopics, ...questionsFromSubject].map(q => q.id);
 
-                const practiceSession = await prisma.practiceSession.create({
-                    data: {
-                        userId: authSession.user.id,
-                        subjectId,
-                        questionsSolved: 0,
-                        correctAnswers: 0,
-                        isCompleted: false,
-                        startTime: new Date(),
-                        duration: subjectQuestions.length * 2,
-                        questions: {
-                            create: subjectQuestions.map(question => ({
-                                questionId: question.id
-                            }))
-                        }
-                    },
-                    include: {
-                        questions: {
-                            include: {
-                                question: {
-                                    include: {
-                                        options: true,
-                                        subject: true,
-                                        topic: true,
-                                        subTopic: true
-                                    }
-                                }
-                            }
-                        }
+                    if (!subjectQuestionIds.length) {
+                        console.warn(`No questions found for subject: ${subjectId}`);
+                        return;
                     }
-                });
 
-                createdSessions.push(practiceSession);
-            } catch (error) {
-                console.error(`Error creating session for subject ${subjectId}:`, error);
-                sessionErrors.push({ subjectId, error: error instanceof Error ? error.message : 'Unknown error' });
-            }
+                    const practiceSession = await prisma.practiceSession.create({
+                        data: {
+                            userId: authSession.user.id,
+                            subjectId,
+                            questionsSolved: 0,
+                            correctAnswers: 0,
+                            isCompleted: false,
+                            startTime: new Date(),
+                            duration: subjectQuestionIds.length * 2,
+                        },
+                        select: { id: true }
+                    });
 
+                    await prisma.practiceSessionQuestions.createMany({
+                        data: subjectQuestionIds.map(questionId => ({
+                            practiceSessionId: practiceSession.id,
+                            questionId,
+                        }))
+                    });
 
+                    createdSessionIds.push(practiceSession.id);
+                } catch (error) {
+                    console.error(`Error creating session for subject ${subjectId}:`, error);
+                    sessionErrors.push({ subjectId, error: error instanceof Error ? error.message : 'Unknown error' });
+                }
+            })
+        );
 
-        }
-
-        if (createdSessions.length === 0) {
+        if (createdSessionIds.length === 0) {
             return jsonResponse(null, { 
                 success: false, 
                 message: "Failed to create any practice sessions", 
                 status: 500 
             });
         }
+
+        const createdSessions = await prisma.practiceSession.findMany({
+            where: { id: { in: createdSessionIds } },
+            include: {
+                questions: {
+                    include: {
+                        question: {
+                            include: {
+                                options: true,
+                                subject: true,
+                                topic: true,
+                                subTopic: true,
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         return jsonResponse(createdSessions, { 
             success: true, 
