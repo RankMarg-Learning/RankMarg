@@ -13,7 +13,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
 import ProfileSkeleton from "@/components/skeleton/skel_profile"
 import { TextFormator } from "@/utils/textFormator"
-import { StandardEnum } from "@prisma/client"
+import { StandardEnum } from "@repo/db/enums"
 
 
 

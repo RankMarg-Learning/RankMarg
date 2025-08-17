@@ -13,12 +13,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 interface ExamFormProps {
   initialExam?: Exam;
   subjects: Subject[];
-  onSave: (exam: Omit<Exam, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onSave: (exam: Omit<Exam, 'createdAt' | 'updatedAt'>) => void;
   onCancel: () => void;
 }
 
 const examSchema = z
   .object({
+    code: z.string().min(1, "Exam code is required"),
     name: z.string().min(1, "Exam name is required"),
     fullName: z.string().optional(),
     description: z.string().optional(),
@@ -58,6 +59,7 @@ const ExamForm = ({ initialExam, subjects, onSave, onCancel }: ExamFormProps) =>
   } = useForm<ExamFormValues>({
     resolver: zodResolver(examSchema),
     defaultValues: {
+      code: initialExam?.code ?? "",
       name: initialExam?.name ?? "",
       fullName: initialExam?.fullName ?? "",
       description: initialExam?.description ?? "",
@@ -83,6 +85,7 @@ const ExamForm = ({ initialExam, subjects, onSave, onCancel }: ExamFormProps) =>
 
   const onSubmit = (values: ExamFormValues) => {
     onSave({
+      code: values.code,
       name: values.name,
       fullName: values.fullName || undefined,
       description: values.description || undefined,
@@ -102,6 +105,12 @@ const ExamForm = ({ initialExam, subjects, onSave, onCancel }: ExamFormProps) =>
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div>
+        <Label htmlFor="code">Exam Code *</Label>
+        <Input id="code" {...register("code")} className={errors.code ? "border-red-500" : ""} />
+        {errors.code && <p className="text-red-500 text-xs">{errors.code.message}</p>}
+      </div>
+
       <div>
         <Label htmlFor="name">Exam Name *</Label>
         <Input id="name" {...register("name")} className={errors.name ? "border-red-500" : ""} />

@@ -1,8 +1,8 @@
 import api from "@/utils/api";
 
-export const getSubjects = async (stream: string) => {
+export const getSubjects = async (examCode?: string) => {
   try {
-    const response = await api.get(`/subjects?stream=${stream}`);
+    const response = await api.get(`/subjects?examCode=${examCode}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching subjects:", error);
@@ -15,9 +15,9 @@ export const getSubjects = async (stream: string) => {
 
 };
 
-export const addSubject = async (name: string, stream: string, shortName?: string) => {
+export const addSubject = async (name: string, shortName?: string) => {
   try {
-    const response = await api.post('/subjects', { name, stream, shortName });
+    const response = await api.post('/subjects', { name, shortName });
     return response.data;
   } catch (error) {
     console.error("Error adding subject:", error);
@@ -30,9 +30,9 @@ export const addSubject = async (name: string, stream: string, shortName?: strin
 
 };
 
-export const updateSubject = async (id: string, name: string, stream: string, shortName?: string) => {
+export const updateSubject = async (id: string, name: string, shortName?: string) => {
   try {
-    const response = await api.put(`/subjects/${id}`, { name, stream, shortName });
+    const response = await api.put(`/subjects/${id}`, { name, shortName });
     return response.data;
   } catch (error) {
     console.error("Error updating subject:", error);

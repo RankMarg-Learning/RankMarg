@@ -7,7 +7,7 @@ import Motion from '../ui/motion';
 import { GRADE_LEVELS } from '@/utils/constants';
 
 const GradeSelection: React.FC = () => {
-  const { gradeLevel, setGradeLevel, stream } = useOnboardingStore();
+  const { gradeLevel, setGradeLevel, examCode } = useOnboardingStore();
 
   const handleSelectGrade = (grade: typeof gradeLevel) => {
     if (grade) {
@@ -18,7 +18,7 @@ const GradeSelection: React.FC = () => {
   return (
     <OnboardingLayout
       title="Your Current Grade"
-      subtitle={`Select your current grade level for ${stream} preparation`}
+      subtitle={`Select your current grade level for ${examCode} preparation`}
       nextDisabled={!gradeLevel}
     >
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto">

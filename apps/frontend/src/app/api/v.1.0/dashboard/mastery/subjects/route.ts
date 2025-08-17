@@ -1,6 +1,5 @@
 export const dynamic = 'force-dynamic';
 
-import { Stream } from "@prisma/client";
 import { unstable_cache } from 'next/cache';
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
@@ -75,7 +74,7 @@ function generateRecommendations(
 const getSubjectMasteryData = unstable_cache(
     async (
         userId: string,
-        stream: Stream,
+        examCode: string,
         improvementAreasCount: number,
         topPerformingCount: number
     ): Promise<SubjectMasteryResponse[]> => {
@@ -83,15 +82,15 @@ const getSubjectMasteryData = unstable_cache(
             throw new Error("User ID is required");
         }
 
-        if (!stream) {
-            throw new Error("Stream is required");
+        if (!examCode) {
+            throw new Error("Exam code is required");
         }
 
         return await prisma.$transaction(async (tx) => {
             try {
                 const [subjects, allSubjectMasteries, allTopicMasteries, allSubTopics] = await Promise.all([
                     tx.subject.findMany({
-                        where: { stream },
+                        where: { examSubjects: { some: { examCode } } },
                         select: { id: true, name: true }
                     }),
                     tx.subjectMastery.findMany({
@@ -344,7 +343,7 @@ export async function GET(req: Request) {
         }
 
         userId = session?.user?.id || userId;
-        const stream = session?.user?.stream as Stream;
+        const examCode = session?.user?.examCode || "";
 
         if (!userId) {
             return jsonResponse(null, { 
@@ -354,15 +353,15 @@ export async function GET(req: Request) {
             });
         }
 
-        if (!stream && session) {
+        if (!examCode) {
             return jsonResponse(null, { 
                 success: false, 
-                message: "User stream not found. Please ensure your profile is complete.", 
+                message: "User exam code not found. Please ensure your profile is complete.", 
                 status: 400 
             });
         }
 
-        if (!session && !userId) {
+        if (!userId) {
             return jsonResponse(null, { 
                 success: false, 
                 message: "Unauthorized. Please log in or provide a valid userId.", 
@@ -376,7 +375,7 @@ export async function GET(req: Request) {
         try {
             subjectMasteryData = await getSubjectMasteryData(
                 userId,
-                stream,
+                examCode,
                 improvementAreasCount,
                 topPerformingCount
             );

@@ -1,11 +1,5 @@
 import redisService from "../../lib/redis";
-import {
-  Subject,
-  Question,
-  GradeEnum,
-  Stream,
-  QCategory,
-} from "@prisma/client";
+import { GradeEnum, QCategory } from "@repo/db/enums";
 import { SelectedQuestion, SessionConfig } from "../../type/session.api.types";
 
 interface CacheStats {
@@ -128,11 +122,11 @@ export class RedisCacheService {
 
   // Session configuration with versioning
   static async cacheSessionConfig(
-    stream: Stream,
+    examCode: string,
     grade: GradeEnum,
     config: SessionConfig
   ): Promise<boolean> {
-    const key = this.generateKey("session", "config", stream, grade);
+    const key = this.generateKey("session", "config", examCode, grade);
     const versionedConfig = {
       ...config,
       version: "1.0",
@@ -147,10 +141,10 @@ export class RedisCacheService {
   }
 
   static async getCachedSessionConfig(
-    stream: Stream,
+    examCode: string,
     grade: GradeEnum
   ): Promise<SessionConfig | null> {
-    const key = this.generateKey("session", "config", stream, grade);
+    const key = this.generateKey("session", "config", examCode, grade);
     const config = await this.safeGetJson<
       SessionConfig & { version?: string; cachedAt?: number }
     >(key);

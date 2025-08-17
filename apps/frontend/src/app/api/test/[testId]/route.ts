@@ -88,7 +88,7 @@ export async function PUT(req: Request, { params }: { params: { testId: string }
     const { testId } = params;
     const body = await req.json();
     const {
-        title, description, stream, duration, testKey, testSection,
+        title, description, examCode, duration, testKey, testSection,
         startTime, endTime, examType, difficulty,  status, visibility
     } = body;
 
@@ -121,7 +121,7 @@ export async function PUT(req: Request, { params }: { params: { testId: string }
             data: {
                 title,
                 description,
-                stream,
+                examCode,
                 totalMarks,
                 totalQuestions,
                 status,

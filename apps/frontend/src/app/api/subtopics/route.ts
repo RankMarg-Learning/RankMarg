@@ -6,23 +6,19 @@ export async function GET(req: Request) {
     const topicId = searchParams.get("topicId");
     try {
         
-        const subtopics = await prisma.subTopic.findMany(
-            {
-                where: {
-                    topicId: topicId ? topicId : undefined
-                },
-                include: {
-                    topic: {
-                        include: {
-                            subject: true
-                        }
+        const subtopics = await prisma.subTopic.findMany({
+            where: topicId ? { topicId } : undefined,
+            include: {
+                topic: {
+                    include: {
+                        subject: true
                     }
-                },
-                orderBy: {
-                    orderIndex: "asc"
                 }
+            },
+            orderBy: {
+                orderIndex: "asc"
             }
-        );
+        });
         return jsonResponse(subtopics, { success: true, message: "Ok", status: 200 })
 
     } catch (error) {

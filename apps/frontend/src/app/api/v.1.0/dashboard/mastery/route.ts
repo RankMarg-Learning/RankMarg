@@ -1,221 +1,338 @@
 import { jsonResponse } from "@/utils/api-response";
 import prisma from "@/lib/prisma";
 import { getAuthSession } from "@/utils/session";
+import { NextRequest } from "next/server";
 
-function estimateTopPercentile(studentScore: number): number {
-    if (studentScore >= 95) return 1;
-    if (studentScore >= 90) return 5;
-    if (studentScore >= 80) return 10;
-    if (studentScore >= 70) return 25;
-    if (studentScore >= 60) return 50;
-    if (studentScore >= 40) return 75;
-    return 90; 
+// Constants
+const MASTERY_THRESHOLDS = {
+  EXCELLENT: 80,
+  GOOD: 70,
+  SATISFACTORY: 60,
+} as const;
+
+const TOP_PERCENTILE_THRESHOLDS = [
+  { score: 95, percentile: 1 },
+  { score: 90, percentile: 5 },
+  { score: 80, percentile: 10 },
+  { score: 70, percentile: 25 },
+  { score: 60, percentile: 50 },
+  { score: 40, percentile: 75 },
+] as const;
+
+// Types
+interface MasteryResponse {
+  overallMastery: {
+    percentage: number;
+    label: string;
+    improvement: number;
+    topPercentage: number;
+  };
+  conceptsMastered: {
+    mastered: number;
+    total: number;
+  };
+  studyStreak: {
+    days: number;
+    message: string;
+  };
 }
 
-export async function GET(request: Request) {
-    const url = new URL(request.url);
-    let userId = url.searchParams.get('userId');
-    
-    try {
-        // Session handling with proper error checking
-        let session;
-        try {
-            session = await getAuthSession();
-        } catch (sessionError) {
-            console.error("[Get Mastery] Session error:", sessionError);
-            return jsonResponse(null, { 
-                success: false, 
-                message: "Authentication service unavailable", 
-                status: 503 
-            });
-        }
+interface DatabaseError extends Error {
+  code?: string;
+  meta?: any;
+}
 
-        userId = session?.user?.id || userId;
-
-        // Authorization checks
-        if (!userId && !session) {
-            return jsonResponse(null, { 
-                success: false, 
-                message: "Unauthorized - Please log in", 
-                status: 401 
-            });
-        }
-        
-        if (!userId) {
-            return jsonResponse(null, { 
-                success: false, 
-                message: "User ID is required", 
-                status: 400 
-            });
-        }
-
-        // Database operations with specific error handling
-        let user;
-        try {
-            user = await prisma.user.findUnique({
-                where: { id: userId },
-                include: {
-                    subjectMastery: {
-                        include: { subject: true }
-                    },
-                    userPerformance: true,
-                }
-            });
-        } catch (dbError) {
-            console.error("[Get Mastery] Database error - user fetch:", dbError);
-            return jsonResponse(null, { 
-                success: false, 
-                message: "Database error occurred", 
-                status: 500 
-            });
-        }
-
-        // Check if user exists
-        if (!user) {
-            return jsonResponse(null, { 
-                success: false, 
-                message: "User not found", 
-                status: 404 
-            });
-        }
-
-        // Check if user has a stream (required for topic counting)
-        if (!user.stream) {
-            console.warn(`[Get Mastery] User ${userId} has no stream assigned`);
-            return jsonResponse(null, { 
-                success: false, 
-                message: "User stream not configured", 
-                status: 400 
-            });
-        }
-
-        const subjectMasteries = user.subjectMastery || [];
-        let overallMastery = 0;
-
-        if (subjectMasteries.length > 0) {
-            const totalMasteryLevel = subjectMasteries.reduce((sum, subject) => sum + (subject.masteryLevel || 0), 0);
-            overallMastery = Math.round(totalMasteryLevel / subjectMasteries.length); 
-        }
-
-        let masteryLabel = "Needs Improvement";
-        if (overallMastery >= 80) masteryLabel = "Excellent";
-        else if (overallMastery >= 70) masteryLabel = "Good";
-        else if (overallMastery >= 60) masteryLabel = "Satisfactory";
-
-        // Topic masteries with error handling
-        let topicMasteries = [];
-        try {
-            topicMasteries = await prisma.topicMastery.findMany({
-                where: { userId: user.id, masteryLevel: { gte: 80 } },
-                include: { topic: true }
-            });
-        } catch (dbError) {
-            console.error("[Get Mastery] Database error - topic mastery fetch:", dbError);
-            // Continue with empty array, but log the error
-            topicMasteries = [];
-        }
-
-        // Total topics count with error handling
-        let totalTopics = 0;
-        try {
-            totalTopics = await prisma.topic.count({
-                where: {
-                    subject: {
-                        stream: user.stream
-                    }
-                }
-            });
-        } catch (dbError) {
-            console.error("[Get Mastery] Database error - topic count:", dbError);
-            // Continue with 0, but log the error
-            totalTopics = 0;
-        }
-
-        // User performance/streak with error handling
-        let streak = { streak: 0 };
-        try {
-            const userPerformance = await prisma.userPerformance.findUnique({
-                where: { userId: user.id },
-                select: { streak: true }
-            });
-            streak = userPerformance || { streak: 0 };
-        } catch (dbError) {
-            console.error("[Get Mastery] Database error - streak fetch:", dbError);
-            // Continue with default streak
-            streak = { streak: 0 };
-        }
-
-        // Mastery history with error handling
-        let improvementPercentage = 0;
-        try {
-            const previousMonth = new Date();
-            previousMonth.setMonth(previousMonth.getMonth() - 1);
-
-            const lastMonthMastery = await prisma.masteryHistory.findFirst({
-                where: {
-                    userId: user.id,
-                    recordedAt: {
-                        lt: previousMonth
-                    }
-                },
-                select: { masteryLevel: true },
-                orderBy: {
-                    recordedAt: 'desc'
-                }
-            });
-
-            if (lastMonthMastery && lastMonthMastery.masteryLevel !== null) {
-                improvementPercentage = Math.round(overallMastery - lastMonthMastery.masteryLevel);
-            }
-        } catch (dbError) {
-            console.error("[Get Mastery] Database error - mastery history fetch:", dbError);
-            // Continue with 0 improvement
-            improvementPercentage = 0;
-        }
-
-        return jsonResponse({
-            overallMastery: {
-                percentage: overallMastery,
-                label: masteryLabel,
-                improvement: improvementPercentage,
-                topPercentage: estimateTopPercentile(overallMastery)
-            },
-            conceptsMastered: {
-                mastered: topicMasteries.length,
-                total: totalTopics,
-            },
-            studyStreak: {
-                days: streak.streak || 0,
-                message: (streak.streak || 0) >= 7 ? "Keep it up! 🔥" : "Keep learning daily!"
-            }
-        }, { success: true, message: "Data retrieved successfully", status: 200 });
-
-    } catch (error) {
-        // Catch any unexpected errors
-        console.error("[Get Mastery] Unexpected error:", error);
-        
-        // Provide different error messages based on error type
-        let errorMessage = "Internal Server Error";
-        let statusCode = 500;
-        
-        if (error instanceof Error) {
-            // Check for specific error types
-            if (error.message.includes('Unique constraint')) {
-                errorMessage = "Data conflict occurred";
-                statusCode = 409;
-            } else if (error.message.includes('Foreign key constraint')) {
-                errorMessage = "Referenced data not found";
-                statusCode = 400;
-            } else if (error.message.includes('Timeout')) {
-                errorMessage = "Request timeout - please try again";
-                statusCode = 408;
-            }
-        }
-        
-        return jsonResponse(null, { 
-            success: false, 
-            message: errorMessage, 
-            status: statusCode 
-        });
+// Helper Functions
+function estimateTopPercentile(studentScore: number): number {
+  for (const threshold of TOP_PERCENTILE_THRESHOLDS) {
+    if (studentScore >= threshold.score) {
+      return threshold.percentile;
     }
+  }
+  return 90;
+}
+
+function getMasteryLabel(overallMastery: number): string {
+  if (overallMastery >= MASTERY_THRESHOLDS.EXCELLENT) return "Excellent";
+  if (overallMastery >= MASTERY_THRESHOLDS.GOOD) return "Good";
+  if (overallMastery >= MASTERY_THRESHOLDS.SATISFACTORY) return "Satisfactory";
+  return "Needs Improvement";
+}
+
+function getStreakMessage(streakDays: number): string {
+  return streakDays >= 7 ? "Keep it up! 🔥" : "Keep learning daily!";
+}
+
+function handleDatabaseError(error: DatabaseError, operation: string) {
+  console.error(`[Get Mastery] Database error - ${operation}:`, error);
+  
+  if (error.code === 'P2002') {
+    return { message: "Data conflict occurred", status: 409 };
+  }
+  if (error.code === 'P2003') {
+    return { message: "Referenced data not found", status: 400 };
+  }
+  if (error.code === 'P1008') {
+    return { message: "Database timeout - please try again", status: 408 };
+  }
+  
+  return { message: "Database operation failed", status: 500 };
+}
+
+// Main API Handler
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url);
+  const userIdFromQuery = url.searchParams.get('userId');
+  
+  try {
+    // Step 1: Authentication
+    const session = await getSessionSafely();
+    const userId = session?.user?.id || userIdFromQuery;
+    
+    // Step 2: Authorization
+    validateAuthorization(session, userId);
+    
+    // Step 3: Fetch user data
+    const user = await fetchUserData(userId!);
+    
+    // Step 4: Validate user configuration
+    validateUserConfiguration(user);
+    
+    // Step 5: Calculate mastery data
+    const masteryData = await calculateMasteryData(user);
+    
+    return jsonResponse(masteryData, { 
+      success: true, 
+      message: "Data retrieved successfully", 
+      status: 200 
+    });
+    
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+// Helper function implementations
+async function getSessionSafely() {
+  try {
+    return await getAuthSession();
+  } catch (error) {
+    console.error("[Get Mastery] Session error:", error);
+    throw new Error("Authentication service unavailable");
+  }
+}
+
+function validateAuthorization(session: any, userId: string | null) {
+  if (!userId && !session) {
+    const error = new Error("Unauthorized - Please log in") as any;
+    error.status = 401;
+    throw error;
+  }
+  
+  if (!userId) {
+    const error = new Error("User ID is required") as any;
+    error.status = 400;
+    throw error;
+  }
+}
+
+async function fetchUserData(userId: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        subjectMastery: {
+          include: { subject: true }
+        },
+        examRegistrations: { 
+          select: { examCode: true } 
+        },
+        userPerformance: true,
+      }
+    });
+    
+    if (!user) {
+      const error = new Error("User not found") as any;
+      error.status = 404;
+      throw error;
+    }
+    
+    return user;
+  } catch (error) {
+    if ((error as any).status) throw error; // Re-throw our custom errors
+    
+    const dbError = handleDatabaseError(error as DatabaseError, "user fetch");
+    const customError = new Error(dbError.message) as any;
+    customError.status = dbError.status;
+    throw customError;
+  }
+}
+
+function validateUserConfiguration(user: any) {
+  if (!user.examRegistrations[0].examCode) {
+    console.warn(`[Get Mastery] User ${user.id} has no stream assigned`);
+    const error = new Error("User stream not configured") as any;
+    error.status = 400;
+    throw error;
+  }
+}
+
+async function calculateMasteryData(user: any): Promise<MasteryResponse> {
+  try {
+    // Calculate overall mastery
+    const overallMastery = await calculateOverallMastery(user);
+    
+    // Get concepts mastered data
+    const conceptsMastered = await getConceptsMasteredData(user);
+    
+    // Get study streak data
+    const studyStreak = await getStudyStreakData(user);
+    
+    // Get improvement data
+    const improvement = await getImprovementData(user.id, overallMastery);
+    
+    return {
+      overallMastery: {
+        percentage: overallMastery,
+        label: getMasteryLabel(overallMastery),
+        improvement,
+        topPercentage: estimateTopPercentile(overallMastery)
+      },
+      conceptsMastered,
+      studyStreak
+    };
+  } catch (error) {
+    console.error("[Get Mastery] Error calculating mastery data:", error);
+    throw error;
+  }
+}
+
+async function calculateOverallMastery(user: any): Promise<number> {
+  try {
+    const subjectMasteries = user.subjectMastery || [];
+    
+    if (subjectMasteries.length === 0) return 0;
+    
+    const totalMasteryLevel = subjectMasteries.reduce(
+      (sum: number, subject: any) => sum + (subject.masteryLevel || 0), 
+      0
+    );
+    
+    return Math.round(totalMasteryLevel / subjectMasteries.length);
+  } catch (error) {
+    console.error("[Get Mastery] Error calculating overall mastery:", error);
+    return 0;
+  }
+}
+
+async function getConceptsMasteredData(user: any) {
+  try {
+    // Get mastered topics
+    const topicMasteries = await prisma.topicMastery.findMany({
+      where: { 
+        userId: user.id, 
+        masteryLevel: { gte: MASTERY_THRESHOLDS.EXCELLENT } 
+      },
+      include: { topic: true }
+    });
+    
+    // Get total topics
+    const totalTopics = await prisma.topic.count({
+      where: {
+        subject: {
+          examSubjects: { 
+            some: { examCode: user.examRegistrations[0]?.examCode || "" } 
+          }
+        }
+      }
+    });
+    
+    return {
+      mastered: topicMasteries.length,
+      total: totalTopics,
+    };
+  } catch (error) {
+    console.error("[Get Mastery] Error fetching concepts mastered data:", error);
+    return { mastered: 0, total: 0 };
+  }
+}
+
+async function getStudyStreakData(user: any) {
+  try {
+    const userPerformance = await prisma.userPerformance.findUnique({
+      where: { userId: user.id },
+      select: { streak: true }
+    });
+    
+    const streakDays = userPerformance?.streak || 0;
+    
+    return {
+      days: streakDays,
+      message: getStreakMessage(streakDays)
+    };
+  } catch (error) {
+    console.error("[Get Mastery] Error fetching study streak data:", error);
+    return { days: 0, message: getStreakMessage(0) };
+  }
+}
+
+async function getImprovementData(userId: string, currentMastery: number): Promise<number> {
+  try {
+    const previousMonth = new Date();
+    previousMonth.setMonth(previousMonth.getMonth() - 1);
+    
+    const lastMonthMastery = await prisma.masteryHistory.findFirst({
+      where: {
+        userId,
+        recordedAt: { lt: previousMonth }
+      },
+      select: { masteryLevel: true },
+      orderBy: { recordedAt: 'desc' }
+    });
+    
+    if (!lastMonthMastery?.masteryLevel) return 0;
+    
+    return Math.round(currentMastery - lastMonthMastery.masteryLevel);
+  } catch (error) {
+    console.error("[Get Mastery] Error fetching improvement data:", error);
+    return 0;
+  }
+}
+
+function handleApiError(error: any) {
+  console.error("[Get Mastery] API Error:", error);
+  
+  // Handle custom errors with status codes
+  if (error.status) {
+    return jsonResponse(null, {
+      success: false,
+      message: error.message,
+      status: error.status
+    });
+  }
+  
+  // Handle authentication errors
+  if (error.message.includes("Authentication service unavailable")) {
+    return jsonResponse(null, {
+      success: false,
+      message: "Authentication service unavailable",
+      status: 503
+    });
+  }
+  
+  // Handle database connection errors
+  if (error.message.includes("connect") || error.message.includes("timeout")) {
+    return jsonResponse(null, {
+      success: false,
+      message: "Database connection error - please try again",
+      status: 503
+    });
+  }
+  
+  // Generic server error
+  return jsonResponse(null, {
+    success: false,
+    message: "Internal Server Error",
+    status: 500
+  });
 }

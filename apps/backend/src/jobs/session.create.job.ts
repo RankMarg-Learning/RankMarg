@@ -3,7 +3,7 @@ import { PracticeService } from "@/services/auto/session.service";
 
 export const createSessionJob = async () => {
   try {
-    logger.info("Running practice creation for JEE/NEET students");
+    logger.info("Running practice creation for users with registered exams");
 
     const session = new PracticeService();
     await session.processAllUsers();

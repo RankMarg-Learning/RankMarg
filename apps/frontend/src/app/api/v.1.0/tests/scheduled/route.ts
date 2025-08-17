@@ -1,18 +1,17 @@
 export const dynamic = "force-dynamic";
 import { NextRequest } from "next/server";
-import { Stream } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
 import { unstable_cache } from "next/cache";
 import { getAuthSession } from "@/utils/session";
 
 const getUpcomingTestsForStream = unstable_cache(
-    async (stream: Stream) => {
+    async (examCode: string) => {
         try {
             const now = new Date();
             return await prisma.test.findMany({
                 where: {
-                    stream,
+                    examCode,
                     startTime: { gt: now },
                     status: "ACTIVE",
                     visibility: "PUBLIC"
@@ -52,30 +51,22 @@ export async function GET(req: NextRequest) {
                 status: 401
             });
         }
-        const userStream = session?.user?.stream as Stream || "NEET";
-        if (!userStream) {
-            console.warn("[UpcomingScheduledTests] User has no stream:", session.user.id);
+        const examCode = session?.user?.examCode  || "";
+        if (!examCode) {
+            console.warn("[UpcomingScheduledTests] User has no exam code:", session.user.id);
             return jsonResponse(null, {
                 success: false,
-                message: "User stream not configured",
+                message: "User exam code not configured",
                 status: 400
             });
         }
 
-        // Validate stream value
-        if (!Object.values(Stream).includes(userStream)) {
-            console.warn("[UpcomingScheduledTests] Invalid stream value:", userStream);
-            return jsonResponse(null, {
-                success: false,
-                message: "Invalid user stream",
-                status: 400
-            });
-        }
+       
 
         // Fetch upcoming tests with error handling
         let upcomingTests;
         try {
-            upcomingTests = await getUpcomingTestsForStream(userStream);
+            upcomingTests = await getUpcomingTestsForStream(examCode);
         } catch (error) {
             console.error("[UpcomingScheduledTests] Cache/Database error:", error);
             
@@ -84,7 +75,7 @@ export async function GET(req: NextRequest) {
                 const now = new Date();
                 upcomingTests = await prisma.test.findMany({
                     where: {
-                        stream: userStream,
+                        examCode: examCode,
                         startTime: { gt: now },
                         status: "ACTIVE",
                         visibility: "PUBLIC"

@@ -23,7 +23,7 @@ import { PlusCircle, Trash2, Save, Upload, Loader2, RefreshCw } from "lucide-rea
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { QCategory, Question, QuestionFormat } from "@/types/typeAdmin";
-import { QuestionType } from "@prisma/client";
+import { QuestionType } from "@repo/db/enums";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import { useSubtopics } from "@/hooks/useSubtopics";
 import { z } from "zod";
@@ -50,7 +50,6 @@ export const questionSchema = z.object({
   format: z.enum(
     Object.values(QuestionFormat) as [string, ...string[]]).optional(),
   difficulty: z.number().min(1, "Difficulty must be at least 1").max(4, "Difficulty cannot exceed 4"),
-  stream: z.string().min(1, "Stream is required"),
   subjectId: z.string().min(1, "Subject is required"),
   topicId: z.string().min(1, "Topic is required"),
   subtopicId: z.string().min(1, "Subtopic is required"),
@@ -180,7 +179,6 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       type: QuestionType.MULTIPLE_CHOICE,
       format: QuestionFormat.SINGLE_SELECT,
       difficulty: 1,
-      stream: undefined,
       subjectId: "",
       topicId: "",
       subtopicId: "",
@@ -196,6 +194,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       options: [],
     },
   });
+
 
   // Create refs for options when they're added
   useEffect(() => {
@@ -229,13 +228,12 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
 
   useEffect(() => {
     const title = watch("title");
-    const stream = watch("stream");
 
     if (title) {
-      const slug = generateSlug(title, stream || "entrance");
+      const slug = generateSlug(title);
       setValue("slug", slug);
     }
-  }, [watch("title"), watch("stream"), setValue]);
+  }, [watch("title"), , setValue]);
 
   // Handle hierarchical relationship when subtopic is selected
   const handleSubtopicChange = (subtopicId: string) => {
@@ -244,7 +242,6 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       if (selectedSubtopic && selectedSubtopic.topic && selectedSubtopic.topic.subject) {
         setValue("topicId", selectedSubtopic.topic.id);
         setValue("subjectId", selectedSubtopic.topic.subject.id);
-        setValue("stream", selectedSubtopic.topic.subject.stream);
       }
     }
     setValue("subtopicId", subtopicId);

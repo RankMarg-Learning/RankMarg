@@ -1,5 +1,5 @@
 import prisma from "../../lib/prisma";
-import { MetricType } from "@prisma/client";
+import { MetricType } from "@repo/db/enums";
 import { StudentGradeCalculator } from "../session/StudentGradeCalculator";
 
 interface PracticeSession {

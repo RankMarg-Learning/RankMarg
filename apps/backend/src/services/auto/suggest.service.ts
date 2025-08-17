@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { TriggerType } from "@prisma/client";
+import { TriggerType } from "@repo/db/enums";
 import { SuggestionEngine } from "@repo/suggest";
 
 export class SuggestionService {

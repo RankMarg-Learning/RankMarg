@@ -1,4 +1,5 @@
-import { Question, QuestionFormat, QuestionType, Stream } from "@prisma/client";
+import { Question} from "@prisma/client";
+import  {QuestionFormat, QuestionType } from "@repo/db/enums"
 
 export * from "./typeAPI";
 export * from "./mastery.api.types"
@@ -103,7 +104,6 @@ export interface QuestionTableProps {
   content: string;
   difficulty: number;
   class: string;
-  stream: Stream
   pyqYear: string;
   createdBy: string;
   createdAt: string;

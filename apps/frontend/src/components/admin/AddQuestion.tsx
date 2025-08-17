@@ -39,7 +39,7 @@ const QuestionFormSchema = z.object({
   std: z.string().min(1, { message: "Standard is required" }),
   difficulty: z.enum(["Easy", "Medium", "Hard"]),
   subject: z.string().min(1, { message: "Subject is required" }),
-  stream: z.string().min(1, { message: "Stream is required" }),
+  examCode: z.string().min(1, { message: "Stream is required" }),
   hint: z.string().optional(),
   tag: z.string().optional(),
   content: z.string().min(1, { message: "Content is required" }),
@@ -108,7 +108,7 @@ const Contribute = () => {
     setOptions([...options, { content: "", isCorrect: false }]);
   };
 
-  const slug = generateSlug(title, subject);
+  const slug = generateSlug(title);
 
   useEffect(() => {
     if (subject) {

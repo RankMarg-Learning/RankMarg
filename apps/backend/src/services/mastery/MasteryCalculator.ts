@@ -6,7 +6,7 @@ import {
   MasteryCalculationContext,
 } from "../../type/mastery.api.types";
 import { MasteryConfig } from "./MasteryConfig";
-import { Stream, MistakeType } from "@prisma/client";
+import { MistakeType } from "@repo/db/enums";
 import { differenceInDays } from "date-fns";
 
 export interface StrengthIndexData {

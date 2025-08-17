@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcrypt";
 import prisma from "@/lib/prisma";
 import { generateUniqueUsername } from "@/lib/generateUniqueUsername";
+import { Role, SubscriptionStatus } from "@repo/db/enums";
 
 const getUserWithSubscription = async (email: string) => {
   return prisma.user.findUnique({
@@ -14,6 +15,15 @@ const getUserWithSubscription = async (email: string) => {
           planId: true,
           status: true,
           currentPeriodEnd: true,
+        },
+      },
+      examRegistrations: {
+        select: {
+          exam: {
+            select: {
+              code: true,
+            },
+          },
         },
       },
     },
@@ -101,12 +111,12 @@ export const authOptions: NextAuthOptions = {
           token.username = userData.username;
           token.email = userData.email;
           token.image = userData.avatar;
-          token.role = userData.role ?? "USER";
-          token.stream = userData.stream ?? "";
+          token.role = userData.role as Role;
+          token.examCode = userData.examRegistrations[0]?.exam.code ?? "";
           token.isNewUser = !userData.onboardingCompleted;
           token.plan = {
             id: userData.subscription?.planId ?? null,
-            status: userData.subscription?.status ?? "TRIAL",
+            status: userData.subscription?.status as SubscriptionStatus,
             endAt: userData.subscription?.currentPeriodEnd ?? null,
           };
         }
@@ -131,13 +141,13 @@ export const authOptions: NextAuthOptions = {
           email: userData.email,
           username: userData.username ?? "",
           image: userData.avatar ?? "",
-          role: userData.role,
-          stream: userData.stream ?? "",
+          role: userData.role as Role,
+          examCode: userData.examRegistrations[0]?.exam.code ?? "",
           createdAt: userData.createdAt,
           isNewUser: !userData.onboardingCompleted,
           plan: {
             id: userData.subscription?.planId ?? null,
-            status: userData.subscription?.status ?? "TRIAL",
+            status: userData.subscription?.status as SubscriptionStatus,
             endAt: userData.subscription?.currentPeriodEnd ?? null,
           },
         };

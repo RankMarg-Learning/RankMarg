@@ -6,6 +6,7 @@ import { useTestContext } from "@/context/TestContext";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import TimeSpendOnQuestion from "@/utils/test/TimeSpendOnQuestion";
 import { QuestionStatus } from "@/utils";
+import { QuestionType } from "@repo/db/enums";
 
 export function TestQuestion() {
   // State for the new Options component interface
@@ -195,7 +196,7 @@ export function TestQuestion() {
           {/* Options */}
           <div className="flex-1 lg:w-1/2 p-4 sm:p-6">
             <Options
-              type={question?.type}
+              type={question?.type as QuestionType}
               options={options}
               selectedValues={selectedValues}
               onSelectionChange={handleSelectionChange}

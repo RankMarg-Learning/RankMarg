@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Role } from "@repo/db/enums";
 
 export type Method = "GET" | "POST" | "PUT" | "DELETE" | "ALL";
 

@@ -1,5 +1,5 @@
 import prisma from "../../lib/prisma";
-import { GradeEnum } from "@prisma/client";
+import { GradeEnum } from "@repo/db/enums";
 
 export class StudentGradeCalculator {
   async calculateGrade(userId: string): Promise<GradeEnum> {

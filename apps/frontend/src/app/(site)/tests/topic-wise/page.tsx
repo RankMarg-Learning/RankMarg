@@ -3,7 +3,7 @@ import TypeWiseTestsSkeleton from '@/components/test/TypeWiseTestsSkeleton';
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { ExamType } from '@prisma/client';
+import { ExamType } from '@repo/db/enums';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { HelpCircle, Clock } from 'lucide-react'

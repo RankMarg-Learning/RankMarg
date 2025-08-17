@@ -3,7 +3,6 @@ import { MasteryCalculator } from "./MasteryCalculator";
 import prisma from "../../lib/prisma";
 import { startOfDay, subDays } from "date-fns";
 import { AttemptsProcessor } from "./AttemptsProcessor";
-import { Stream } from "@prisma/client";
 import {
   MasteryAttempt,
   MasteryCalculationContext,
@@ -69,8 +68,8 @@ export class MasteryProcessor {
     this.masteryCalculator = new MasteryCalculator(this.config);
   }
 
-  public async updateUserMastery(userId: string, stream: Stream) {
-    this.config.stream = stream;
+  public async updateUserMastery(userId: string, examCode: string) {
+    this.config.examCode = examCode;
     const cutoffDate = startOfDay(subDays(new Date(), this.config.timeWindow));
     const referenceDate = new Date();
 
@@ -81,7 +80,7 @@ export class MasteryProcessor {
         userId,
         this.config.timeWindow
       );
-      const streamConfig = this.config.getStreamConfig(stream);
+      const streamConfig = this.config.getExamConfig(examCode);
 
       // Create calculation context
       const context: MasteryCalculationContext = {

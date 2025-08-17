@@ -52,7 +52,7 @@ export interface AnalysisSectionA {
   testTitle: string;
     accuracy: number;
   examType: string | null;
-  stream: string | null;
+  examCode: string | null;
   participantScore: number;
   totalMarks: number | null;
   timeTaken: number | null;

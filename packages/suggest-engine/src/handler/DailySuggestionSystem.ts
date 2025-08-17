@@ -1,4 +1,4 @@
-import { SuggestionType } from "@prisma/client";
+import { SuggestionType } from "@repo/db/enums";
 import { SuggestionHandler } from "../types";
 import prisma from "../lib/prisma";
 import {

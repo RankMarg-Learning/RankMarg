@@ -1,9 +1,8 @@
 import { create } from "zustand";
-import { Stream } from "@prisma/client";
-
+  
 interface SessionState {
-  stream: Stream | null;
-  setStream: (stream: Stream) => void;
+  stream: string | null;
+  setStream: (stream: string) => void;
   clearStream: () => void;
 }
 

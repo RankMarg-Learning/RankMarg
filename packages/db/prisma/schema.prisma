@@ -8,39 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Stream {
-  JEE
-  NEET
-}
-
-enum Role {
-  USER
-  INSTRUCTOR
-  ADMIN
-}
-
-enum Provider {
-  google
-  credentials
-}
-
-enum StandardEnum {
-  CLASS_9
-  CLASS_10
-  CLASS_11
-  CLASS_12
-  CLASS_13
-  CLASS_14
-}
-
-enum GradeEnum {
-  A_PLUS
-  A
-  B
-  C
-  D
-}
-
 // ============================================
 // USER MANAGEMENT
 // ============================================
@@ -52,14 +19,13 @@ model User {
   email               String?       @unique
   password            String?
   phone               String?       @unique
-  standard            StandardEnum?
+  standard            String?       @db.Text
   avatar              String?
-  stream              Stream?
   coins               Int           @default(0)
   xp                  Int           @default(0)
-  grade               GradeEnum     @default(C)
-  role                Role          @default(USER)
-  provider            Provider
+  grade               String        @default("C") @db.Text
+  role                String        @default("USER") @db.Text
+  provider            String        @db.Text
   location            String?
   targetYear          Int?
   studyHoursPerDay    Int?
@@ -86,7 +52,7 @@ model User {
   studySuggestion   StudySuggestion[]
   payments          Payment[]
   subscription      Subscription?
-  examRegistrations ExamRegistration[]
+  examRegistrations ExamUser[]
   testsCreated      Test[]              @relation("TestsCreated")
   testsAuthored     Test[]              @relation("TestsAuthored")
 
@@ -97,7 +63,6 @@ model User {
   @@index([username])
   @@index([email])
   @@index([phone])
-  @@index([stream])
   @@index([targetYear])
   @@index([xp])
 }
@@ -142,7 +107,7 @@ model CurrentStudyTopic {
 }
 
 model Exam {
-  id                   String    @id @default(uuid())
+  code                 String    @id @unique  //JEE, NEET, etc.
   name                 String
   fullName             String?
   description          String?
@@ -162,50 +127,43 @@ model Exam {
 
   // Relations
   examSubjects  ExamSubject[]
-  registrations ExamRegistration[]
+  registrations ExamUser[]
 
   @@index([name])
+  @@index([code])
   @@index([examDate])
 }
 
 model ExamSubject {
-  examId    String
+  examCode  String
   subjectId String
   weightage Float  @default(0)
 
   // Relations
-  exam    Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  exam    Exam    @relation(fields: [examCode], references: [code], onDelete: Cascade)
   subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
-  @@id([examId, subjectId])
+  @@id([examCode, subjectId])
   @@index([subjectId])
 }
 
-enum ExamRegistrationStatus {
-  APPLIED
-  CONFIRMED
-  CANCELLED
-}
-
-model ExamRegistration {
+model ExamUser {
   id           String                 @id @default(uuid())
   userId       String
-  examId       String
-  status       ExamRegistrationStatus @default(APPLIED)
+  examCode     String
   registeredAt DateTime               @default(now())
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  exam Exam @relation(fields: [examId], references: [id], onDelete: Cascade)
+  exam Exam @relation(fields: [examCode], references: [code], onDelete: Cascade)
 
-  @@unique([userId, examId])
-  @@index([examId])
-  @@index([userId, status])
+  @@unique([userId, examCode])
+  @@index([examCode])
+  @@index([userId])
 }
 
 model Subject {
   id        String  @id @default(uuid())
-  stream    Stream
   name      String
   shortName String?
 
@@ -217,8 +175,8 @@ model Subject {
   currentStudyTopic CurrentStudyTopic[]
   examSubjects      ExamSubject[]
 
-  @@unique([name, stream])
-  @@unique([shortName, stream])
+  @@unique([name])
+  @@unique([shortName])
 }
 
 model Topic {
@@ -264,52 +222,17 @@ model SubTopic {
 // QUESTIONS & OPTIONS
 // ============================================
 
-enum QuestionType {
-  MULTIPLE_CHOICE
-  INTEGER
-  SUBJECTIVE
-}
-
-enum QuestionFormat {
-  SINGLE_SELECT
-  MULTIPLE_SELECT
-  TRUE_FALSE
-  MATCHING
-  ASSERTION_REASON
-  COMPREHENSION
-  MATRIX_MATCH
-}
-
-enum QCategory {
-  CALCULATION
-  APPLICATION
-  THEORETICAL
-  TRICKY
-  FACTUAL
-  TRAP
-  GUESS_BASED
-  MULTI_STEP
-  OUT_OF_THE_BOX
-  ELIMINATION_BASED
-  MEMORY_BASED
-  CONFIDENCE_BASED
-  HIGH_WEIGHTAGE
-  CONCEPTUAL
-  FORMULA_BASED
-}
-
 model Question {
   id            String         @id @default(uuid())
   slug          String         @unique
   title         String
-  type          QuestionType
-  format        QuestionFormat
+  type          String         @db.Text
+  format        String         @db.Text
   content       String
   difficulty    Int            @default(1)
   subtopicId    String?
   topicId       String?
   subjectId     String?
-  stream        Stream?
   pyqYear       String?
   book          String?
   commonMistake String?
@@ -335,14 +258,13 @@ model Question {
   @@index([subjectId])
   @@index([topicId])
   @@index([subtopicId])
-  @@index([stream])
   @@index([isPublished])
   @@index([difficulty])
 }
 
 model QuestionCategory {
   questionId String
-  category   QCategory
+  category   String @db.Text
 
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
@@ -376,39 +298,16 @@ model QuestionInsights {
 // ATTEMPTS & PRACTICE SESSIONS
 // ============================================
 
-enum AttemptType {
-  NONE
-  SESSION
-  TEST
-}
-
-enum SubmitStatus {
-  CORRECT
-  INCORRECT
-  MARK_FOR_REVIEW
-  ANSWERED_MARK
-  NOT_ANSWERED
-}
-
-enum MistakeType {
-  NONE
-  CONCEPTUAL
-  CALCULATION
-  READING
-  OVERCONFIDENCE
-  OTHER
-}
-
 model Attempt {
   id                  String       @id @default(uuid())
   userId              String
   questionId          String
-  type                AttemptType
+  type                String       @db.Text
   answer              String?
-  mistake             MistakeType? @default(NONE)
+  mistake             String?      @db.Text
   timing              Float?       @default(0)
   reactionTime        Float?
-  status              SubmitStatus @default(NOT_ANSWERED)
+  status              String       @default("NOT_ANSWERED") @db.Text
   hintsUsed           Boolean      @default(false)
   solvedAt            DateTime     @default(now())
   testParticipationId String?
@@ -458,52 +357,20 @@ model PracticeSessionQuestions {
 // TESTS & TEST MANAGEMENT
 // ============================================
 
-enum TestStatus {
-  DRAFT
-  ACTIVE
-  COMPLETED
-}
-
-enum Visibility {
-  PUBLIC
-  PRIVATE
-  RESTRICTED
-}
-
-enum ExamType {
-  FULL_LENGTH
-  SUBJECT_WISE
-  CHAPTER_WISE
-  ONBOARDING
-  CUSTOM
-  PYQ
-  SPEED_TEST
-  WEAKNESS_BASED
-  ADAPTIVE
-  DAILY_CHALLENGE
-  SIMULATION
-}
-
-enum TestParticipationStatus {
-  JOIN
-  STARTED
-  COMPLETED
-}
-
 model Test {
   testId         String     @id @default(uuid())
   title          String
   description    String?
-  stream         Stream?
+  examCode       String?
   totalMarks     Int?
   totalQuestions Int?
   referenceId    String?
   testKey        String?
   difficulty     String?    @default("MEDIUM")
   duration       Int
-  status         TestStatus @default(DRAFT)
-  visibility     Visibility @default(PUBLIC)
-  examType       ExamType?
+  status         String     @default("DRAFT") @db.Text
+  visibility     String     @default("PUBLIC") @db.Text
+  examType       String?    @db.Text
   startTime      DateTime?
   endTime        DateTime?
   createdBy      String
@@ -551,7 +418,7 @@ model TestParticipation {
   userId           String
   testId           String
   score            Int?                    @default(0)
-  status           TestParticipationStatus @default(JOIN)
+  status           String                  @default("JOIN") @db.Text
   accuracy         Float?                  @default(0)
   timing           Int?                    @default(0)
   maxStreakCorrect Int?                    @default(0)
@@ -578,17 +445,10 @@ model TestParticipation {
 // MASTERY & PERFORMANCE TRACKING
 // ============================================
 
-enum MetricType {
-  TOTAL_QUESTIONS
-  CORRECT_ATTEMPTS
-  MASTERY_LEVEL
-  TEST_SCORE
-}
-
 model Metric {
   id            String     @id @default(uuid())
   userId        String
-  metricType    MetricType
+  metricType    String     @db.Text
   currentValue  Int
   previousValue Int
   updatedAt     DateTime   @updatedAt
@@ -745,51 +605,18 @@ model CoinTransaction {
 // NOTIFICATIONS & SUGGESTIONS
 // ============================================
 
-enum SuggestionType {
-  ENCOURAGEMENT
-  WARNING
-  CELEBRATION
-  GUIDANCE
-  REMINDER
-  MOTIVATION
-  WELLNESS
-}
-
-enum TriggerType {
-  POST_EXAM
-  SESSION_ANALYSIS
-  DAILY_ANALYSIS
-  WEEKLY_ANALYSIS
-  MONTHLY_ANALYSIS
-  STREAK_MILESTONE
-  INACTIVITY
-  EXAM_PROXIMITY
-}
-
-enum SuggestionStatus {
-  ACTIVE
-  VIEWED
-  DISMISSED
-}
-
-enum NotificationStatus {
-  UNREAD
-  READ
-  DISMISSED
-}
-
 model StudySuggestion {
   id           String           @id @default(uuid())
   userId       String
-  type         SuggestionType
-  triggerType  TriggerType
+  type         String           @db.Text
+  triggerType  String           @db.Text
   suggestion   String
   category     String
   priority     Int
   displayUntil DateTime?
   actionName   String?
   actionUrl    String?
-  status       SuggestionStatus @default(ACTIVE)
+  status       String           @default("ACTIVE") @db.Text
   createdAt    DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -816,7 +643,7 @@ model UserNotification {
   id             String             @id @default(uuid())
   userId         String
   notificationId String
-  status         NotificationStatus @default(UNREAD)
+  status         String             @default("UNREAD") @db.Text
   deliveredAt    DateTime           @default(now())
   readAt         DateTime?
 
@@ -831,28 +658,6 @@ model UserNotification {
 // ============================================
 // SUBSCRIPTION & PAYMENT MANAGEMENT
 // ============================================
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
-  CANCELLED
-}
-
-enum SubscriptionStatus {
-  TRIAL
-  ACTIVE
-  CANCELLED
-  EXPIRED
-  PAST_DUE
-}
-
-enum PaymentProvider {
-  PLATFORM
-  SALES_AGENT
-  NONE
-}
 
 model Plan {
   id          String   @id @default(uuid())
@@ -900,8 +705,8 @@ model Subscription {
   userId            String             @unique
   planId            String?
   duration          Int?
-  status            SubscriptionStatus @default(TRIAL)
-  provider          PaymentProvider
+  status            String             @default("TRIAL") @db.Text
+  provider          String             @db.Text
   providerId        String?
   amount            Float
   discountApplied   Float?             @default(0)
@@ -926,8 +731,8 @@ model Payment {
   subscriptionId String
   amount         Float
   currency       String          @default("INR")
-  status         PaymentStatus
-  provider       PaymentProvider
+  status         String          @db.Text
+  provider       String          @db.Text
   orderId        String?
   paymentMethod  String?
   paidAt         DateTime?
@@ -941,39 +746,3 @@ model Payment {
   @@index([userId])
   @@index([subscriptionId])
 }
-
-// !Add this in user model
-// rank       Int        @default(100)
-// player2          Challenge[]         @relation("U2")
-// player1          Challenge[]         @relation("U1") 
-
-// !Add this in Attempt model
-// answerChange   Boolean?    @default(false)
-// previousAnswer String?
-
-// model Challenge {
-//   challengeId       String              @id @unique
-//   player1Id         String
-//   player2Id         String?
-//   status            String              @default("PENDING")
-//   result            String?
-//   player1Score      Int?                @default(0)
-//   player2Score      Int?                @default(0)
-//   attemptByPlayer1  Int[]               @default([])
-//   attemptByPlayer2  Int[]               @default([])
-//   endedAt           DateTime?
-//   createdAt         DateTime            @default(now())
-//   updatedAt         DateTime?           @updatedAt
-//   player1           User                @relation("U1", fields: [player1Id], references: [id], onDelete: Cascade)
-//   player2           User?               @relation("U2", fields: [player2Id], references: [id], onDelete: Cascade)
-//   ChallengeQuestion ChallengeQuestion[]
-// }
-
-// model ChallengeQuestion {
-//   challengeId String
-//   questionId  String
-//   challenge   Challenge @relation(fields: [challengeId], references: [challengeId], onDelete: Cascade)
-//   question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-//   @@id([challengeId, questionId])
-// }

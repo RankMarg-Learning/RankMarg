@@ -22,7 +22,6 @@ import { test, ExamType,  testQuestion, TestStatus, Visibility, FormStep } from 
 import { PlusCircle, Trash2, Save, Clock, FileText, ArrowLeft, ArrowRight,  BookOpenIcon, Pencil } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Stream } from "@prisma/client";
 import QuestionSelector from "./QuestionSelector";
 import { Controller,  useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { DateTimePicker } from "@/utils/test/date-time-picker";
 import { TextFormator } from "@/utils/textFormator";
+import { useExams } from "@/hooks/useExams";
 
 interface TestFormProps {
   initialTest?: test;
@@ -45,7 +45,7 @@ export const testSchema = z.object({
   description: z
     .string()
     .optional(),
-  stream: z.nativeEnum(Stream),
+  examCode: z.string().nonempty("Exam Code is required"),
   duration: z
     .number({ invalid_type_error: "Duration must be a number" })
     .min(1, "Duration must be at least 1 minute"),
@@ -79,6 +79,7 @@ const TestForm = ({ initialTest, onSave, onCancel,loading }: TestFormProps) => {
   const isEditing = !!initialTest;
   const [currentStep, setCurrentStep] = useState<FormStep>(FormStep.BASIC_INFO);
   const [sectionQuestions, setSectionQuestions] = useState<Record<number, number>>({}); 
+  const { exams } = useExams();
 
   const {
     handleSubmit,
@@ -93,7 +94,7 @@ const TestForm = ({ initialTest, onSave, onCancel,loading }: TestFormProps) => {
     defaultValues: initialTest || {
       title: "",
       description: "",
-      stream: undefined,
+      examCode: "",
       duration: 60,
       startTime: new Date(),
       endTime: undefined,
@@ -258,21 +259,20 @@ const TestForm = ({ initialTest, onSave, onCancel,loading }: TestFormProps) => {
           {errors.examType && <p className="text-red-500 text-sm">{errors.examType.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="stream">Stream<span className="text-red-500">*</span></Label>
-
+          <Label htmlFor="examCode">Exam Code<span className="text-red-500">*</span></Label>
           <Controller
-            name="stream"
+            name="examCode"
             control={control}
             rules={{ required: "Stream is required" }}
             render={({ field }) => (
               <Select value={field.value} onValueChange={(value) => field.onChange(value)}>
-                <SelectTrigger className={errors.stream ? "border-red-500" : ""}>
-                  <SelectValue placeholder="Select stream" />
+                <SelectTrigger className={errors.examCode ? "border-red-500" : ""}>
+                  <SelectValue placeholder="Select exam code" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(Stream).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
+                  {exams.data.map((exam) => (
+                    <SelectItem key={exam.code} value={exam.code}>
+                      {exam.name || exam.code}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -280,7 +280,7 @@ const TestForm = ({ initialTest, onSave, onCancel,loading }: TestFormProps) => {
             )}
           />
 
-          {errors.stream && <p className="text-red-500 text-xs">{errors.stream.message}</p>}
+          {errors.examCode && <p className="text-red-500 text-xs">{errors.examCode.message}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="difficulty">Difficulty</Label>
@@ -470,7 +470,7 @@ const TestForm = ({ initialTest, onSave, onCancel,loading }: TestFormProps) => {
                       selectedQuestions={section.testQuestion || []}
                       onQuestionsChange={(questions) => updateSectionQuestions(index, questions)}
                       maxQuestions={sectionQuestions[index] || 1}
-                      stream={watch("stream")}
+                      examCode={watch("examCode")}
                     />
                   </div>
                 </div>
@@ -533,11 +533,11 @@ const TestForm = ({ initialTest, onSave, onCancel,loading }: TestFormProps) => {
                 </div>
               )}
 
-              {watch("stream") && (
+              {watch("examCode") && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Stream</p>
+                  <p className="text-sm text-muted-foreground mb-1">Exam Code</p>
                   <Badge variant="outline">{
-                  watch("stream")}</Badge>
+                  watch("examCode")}</Badge>
                 </div>
               )}
 
@@ -681,10 +681,10 @@ const TestForm = ({ initialTest, onSave, onCancel,loading }: TestFormProps) => {
   const StepButtons = () => {
 
     const handleNextStep = async () => {
-      let fieldsToValidate: ("title" | "description" | "stream" | "duration" | "difficulty" | "examType" | "status" | "visibility" | "testSection" | "testId" | "totalMarks" | "totalQuestions" | "referenceId" | `testSection.${number}.testQuestion.${number}.testSectionId`)[] = [];
+      let fieldsToValidate: ("title" | "description" | "examCode" | "duration" | "difficulty" | "examType" | "status" | "visibility" | "testSection" | "testId" | "totalMarks" | "totalQuestions" | "referenceId" | `testSection.${number}.testQuestion.${number}.testSectionId`)[] = [];
 
       if (currentStep === FormStep.BASIC_INFO) {
-        fieldsToValidate = ["title", "duration", "examType", "stream", "difficulty"];
+        fieldsToValidate = ["title", "duration", "examType", "examCode", "difficulty"];
       } else if (currentStep === FormStep.SECTIONS) {
         fieldsToValidate = ["testSection"];
       }
@@ -769,10 +769,7 @@ const TestForm = ({ initialTest, onSave, onCancel,loading }: TestFormProps) => {
   );
 };
 
-export default TestForm;
-
-
-// const handleSubmit = (e: React.FormEvent) => {
+export default TestForm;// const handleSubmit = (e: React.FormEvent) => {
 //   e.preventDefault();
 
 //   if (!validateTest()) {
@@ -824,3 +821,5 @@ export default TestForm;
 //     setLoading(false);
 //   }
 // };
+
+

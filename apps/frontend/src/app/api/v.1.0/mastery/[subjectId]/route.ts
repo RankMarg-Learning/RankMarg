@@ -45,7 +45,7 @@ export async function GET(
         try {
             subject = await prisma.subject.findUnique({
                 where: { id: subjectId },
-                select: { id: true, name: true, stream: true },
+                select: { id: true, name: true, examSubjects: { select: { examCode: true } } },
             });
         } catch (error) {
             console.error("Database error while fetching subject:", error);
@@ -299,7 +299,7 @@ export async function GET(
             subject: {
                 id: subject.id,
                 name: subject.name,
-                stream: subject.stream,
+                examCode: subject.examSubjects[0]?.examCode || "",
             },
             overallMastery,
             topics: enhancedTopics,

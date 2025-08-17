@@ -1,4 +1,4 @@
-import { SuggestionStatus, SuggestionType, TriggerType } from "@prisma/client";
+import { SuggestionStatus, SuggestionType, TriggerType } from "@repo/db/enums";
 
 export interface SubjectSummary {
     subject: string;

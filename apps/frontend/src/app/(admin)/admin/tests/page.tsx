@@ -102,7 +102,7 @@ export default function AdminTestPage() {
                   <TableHead>Title</TableHead>
                   <TableHead>Test Link</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Stream</TableHead>
+                  <TableHead>Exam</TableHead>
                   <TableHead>Duration (min)</TableHead>
                   <TableHead>Visibility</TableHead>
                   <TableHead>Actions</TableHead>
@@ -126,7 +126,7 @@ export default function AdminTestPage() {
                       <TableCell className="truncate w-48">{`${process.env.NEXT_PUBLIC_WEBSITE_URL!}/test/${test.testId}`}</TableCell>
                       <TableCell className="truncate">{test.examType.replace(/_/g, ' ').toLocaleLowerCase()
                         .replace(/\b\w/g, (char) => char.toUpperCase())}</TableCell>
-                      <TableCell>{test.stream}</TableCell>
+                      <TableCell>{test.examCode}</TableCell>
                       <TableCell>{test.duration}</TableCell>
                       <TableCell>
                         <Badge>

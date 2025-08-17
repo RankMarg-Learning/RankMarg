@@ -9,7 +9,8 @@
         "db:push": "prisma db push --skip-generate",
         "db:dev": "npx prisma migrate dev && npx prisma generate",
         "db:delpoy": "prisma migrate deploy && next build",
-        "db:seed": "prisma db seed"
+        "db:seed": "prisma db seed",
+        "generate:schema": "node scripts/generateSchema.js"
     },
     "prisma": {
         "schema": "prisma/schema.prisma",
@@ -23,6 +24,7 @@
         "prisma": "^5.12.0"
     },
     "exports": {
-        "./client": "./src/index.ts"
+        "./client": "./src/index.ts",
+        "./enums": "./src/enums.ts"
     }
 }

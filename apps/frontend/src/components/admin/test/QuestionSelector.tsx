@@ -4,14 +4,13 @@ import { testQuestion } from "@/types/typeAdmin";
 import { Button } from "@/components/ui/button";
 import { Trash2, Check, GripVertical} from "lucide-react";
 import Questionset from "@/components/questions/QuestionTable";
-import { Stream } from "@prisma/client";
 
 interface QuestionSelectorProps {
   isEditing?: boolean;
   selectedQuestions: testQuestion[];
   onQuestionsChange: (questions: testQuestion[]) => void;
   maxQuestions: number;
-  stream:Stream
+  examCode: string;
 }
 interface SelectedQuestion {
   id: string;
@@ -22,7 +21,7 @@ const QuestionSelector = ({
   selectedQuestions,
   onQuestionsChange,
   maxQuestions,
-  stream,
+  examCode,
 }: QuestionSelectorProps) => {
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
 
@@ -67,15 +66,14 @@ const QuestionSelector = ({
 
 
   const handleQuestionSelect = (questions: SelectedQuestion[]) => {
-    if ( selectedQuestions.length >= maxQuestions) {
-    return;
-    }
-    const formattedQuestions = questions.map((q) => ({
-      id: q.id,
-      title: q.title
-    }));
-    onQuestionsChange(formattedQuestions);
-
+    const uniqueMap = new Map<string, SelectedQuestion>();
+    questions.forEach((q) => {
+      if (!uniqueMap.has(q.id)) uniqueMap.set(q.id, q);
+    });
+    const limited = Array.from(uniqueMap.values())
+      .slice(0, Math.max(0, maxQuestions))
+      .map((q) => ({ id: q.id, title: q.title }));
+    onQuestionsChange(limited);
   };
 
   return (
@@ -90,7 +88,7 @@ const QuestionSelector = ({
             }))}
             isCheckBox={true}
             isPublished={true}
-            IPstream={stream || "JEE"}
+            examCode={examCode}
           />
         </div>
       </div>

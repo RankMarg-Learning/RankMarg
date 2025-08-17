@@ -3,7 +3,7 @@ import { jsonResponse } from "@/utils/api-response";
 import { getAuthSession } from "@/utils/session";
 
 export async function POST(req: Request) {
-    const {phone, stream, gradeLevel, targetYear, studyHoursPerDay, selectedTopics } = await req.json();
+    const {phone, examCode, gradeLevel, targetYear, studyHoursPerDay, selectedTopics } = await req.json();
     try {
         const session = await getAuthSession()
         if (!session) {
@@ -14,13 +14,20 @@ export async function POST(req: Request) {
             where: { id: session.user.id },
             data: {
                 phone: phone || null,
-                stream,
                 standard: gradeLevel,
                 targetYear,
                 studyHoursPerDay,
                 onboardingCompleted:true,
+                examRegistrations:{
+                    create:{
+                        examCode,
+                    },
+                   
+                }
             },
         });
+
+        
         
         if (selectedTopics && Array.isArray(selectedTopics) && selectedTopics.length > 0) {
             const topicIds = selectedTopics.map(topic => topic.id);

@@ -1,5 +1,4 @@
-import { MistakeType } from "@prisma/client";
-
+import { MistakeType } from "@repo/db/enums";
 
   
   export interface MistakeTrend {

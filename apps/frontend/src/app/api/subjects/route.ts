@@ -1,20 +1,20 @@
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
-import { Stream } from "@prisma/client";
 
 
 export async function GET(req: Request) {
     const {  searchParams} = new URL(req.url);
-    const stream = searchParams.get('stream');
+    const examCode = searchParams.get('examCode');
     try {
-        if(stream && stream !== "undefined") {
-            const subjects = await prisma.subject.findMany({
-                where: {
-                    stream: stream as Stream 
-                },
+        if (examCode && examCode !== "undefined") {
+            const examSubjects = await prisma.examSubject.findMany({
+                where: { examCode },
+                select: { subject: true },
             });
+            const subjects = examSubjects.map(es => es.subject);
             return jsonResponse(subjects, { success: true, message: "Ok", status: 200 })
         }
+        
         
         const subjects = await prisma.subject.findMany()
         return jsonResponse(subjects, { success: true, message: "Ok", status: 200 })
@@ -27,12 +27,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     const body = await req.json();
-    const { name, stream, shortName } = body;
+    const { name, shortName } = body;
     try {
          await prisma.subject.create({
             data: {
               name,
-              stream,
               shortName,
             },
           });

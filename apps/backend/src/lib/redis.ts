@@ -1,22 +1,13 @@
 import { createClient, RedisClientType } from "redis";
-import path from "path";
 import { logger } from "./logger";
-
-// Load environment variables from .env file if it exists, otherwise use system environment variables
-try {
-  const dotenv = require("dotenv");
-  dotenv.config({ path: path.resolve(__dirname, "../../.env") });
-} catch (error) {
-  console.log("No .env file found, using system environment variables");
-}
+import { ServerConfig } from "../config/server.config";
 
 class RedisService {
   private client: RedisClientType;
   private isConnected: boolean = false;
 
   constructor() {
-    const redisUrl =
-      process.env.REDIS_URL! || process.env.UPSTASH_REDIS_REST_URL!;
+    const redisUrl = ServerConfig.redis.url || ServerConfig.redis.upstashUrl;
 
     if (!redisUrl) {
       logger.error(
@@ -25,7 +16,8 @@ class RedisService {
       throw new Error("Redis URL not configured");
     }
 
-    const isUpstash = redisUrl.includes("upstash.io");
+    const isUpstash =
+      redisUrl.includes("upstash.io") || !!ServerConfig.redis.upstashToken;
 
     this.client = createClient({
       url: redisUrl,

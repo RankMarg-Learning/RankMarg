@@ -39,7 +39,7 @@ export const SectionA = (test: TestWithIncludes): AnalysisSectionA => {
     testTitle: test.test.title,
     accuracy,
     examType: test.test.examType,
-    stream: test.test.stream,
+    examCode: test.test.examCode,
     participantScore: test.score || 0,
     totalMarks: test.test.totalMarks,
     timeTaken: test.timing,

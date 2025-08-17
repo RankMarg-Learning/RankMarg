@@ -72,7 +72,7 @@ export async function GET() {
                 endTime: true,
                 createdAt: true,
                 updatedAt: true,
-                stream: true
+                examCode: true
             }
         });
 

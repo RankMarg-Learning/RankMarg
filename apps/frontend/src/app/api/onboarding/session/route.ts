@@ -1,7 +1,6 @@
 import prisma from "@/lib/prisma"
 import { jsonResponse } from "@/utils/api-response";
 import { getAuthSession } from "@/utils/session";
-import { Stream } from "@prisma/client";
 
 interface SubjectData {
   subject: any;
@@ -16,7 +15,6 @@ export async function POST(req: Request) {
             return jsonResponse(null, { success: false, message: "Unauthorized", status: 401 });
         }
 
-        const userStream = authSession.user.stream as Stream;
         
         const currentTopics = await prisma.currentStudyTopic.findMany({
             where: { 
@@ -53,7 +51,6 @@ export async function POST(req: Request) {
                 const questionsFromTopics = await prisma.question.findMany({
                     where: {
                         topicId: { in: subjectData.topicIds },
-                        stream: userStream,
                         isPublished: true,
                         difficulty: { lte: 2 }
                     },
@@ -66,7 +63,6 @@ export async function POST(req: Request) {
                     ? await prisma.question.findMany({
                         where: {
                             subjectId,
-                            stream: userStream,
                             isPublished: true,
                             difficulty: { lte: 2 },
                             id: { notIn: questionsFromTopics.map(q => q.id) }

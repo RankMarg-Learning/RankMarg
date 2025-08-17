@@ -1368,3 +1368,22 @@ Please make sure your database server is running at `ep-wandering-bonus-a18liwbe
 2025-08-11 18:41:09 [INFO]: Redis client ready
 2025-08-11 18:42:00 [INFO]: Running practice creation for JEE/NEET students
 2025-08-11 18:42:50 [INFO]: Practice creation completed successfully
+2025-08-17 14:28:57 [INFO]: Redis client connected
+2025-08-17 14:28:57 [INFO]: Connected to Upstash Redis
+2025-08-17 14:28:57 [INFO]: Redis client ready
+2025-08-17 14:30:00 [INFO]: Running practice creation for users with registered exams
+2025-08-17 14:30:13 [INFO]: Practice creation completed successfully
+2025-08-17 14:33:00 [INFO]: Running practice creation for users with registered exams
+2025-08-17 14:33:07 [INFO]: Practice creation completed successfully
+2025-08-17 14:33:36 [INFO]: Redis client connected
+2025-08-17 14:33:36 [INFO]: Connected to Upstash Redis
+2025-08-17 14:33:36 [INFO]: Redis client ready
+2025-08-17 14:34:12 [INFO]: Redis client connected
+2025-08-17 14:34:12 [INFO]: Connected to Upstash Redis
+2025-08-17 14:34:12 [INFO]: Redis client ready
+2025-08-17 14:34:16 [INFO]: Redis client connected
+2025-08-17 14:34:16 [INFO]: Connected to Upstash Redis
+2025-08-17 14:34:17 [INFO]: Redis client ready
+2025-08-17 14:36:32 [INFO]: Redis client connected
+2025-08-17 14:36:32 [INFO]: Connected to Upstash Redis
+2025-08-17 14:36:32 [INFO]: Redis client ready

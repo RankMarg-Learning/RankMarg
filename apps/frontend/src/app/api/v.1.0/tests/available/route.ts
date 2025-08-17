@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { ExamType, Stream, TestStatus, Visibility } from "@prisma/client";
+import { ExamType,  TestStatus, Visibility } from "@repo/db/enums";
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
 import { getAuthSession } from "@/utils/session";
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
         // Parse and validate query parameters
         const { searchParams } = new URL(req.url);
         const validatedParams = querySchema.safeParse({
-            limit: searchParams.get("limit"),
+            limit: Number(searchParams.get("limit")),
             type: searchParams.get("type"),
         });
 
@@ -57,18 +57,8 @@ export async function GET(req: NextRequest) {
             });
         }
 
-        // Validate user stream
-        const stream = session.user.stream as Stream;
-        if (stream && !Object.values(Stream).includes(stream)) {
-            console.error("[Invalid Stream]:", stream);
-            return jsonResponse(null, {
-                success: false,
-                message: "Invalid user stream",
-                status: 400,
-            });
-        }
-
-        // Build where clause with proper type checking
+        const examCode = session.user.examCode || "";
+        
         const whereClause = {
             status: TestStatus.ACTIVE,
             visibility: Visibility.PUBLIC,
@@ -79,10 +69,9 @@ export async function GET(req: NextRequest) {
                         in: [ExamType.FULL_LENGTH, ExamType.SUBJECT_WISE, ExamType.PYQ],
                     },
                 }),
-            ...(stream && { stream }),
+            ...(examCode && { examCode }),
         };
 
-        // Database query with timeout and error handling
         let availableTests;
         try {
             availableTests = await Promise.race([
@@ -100,13 +89,13 @@ export async function GET(req: NextRequest) {
                         startTime: true,
                         endTime: true,
                         createdAt: true,
-                        stream: true,
+                        examCode: true,
                     },
                     orderBy: { createdAt: "desc" },
-                    take: limit,
+                    take: Number(limit),
                 }),
                 // 10 second timeout
-                new Promise((_, reject) => 
+                new Promise((_, reject) =>
                     setTimeout(() => reject(new Error("Database query timeout")), 10000)
                 )
             ]);

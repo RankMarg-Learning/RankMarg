@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import prisma from "@/lib/prisma";
 import { jsonResponse } from "@/utils/api-response";
 import { getAuthSession } from "@/utils/session";
-import { SuggestionStatus, TriggerType } from "@prisma/client";
+import { SuggestionStatus, TriggerType } from "@repo/db/enums";
 
 
 export async function GET(request: Request) {

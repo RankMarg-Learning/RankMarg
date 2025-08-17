@@ -1,4 +1,4 @@
-import { StandardEnum } from "@prisma/client";
+import { StandardEnum } from "@repo/db/enums";
 import { FlaskConical,  Ruler, Dna, Telescope, LucideIcon } from "lucide-react";
 
 export type Stream = "JEE" | "NEET";

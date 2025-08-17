@@ -2,7 +2,8 @@
 import React, { useMemo } from 'react';
 import Select from './Select';
 import { Input } from './ui/input';
-import { Option, QuestionType } from '@prisma/client';
+import { Option } from '@prisma/client';
+import {QuestionType} from "@repo/db/enums"
 import { cn } from '../lib/utils'; 
 
 interface OptionsProps {

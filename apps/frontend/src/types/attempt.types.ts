@@ -1,4 +1,4 @@
-import { AttemptType, SubmitStatus } from "@prisma/client";
+import { AttemptType, SubmitStatus } from "@repo/db/enums";
 
 export interface AttemptRequestBody {
     questionId: string;

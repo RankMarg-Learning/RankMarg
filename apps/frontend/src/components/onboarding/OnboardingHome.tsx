@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Calendar, Clock, GraduationCap, RefreshCw, BookOpen, School, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import Motion from '@/components/ui/motion';
-import StreamSelection from '@/components/onboarding/StreamSelection';
+import ExamSelection from '@/components/onboarding/ExamSelection';
 import StudyHoursSelection from '@/components/onboarding/StudyHoursSelection';
 import Chip from '@/components/ui/chip';
 import YearSelection from '@/components/onboarding/YearSelection';
@@ -36,7 +36,7 @@ const DashboardPreview = () => {
   
   const { 
     phone,
-    stream, 
+    examCode,
     gradeLevel,
     targetYear, 
     studyHoursPerDay, 
@@ -72,7 +72,7 @@ const DashboardPreview = () => {
       
       const onboardingResponse = await axios.post('/api/onboarding', {
         phone,
-        stream, 
+        examCode,
         gradeLevel,
         targetYear,
         studyHoursPerDay,
@@ -219,16 +219,7 @@ const DashboardPreview = () => {
         </Motion>
 
         <Motion animation="slide-in-up" delay={150} className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <Card className="bg-white/70 backdrop-blur-sm border border-border/50 shadow-sm h-full">
-            <CardHeader className="pb-1 pt-3">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Exam Stream</CardTitle>
-            </CardHeader>
-            <CardContent className="pb-3">
-              <div className="flex items-center">
-                <div className="text-lg font-bold">{stream}</div>
-              </div>
-            </CardContent>
-          </Card>
+          
 
           <Card className="bg-white/70 backdrop-blur-sm border border-border/50 shadow-sm h-full">
             <CardHeader className="pb-1 pt-3">
@@ -346,8 +337,8 @@ const OnboardingIndex: React.FC = () => {
   switch (currentStep) {
     case 'phone':
         return <PhoneSection/>
-    case 'stream':
-      return <StreamSelection />;
+    case 'exam':
+      return <ExamSelection />;
     case 'grade':
       return <GradeSelection />;
     case 'year':
@@ -357,7 +348,7 @@ const OnboardingIndex: React.FC = () => {
     case 'topics':
       return <TopicSelection />;
     default:
-      return <StreamSelection />;
+      return <ExamSelection />;
   }
 };
 

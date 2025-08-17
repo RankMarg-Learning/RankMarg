@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getSubjects, addSubject, updateSubject, deleteSubject } from '@/services/subject.service';
 
-export const useSubjects = (stream?: string) => {
+export const useSubjects = (examCode?: string) => {
   const queryClient = useQueryClient();
 
   const { data: subjects = [], isLoading } = useQuery({
-    queryKey: ['subjects',stream],
-    queryFn:()=> getSubjects(stream),
+    queryKey: ['subjects'],
+    queryFn:()=> getSubjects(examCode),
   });
   
 
@@ -14,13 +14,12 @@ export const useSubjects = (stream?: string) => {
     mutationFn: async (data: { 
       id?: string; 
       name: string; 
-      stream: string;
       shortName?: string;
     }) => {
       if (data.id) {
-        return updateSubject(data.id, data.name, data.stream, data.shortName);
+        return updateSubject(data.id, data.name, data.shortName);
       } else {
-        return addSubject(data.name, data.stream, data.shortName);
+        return addSubject(data.name, data.shortName);
       }
     },
     onSuccess: () => {
