@@ -5,31 +5,94 @@ import bcrypt from "bcrypt";
 import prisma from "@/lib/prisma";
 import { generateUniqueUsername } from "@/lib/generateUniqueUsername";
 import { Role, SubscriptionStatus } from "@repo/db/enums";
+import { SUBSCRIPTION_CONFIG } from "@/config/subscription.config";
 
-const getUserWithSubscription = async (email: string) => {
-  return prisma.user.findUnique({
-    where: { email },
-    include: {
-      subscription: {
+interface UserData {
+  id: string;
+  name: string | null;
+  email: string | null;
+  username: string | null;
+  avatar: string | null;
+  role: Role;
+  onboardingCompleted: boolean;
+  createdAt: Date;
+  subscription?: {
+    planId: string | null;
+    status: string;
+    currentPeriodEnd: Date | null;
+  } | null;
+  examRegistrations: Array<{
+    exam: {
+      code: string;
+    };
+  }>;
+}
+
+// Constants
+const JWT_MAX_AGE = 60 * 60 * 24 * 10; // 10 days
+const SESSION_UPDATE_AGE = 60 * 60 * 2; // 2 hours
+
+const userSelect = {
+  id: true,
+  name: true,
+  email: true,
+  username: true,
+  avatar: true,
+  role: true,
+  onboardingCompleted: true,
+  createdAt: true,
+  subscription: {
+    select: {
+      planId: true,
+      status: true,
+      currentPeriodEnd: true,
+    },
+  },
+  examRegistrations: {
+    select: {
+      exam: {
         select: {
-          planId: true,
-          status: true,
-          currentPeriodEnd: true,
-        },
-      },
-      examRegistrations: {
-        select: {
-          exam: {
-            select: {
-              code: true,
-            },
-          },
+          code: true,
         },
       },
     },
-  });
+    take: 1, 
+  },
+} as const;
+
+const getUserData = async (email: string): Promise<UserData | null> => {
+  return prisma.user.findUnique({
+    where: { email },
+    select: userSelect,
+  }) as Promise<UserData | null>;
 };
 
+const createTrialSubscription = () => ({
+  status: "TRIAL" as const,
+  provider: "NONE" as const,
+  duration: SUBSCRIPTION_CONFIG.trial.duration,
+  amount: 0,
+  currentPeriodEnd: new Date(Date.now() + SUBSCRIPTION_CONFIG.trial.duration * 24 * 60 * 60 * 1000),
+});
+
+const createUserSession = (userData: UserData) => ({
+  id: userData.id,
+  name: userData.name,
+  email: userData.email,
+  username: userData.username ?? "",
+  image: userData.avatar ?? "",
+  role: userData.role as Role,
+  examCode: userData.examRegistrations[0]?.exam.code ?? "",
+  createdAt: userData.createdAt,
+  isNewUser: !userData.onboardingCompleted,
+  plan: {
+    id: userData.subscription?.planId ?? null,
+    status: userData.subscription?.status as SubscriptionStatus,
+    endAt: userData.subscription?.currentPeriodEnd ?? null,
+  },
+});
+
+// Auth Options Configuration
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -48,9 +111,8 @@ export const authOptions: NextAuthOptions = {
         if (!email || !password) return null;
 
         const user = await prisma.user.findFirst({
-          where: {
-            OR: [{ email }, { username: email }],
-          },
+          where: { OR: [{ email }, { username: email }] },
+          select: { id: true, email: true, username: true, avatar: true, password: true },
         });
 
         if (!user || !await bcrypt.compare(password, user.password)) {
@@ -73,29 +135,21 @@ export const authOptions: NextAuthOptions = {
 
       const existingUser = await prisma.user.findUnique({
         where: { email: user.email },
+        select: { id: true },
       });
 
       if (!existingUser) {
         const emailPrefix = user.email.split("@")[0];
-         await prisma.user.create({
+        await prisma.user.create({
           data: {
             name: user.name ?? "",
             username: await generateUniqueUsername(emailPrefix),
             email: user.email,
             avatar: user.image ?? null,
             provider: "google",
+            subscription: { create: createTrialSubscription() },
           },
         });
-        await prisma.subscription.create({
-          data: {
-            user: { connect: { id: user.id } },
-            status: "TRIAL",
-            provider:"NONE",
-            duration: 30,
-            amount: 0,
-            currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
-          },
-        })
       }
 
       return true;
@@ -103,22 +157,24 @@ export const authOptions: NextAuthOptions = {
 
     async jwt({ token, user, trigger, session }) {
       const email = user?.email ?? token.email;
-
+      
       if (email) {
-        const userData = await getUserWithSubscription(email);
+        const userData = await getUserData(email);
         if (userData) {
-          token.id = userData.id;
-          token.username = userData.username;
-          token.email = userData.email;
-          token.image = userData.avatar;
-          token.role = userData.role as Role;
-          token.examCode = userData.examRegistrations[0]?.exam.code ?? "";
-          token.isNewUser = !userData.onboardingCompleted;
-          token.plan = {
-            id: userData.subscription?.planId ?? null,
-            status: userData.subscription?.status as SubscriptionStatus,
-            endAt: userData.subscription?.currentPeriodEnd ?? null,
-          };
+          Object.assign(token, {
+            id: userData.id,
+            username: userData.username,
+            email: userData.email,
+            image: userData.avatar,
+            role: userData.role as Role,
+            examCode: userData.examRegistrations[0]?.exam.code ?? "",
+            isNewUser: !userData.onboardingCompleted,
+            plan: {
+              id: userData.subscription?.planId ?? null,
+              status: userData.subscription?.status as SubscriptionStatus,
+              endAt: userData.subscription?.currentPeriodEnd ?? null,
+            },
+          });
         }
       }
 
@@ -132,25 +188,9 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (!token?.email) return session;
 
-      const userData = await getUserWithSubscription(token.email);
-
+      const userData = await getUserData(token.email);
       if (userData) {
-        session.user = {
-          id: userData.id,
-          name: userData.name,
-          email: userData.email,
-          username: userData.username ?? "",
-          image: userData.avatar ?? "",
-          role: userData.role as Role,
-          examCode: userData.examRegistrations[0]?.exam.code ?? "",
-          createdAt: userData.createdAt,
-          isNewUser: !userData.onboardingCompleted,
-          plan: {
-            id: userData.subscription?.planId ?? null,
-            status: userData.subscription?.status as SubscriptionStatus,
-            endAt: userData.subscription?.currentPeriodEnd ?? null,
-          },
-        };
+        session.user = createUserSession(userData);
       }
 
       return session;
@@ -163,11 +203,12 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 60 * 60 * 24 * 10, 
-    updateAge: 60 * 60 * 2,
+    maxAge: JWT_MAX_AGE,
+    updateAge: SESSION_UPDATE_AGE,
   },
+
   jwt: {
-    maxAge: 60 * 60 * 24 * 10, 
+    maxAge: JWT_MAX_AGE,
   },
 
   secret: process.env.NEXTAUTH_SECRET,
