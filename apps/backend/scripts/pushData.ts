@@ -4,16 +4,133 @@ import * as path from "path";
 
 const prisma = new PrismaClient();
 
+async function importUsers() {
+  console.log("📝 Importing Users...");
+  const usersFilePath = path.join(__dirname, "json", "User.json");
+
+  if (fs.existsSync(usersFilePath)) {
+    try {
+      const users = JSON.parse(fs.readFileSync(usersFilePath, "utf-8"));
+      console.log(`Found ${users.length} users to import`);
+
+      for (const user of users) {
+        try {
+          await prisma.user.upsert({
+            where: { id: user.id },
+            update: {},
+            create: {
+              id: user.id,
+              name: user.name,
+              username: user.username,
+              email: user.email,
+              avatar: user.avatar,
+              role: user.role,
+              provider: user.provider,
+              location: user.location,
+              targetYear: user.targetYear,
+              studyHoursPerDay: user.studyHoursPerDay,
+              standard: user.standard,
+              grade: user.grade,
+              coins: user.coins,
+              xp: user.xp,
+              questionsPerDay: 5, // Default value
+              onboardingCompleted: true,
+            },
+          });
+          console.log(`✅ Imported user: ${user.name}`);
+        } catch (error) {
+          console.error(`❌ Error importing user ${user.id}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error("❌ Error reading users file:", error);
+    }
+  } else {
+    console.log("⚠️ Users file not found");
+  }
+}
+
+async function importExams() {
+  console.log("📝 Importing Exams...");
+  const examDataPath = path.join(__dirname, "json", "ExamData");
+  const examFilePath = path.join(examDataPath, "Exam.json");
+  const examSubjectFilePath = path.join(examDataPath, "ExamSubject.json");
+
+  if (fs.existsSync(examFilePath) && fs.existsSync(examSubjectFilePath)) {
+    try {
+      const exams = JSON.parse(fs.readFileSync(examFilePath, "utf-8"));
+      const examSubjects = JSON.parse(
+        fs.readFileSync(examSubjectFilePath, "utf-8")
+      );
+
+      // Import Exams
+      for (const exam of exams) {
+        try {
+          await prisma.exam.upsert({
+            where: { code: exam.code },
+            update: {},
+            create: {
+              code: exam.code,
+              name: exam.name,
+              description: exam.description,
+              category: exam.category,
+              minDifficulty: exam.minDifficulty,
+              maxDifficulty: exam.maxDifficulty,
+              totalMarks: exam.totalMarks,
+              duration: exam.duration,
+              negativeMarking: exam.negativeMarking,
+              negativeMarkingRatio: exam.negativeMarkingRatio,
+            },
+          });
+          console.log(`✅ Imported exam: ${exam.name}`);
+        } catch (error) {
+          console.error(`❌ Error importing exam ${exam.code}:`, error);
+        }
+      }
+
+      // Import ExamSubjects
+      for (const examSubject of examSubjects) {
+        try {
+          await prisma.examSubject.upsert({
+            where: {
+              examCode_subjectId: {
+                examCode: examSubject.examCode,
+                subjectId: examSubject.subjectId,
+              },
+            },
+            update: {
+              weightage: examSubject.weightage,
+            },
+            create: {
+              examCode: examSubject.examCode,
+              subjectId: examSubject.subjectId,
+              weightage: examSubject.weightage,
+            },
+          });
+          console.log(
+            `✅ Imported exam subject relation: ${examSubject.examCode} - ${examSubject.subjectId}`
+          );
+        } catch (error) {
+          console.error(`❌ Error importing exam subject relation:`, error);
+        }
+      }
+    } catch (error) {
+      console.error("❌ Error reading exam files:", error);
+    }
+  } else {
+    console.log("⚠️ Exam files not found");
+  }
+}
+
 async function importData() {
   const jsonDir = path.join(__dirname, "json");
   //   const jeeQuestionsPath = path.join(jsonDir, "JEE-Questions");
   const neetQuestionsPath = path.join(jsonDir, "NEET-Questions");
 
-  // Import JEE Questions
-  //   await importQuestionsAndOptions(jeeQuestionsPath);
-
-  // Import NEET Questions
+  await importUsers();
   await importQuestionsAndOptions(neetQuestionsPath);
+  await importExams();
+  //   await importQuestionsAndOptions(jeeQuestionsPath);
 }
 
 async function importQuestionsAndOptions(directory: string) {

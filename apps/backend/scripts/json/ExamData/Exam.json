@@ -1,0 +1,26 @@
+[
+    {
+        "code": "JEE",
+        "name": "Joint Entrance Examination",
+        "description": "Joint Entrance Examination is a national level entrance examination for admission to various engineering colleges in India.",
+        "category": "Engineering",
+        "minDifficulty": 1,
+        "maxDifficulty": 5,
+        "totalMarks": 300,
+        "duration": 180,
+        "negativeMarking": true,
+        "negativeMarkingRatio": 0.25
+    },
+    {
+        "code": "NEET",
+        "name": "National Eligibility cum Entrance Test",
+        "description": "NEET is an entrance examination for students who wish to study undergraduate medical courses in India.",
+        "category": "Medical",
+        "minDifficulty": 1,
+        "maxDifficulty": 3,
+        "totalMarks": 720,
+        "duration": 180,
+        "negativeMarking": true,
+        "negativeMarkingRatio": 0.25
+    }
+]
