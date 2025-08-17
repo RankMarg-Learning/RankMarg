@@ -103,23 +103,23 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
   // Function to replace LaTeX delimiters
   const replaceLatexDelimiters = () => {
     const fields = ['content', 'hint', 'solution', 'commonMistake'] as const;
-    
+
     fields.forEach(fieldName => {
       const currentValue = getValues(fieldName);
       if (currentValue && typeof currentValue === 'string') {
         let updatedValue = currentValue;
-        
-        // Replace \( and \) with $
-        updatedValue = updatedValue.replace(/\\\(/g, '$');
-        updatedValue = updatedValue.replace(/\\\)/g, '$');
-        
+
         // Replace \[ and \] with $$
         updatedValue = updatedValue.replace(/\\\[/g, '$$');
         updatedValue = updatedValue.replace(/\\\]/g, '$$');
-        
+        // Replace \( and \) with $
+        updatedValue = updatedValue.replace(/\\\(/g, '$');
+        updatedValue = updatedValue.replace(/\\\)/g, '$');
+
+
         // Update the form value
         setValue(fieldName, updatedValue);
-        
+
         // Update local state for content and solution
         if (fieldName === 'content') {
           setLocalContent(updatedValue);
@@ -135,23 +135,23 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       const updatedOptions = currentOptions.map(option => {
         if (option.content && typeof option.content === 'string') {
           let updatedContent = option.content;
-          
+
           // Replace \( and \) with $
           updatedContent = updatedContent.replace(/\\\(/g, '$');
           updatedContent = updatedContent.replace(/\\\)/g, '$');
-          
           // Replace \[ and \] with $$
           updatedContent = updatedContent.replace(/\\\[/g, '$$');
           updatedContent = updatedContent.replace(/\\\]/g, '$$');
-          
+
+
           return { ...option, content: updatedContent };
         }
         return option;
       });
-      
+
       setValue("options", updatedOptions);
     }
-    
+
     toast({
       title: "LaTeX delimiters replaced successfully!",
       variant: "default",
@@ -755,7 +755,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
               )}
             />
             {errors.subtopicId && <p className="text-red-500 text-xs">{errors.subtopicId.message}</p>}
-            
+
           </div>
 
           <div className="space-y-3">
@@ -765,18 +765,18 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                   Question Content <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
-                <Textarea
-                  id="content"
+                  <Textarea
+                    id="content"
                     ref={contentTextareaRef}
                     value={localContent || watch("content") || ""}
                     onChange={handleContentChange}
                     placeholder="Write your question here... You can drag and drop images here or use the upload button below."
-                  rows={6}
+                    rows={Math.max(6, Math.ceil((localContent || (watch("content") || "")).split('\n').length / 2))}
                     className={`border transition-all duration-200 ${errors.content
-                        ? "border-red-500"
-                        : isDragOver
-                          ? "border-primary-500 bg-primary-50"
-                          : "border-gray-300"
+                      ? "border-red-500"
+                      : isDragOver
+                        ? "border-primary-500 bg-primary-50"
+                        : "border-gray-300"
                       }`}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
@@ -794,8 +794,8 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                     <label
                       htmlFor="image-upload"
                       className={`cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-md transition-colors ${isUploading
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-primary-500 hover:bg-primary-600"
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-primary-500 hover:bg-primary-600"
                         } text-white`}
                       title={isUploading ? "Uploading..." : "Upload image"}
                     >
@@ -851,18 +851,18 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <Label className="text-sm">Option {index + 1}</Label>
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1">
-                            <Switch
-                              checked={option.isCorrect}
-                              onCheckedChange={(checked) => updateOption(index, "isCorrect", checked)}
-                            />
-                            <span className="text-xs">Correct</span>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              <Switch
+                                checked={option.isCorrect}
+                                onCheckedChange={(checked) => updateOption(index, "isCorrect", checked)}
+                              />
+                              <span className="text-xs">Correct</span>
+                            </div>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeOption(index)} className="text-red-500 h-7 w-7">
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
-                          <Button type="button" variant="ghost" size="icon" onClick={() => removeOption(index)} className="text-red-500 h-7 w-7">
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
                         </div>
 
                         <div className="relative">
@@ -895,8 +895,8 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                             <label
                               htmlFor={`image-upload-option-${index}`}
                               className={`cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-md transition-colors ${isUploading
-                                  ? "bg-gray-400 cursor-not-allowed"
-                                  : "bg-primary-500 hover:bg-primary-600"
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-primary-500 hover:bg-primary-600"
                                 } text-white`}
                               title={isUploading ? "Uploading..." : "Upload image"}
                             >
@@ -942,8 +942,8 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
               <div className="space-y-2">
                 <Label htmlFor="solution" className="text-sm">Solution <span className="text-red-500">*</span></Label>
                 <div className="relative">
-                <Textarea
-                  id="solution"
+                  <Textarea
+                    id="solution"
                     ref={solutionTextareaRef}
                     value={localSolution || watch("solution") || ""}
                     onChange={(e) => {
@@ -951,8 +951,8 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                       setLocalSolution(value);
                       setValue("solution", value);
                     }}
-                  placeholder="Provide a solution/explanation"
-                  rows={5}
+                    placeholder="Provide a solution/explanation"
+                    rows={Math.max(5, Math.ceil((localSolution || (watch("solution") || "")).split('\n').length / 2))}
                     className={`border transition-all duration-200 ${errors.solution ? "border-red-500" : "border-gray-300"
                       }`}
                     onDragOver={handleSolutionDragOver}
@@ -977,8 +977,8 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                     <label
                       htmlFor="image-upload-solution"
                       className={`cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-md transition-colors ${isUploading
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-primary-500 hover:bg-primary-600"
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-primary-500 hover:bg-primary-600"
                         } text-white`}
                       title={isUploading ? "Uploading..." : "Upload image"}
                     >
@@ -1097,7 +1097,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
             <div className="flex items-center space-x-3 p-3 bg-primary-50 rounded-lg border border-primary-200">
               <Switch
                 id="isPublished"
-                checked={watch("isPublished")} 
+                checked={watch("isPublished")}
                 onCheckedChange={(checked) => setValue("isPublished", checked)}
               />
               <div>
