@@ -33,8 +33,8 @@ export interface PracticeSession {
     date: string; 
     difficultyLevel: number;
     isCompleted: boolean;
-    duration: string; 
-    timeRequired: string; 
+    duration: number; 
+    timeRequired: number; 
     startTime: string | null;
     lastAttempt: string | null;
     accuracy: number; 
