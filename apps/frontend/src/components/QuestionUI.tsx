@@ -204,7 +204,7 @@ Best regards,
 
   return (
     <div className="min-h-[calc(100vh-120px)] flex flex-col bg-white" id="fullscreen">
-      <div className="flex flex-wrap md:flex-row flex-1 p-4 rounded-lg overflow-hidden ">
+      <div className="flex flex-wrap md:flex-row flex-1 p-2 rounded-lg overflow-hidden ">
         {/* Left side: Question */}
         <div className="w-full md:w-1/2 md:p-6 p-2 border-b md:border-b-0 md:border-r">
           <h1 className="text-lg font-bold mb-2">Question</h1>
@@ -216,17 +216,17 @@ Best regards,
               defaultTime={time}
               isRunning={isRunning}
               onTimeChange={setTime}
-              className="bg-blue-500 text-white text-base hidden"
+              className=" border-2 border-blue-500 text-blue-500 text-sm hidden"
             />
           )}
 
           {/* Question metadata */}
           <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
-            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+            <span className="px-2 py-0.5 md:py-1 border border-blue-500 text-blue-500 rounded-full text-xs font-medium">
               {question?.topic?.name}
             </span>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">
+              <span className="px-2 py-0.5 md:py-1 border border-amber-500 text-amber-500 rounded-full text-xs font-medium">
                 {getDifficultyLabel(question?.difficulty)}
               </span>
               <span
