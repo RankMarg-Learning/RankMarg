@@ -4,6 +4,7 @@ import { TextFormator } from '@/utils/textFormator'
 import React from 'react'
 import Image from 'next/image'
 import { Button } from './ui/button'
+import { Badge } from './ui/badge'
 import { useRouter } from 'next/navigation'
 import { Progress } from './ui/progress'
 import { SubjectBackgroundColor, SubjectIcons, SubjectTextColor } from '@/constant/SubjectColorCode'
@@ -82,28 +83,21 @@ function ProfilePage({ username }: { username: string }) {
     const userCurrentStudies = currentStudies?.data
 
     return (
-        <div className="max-w-7xl mx-auto" id="el-8wjkn6cy">
+        <div className="container mx-auto px-4 py-6" id="el-8wjkn6cy">
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" id="el-pccwqpqf">
                 <div className="lg:col-span-1" id="el-9hhqclxs">
-                    <div className="bg-white rounded-lg  overflow-hidden border border-neutral-200/30" id="el-4t8ksl3h">
-                        <div className="p-5" id="el-6okbp9bd">
+                    <div className="overflow-hidden" id="el-4t8ksl3h">
+                        <div className="p-5">
                             <div className="flex flex-col items-center" id="el-glupe86c">
                                 <div className="relative w-32 h-32 mb-4" id="el-6gqzb2fs">
                                     <Image src={userBasicData?.avatar || "/Profile_image.png"} width={100} height={100} alt="Profile picture" className="w-full h-full object-cover rounded-full border-4 border-white" id="el-vmmcp80t" />
                                 </div>
                                 <h3 className="text-xl font-semibold text-gray-800" id="el-6tdve9az">{userBasicData?.name}</h3>
-                                <p className="text-gray-500 mb-4" id="el-3tvpkwz4">@{userBasicData?.username}</p>
-                                <div className="flex items-center mb-4" id="el-u1jxjbqe">
-                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 mr-2" id="el-rf42p8ky">
-                                        {TextFormator(userBasicData?.standard)}
-                                    </span>
-                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800" id="el-eprjh0fy">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="el-zaezgsmp">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" id="el-7it9saee"></path>
-                                        </svg>
-                                        Target: {userBasicData?.targetYear}
-                                    </span>
+                                <p className="text-muted-foreground mb-4" id="el-3tvpkwz4">@{userBasicData?.username}</p>
+                                <div className="flex flex-wrap items-center gap-2 mb-4" id="el-u1jxjbqe">
+                                    <Badge variant="outline" id="el-rf42p8ky">{TextFormator(userBasicData?.standard)}</Badge>
+                                    <Badge variant="secondary" id="el-eprjh0fy">Target: {userBasicData?.targetYear}</Badge>
                                 </div>
                                 <div className=" items-center justify-center space-x-2 mb-4 hidden" id="el-v4yir2vp">
                                     <div className="flex items-center text-amber-500" id="el-bqci3q66">
@@ -129,29 +123,29 @@ function ProfilePage({ username }: { username: string }) {
 
                             <div className="mt-6" id="el-j2jisrly">
                                 <div className="grid grid-cols-2 gap-4" id="el-0zu6b1sr">
-                                    <div className="bg-gray-50 rounded-lg p-3 text-center" id="el-8x1b7ui7">
-                                        <p className="text-sm text-gray-500" id="el-tbct83it">Coins</p>
-                                        <p className="text-xl font-semibold text-amber-500 flex items-center justify-center" id="el-ad6tmqzt">
+                                    <div className="rounded-md border bg-amber-50 p-3 text-center" id="el-8x1b7ui7">
+                                        <p className="text-xs text-muted-foreground" id="el-tbct83it">Coins</p>
+                                        <p className="text-xl font-semibold text-amber-600 flex items-center justify-center" id="el-ad6tmqzt">
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor" id="el-5ho2vxxn">
                                                 <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.616a1 1 0 01.894-1.79l1.599.8L9 4.323V3a1 1 0 011-1z" id="el-mpcrpnzc"></path>
                                             </svg>
                                             {userBasicData?.coins}
                                         </p>
                                     </div>
-                                    <div className="bg-gray-50 rounded-lg p-3 text-center" id="el-uqzn6w24">
-                                        <p className="text-sm text-gray-500" id="el-yvrea8rc">Study Hours</p>
+                                    <div className="rounded-md border bg-gray-50 p-3 text-center" id="el-uqzn6w24">
+                                        <p className="text-xs text-muted-foreground" id="el-yvrea8rc">Study Hours</p>
                                         <p className="text-xl font-semibold text-primary-600" id="el-bav77v1v">{userBasicData?.studyHoursPerDay}/day</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="border-t border-neutral-200/20 p-5" id="el-36a801ga">
-                            <h4 className="text-md font-medium text-gray-700 mb-3" id="el-jcloel2a">Contact Information</h4>
+                        <div className="p-5 pt-0" id="el-36a801ga">
+                            <h4 className="text-sm font-medium text-gray-700 mb-3" id="el-jcloel2a">Contact Information</h4>
                             <ul className="space-y-3" id="el-04tus88k">
                                 {
                                     userBasicData?.email && (
-                                        <li className="flex items-center text-gray-600" id="el-omx5gtrk">
+                                        <li className="flex items-center text-muted-foreground" id="el-omx5gtrk">
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="el-1j84urbd">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" id="el-272oinw5"></path>
                                             </svg>
@@ -161,7 +155,7 @@ function ProfilePage({ username }: { username: string }) {
                                 }
                                 {
                                     userBasicData?.phone && (
-                                        <li className="flex items-center text-gray-600" id="el-5250gutq">
+                                        <li className="flex items-center text-muted-foreground" id="el-5250gutq">
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="el-kmu8dndd">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" id="el-827kpqt4"></path>
                                             </svg>
@@ -171,7 +165,7 @@ function ProfilePage({ username }: { username: string }) {
                                 }
                                 {
                                     userBasicData?.location && (
-                                        <li className="flex items-center text-gray-600" id="el-pxj3dskg">
+                                        <li className="flex items-center text-muted-foreground" id="el-pxj3dskg">
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="el-gqvg12c3">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" id="el-go77h3lk"></path>
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" id="el-iy3aqksf"></path>
@@ -195,9 +189,9 @@ function ProfilePage({ username }: { username: string }) {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-lg  overflow-hidden border border-neutral-200/30 mt-6" id="el-fhglnghk">
-                        <div className="bg-gradient-to-br from-primary-500 to-primary-600 px-5 py-4" id="el-uanx9s4v">
-                            <h4 className="text-lg font-semibold text-white" id="el-10roalo3">Study Streak</h4>
+                    <div className="mt-6 overflow-hidden" id="el-fhglnghk">
+                        <div className="px-5 py-4 border-b border-neutral-200/60" id="el-uanx9s4v">
+                            <h4 className="text-sm font-semibold" id="el-10roalo3">Study Streak</h4>
                         </div>
                         <div className="p-5" id="el-tzxiyxpq">
                             <div className="flex items-center justify-between mb-4" id="el-thk9x48a">
@@ -205,11 +199,9 @@ function ProfilePage({ username }: { username: string }) {
                                     <span className="text-3xl font-bold text-primary-600" id="el-44x6idbi">
                                         {userBasicData?.userPerformance?.streak || 0}
                                     </span>
-                                    <span className="text-gray-500 ml-2" id="el-w159gazu">days</span>
+                                    <span className="text-muted-foreground ml-2" id="el-w159gazu">days</span>
                                 </div>
-                                <div className="bg-primary-100 text-primary-800 text-xs font-medium px-3 py-1 rounded-full" id="el-yuqswifc">
-                                    Current
-                                </div>
+                                <Badge variant="outline" id="el-yuqswifc">Current</Badge>
                             </div>
 
                             <div className="grid grid-cols-7 gap-2 mb-4" id="el-st3jbpm3">
@@ -219,13 +211,13 @@ function ProfilePage({ username }: { username: string }) {
                                     return (
                                         <div
                                             key={index}
-                                            className={`h-10 rounded-md ${isCompleted ? 'bg-primary-600' : 'bg-gray-300'}`}
+                                            className={`h-8 rounded-md ${isCompleted ? 'bg-primary-600' : 'bg-gray-200'}`}
                                         />
                                     );
                                 })}
                             </div>
 
-                            <div className="text-center text-sm text-gray-500" id="el-yrg0crlv">
+                            <div className="text-center text-xs text-muted-foreground" id="el-yrg0crlv">
                                 <p id="el-zkd7qi3u">
                                     Last {userBasicData?.userPerformance?.streak || 0} days completed successfully!
                                 </p>
@@ -236,15 +228,15 @@ function ProfilePage({ username }: { username: string }) {
                 </div>
 
                 <div className="lg:col-span-2" id="el-lsgi29pf">
-                    <div className="bg-white rounded-lg  overflow-hidden border border-neutral-200/30 mb-6" id="el-ddb7gyt8">
-                        <div className="px-5 py-4 border-b border-neutral-200/20" id="el-yz7bgln3">
-                            <h3 className="text-lg font-semibold text-gray-800" id="el-q4jbfkw4">Academic Performance</h3>
+                    <div className="mb-6 overflow-hidden" id="el-ddb7gyt8">
+                        <div className="px-5 py-4 border-b border-neutral-200/60" id="el-yz7bgln3">
+                            <h3 className="text-sm font-semibold" id="el-q4jbfkw4">Academic Performance</h3>
                         </div>
                         <div className="p-5" id="el-34a4sk37">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" id="el-no36xezx">
-                                <div className="bg-gray-50 rounded-lg p-4" id="el-6207zdd4">
+                                <div className="rounded-md bg-gray-50 p-4" id="el-6207zdd4">
                                     <div className="flex items-center justify-between mb-2" id="el-0dj5hc6j">
-                                        <p className="text-sm text-gray-500" id="el-qa7mtiwu">Accuracy</p>
+                                        <p className="text-xs text-muted-foreground" id="el-qa7mtiwu">Accuracy</p>
                                         <span className="text-sm font-medium text-primary-600" id="el-39k8zc0j">{userBasicData?.userPerformance?.accuracy?.toFixed(2) || 0.0}%</span>
                                     </div>
                                     <div className="w-full bg-gray-200 rounded-full h-2.5" id="el-rvdhqui8">
@@ -260,9 +252,9 @@ function ProfilePage({ username }: { username: string }) {
                                         <div className="bg-green-600 h-2.5 rounded-full" style={{ width: "92%" }} id="el-bg2ubuat"></div>
                                     </div>
                                 </div>
-                                <div className="bg-gray-50 rounded-lg p-4" id="el-cptx9c1e">
+                                <div className="rounded-md bg-gray-50 p-4" id="el-cptx9c1e">
                                     <div className="flex items-center justify-between mb-2" id="el-aq3gtngf">
-                                        <p className="text-sm text-gray-500" id="el-o4bztcuj">Average Score</p>
+                                        <p className="text-xs text-muted-foreground" id="el-o4bztcuj">Average Score</p>
                                         <span className="text-sm font-medium text-primary-600" id="el-k0w88hbo">{userBasicData?.userPerformance?.avgScore || 0}/100</span>
                                     </div>
                                     <div className="w-full bg-gray-200 rounded-full h-2.5" id="el-gwxq68ty">
@@ -272,7 +264,7 @@ function ProfilePage({ username }: { username: string }) {
                             </div>
 
                             <div className="mt-6" id="el-rm7e0jk2">
-                                <h4 className="text-md font-medium text-gray-700 mb-3" id="el-3oha6m6y">Subject-wise Performance</h4>
+                                <h4 className="text-sm font-medium text-gray-700 mb-3" id="el-3oha6m6y">Subject-wise Performance</h4>
                                 <div className="space-y-4">
                                     {userBasicData?.userPerformance?.subjectWiseAccuracy &&
                                         Object.entries(userBasicData.userPerformance.subjectWiseAccuracy).length > 0 ? (
@@ -288,11 +280,11 @@ function ProfilePage({ username }: { username: string }) {
                                                     <div className="flex items-center justify-between mb-1">
                                                         <div className="flex items-center gap-2">
                                                             <Icon className={`w-4 h-4 ${textColor}`} />
-                                                            <span className={`text-sm font-medium ${textColor}`}>
+                                                            <span className={`text-xs font-medium ${textColor}`}>
                                                                 {subjectKey.charAt(0).toUpperCase() + subjectKey.slice(1)}
                                                             </span>
                                                         </div>
-                                                        <span className={`text-sm font-medium ${textColor}`}>
+                                                        <span className={`text-xs font-medium ${textColor}`}>
                                                             {accuracy}%
                                                         </span>
                                                     </div>
@@ -306,7 +298,7 @@ function ProfilePage({ username }: { username: string }) {
                                             );
                                         })
                                     ) : (
-                                        <div className="text-gray-500 text-center py-4" id="el-9w8v5b1f">
+                                        <div className="text-muted-foreground text-center py-4" id="el-9w8v5b1f">
                                             No subject-wise performance data available.
                                         </div>
                                     )}
@@ -316,9 +308,10 @@ function ProfilePage({ username }: { username: string }) {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-lg  overflow-hidden border border-neutral-200/30 " id="el-jl7ezxoh">
-                        <div className="px-5 py-4 border-b border-neutral-200/20" id="el-vlvwknq5">
-                            <h3 className="text-lg font-semibold text-gray-800" id="el-yz06mzkf">Current Study Progress</h3>
+                    <div className="overflow-hidden" id="el-jl7ezxoh">
+                        <div className="px-5 py-4 flex items-center justify-between border-b border-neutral-200/60" id="el-vlvwknq5">
+                            <h3 className="text-sm font-semibold" id="el-yz06mzkf">Current Study Progress</h3>
+                            <Link href="/my-curriculum" className="text-xs text-primary-600 hover:text-primary-700" id="el-manage-curriculum">Manage</Link>
                         </div>
                         <div className="p-5 space-y-5" id="el-dxuya1n6">
                             <div className="space-y-6">
@@ -339,16 +332,21 @@ function ProfilePage({ username }: { username: string }) {
                                                         <Icon className={`h-6 w-6 ${textColor}`} />
                                                     </div>
                                                     <div>
-                                                        <h4 className="text-md  text-gray-800">Currently Studying</h4>
-                                                        <p className="text-sm text-gray-500">
-                                                            {study.subjectName}: {study.topicName}
+                                                        <h4 className="text-sm text-gray-800">Currently Studying</h4>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            <Link
+                                                                href={`/my-curriculum${(study as any)?.subjectId ? `?subjectId=${(study as any).subjectId}` : ''}`}
+                                                                className="hover:underline"
+                                                            >
+                                                                {study.subjectName}: {study.topicName}
+                                                            </Link>
                                                         </p>
                                                     </div>
                                                 </div>
 
-                                                <div className="ml-13 pl-5 border-l-2 border-dashed border-blue-200">
+                                                <div className="ml-13 pl-5">
 
-                                                    <p className="text-sm text-gray-500 mb-1">
+                                                    <p className="text-xs text-muted-foreground mb-1">
                                                         Started: {formattedStartDate}
                                                     </p>
 
@@ -357,14 +355,14 @@ function ProfilePage({ username }: { username: string }) {
                                         );
                                     })}
                             </div>
-                            <h4 className="text-lg font-semibold text-gray-800" id="el-qxvwlpa0">Recent Activity</h4>
-                            <div className="space-y-4">
+                            <h4 className="text-sm font-semibold text-gray-800" id="el-qxvwlpa0">Recent Activity</h4>
+                            <div className="divide-y divide-neutral-200/60">
                                 {userActivities?.activities && userActivities?.activities.length > 0 ? userActivities?.activities?.map((activity) => {
                                     const { icon, bg, text } = getIconAndColor(activity.type);
                                     return (
-                                        <div className="flex" key={activity.id}>
+                                        <div className="flex py-3 first:pt-0" key={activity.id}>
                                             <div className="flex-shrink-0">
-                                                <div className={`flex items-center justify-center h-10 w-10 rounded-md ${bg} ${text}`}>
+                                                <div className={`flex items-center justify-center h-9 w-9 rounded-md ${bg} ${text}`}>
                                                     {icon}
                                                 </div>
                                             </div>
@@ -372,13 +370,13 @@ function ProfilePage({ username }: { username: string }) {
                                                 <h5 className="text-sm font-medium text-gray-800">
                                                     {activity.type === "Profile" ? "Profile Updated" : "Mission Completed"}
                                                 </h5>
-                                                <p className="text-xs text-gray-500">{formatDate(activity.createdAt)}</p>
-                                                <p className="text-sm text-gray-600 mt-1">{activity.message} (+{activity.earnCoin} coins)</p>
+                                                <p className="text-xs text-muted-foreground">{formatDate(activity.createdAt)}</p>
+                                                <p className="text-xs text-gray-700 mt-1">{activity.message} (+{activity.earnCoin} coins)</p>
                                             </div>
                                         </div>
                                     );
                                 }) : (
-                                    <div className="text-gray-500 text-center py-4" id="el-9w8v5b1f">
+                                    <div className="text-muted-foreground text-center py-4" id="el-9w8v5b1f">
                                         No recent activities found.
                                     </div>
                                 )}
@@ -386,7 +384,7 @@ function ProfilePage({ username }: { username: string }) {
                             {
                                 userActivities?.activities && userActivities?.activities.length > 4 && (
                                     <div className="mt-6 text-center" id="el-nxhlxk6x">
-                                        <Link href="/rank-points" className="text-primary-600 hover:text-primary-800 text-sm font-medium" id="el-myfgz1mw" target="_self">
+                                        <Link href="/rank-points" className="text-primary-600 hover:text-primary-800 text-xs font-medium" id="el-myfgz1mw" target="_self">
                                             View Complete Activity Log
                                         </Link>
                                     </div>

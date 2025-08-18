@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import api from "@/utils/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ type CurrentState = {
 export default function MyCurriculumPage() {
 	const { data: session } = useSession();
 	const queryClient = useQueryClient();
+	const searchParams = useSearchParams();
 
 	const [selectedSubjectId, setSelectedSubjectId] = useState<string>("");
 
@@ -107,10 +109,15 @@ export default function MyCurriculumPage() {
 	});
 
 	useEffect(() => {
+		const subjectIdParam = searchParams?.get("subjectId") || "";
+		if (subjectIdParam && subjectIdParam !== selectedSubjectId) {
+			setSelectedSubjectId(subjectIdParam);
+			return;
+		}
 		if (!selectedSubjectId && subjects?.data?.length) {
 			setSelectedSubjectId(subjects.data[0].id);
 		}
-	}, [subjects?.data, selectedSubjectId]);
+	}, [subjects?.data, selectedSubjectId, searchParams]);
 
 	if (isLoadingSubjects || isLoadingTopics || isLoadingStates) {
 		return <CurriculumSkeleton />;
