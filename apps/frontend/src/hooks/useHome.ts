@@ -1,5 +1,5 @@
 import api from '@/utils/api'
-import { useQueries } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 
 
 const fetchTests = (endpoint: string) => async () => {
@@ -10,30 +10,19 @@ const fetchTests = (endpoint: string) => async () => {
 export function useHome() {
     const version =  '/v.1.0'
 
-    const queries = useQueries({
-        queries: [
-            {
-                queryKey: ['dashboardBasic'],
-                queryFn: fetchTests(`${version}/dashboard?loc=dashboard_page`),
-            },
-            {
-                queryKey: ['currentStudies'],
-                queryFn: fetchTests(`${version}/current_curriculum?includeTopic=true&includeSubject=true&isCurrent=true&uniqueSubjects=true`),
-            },
-            {
-                queryKey: ['session'],
-                queryFn: fetchTests(`${version}/session/subject_practice_session?loc=dashboard_page&_count=3&_type=today`),
-            },
-        ],
-    })
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ['homeCombined'],
+        queryFn: fetchTests(`${version}/home?subtopicsCount=3&sessionsCount=3`),
+        staleTime: 60_000,
+    });
 
-    const [dashboardBasic, currentStudies, session] = queries
+    const payload = data?.data;
 
     return {
-        dashboardBasic: dashboardBasic.data,
-        currentStudies: currentStudies.data,
-        session: session.data,
-        isLoading: queries.some(q => q.isLoading),
-        isError: queries.some(q => q.isError),
+        dashboardBasic: payload?.dashboardData,
+        currentStudies: payload?.currentStudies,
+        session: payload?.sessions,
+        isLoading,
+        isError,
     }
 }

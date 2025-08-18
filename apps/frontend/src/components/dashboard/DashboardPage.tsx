@@ -20,10 +20,10 @@ const DashboardPage = () => {
     }
     return (
         <div className="flex flex-col space-y-6">
-            <SmartStudyHub dashboardData={dashboardBasic?.data}
-                currentStudies={currentStudies?.data} />
-            {session?.data?.length > 0 ? (
-                <SmartSubjectSession session={session.data} />
+            <SmartStudyHub dashboardData={dashboardBasic}
+                currentStudies={currentStudies} />
+            {session?.length > 0 ? (
+                <SmartSubjectSession session={session} />
             ) : (
                 <div className="flex flex-col items-center justify-center text-center py-10">
                     <h2 className="text-lg font-semibold text-gray-700">
