@@ -1,7 +1,6 @@
 import { getDayWindow } from "@/lib/dayRange";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { endOfDay } from "date-fns";
 
 export const resetStreakJob = async () => {
   try {

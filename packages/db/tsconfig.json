@@ -1,18 +1,14 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "Node16",
-    "moduleResolution": "node16",
-    "declaration": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "outDir": "./dist",
+    "declaration": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@repo/db": ["../db/dist"],
-      "@repo/db/*": ["../db/dist/*"]
-    }
+    "baseUrl": "."
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

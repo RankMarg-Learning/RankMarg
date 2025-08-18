@@ -3,7 +3,7 @@ moduleAlias.addAliases({
   "@": __dirname,
 });
 
-import express from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import session from "./routes/session";
 import mastery from "./routes/mastery";
@@ -41,7 +41,7 @@ async function initializeRedis() {
   }
 }
 
-app.get(`${ServerConfig.api.routes.redis}`, async (req, res) => {
+app.get(`${ServerConfig.api.routes.redis}`, async (res: Response) => {
   try {
     const isHealthy = await RedisCacheService.healthCheck();
     const stats = await RedisCacheService.getCacheStats();
@@ -70,7 +70,7 @@ app.get(`${ServerConfig.api.routes.redis}`, async (req, res) => {
   }
 });
 
-app.get(`${ServerConfig.api.routes.upstash}/stats`, async (req, res) => {
+app.get(`${ServerConfig.api.routes.upstash}/stats`, async (res: Response) => {
   try {
     const detailedStats = await RedisCacheService.getDetailedStats();
     res.json(detailedStats);
@@ -82,7 +82,7 @@ app.get(`${ServerConfig.api.routes.upstash}/stats`, async (req, res) => {
   }
 });
 
-app.get(`${ServerConfig.api.routes.upstash}/test`, async (req, res) => {
+app.get(`${ServerConfig.api.routes.upstash}/test`, async (res: Response) => {
   try {
     const connectionTest = await RedisCacheService.testConnection();
     res.json(connectionTest);
@@ -94,53 +94,59 @@ app.get(`${ServerConfig.api.routes.upstash}/test`, async (req, res) => {
   }
 });
 
-app.post(`${ServerConfig.api.routes.upstash}/warm-cache`, async (req, res) => {
-  try {
-    const { userId, subjectId } = req.body;
+app.post(
+  `${ServerConfig.api.routes.upstash}/warm-cache`,
+  async (req: Request, res: Response) => {
+    try {
+      const { userId, subjectId } = req.body;
 
-    if (!userId || !subjectId) {
-      res.status(400).json({
-        error: "Missing required parameters: userId and subjectId",
+      if (!userId || !subjectId) {
+        res.status(400).json({
+          error: "Missing required parameters: userId and subjectId",
+        });
+        return;
+      }
+
+      await RedisCacheService.warmCache(userId, subjectId);
+      res.json({
+        success: true,
+        message: `Cache warming initiated for user ${userId} and subject ${subjectId}`,
       });
-      return;
+    } catch (error) {
+      res.status(500).json({
+        error: "Failed to warm cache",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
     }
-
-    await RedisCacheService.warmCache(userId, subjectId);
-    res.json({
-      success: true,
-      message: `Cache warming initiated for user ${userId} and subject ${subjectId}`,
-    });
-  } catch (error) {
-    res.status(500).json({
-      error: "Failed to warm cache",
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
   }
-});
+);
 
-app.post(`${ServerConfig.api.routes.cache}/clear`, async (req, res) => {
-  try {
-    const { userId, subjectId } = req.body;
+app.post(
+  `${ServerConfig.api.routes.cache}/clear`,
+  async (req: Request, res: Response) => {
+    try {
+      const { userId, subjectId } = req.body;
 
-    if (userId) {
-      await RedisCacheService.invalidateUserCache(userId);
+      if (userId) {
+        await RedisCacheService.invalidateUserCache(userId);
+      }
+
+      if (subjectId) {
+        await RedisCacheService.invalidateSubjectCache(subjectId);
+      }
+
+      res.json({ success: true, message: "Cache cleared successfully" });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Failed to clear cache",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
-
-    if (subjectId) {
-      await RedisCacheService.invalidateSubjectCache(subjectId);
-    }
-
-    res.json({ success: true, message: "Cache cleared successfully" });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to clear cache",
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
   }
-});
+);
 
-app.get(`${ServerConfig.api.routes.cache}/stats`, async (req, res) => {
+app.get(`${ServerConfig.api.routes.cache}/stats`, async (res: Response) => {
   try {
     const stats = await RedisCacheService.getCacheStats();
     res.json(stats);
@@ -163,7 +169,7 @@ app.use(`${ServerConfig.api.routes.reviews}`, reviews);
 app.use(`${ServerConfig.api.prefix}/cron`, cronRoutes);
 
 // Basic health endpoint for container orchestration
-app.get(ServerConfig.api.routes.health, (_req, res) => {
+app.get(ServerConfig.api.routes.health, (_req: Request, res: Response) => {
   res.status(200).json({ ok: true });
 });
 

@@ -5,6 +5,7 @@ dotenv.config({ path: '../../.env' });
 
 const nextConfig = {
     reactStrictMode: true,
+    transpilePackages: ["@repo/db", "@repo/suggest", "@repo/common-utils"],
     images: {
         domains: ["lh3.googleusercontent.com","cdn.rareblocks.xyz","utfs.io","res.cloudinary.com"],
       },

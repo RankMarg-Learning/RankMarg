@@ -651,7 +651,7 @@ export class RedisCacheService {
       }
 
       // Test read/write operations
-      const operationStart = Date.now();
+      // const operationStart = Date.now();
       const testKey = `connection:test:${Date.now()}`;
       const testData = { timestamp: Date.now(), test: "connection" };
 
@@ -659,7 +659,7 @@ export class RedisCacheService {
       const retrieved = await redisService.getJson(testKey);
       await redisService.del(testKey);
 
-      const operationLatency = Date.now() - operationStart;
+      // const operationLatency = Date.now() - operationStart;
       const totalLatency = Date.now() - startTime;
 
       const isDataValid =
@@ -716,7 +716,7 @@ export class RedisCacheService {
   static async getCacheSize(pattern?: string): Promise<{
     keyCount: number;
     estimatedSize: string;
-    pattern?: string;
+    pattern: string | undefined;
   }> {
     try {
       // For Upstash, we can get total key count
@@ -772,12 +772,12 @@ export class RedisCacheService {
   }
 
   // Memory pressure handling
-  static async handleMemoryPressure(maxMemoryMB: number = 100): Promise<{
+  static async handleMemoryPressure(_maxMemoryMB: number = 100): Promise<{
     action: "none" | "cleanup" | "warning";
     message: string;
   }> {
     try {
-      const stats = await this.getCacheStats();
+      // const stats = await this.getCacheStats();
 
       // This is a simplified check - in practice you'd need more sophisticated
       // memory monitoring based on your Redis instance specs

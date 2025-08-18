@@ -2,7 +2,8 @@
     "name": "@repo/db",
     "version": "1.0.0",
     "description": "",
-    "main": "index.js",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "scripts": {
         "db:generate": "prisma generate",
         "db:studio": "prisma studio --schema=prisma/schema.prisma",
@@ -10,7 +11,8 @@
         "db:dev": "npx prisma migrate dev && npx prisma generate",
         "db:delpoy": "prisma migrate deploy && next build",
         "db:seed": "prisma db seed",
-        "generate:schema": "node scripts/generateSchema.js"
+        "generate:schema": "node scripts/generateSchema.js",
+        "build": "tsc -p tsconfig.json"
     },
     "prisma": {
         "schema": "prisma/schema.prisma",
@@ -24,7 +26,17 @@
         "prisma": "^5.12.0"
     },
     "exports": {
-        "./client": "./src/index.ts",
-        "./enums": "./src/enums.ts"
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./client": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./enums": {
+            "types": "./dist/enums.d.ts",
+            "default": "./dist/enums.js"
+        }
     }
 }
