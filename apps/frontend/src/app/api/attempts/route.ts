@@ -4,9 +4,8 @@ import { AttemptType, SubmitStatus, MetricType } from "@repo/db/enums";
 import { Prisma } from "@prisma/client";
 import { getAuthSession } from "@/utils/session";
 import { AttemptCreateData, AttemptRequestBody } from "@/types";
-import { getDayWindow } from "@/lib/dayRange";
 
-interface metricToUpdateType {
+interface MetricUpdateItem {
     userId: string;
     metricType: MetricType;
     increment: number;
@@ -39,9 +38,6 @@ export async function POST(req: Request): Promise<Response> {
 
         const userId: string = session.user.id;
 
-        // Check if this is the first attempt today (optimized with single query)
-        const isFirstAttemptToday: boolean = await checkFirstAttemptToday(userId);
-
         const attemptData: AttemptCreateData = {
             userId,
             questionId,
@@ -51,13 +47,9 @@ export async function POST(req: Request): Promise<Response> {
             status: isCorrect ? SubmitStatus.CORRECT : SubmitStatus.INCORRECT,
             hintsUsed: isHintUsed,
             timing,
+            ...(attemptType === AttemptType.SESSION ? { practiceSessionId: id } : {}),
+            ...(attemptType === AttemptType.TEST ? { testParticipationId: id } : {}),
         };
-
-        if (attemptType === AttemptType.SESSION) {
-            attemptData.practiceSessionId = id;
-        } else if (attemptType === AttemptType.TEST) {
-            attemptData.testParticipationId = id;
-        }
 
         // Single optimized transaction
         await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -72,8 +64,8 @@ export async function POST(req: Request): Promise<Response> {
                 promises.push(updatePracticeSessionStats(tx, id, isCorrect));
             }
 
-            // Update user performance with optimized single query
-            promises.push(updateUserPerformanceOptimized(tx, userId, isCorrect, isFirstAttemptToday));
+            // Update user performance (no daily first-attempt dependency)
+            promises.push(updateUserPerformanceOptimized(tx, userId, isCorrect));
 
             // Update metrics efficiently
             promises.push(updateUserMetricsOptimized(tx, userId, isCorrect));
@@ -95,21 +87,6 @@ export async function POST(req: Request): Promise<Response> {
             status: 500,
         });
     }
-}
-
-async function checkFirstAttemptToday(userId: string): Promise<boolean> {
-    const {from} = getDayWindow()
-
-    const todayAttemptCount = await prisma.attempt.count({
-        where: {
-            userId,
-            solvedAt: {
-                gte: from,
-            },
-        },
-    });
-
-    return todayAttemptCount === 0;
 }
 
 async function updatePracticeSessionStats(
@@ -153,7 +130,7 @@ async function updateUserMetricsOptimized(
     userId: string,
     isCorrect: boolean,
 ): Promise<void> {
-    const metricsToUpdate:metricToUpdateType[] = [
+    const metricsToUpdate: MetricUpdateItem[] = [
         {
             userId,
             metricType: MetricType.TOTAL_QUESTIONS,
@@ -192,12 +169,11 @@ async function updateUserMetricsOptimized(
     );
 }
 
-// Completely optimized user performance update with single query
+// Optimized user performance update with single query
 async function updateUserPerformanceOptimized(
     tx: Prisma.TransactionClient,
     userId: string,
     isCorrect: boolean,
-    isFirstAttemptToday: boolean
 ): Promise<void> {
     // Single atomic upsert with calculated accuracy
     const result = await tx.userPerformance.upsert({
@@ -205,13 +181,13 @@ async function updateUserPerformanceOptimized(
         update: {
             totalAttempts: { increment: 1 },
             correctAttempts: isCorrect ? { increment: 1 } : undefined,
-            streak: isFirstAttemptToday ? (isCorrect ? { increment: 1 } : 0) : undefined,
+            streak: isCorrect ? { increment: 1 } : 0,
         },
         create: {
             userId,
             totalAttempts: 1,
             correctAttempts: isCorrect ? 1 : 0,
-            streak: isFirstAttemptToday && isCorrect ? 1 : 0,
+            streak: isCorrect ? 1 : 0,
             accuracy: isCorrect ? 100 : 0,
         },
         select: {
