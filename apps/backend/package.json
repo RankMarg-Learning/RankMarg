@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only --require tsconfig-paths/register src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
-    "start:prod": "NODE_ENV=production node dist/index.js",
+    "start": "node dist/src/index.js",
+    "start:prod": "NODE_ENV=production node dist/src/index.js",
     "generate": "cd ../../packages/db && npx prisma generate",
     "migrate": "cd ../../packages/db && npx prisma migrate dev",
     "postinstall": "npm run generate",

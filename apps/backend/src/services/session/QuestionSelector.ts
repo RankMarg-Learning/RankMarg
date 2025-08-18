@@ -594,37 +594,37 @@ export class QuestionSelector {
     }
   }
 
-  private async filterRecentlyAttemptedQuestions(
-    questions: SelectedQuestion[]
-  ): Promise<SelectedQuestion[]> {
-    try {
-      if (questions.length === 0) {
-        return [];
-      }
+  // private async filterRecentlyAttemptedQuestions(
+  //   questions: SelectedQuestion[]
+  // ): Promise<SelectedQuestion[]> {
+  //   try {
+  //     if (questions.length === 0) {
+  //       return [];
+  //     }
 
-      const allAttemptedQuestions = await this.prisma.attempt.findMany({
-        where: {
-          userId: this.userId,
-          questionId: {
-            in: questions.map((q) => q.id),
-          },
-        },
-        select: {
-          questionId: true,
-        },
-        distinct: ["questionId"],
-      });
+  //     const allAttemptedQuestions = await this.prisma.attempt.findMany({
+  //       where: {
+  //         userId: this.userId,
+  //         questionId: {
+  //           in: questions.map((q) => q.id),
+  //         },
+  //       },
+  //       select: {
+  //         questionId: true,
+  //       },
+  //       distinct: ["questionId"],
+  //     });
 
-      const attemptedQuestionIds = new Set(
-        allAttemptedQuestions.map((a) => a.questionId)
-      );
+  //     const attemptedQuestionIds = new Set(
+  //       allAttemptedQuestions.map((a) => a.questionId)
+  //     );
 
-      return questions.filter((q) => !attemptedQuestionIds.has(q.id));
-    } catch (error) {
-      console.error("Error filtering recently attempted questions:", error);
-      return questions;
-    }
-  }
+  //     return questions.filter((q) => !attemptedQuestionIds.has(q.id));
+  //   } catch (error) {
+  //     console.error("Error filtering recently attempted questions:", error);
+  //     return questions;
+  //   }
+  // }
 
   private async getFallbackQuestions(
     topicIds: string[],

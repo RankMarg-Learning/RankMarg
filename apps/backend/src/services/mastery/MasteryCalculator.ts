@@ -258,7 +258,7 @@ export class MasteryCalculator {
 
   private calculateDifficultyMastery(
     data: EnhancedMasteryData,
-    userProfile: UserProfileData
+    _userProfile: UserProfileData
   ): number {
     const difficultyWeight = this.config.getDifficultyWeight(
       data.avgDifficulty
@@ -279,7 +279,7 @@ export class MasteryCalculator {
   }
 
   private calculateConsistencyScore(
-    data: EnhancedMasteryData,
+    _data: EnhancedMasteryData,
     performanceTrend: PerformanceTrend
   ): number {
     const consistencyFactor = performanceTrend.consistencyScore;
@@ -305,7 +305,7 @@ export class MasteryCalculator {
 
   private calculateUserProfileScore(
     userProfile: UserProfileData,
-    data: EnhancedMasteryData
+    _data: EnhancedMasteryData
   ): number {
     const studyHoursScore = userProfile.studyHoursPerDay
       ? Math.min(userProfile.studyHoursPerDay / 10, 2)
@@ -455,7 +455,7 @@ export class MasteryCalculator {
 
   private calculateAdaptiveLearningScore(
     attempts: MasteryAttempt[],
-    context: MasteryCalculationContext
+    _context: MasteryCalculationContext
   ): number {
     if (attempts.length < 3) return 0;
 

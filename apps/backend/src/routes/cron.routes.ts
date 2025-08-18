@@ -1,10 +1,10 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import { cronManager } from "../config/cron.config";
 
 const router = Router();
 
 // Get all cron job statuses
-router.get("/status", (req, res) => {
+router.get("/status", (_req: Request, res: Response) => {
   try {
     const jobStatuses = cronManager.getJobStatus();
     res.json({
@@ -22,7 +22,7 @@ router.get("/status", (req, res) => {
 });
 
 // Stop a specific cron job
-router.post("/stop/:jobName", (req, res) => {
+router.post("/stop/:jobName", (req: Request, res: Response) => {
   try {
     const { jobName } = req.params;
     const stopped = cronManager.stopJob(jobName);
@@ -48,7 +48,7 @@ router.post("/stop/:jobName", (req, res) => {
 });
 
 // Start a specific cron job
-router.post("/start/:jobName", (req, res) => {
+router.post("/start/:jobName", (req: Request, res: Response) => {
   try {
     const { jobName } = req.params;
     const started = cronManager.startJob(jobName);
@@ -74,7 +74,7 @@ router.post("/start/:jobName", (req, res) => {
 });
 
 // Stop all cron jobs
-router.post("/stop-all", (req, res) => {
+router.post("/stop-all", (_req: Request, res: Response) => {
   try {
     cronManager.stopAllJobs();
     res.json({
@@ -91,7 +91,7 @@ router.post("/stop-all", (req, res) => {
 });
 
 // Run a cron job immediately
-router.post("/run/:jobName", async (req, res) => {
+router.post("/run/:jobName", async (req: Request, res: Response) => {
   try {
     const { jobName } = req.params;
     await cronManager.runJobNow(jobName);

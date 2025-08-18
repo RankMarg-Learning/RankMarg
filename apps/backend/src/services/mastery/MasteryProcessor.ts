@@ -7,8 +7,6 @@ import {
   MasteryAttempt,
   MasteryCalculationContext,
   HierarchicalMasteryData,
-  UserProfileData,
-  PerformanceTrend,
 } from "../../type/mastery.api.types";
 
 export interface MasteryResult {
@@ -20,17 +18,17 @@ export interface MasteryResult {
   confidenceLevel: number;
 }
 
-interface SubtopicMasteryData {
-  userId: string;
-  subtopicId: string;
-  topicId: string;
-  masteryLevel: number;
-  strengthIndex: number;
-  totalAttempts: number;
-  correctAttempts: number;
-  confidenceLevel: number;
-  lastPracticed: Date | null;
-}
+// interface SubtopicMasteryData {
+//   userId: string;
+//   subtopicId: string;
+//   topicId: string;
+//   masteryLevel: number;
+//   strengthIndex: number;
+//   totalAttempts: number;
+//   correctAttempts: number;
+//   confidenceLevel: number;
+//   lastPracticed: Date | null;
+// }
 
 interface TopicMasteryData {
   userId: string;
@@ -98,8 +96,8 @@ export class MasteryProcessor {
       );
       const {
         subtopicAttempts,
-        topicAttempts,
-        subjectAttempts,
+        // _topicAttempts,
+        // _subjectAttempts,
         subtopicIds,
         topicIds,
         subjectIds,
@@ -240,11 +238,11 @@ export class MasteryProcessor {
           );
         }
 
-        const confidenceLevel = this.calculateConfidenceLevel(
-          enhancedMasteryData,
-          context
-        );
-        const lastPracticed = attempts[0]?.solvedAt || null;
+        // const confidenceLevel = this.calculateConfidenceLevel(
+        //   enhancedMasteryData,
+        //   context
+        // );
+        // const lastPracticed = attempts[0]?.solvedAt || null;
 
         upsertOperations.push(
           prisma.subtopicMastery.upsert({
@@ -291,7 +289,7 @@ export class MasteryProcessor {
   public async updateTopicMasteries(
     userId: string,
     topicIds: string[],
-    context: MasteryCalculationContext
+    _context: MasteryCalculationContext
   ): Promise<TopicMasteryData[]> {
     const results: TopicMasteryData[] = [];
 
@@ -335,16 +333,16 @@ export class MasteryProcessor {
       {} as Record<string, typeof subtopicMasteries>
     );
 
-    const existingTopicMasteries = await prisma.topicMastery.findMany({
-      where: {
-        userId,
-        topicId: { in: topicIds },
-      },
-    });
+    // const existingTopicMasteries = await prisma.topicMastery.findMany({
+    //   where: {
+    //     userId,
+    //     topicId: { in: topicIds },
+    //   },
+    // });
 
-    const existingTopicMap = new Map(
-      existingTopicMasteries.map((tm) => [tm.topicId, tm])
-    );
+    // const existingTopicMap = new Map(
+    //   existingTopicMasteries.map((tm) => [tm.topicId, tm])
+    // );
 
     const upsertOperations: Promise<any>[] = [];
 
@@ -447,7 +445,7 @@ export class MasteryProcessor {
   public async updateSubjectMasteries(
     userId: string,
     subjectIds: string[],
-    context: MasteryCalculationContext
+    _context: MasteryCalculationContext
   ): Promise<SubjectMasteryData[]> {
     const results: SubjectMasteryData[] = [];
 
@@ -540,7 +538,7 @@ export class MasteryProcessor {
       // Calculate overall confidence
       const overallConfidence = this.calculateSubjectConfidence(
         masteries,
-        context
+        _context
       );
 
       const subjectMasteryData: SubjectMasteryData = {
@@ -586,36 +584,36 @@ export class MasteryProcessor {
     return results;
   }
 
-  private calculateConfidenceLevel(
-    masteryData: any,
-    context: MasteryCalculationContext
-  ): number {
-    const { userProfile, performanceTrend } = context;
+  // private calculateConfidenceLevel(
+  //   masteryData: any,
+  //   context: MasteryCalculationContext
+  // ): number {
+  //   const { userProfile, performanceTrend } = context;
 
-    // Base confidence from mastery level
-    let confidence =
-      masteryData.totalAttempts > 0
-        ? (masteryData.correctAttempts / masteryData.totalAttempts) * 50
-        : 0;
+  //   // Base confidence from mastery level
+  //   let confidence =
+  //     masteryData.totalAttempts > 0
+  //       ? (masteryData.correctAttempts / masteryData.totalAttempts) * 50
+  //       : 0;
 
-    // Add confidence based on consistency
-    confidence += performanceTrend.consistencyScore * 20;
+  //   // Add confidence based on consistency
+  //   confidence += performanceTrend.consistencyScore * 20;
 
-    // Add confidence based on user engagement
-    if (userProfile.studyHoursPerDay && userProfile.studyHoursPerDay >= 2) {
-      confidence += 10;
-    }
+  //   // Add confidence based on user engagement
+  //   if (userProfile.studyHoursPerDay && userProfile.studyHoursPerDay >= 2) {
+  //     confidence += 10;
+  //   }
 
-    // Add confidence based on recent performance
-    if (performanceTrend.recentAccuracy > 0.8) {
-      confidence += 10;
-    }
+  //   // Add confidence based on recent performance
+  //   if (performanceTrend.recentAccuracy > 0.8) {
+  //     confidence += 10;
+  //   }
 
-    // Add confidence based on forgetting curve
-    confidence += masteryData.forgettingCurveFactor * 10;
+  //   // Add confidence based on forgetting curve
+  //   confidence += masteryData.forgettingCurveFactor * 10;
 
-    return Math.min(confidence, 100);
-  }
+  //   return Math.min(confidence, 100);
+  // }
 
   private calculateSubjectConfidence(
     masteries: any[],
@@ -632,7 +630,7 @@ export class MasteryProcessor {
 
   public async updateMasteryHistory(
     userId: string,
-    context: MasteryCalculationContext
+    _context: MasteryCalculationContext
   ) {
     try {
       const subjectMasteries = await prisma.subjectMastery.findMany({
