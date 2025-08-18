@@ -1,18 +1,27 @@
 "use client"
-import { addAttempt, getAiPracticeSession } from '@/services';
-import { useQuery } from '@tanstack/react-query';
+
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import QuestionUI from './QuestionUI';
-import { attempDataProps } from '@/types';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { Button } from './ui/button';
-import Loading from './Loading';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
+import { ArrowLeft, ArrowRight, SkipForward } from 'lucide-react';
+import QuestionUI from './QuestionUI';
+import { Progress } from './ui/progress';
+import Loading from './Loading';
+import { addAttempt, getAiPracticeSession } from '@/services';
+import { attempDataProps } from '@/types';
 
-const AiPracticeSession = ({ sessionId }: { sessionId: string }) => {
+// Constants
+const STALE_TIME = 5 * 60 * 1000; // 5 minutes
+const GC_TIME = 10 * 60 * 1000; // 10 minutes
 
-    const searchParams = useSearchParams()
-    const isReviewMode = searchParams.get('review') === 'true'
+interface AiPracticeSessionProps {
+    sessionId: string;
+}
+
+const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
+    // ===== HOOKS & STATE =====
+    const searchParams = useSearchParams();
+    const isReviewMode = searchParams.get('review') === 'true';
     
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [attemptedQuestions, setAttemptedQuestions] = useState<Set<string>>(new Set());
@@ -21,21 +30,57 @@ const AiPracticeSession = ({ sessionId }: { sessionId: string }) => {
     const hasInitialized = useRef(false);
     const userHasNavigated = useRef(false);
 
+    // ===== DATA FETCHING =====
     const { data: session, isLoading, refetch } = useQuery({
         queryKey: ["session", sessionId],
         queryFn: () => getAiPracticeSession(sessionId),
-        staleTime: 5 * 60 * 1000, 
-        gcTime: 10 * 60 * 1000, 
+        staleTime: STALE_TIME,
+        gcTime: GC_TIME,
     });
 
-    const questions = useMemo(() => session?.data?.questions || [], [session?.data?.questions]);
-    const attempts = useMemo(() => session?.data?.attempts || [], [session?.data?.attempts]);
+    // ===== MEMOIZED VALUES =====
+    const questions = useMemo(() => 
+        session?.data?.questions || [], 
+        [session?.data?.questions]
+    );
+    
+    const attempts = useMemo(() => 
+        session?.data?.attempts || [], 
+        [session?.data?.attempts]
+    );
 
     const attemptedIds = useMemo<Set<string>>(() =>
         new Set<string>(attempts.map(attempt => attempt.questionId)),
         [attempts]
     );
 
+    const currentQuestion = useMemo(() =>
+        questions[currentQuestionIndex]?.question,
+        [questions, currentQuestionIndex]
+    );
+
+    const currentQuestionAttempt = useMemo(() =>
+        attempts.find(attempt => attempt.questionId === currentQuestion?.id),
+        [attempts, currentQuestion?.id]
+    );
+
+    const progressPercentage = useMemo(() => 
+        questions.length > 0 ? (attemptedQuestions.size / questions.length) * 100 : 0,
+        [attemptedQuestions.size, questions.length]
+    );
+
+    const hasNextUnattempted = useMemo(() =>
+        questions.some((q, index) =>
+            index > currentQuestionIndex && !attemptedQuestions.has(q.question.id)
+        ),
+        [questions, currentQuestionIndex, attemptedQuestions]
+    );
+
+    // ===== NAVIGATION STATE =====
+    const canGoPrev = currentQuestionIndex > 0;
+    const canGoNext = currentQuestionIndex < questions.length - 1;
+
+    // ===== EFFECTS =====
     useEffect(() => {
         if (session?.data?.attempts && !hasInitialized.current) {
             setAttemptedQuestions(attemptedIds);
@@ -60,16 +105,7 @@ const AiPracticeSession = ({ sessionId }: { sessionId: string }) => {
         }
     }, [attemptedIds]);
 
-    const currentQuestion = useMemo(() =>
-        questions[currentQuestionIndex]?.question,
-        [questions, currentQuestionIndex]
-    );
-
-    const currentQuestionAttempt = useMemo(() =>
-        attempts.find(attempt => attempt.questionId === currentQuestion?.id),
-        [attempts, currentQuestion?.id]
-    );
-
+    // ===== EVENT HANDLERS =====
     const handlePrevQuestion = useCallback(() => {
         if (currentQuestionIndex > 0) {
             setCurrentQuestionIndex(prevIndex => prevIndex - 1);
@@ -83,6 +119,17 @@ const AiPracticeSession = ({ sessionId }: { sessionId: string }) => {
             userHasNavigated.current = true;
         }
     }, [currentQuestionIndex, questions.length]);
+
+    const goToNextUnattempted = useCallback(() => {
+        const nextUnattemptedIndex = questions.findIndex((q, index) =>
+            index > currentQuestionIndex && !attemptedQuestions.has(q.question.id)
+        );
+
+        if (nextUnattemptedIndex !== -1) {
+            setCurrentQuestionIndex(nextUnattemptedIndex);
+            userHasNavigated.current = true;
+        }
+    }, [questions, currentQuestionIndex, attemptedQuestions]);
 
     const handleAttempt = useCallback(async (attemptData: attempDataProps) => {
         if (isSubmitting || !currentQuestion) return;
@@ -98,8 +145,7 @@ const AiPracticeSession = ({ sessionId }: { sessionId: string }) => {
 
             if (response.success) {
                 setAttemptedQuestions(prev => new Set([...Array.from(prev), currentQuestion.id]));
-
-                await refetch(); //! Find Alternative for reftech and showing attempted question details
+                await refetch();
             } else {
                 console.error("Failed to submit attempt:", response.message);
             }
@@ -110,91 +156,102 @@ const AiPracticeSession = ({ sessionId }: { sessionId: string }) => {
         }
     }, [currentQuestion, sessionId, refetch, isSubmitting]);
 
-    const canGoPrev = currentQuestionIndex > 0;
-    const canGoNext = currentQuestionIndex < questions.length - 1;
+    // ===== RENDER HELPERS =====
+    const renderLoadingState = () => <Loading />;
 
-    const goToNextUnattempted = useCallback(() => {
-        const nextUnattemptedIndex = questions.findIndex((q, index) =>
-            index > currentQuestionIndex && !attemptedQuestions.has(q.question.id)
-        );
-
-        if (nextUnattemptedIndex !== -1) {
-            setCurrentQuestionIndex(nextUnattemptedIndex);
-            userHasNavigated.current = true;
-        }
-    }, [questions, currentQuestionIndex, attemptedQuestions]);
-
-    const hasNextUnattempted = useMemo(() =>
-        questions.some((q, index) =>
-            index > currentQuestionIndex && !attemptedQuestions.has(q.question.id)
-        ),
-        [questions, currentQuestionIndex, attemptedQuestions]
+    const renderErrorState = () => (
+        <div className="flex justify-center items-center min-h-screen px-4">
+            <div className="text-center">
+                <h1 className="text-xl sm:text-2xl font-bold text-red-500 mb-2">
+                    Session Error
+                </h1>
+                <p className="text-sm sm:text-base text-gray-600">
+                    {session?.message || "Failed to load session"}
+                </p>
+            </div>
+        </div>
     );
 
-    if (isLoading) {
-        return <Loading />
-    }
-
-    if (!session?.success) {
-        return (
-            <div className="flex justify-center items-center h-screen">
-                <h1 className="text-2xl font-bold text-red-500">
-                    {session?.message || "Failed to load session"}
+    const renderEmptyState = () => (
+        <div className="flex justify-center items-center min-h-screen px-4">
+            <div className="text-center">
+                <h1 className="text-lg sm:text-xl text-gray-600">
+                    No questions available in this session
                 </h1>
             </div>
-        )
-    }
+        </div>
+    );
 
-    if (questions.length === 0) {
-        return (
-            <div className="flex justify-center items-center h-screen">
-                <h1 className="text-xl text-gray-600">No questions available in this session</h1>
-            </div>
-        )
-    }
-
-    return (
-        <div className="container mx-auto">
-            <div className="flex flex-wrap items-center justify-between w-full gap-4 ">
-                <div className="flex items-center">
-                    <Button
-                        onClick={handlePrevQuestion}
-                        disabled={!canGoPrev || isSubmitting}
-                        variant="ghost"
-                        size="sm"
-                    >
-                        <ArrowLeft className="h-4 w-4 mr-1" />
-                        Previous
-                    </Button>
+    const renderProgressSection = () => (
+        <div className="flex items-center gap-4">
+            {/* Progress Bar */}
+            <div className="flex items-center gap-3">
+                <div className="w-20 sm:w-28 md:w-36">
+                    <Progress 
+                        value={progressPercentage} 
+                        className="h-1.5 bg-gray-100"
+                        indicatorColor="bg-primary-500"
+                    />
                 </div>
-                <div className="flex flex-col md:flex-row items-center md:gap-2 text-center sm:text-left">
-                    <div className="text-sm font-medium text-gray-700">
-                        Attempted: {attemptedQuestions.size}/{questions.length}
+                <span className="text-xs md:text-sm font-medium text-gray-600 tabular-nums">
+                    {attemptedQuestions.size}/{questions.length}
+                </span>
+            </div>
+
+            {/* Next Unattempted Button */}
+            {(hasNextUnattempted && !session?.data?.isCompleted) && (
+                <button
+                    onClick={goToNextUnattempted}
+                    disabled={isSubmitting}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <SkipForward className="h-4 w-4" />
+                    <span className="hidden sm:inline">Next Unattempted</span>
+                </button>
+            )}
+        </div>
+    );
+
+    const renderNavigationButtons = () => (
+        <div className="flex items-center gap-3">
+            <button
+                onClick={handlePrevQuestion}
+                disabled={!canGoPrev || isSubmitting}
+                className="inline-flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+                <ArrowLeft className="h-4 w-4" />
+            </button>
+            
+            <button
+                onClick={handleNextQuestion}
+                disabled={!canGoNext || isSubmitting}
+                className="inline-flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+                <ArrowRight className="h-4 w-4" />
+            </button>
+        </div>
+    );
+
+    const renderTopNavigation = () => (
+        <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+                <div className="flex items-center justify-between h-14">
+                    {/* Left Side - Progress and Controls */}
+                    <div className="flex-1 min-w-0">
+                        {renderProgressSection()}
                     </div>
-                    {(hasNextUnattempted && !session?.data?.isCompleted) && (
-                        <Button
-                            onClick={goToNextUnattempted}
-                            disabled={isSubmitting}
-                            variant="outline"
-                            className="my-2 p-1 text-primary-600 border-primary-200 hover:bg-primary-50 text-xs"
-                        >
-                            Next Unattempted
-                        </Button>
-                    )}
-                </div>
-                <div className="flex items-center">
-                    <Button
-                        onClick={handleNextQuestion}
-                        disabled={!canGoNext || isSubmitting}
-                        variant="ghost"
-                        size="sm"
-                    >
-                        Next
-                        <ArrowRight className="h-4 w-4 ml-1" />
-                    </Button>
+
+                    {/* Right Side - Navigation Buttons */}
+                    <div className="flex-shrink-0">
+                        {renderNavigationButtons()}
+                    </div>
                 </div>
             </div>
+        </div>
+    );
 
+    const renderMainContent = () => (
+        <>
             {currentQuestion && (
                 <QuestionUI
                     key={`${currentQuestion.id}-${currentQuestionIndex}`}
@@ -205,6 +262,26 @@ const AiPracticeSession = ({ sessionId }: { sessionId: string }) => {
                     isSolutionShow={(session?.data?.isCompleted || isReviewMode ) ?? false}
                 />
             )}
+        </>
+    );
+
+    // ===== MAIN RENDER =====
+    if (isLoading) {
+        return renderLoadingState();
+    }
+
+    if (!session?.success) {
+        return renderErrorState();
+    }
+
+    if (questions.length === 0) {
+        return renderEmptyState();
+    }
+
+    return (
+        <div className="min-h-screen bg-white">
+            {renderTopNavigation()}
+            {renderMainContent()}
         </div>
     );
 };
