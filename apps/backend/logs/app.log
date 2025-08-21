@@ -1422,3 +1422,15 @@ Please make sure your database server is running at `ep-wandering-bonus-a18liwbe
 2025-08-18 22:40:30 [ERROR]: Redis client error:
 2025-08-18 22:40:35 [INFO]: Redis client reconnecting...
 2025-08-18 22:40:35 [ERROR]: Redis client error:
+2025-08-19 11:24:12 [INFO]: Redis client connected
+2025-08-19 11:24:12 [INFO]: Connected to Upstash Redis
+2025-08-19 11:24:12 [INFO]: Redis client ready
+2025-08-19 11:31:47 [INFO]: Redis client disconnected
+2025-08-19 12:35:31 [INFO]: Redis client connected
+2025-08-19 12:35:31 [INFO]: Connected to Upstash Redis
+2025-08-19 12:35:32 [INFO]: Redis client ready
+2025-08-19 12:44:54 [INFO]: Redis client disconnected
+2025-08-20 03:15:26 [INFO]: Redis client connected
+2025-08-20 03:15:26 [INFO]: Connected to Upstash Redis
+2025-08-20 03:15:26 [INFO]: Redis client ready
+2025-08-20 03:22:06 [INFO]: Redis client disconnected

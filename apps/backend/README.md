@@ -171,11 +171,11 @@ src/
 ### Docker
 
 ```bash
-# Build image
-docker build -t rankmarg-backend .
+# Development (brings up Postgres, Redis, Backend)
+docker compose -f ../../docker-compose.dev.yml up --build
 
-# Run container
-docker run -p 3001:3001 --env-file .env rankmarg-backend
+# Production
+docker compose -f ../../docker-compose.prod.yml up --build -d
 ```
 
 ### Environment-Specific Configurations
