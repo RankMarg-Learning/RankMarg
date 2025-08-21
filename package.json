@@ -8,6 +8,7 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "postinstall": "npm run db:generate",
     "db:generate": "npm run db:generate --workspace=packages/db",
     "db:studio": "npm run db:studio --workspace=packages/db",
     "db:push": "npm run db:push --workspace=packages/db",

@@ -11,9 +11,7 @@
       "@repo/db": ["../../packages/db/dist"],
       "@repo/db/*": ["../../packages/db/dist/*"],
       "@repo/suggest": ["../../packages/suggest-engine/dist"],
-      "@repo/suggest/*": ["../../packages/suggest-engine/dist/*"],
-      "@repo/common-utils": ["../../packages/common-utils/dist"],
-      "@repo/common-utils/*": ["../../packages/common-utils/dist/*"]
+      "@repo/suggest/*": ["../../packages/suggest-engine/dist/*"]
     },
     "moduleResolution": "node",
     "esModuleInterop": true,
