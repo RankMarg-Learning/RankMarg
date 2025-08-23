@@ -1,6 +1,6 @@
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = [ "debian-openssl-3.0.x"]
+  binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "linux-musl"]
 }
 
 datasource db {
@@ -13,25 +13,25 @@ datasource db {
 // ============================================
 
 model User {
-  id                  String        @id @default(uuid())
+  id                  String  @id @default(uuid())
   name                String?
-  username            String?       @unique
-  email               String?       @unique
+  username            String? @unique
+  email               String? @unique
   password            String?
-  phone               String?       @unique
-  standard            String?       @db.Text
+  phone               String? @unique
+  standard            String? @db.Text
   avatar              String?
-  coins               Int           @default(0)
-  xp                  Int           @default(0)
-  grade               String        @default("C") @db.Text
-  role                String        @default("USER") @db.Text
-  provider            String        @db.Text
+  coins               Int     @default(0)
+  xp                  Int     @default(0)
+  grade               String  @default("C") @db.Text
+  role                String  @default("USER") @db.Text
+  provider            String  @db.Text
   location            String?
   targetYear          Int?
   studyHoursPerDay    Int?
-  questionsPerDay     Int           @default(5)
-  onboardingCompleted Boolean       @default(false)
-  isActive            Boolean       @default(true)
+  questionsPerDay     Int     @default(5)
+  onboardingCompleted Boolean @default(false)
+  isActive            Boolean @default(true)
 
   // Relations
   attempts          Attempt[]
@@ -108,7 +108,7 @@ model CurrentStudyTopic {
 }
 
 model Exam {
-  code                 String    @id @unique  //JEE, NEET, etc.
+  code                 String    @id @unique //JEE, NEET, etc.
   name                 String
   fullName             String?
   description          String?
@@ -149,10 +149,10 @@ model ExamSubject {
 }
 
 model ExamUser {
-  id           String                 @id @default(uuid())
+  id           String   @id @default(uuid())
   userId       String
   examCode     String
-  registeredAt DateTime               @default(now())
+  registeredAt DateTime @default(now())
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -224,13 +224,13 @@ model SubTopic {
 // ============================================
 
 model Question {
-  id            String         @id @default(uuid())
-  slug          String         @unique
+  id            String   @id @default(uuid())
+  slug          String   @unique
   title         String
-  type          String         @db.Text
-  format        String         @db.Text
+  type          String   @db.Text
+  format        String   @db.Text
   content       String
-  difficulty    Int            @default(1)
+  difficulty    Int      @default(1)
   subtopicId    String?
   topicId       String?
   subjectId     String?
@@ -239,11 +239,11 @@ model Question {
   commonMistake String?
   isNumerical   Float?
   solution      String?
-  questionTime  Int?           @default(2)
+  questionTime  Int?     @default(2)
   hint          String?
-  isPublished   Boolean?       @default(false)
+  isPublished   Boolean? @default(false)
   createdBy     String?
-  createdAt     DateTime       @default(now())
+  createdAt     DateTime @default(now())
 
   // Relations
   category          QuestionCategory[]
@@ -300,17 +300,17 @@ model QuestionInsights {
 // ============================================
 
 model Attempt {
-  id                  String       @id @default(uuid())
+  id                  String   @id @default(uuid())
   userId              String
   questionId          String
-  type                String       @db.Text
+  type                String   @db.Text
   answer              String?
-  mistake             String?      @db.Text
-  timing              Float?       @default(0)
+  mistake             String?  @db.Text
+  timing              Float?   @default(0)
   reactionTime        Float?
-  status              String       @default("NOT_ANSWERED") @db.Text
-  hintsUsed           Boolean      @default(false)
-  solvedAt            DateTime     @default(now())
+  status              String   @default("NOT_ANSWERED") @db.Text
+  hintsUsed           Boolean  @default(false)
+  solvedAt            DateTime @default(now())
   testParticipationId String?
   practiceSessionId   String?
 
@@ -363,7 +363,7 @@ model PracticeSessionQuestions {
 // ============================================
 
 model Test {
-  testId         String     @id @default(uuid())
+  testId         String    @id @default(uuid())
   title          String
   description    String?
   examCode       String?
@@ -371,17 +371,17 @@ model Test {
   totalQuestions Int?
   referenceId    String?
   testKey        String?
-  difficulty     String?    @default("MEDIUM")
+  difficulty     String?   @default("MEDIUM")
   duration       Int
-  status         String     @default("DRAFT") @db.Text
-  visibility     String     @default("PUBLIC") @db.Text
-  examType       String?    @db.Text
+  status         String    @default("DRAFT") @db.Text
+  visibility     String    @default("PUBLIC") @db.Text
+  examType       String?   @db.Text
   startTime      DateTime?
   endTime        DateTime?
   createdBy      String
   authorId       String?
-  updatedAt      DateTime?  @updatedAt
-  createdAt      DateTime   @default(now())
+  updatedAt      DateTime? @updatedAt
+  createdAt      DateTime  @default(now())
 
   // Relations
   testParticipation TestParticipation[]
@@ -419,22 +419,22 @@ model TestQuestion {
 }
 
 model TestParticipation {
-  id               String                  @id @default(uuid())
+  id               String   @id @default(uuid())
   userId           String
   testId           String
-  score            Int?                    @default(0)
-  status           String                  @default("JOIN") @db.Text
-  accuracy         Float?                  @default(0)
-  timing           Int?                    @default(0)
-  maxStreakCorrect Int?                    @default(0)
-  maxStreakWrong   Int?                    @default(0)
-  cntMinmize       Int?                    @default(0)
-  cntAnsweredMark  Int?                    @default(0)
-  cntAnswered      Int?                    @default(0)
-  cntNotAnswered   Int?                    @default(0)
-  cntMarkForReview Int?                    @default(0)
-  startTime        DateTime                @default(now())
-  endTime          DateTime                @default(now())
+  score            Int?     @default(0)
+  status           String   @default("JOIN") @db.Text
+  accuracy         Float?   @default(0)
+  timing           Int?     @default(0)
+  maxStreakCorrect Int?     @default(0)
+  maxStreakWrong   Int?     @default(0)
+  cntMinmize       Int?     @default(0)
+  cntAnsweredMark  Int?     @default(0)
+  cntAnswered      Int?     @default(0)
+  cntNotAnswered   Int?     @default(0)
+  cntMarkForReview Int?     @default(0)
+  startTime        DateTime @default(now())
+  endTime          DateTime @default(now())
 
   // Relations
   test    Test      @relation(fields: [testId], references: [testId], onDelete: Cascade)
@@ -451,12 +451,12 @@ model TestParticipation {
 // ============================================
 
 model Metric {
-  id            String     @id @default(uuid())
+  id            String   @id @default(uuid())
   userId        String
-  metricType    String     @db.Text
+  metricType    String   @db.Text
   currentValue  Int
   previousValue Int
-  updatedAt     DateTime   @updatedAt
+  updatedAt     DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -611,18 +611,18 @@ model CoinTransaction {
 // ============================================
 
 model StudySuggestion {
-  id           String           @id @default(uuid())
+  id           String    @id @default(uuid())
   userId       String
-  type         String           @db.Text
-  triggerType  String           @db.Text
+  type         String    @db.Text
+  triggerType  String    @db.Text
   suggestion   String
   category     String
   priority     Int
   displayUntil DateTime?
   actionName   String?
   actionUrl    String?
-  status       String           @default("ACTIVE") @db.Text
-  createdAt    DateTime         @default(now())
+  status       String    @default("ACTIVE") @db.Text
+  createdAt    DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -645,11 +645,11 @@ model Notification {
 }
 
 model UserNotification {
-  id             String             @id @default(uuid())
+  id             String    @id @default(uuid())
   userId         String
   notificationId String
-  status         String             @default("UNREAD") @db.Text
-  deliveredAt    DateTime           @default(now())
+  status         String    @default("UNREAD") @db.Text
+  deliveredAt    DateTime  @default(now())
   readAt         DateTime?
 
   // Relations
@@ -706,21 +706,21 @@ model PromoCode {
 }
 
 model Subscription {
-  id                String             @id @default(uuid())
-  userId            String             @unique
+  id                String    @id @default(uuid())
+  userId            String    @unique
   planId            String?
   duration          Int?
-  status            String             @default("TRIAL") @db.Text
-  provider          String             @db.Text
+  status            String    @default("TRIAL") @db.Text
+  provider          String    @db.Text
   providerId        String?
   amount            Float
-  discountApplied   Float?             @default(0)
+  discountApplied   Float?    @default(0)
   promoCodeUsed     String?
   trialEndsAt       DateTime?
   currentPeriodEnd  DateTime?
-  cancelAtPeriodEnd Boolean            @default(false)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  cancelAtPeriodEnd Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   // Relations
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -731,18 +731,18 @@ model Subscription {
 }
 
 model Payment {
-  id             String          @id @default(uuid())
+  id             String    @id @default(uuid())
   userId         String
   subscriptionId String
   amount         Float
-  currency       String          @default("INR")
-  status         String          @db.Text
-  provider       String          @db.Text
+  currency       String    @default("INR")
+  status         String    @db.Text
+  provider       String    @db.Text
   orderId        String?
   paymentMethod  String?
   paidAt         DateTime?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   // Relations
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
