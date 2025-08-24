@@ -39,6 +39,7 @@ export interface QuestionProps {
   attempts: Attempt[];
   solution?:string;
   strategy?:string;
+  commonMistake?:string;
   challenge: ChallengeProps[];
   accuracy?: number;
   questionTime?: number;
@@ -119,6 +120,7 @@ export interface QuestionTableProps {
     name: string;
   };
   strategy?: string;
+  commonMistake?: string;
 }
 
 
