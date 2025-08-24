@@ -239,8 +239,9 @@ model Question {
   commonMistake String?
   isNumerical   Float?
   solution      String?
-  questionTime  Int?     @default(2)
   hint          String?
+  strategy      String?
+  questionTime  Int?     @default(2)
   isPublished   Boolean? @default(false)
   createdBy     String?
   createdAt     DateTime @default(now())

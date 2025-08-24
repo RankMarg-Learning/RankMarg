@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { attempDataProps, QuestionProps } from '@/types';
 import Options from './Options';
-import { AlertCircle, BookOpen } from 'lucide-react';
+import { AlertCircle, BookOpen, Lightbulb, AlertTriangle } from 'lucide-react';
 import { getDifficultyLabel } from '@/utils/getDifficultyLabel';
 import Motion from './ui/motion';
 import Timer from './Timer';
@@ -171,7 +171,7 @@ const QuestionUI = ({
       title: isCorrect ? "Correct Answer" : "Incorrect Answer",
       variant: "default",
       duration: 3000,
-      className: isCorrect? "bg-gray-100 text-gray-800" : "bg-red-500 text-white",
+      className: isCorrect ? "bg-gray-100 text-gray-800" : "bg-red-500 text-white",
     })
 
     handleAttempt(attemptData);
@@ -306,16 +306,19 @@ Best regards,
       {/* Hint section */}
       {!isAnswered && isHintUsed && (
         <Motion animation='fade-in' className="w-full p-2">
-          <div className="mt-4 p-3 sm:p-4 bg-yellow-50 rounded-lg border border-yellow-100">
-            <div className="flex items-start gap-2 mb-1">
-              <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 mt-0.5" />
-              <h3 className="font-medium text-yellow-900 text-sm sm:text-base">Hint</h3>
+          <div className="mt-3 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg border border-yellow-200 p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Lightbulb className="h-4 w-4 text-yellow-600" />
+              <h3 className="font-semibold text-yellow-900 text-sm">Hint</h3>
             </div>
-            <div className="text-xs sm:text-sm text-yellow-800">
+            <div className="prose prose-sm max-w-none">
               {question?.hint ? (
                 <MarkdownRenderer content={question?.hint} className='text-sm' />
               ) : (
-                <span className='text-sm'>Hint is not available</span>
+                <div className="text-center py-2">
+                  <Lightbulb className="h-5 w-5 text-gray-400 mx-auto mb-1" />
+                  <span className='text-sm text-gray-500'>Hint is not available</span>
+                </div>
               )}
             </div>
           </div>
@@ -327,7 +330,7 @@ Best regards,
         <Motion animation="fade-in" className="w-full p-2 ">
           <Accordion type="single" collapsible defaultValue="solution" >
             <AccordionItem value="solution" >
-              <div className="mt-4 p-3 sm:p-4 bg-purple-50 rounded-lg  border-purple-100">
+              <div className="mt-3 p-3 bg-purple-50 rounded-lg border-purple-100">
                 <AccordionTrigger className="w-full text-left p-0 hover:no-underline">
                   <div className="flex items-start gap-2">
                     <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 mt-0.5" />
@@ -336,12 +339,51 @@ Best regards,
                     </h3>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="text-xs sm:text-sm text-purple-800 mt-2 transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                  {question?.solution ? (<>
-                    <h4 className="font-medium mt-1 mb-2">Step-by-Step Analysis</h4>
-                    <MarkdownRenderer content={question.solution} className="text-sm" /> </>
+                <AccordionContent className="text-xs sm:text-sm text-purple-800 mt-1 transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                  {question?.solution ? (
+                    <div className="space-y-3">
+                      {/* Step-by-Step Analysis */}
+                      <div className="bg-white rounded-lg border border-purple-200 p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <BookOpen className="h-4 w-4 text-purple-600" />
+                          <h4 className="font-semibold text-purple-900 text-sm">Step-by-Step Analysis</h4>
+                        </div>
+                        <div className="prose prose-sm max-w-none">
+                          <MarkdownRenderer content={question.solution} className="text-sm" />
+                        </div>
+                      </div>
+
+                      {/* Solving Strategy */}
+                      {question?.strategy && (
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Lightbulb className="h-4 w-4 text-blue-600" />
+                            <h4 className="font-semibold text-blue-900 text-sm">Solving Strategy</h4>
+                          </div>
+                          <div className="prose prose-sm max-w-none">
+                            <MarkdownRenderer content={question.strategy} className="text-sm" />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Common Mistakes */}
+                      {question?.commonMistake && (
+                        <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-200 p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <AlertTriangle className="h-4 w-4 text-red-600" />
+                            <h4 className="font-semibold text-red-900 text-sm">Common Mistakes to Avoid</h4>
+                          </div>
+                          <div className="prose prose-sm max-w-none">
+                            <MarkdownRenderer content={question.commonMistake} className="text-sm" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ) : (
-                    <span className="text-sm">Solution is not available</span>
+                    <div className="text-center py-4">
+                      <BookOpen className="h-6 w-6 text-gray-400 mx-auto mb-1" />
+                      <span className="text-sm text-gray-500">Solution is not available</span>
+                    </div>
                   )}
                 </AccordionContent>
               </div>

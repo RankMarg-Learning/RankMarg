@@ -38,6 +38,8 @@ export interface QuestionProps {
   isNumerical?: number;
   attempts: Attempt[];
   solution?:string;
+  strategy?:string;
+  commonMistake?:string;
   challenge: ChallengeProps[];
   accuracy?: number;
   questionTime?: number;
@@ -117,6 +119,8 @@ export interface QuestionTableProps {
   subject: {
     name: string;
   };
+  strategy?: string;
+  commonMistake?: string;
 }
 
 
