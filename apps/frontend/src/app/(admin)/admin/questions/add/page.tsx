@@ -46,10 +46,6 @@ const QuestionAdd = () => {
   return (
 
     <>
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">Add New Question</h2>
-        <p className="text-gray-500">Create a new question for your exams</p>
-      </div>
       <QuestionForm
         onSave={handleSave}
         onCancel={() => { route.push('/admin/questions'); }}

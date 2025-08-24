@@ -339,8 +339,15 @@ Best regards,
                 <AccordionContent className="text-xs sm:text-sm text-purple-800 mt-2 transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
                   {question?.solution ? (<>
                     <h4 className="font-medium mt-1 mb-2">Step-by-Step Analysis</h4>
-                    <MarkdownRenderer content={question.solution} className="text-sm" /> </>
-                  ) : (
+                    <MarkdownRenderer content={question.solution} className="text-sm" />
+                    
+                    {question?.strategy && (
+                      <>
+                        <h4 className="font-medium mt-4 mb-2">Solving Strategy</h4>
+                        <MarkdownRenderer content={question.strategy} className="text-sm" />
+                      </>
+                    )}
+                  </> ) : (
                     <span className="text-sm">Solution is not available</span>
                   )}
                 </AccordionContent>

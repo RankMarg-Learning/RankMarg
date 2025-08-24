@@ -89,6 +89,7 @@ export interface Question {
   solution?: string;
   questionTime?: number;
   hint?: string;
+  strategy?: string;
   isPublished?: boolean;
   options: Option[];
   createdBy?: string;

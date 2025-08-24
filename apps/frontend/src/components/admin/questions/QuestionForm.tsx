@@ -60,6 +60,7 @@ export const questionSchema = z.object({
   book: z.string().optional(),
   hint: z.string().optional(),
   solution: z.string().min(1, "Solution is required"),
+  strategy: z.string().optional(),
   commonMistake: z.string().optional(),
   questionTime: z.number().min(1, "Time to answer must be at least 1 minute"),
   isNumerical: z.preprocess(
@@ -706,6 +707,9 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
+                <CategoryMultiSelect control={control} errors={errors} />
+              </div>
+              <div className="space-y-1">
                 <Label htmlFor="questionTime" className="text-sm">Time to Answer (minutes)</Label>
                 <Controller
                   name="questionTime"
@@ -726,9 +730,6 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                   )}
                 />
                 {errors.questionTime && <p className="text-red-500 text-xs">{errors.questionTime.message}</p>}
-              </div>
-              <div className="space-y-1">
-                <CategoryMultiSelect control={control} errors={errors} />
               </div>
             </div>
           </div>
@@ -812,10 +813,10 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-600">
+                {/* <div className="flex items-center gap-2 text-xs text-gray-600">
                   <span>💡 Drag & drop images here or use the upload button</span>
                   {isUploading && <span className="text-primary-500">Uploading...</span>}
-                </div>
+                </div> */}
                 {errors.content && <p className="text-red-500 text-xs">{errors.content.message}</p>}
               </div>
 
@@ -847,7 +848,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
               {watch("options")?.length > 0 ? (
                 <div className="space-y-2">
                   {watch("options").map((option, index) => (
-                    <div key={index} className="border rounded p-2 bg-gray-50">
+                    <div key={index} className="border rounded p-2 ">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <Label className="text-sm">Option {index + 1}</Label>
@@ -866,18 +867,18 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                         </div>
 
                         <div className="relative">
-                          <Textarea
-                            ref={optionRefs[index]}
+                          <Input
+                            // ref={optionRefs[index]}
                             value={option.content}
                             onChange={(e) => handleOptionContentChange(index, e.target.value)}
                             placeholder={`Enter option ${index + 1} content...`}
-                            rows={1}
+                            // rows={1}
                             className="border border-gray-300 transition-all duration-200"
                             onDragOver={(e) => handleOptionDragOver(e, index)}
                             onDragLeave={(e) => handleOptionDragLeave(e, index)}
                             onDrop={(e) => handleOptionDrop(e, index)}
                           />
-                          <div className="absolute top-2 right-2">
+                          <div className="absolute top-1 right-1">
                             <input
                               type="file"
                               id={`image-upload-option-${index}`}
@@ -894,23 +895,23 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                             />
                             <label
                               htmlFor={`image-upload-option-${index}`}
-                              className={`cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-md transition-colors ${isUploading
+                              className={`cursor-pointer inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors ${isUploading
                                 ? "bg-gray-400 cursor-not-allowed"
                                 : "bg-primary-500 hover:bg-primary-600"
                                 } text-white`}
                               title={isUploading ? "Uploading..." : "Upload image"}
                             >
                               {isUploading ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="h-3 w-3 animate-spin" />
                               ) : (
-                                <Upload className="h-4 w-4" />
+                                <Upload className="h-3 w-3" />
                               )}
                             </label>
                           </div>
                         </div>
 
-                        <div className="border rounded p-2 bg-white">
-                          <Label className="text-xs text-gray-600 mb-1 block">Preview:</Label>
+                        <div className=" rounded p-1 flex items-center gap-2 bg-gray-50">
+                          <Label className="text-xs text-gray-600  block font-bold ">Preview:</Label>
                           <MarkdownRenderer content={option.content} className="text-sm" />
                         </div>
 
@@ -1009,6 +1010,17 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-1">
+                <Label htmlFor="strategy" className="text-sm">Strategy</Label>
+                <Textarea
+                  id="strategy"
+                  {...register("strategy")}
+                  placeholder="Provide solving strategy or approach for this question"
+                  rows={2}
+                  className={`border ${errors.strategy ? "border-red-500" : "border-gray-300"}`}
+                />
+                {errors.strategy && <p className="text-red-500 text-xs">{errors.strategy.message}</p>}
+              </div>
               <div className="space-y-1">
                 <Label htmlFor="hint" className="text-sm">Hint</Label>
                 <Textarea
@@ -1021,17 +1033,18 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                 {errors.hint && <p className="text-red-500 text-xs">{errors.hint.message}</p>}
               </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="commonMistake" className="text-sm">Common Mistakes</Label>
-                <Textarea
-                  id="commonMistake"
-                  {...register("commonMistake")}
-                  placeholder="Common errors students make with this question"
-                  rows={2}
-                  className={`border ${errors.commonMistake ? "border-red-500" : "border-gray-300"}`}
-                />
-                {errors.commonMistake && <p className="text-red-500 text-xs">{errors.commonMistake.message}</p>}
-              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="commonMistake" className="text-sm">Common Mistakes</Label>
+              <Textarea
+                id="commonMistake"
+                {...register("commonMistake")}
+                placeholder="Common errors students make with this question"
+                rows={2}
+                className={`border ${errors.commonMistake ? "border-red-500" : "border-gray-300"}`}
+              />
+              {errors.commonMistake && <p className="text-red-500 text-xs">{errors.commonMistake.message}</p>}
             </div>
           </div>
 

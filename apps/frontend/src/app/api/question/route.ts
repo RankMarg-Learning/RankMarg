@@ -167,6 +167,7 @@ export async function POST(req: Request) {
         book:questionData.book,
         hint: questionData.hint,
         solution: questionData.solution,
+        strategy: questionData.strategy,
         commonMistake:questionData.commonMistake,
         questionTime: (questionData.questionTime)*60,
         isNumerical: questionData.isNumerical,
