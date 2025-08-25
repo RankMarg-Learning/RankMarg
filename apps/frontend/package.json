@@ -5,7 +5,9 @@
   "scripts": {
     "seed": "ts-node --transpile-only src/seed/index.ts",
     "dev": "next dev",
+    "prebuild": "npm run build:db",
     "build": "next build",
+    "build:db": "cd ../../packages/db && npm run build",
     "start": "next start",
     "lint": "next lint"
   },
