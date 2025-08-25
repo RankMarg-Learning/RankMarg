@@ -105,7 +105,7 @@ export class CronManager {
           }
         },
         {
-          timezone: "UTC",
+          timezone: "Asia/Kolkata",
         }
       );
 

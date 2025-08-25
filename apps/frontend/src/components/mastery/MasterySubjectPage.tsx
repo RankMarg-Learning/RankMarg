@@ -1,8 +1,8 @@
 "use client"
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { Badge } from '../ui/badge';
-import { CheckCircle, Target, BookOpen, Award, TrendingUp } from 'lucide-react';
+import { CheckCircle, Target, BookOpen, Award, TrendingUp, Filter, SortAsc, SortDesc } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Progress } from '../ui/progress';
 import { useQuery } from '@tanstack/react-query';
@@ -10,8 +10,16 @@ import { getSubjectMastery } from '@/services/mastery.service';
 import { SubjectMasteryResponseProps } from '@/types';
 import { SubjectBackgroundColor } from '@/constant/SubjectColorCode';
 import MasterySubjectSkeleton from '../skeleton/subject.mastery.skeleton';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "../ui/select";
+import { DateFormator } from '@/utils/dateFormator';
 
-const getMasteryColor = (mastery) => {
+const getMasteryColor = (mastery: number) => {
     if (mastery >= 85) return {
         badge: "text-emerald-700 bg-emerald-50 border-emerald-200 font-semibold",
         bg: "bg-emerald-500",
@@ -39,7 +47,7 @@ const getMasteryColor = (mastery) => {
     };
 };
 
-const getMasteryLabel = (mastery) => {
+const getMasteryLabel = (mastery: number): string => {
     if (mastery >= 85) return "Excellence";
     if (mastery >= 70) return "Good Grasp";
     if (mastery >= 60) return "On Track";
@@ -47,7 +55,7 @@ const getMasteryLabel = (mastery) => {
     return "Focus Area";
 };
 
-const getMasteryMessage = (mastery) => {
+const getMasteryMessage = (mastery: number): string => {
     if (mastery >= 85) return "Keep it up! You're mastering this.";
     if (mastery >= 70) return "Good progress! Continue practicing.";
     if (mastery >= 60) return "You're on the right track!";
@@ -55,7 +63,7 @@ const getMasteryMessage = (mastery) => {
     return "Focus here to improve your rank.";
 };
 
-const getMasteryIcon = (mastery) => {
+const getMasteryIcon = (mastery: number) => {
     if (mastery >= 85) return <Award className="h-4 w-4" />;
     if (mastery >= 70) return <CheckCircle className="h-4 w-4" />;
     if (mastery >= 60) return <TrendingUp className="h-4 w-4" />;
@@ -63,26 +71,70 @@ const getMasteryIcon = (mastery) => {
     return <Target className="h-4 w-4" />;
 };
 
-const MasterySubjectPage = ({ subjectId }) => {
-    const { data: subjectMastery, isLoading } = useQuery<{data:SubjectMasteryResponseProps,success:true,message:string}>({
-        queryKey: ['subjectMastery', subjectId],
-        queryFn: () => getSubjectMastery(subjectId),
+interface MasterySubjectPageProps {
+    subjectId: string;
+}
+
+const MasterySubjectPage = ({ subjectId }: MasterySubjectPageProps) => {
+    const [sortBy, setSortBy] = useState('index');
+
+    const { data: subjectMastery, isLoading, error, refetch } = useQuery<{data:SubjectMasteryResponseProps,success:true,message:string}>({
+        queryKey: ['subjectMastery', subjectId, sortBy],
+        queryFn: () => getSubjectMastery(subjectId, sortBy),
         enabled: !!subjectId,
         staleTime: 5 * 60 * 1000, 
     });
 
-    console.log(subjectMastery)
-    const { overallMastery, topics,  indicatorColorClass, masteryColors } = useMemo(() => {
+  
+
+    const { overallMastery, topics, indicatorColorClass, masteryColors } = useMemo(() => {
         const overallMastery = subjectMastery?.data?.overallMastery || 0;
         const topics = subjectMastery?.data?.topics || [];
         const subjectName = subjectMastery?.data?.subject?.name?.toLowerCase() ?? 'default';
         const indicatorColorClass = SubjectBackgroundColor[subjectName] ?? SubjectBackgroundColor.default;
         const masteryColors = getMasteryColor(overallMastery);
         
+        
         return { overallMastery, topics, subjectName, indicatorColorClass, masteryColors };
     }, [subjectMastery]);
 
+    const handleSortChange = (value: string) => {
+        setSortBy(value);
+    };
+
     if (isLoading) return <MasterySubjectSkeleton/>
+
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <h3 className="text-red-800 font-medium">Error Loading Mastery Data</h3>
+                    <p className="text-red-600 text-sm mt-1">
+                        {error instanceof Error ? error.message : 'An unexpected error occurred'}
+                    </p>
+                    <button 
+                        onClick={() => refetch()}
+                        className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!subjectMastery?.data) {
+        return (
+            <div className="space-y-6">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h3 className="text-yellow-800 font-medium">No Data Available</h3>
+                    <p className="text-yellow-600 text-sm mt-1">
+                        No mastery data found for this subject.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     const renderSubjectHeader = () => (
         <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
@@ -119,6 +171,53 @@ const MasterySubjectPage = ({ subjectId }) => {
         </div>
     );
 
+    const renderFilterSection = () => (
+        <div className="bg-white rounded-lg shadow-sm border p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium text-gray-700">Sort Topics</span>
+                    {isLoading && (
+                        <span className="text-xs text-blue-600 animate-pulse">Loading...</span>
+                    )}
+                </div>
+                <Select value={sortBy} onValueChange={handleSortChange} disabled={isLoading}>
+                    <SelectTrigger className="w-full sm:w-[200px]">
+                        <SelectValue placeholder="Sort by..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="index">
+                            <div className="flex items-center gap-2">
+                                <span>By Index (Default)</span>
+                            </div>
+                        </SelectItem>
+                        <SelectItem value="mastery-asc">
+                            <div className="flex items-center gap-2">
+                                <SortAsc className="h-3 w-3" />
+                                <span>Mastery (Low to High)</span>
+                            </div>
+                        </SelectItem>
+                        <SelectItem value="mastery-desc">
+                            <div className="flex items-center gap-2">
+                                <SortDesc className="h-3 w-3" />
+                                <span>Mastery (High to Low)</span>
+                            </div>
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+            {topics.length > 0 && (
+                <div className="mt-3 text-xs text-gray-500">
+                    Showing {topics.length} topics • Current sort: {
+                        sortBy === 'index' ? 'By Index' : 
+                        sortBy === 'mastery-asc' ? 'Mastery (Low to High)' : 
+                        'Mastery (High to Low)'
+                    }
+                </div>
+            )}
+        </div>
+    );
+
     const renderStudyTips = () => (
         <div className="bg-white rounded-lg shadow-sm border p-4">
             <h3 className="font-semibold text-gray-800 mb-2">Study Tips</h3>
@@ -142,6 +241,7 @@ const MasterySubjectPage = ({ subjectId }) => {
     return (
         <div className="space-y-6 ">
             {renderSubjectHeader()}
+            {renderFilterSection()}
 
             {/* Topics accordion */}
             <Accordion type="single" collapsible className="w-full space-y-3">
@@ -161,7 +261,12 @@ const MasterySubjectPage = ({ subjectId }) => {
                                         {topic.mastery === 0 ? "00" : topic.mastery < 10 ? `0${Math.round(topic.mastery)}` : Math.round(topic.mastery)}
                                         </div>
                                         <div className="text-left">
-                                            <span className="font-semibold text-gray-800 block max-w-[120px] md:max-w-full truncate">{topic.name}</span>
+                                            <span className="font-semibold text-gray-800 block max-w-[120px] md:max-w-full truncate">
+                                                {topic.name}
+                                                {topic.orderIndex > 0 && (
+                                                    <span className="text-xs text-gray-400 ml-2">#{topic.orderIndex}</span>
+                                                )}
+                                            </span>
                                             <p className="text-xs text-gray-500 hidden sm:block">{getMasteryMessage(topic.mastery)}</p>
                                         </div>
                                     </div>
@@ -186,7 +291,12 @@ const MasterySubjectPage = ({ subjectId }) => {
                                                         <span className={`text-${subtopicColors.bg.replace('bg-', '')}`}>
                                                             {getMasteryIcon(subtopic.mastery)}
                                                         </span>
-                                                        <span className="font-medium text-gray-700">{subtopic.name}</span>
+                                                        <span className="font-medium text-gray-700">
+                                                            {subtopic.name}
+                                                            {subtopic.orderIndex > 0 && (
+                                                                <span className="text-xs text-gray-400 ml-2">#{subtopic.orderIndex}</span>
+                                                            )}
+                                                        </span>
                                                     </div>
                                                     <Badge className={`${subtopicColors.badge} self-start sm:self-auto`}>
                                                         {subtopic.mastery}%
@@ -202,7 +312,7 @@ const MasterySubjectPage = ({ subjectId }) => {
 
                                                 <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-500 mt-2">
                                                     {subtopic.lastPracticed && (
-                                                        <span>Last practiced: {subtopic.lastPracticed}</span>
+                                                        <span>Last practiced: {DateFormator(subtopic.lastPracticed, 'date')}</span>
                                                     )}
                                                     <span className="text-xs italic">{getMasteryMessage(subtopic.mastery)}</span>
                                                 </div>
