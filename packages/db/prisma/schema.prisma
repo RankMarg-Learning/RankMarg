@@ -59,12 +59,14 @@ model User {
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 
-  @@index([id])
-  @@index([username])
   @@index([email])
+  @@index([username])
   @@index([phone])
+  @@index([role])
+  @@index([isActive])
+  @@index([createdAt])
+  @@index([id])
   @@index([targetYear])
-  @@index([xp])
 }
 
 model UserPerformance {
@@ -88,6 +90,9 @@ model UserPerformance {
 
   @@index([accuracy])
   @@index([streak])
+  @@index([highestScore])
+  @@index([lastExamDate])
+  @@index([userId])
 }
 
 model CurrentStudyTopic {
@@ -104,7 +109,9 @@ model CurrentStudyTopic {
   topic   Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
 
   @@unique([userId, subjectId, topicId])
-  @@index([userId, isCompleted, startedAt])
+  @@index([userId, isCurrent])
+  @@index([userId, isCompleted])
+  @@index([userId, isCompleted, isCurrent])
 }
 
 model Exam {
@@ -126,13 +133,14 @@ model Exam {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
-  // Relations
   examSubjects  ExamSubject[]
   registrations ExamUser[]
 
-  @@index([name])
   @@index([code])
+  @@index([isActive])
   @@index([examDate])
+  @@index([registrationStartAt])
+  @@index([registrationEndAt])
 }
 
 model ExamSubject {
@@ -140,12 +148,12 @@ model ExamSubject {
   subjectId String
   weightage Float  @default(0)
 
-  // Relations
   exam    Exam    @relation(fields: [examCode], references: [code], onDelete: Cascade)
   subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   @@id([examCode, subjectId])
   @@index([subjectId])
+  @@index([examCode])
 }
 
 model ExamUser {
@@ -154,13 +162,12 @@ model ExamUser {
   examCode     String
   registeredAt DateTime @default(now())
 
-  // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   exam Exam @relation(fields: [examCode], references: [code], onDelete: Cascade)
 
   @@unique([userId, examCode])
   @@index([examCode])
-  @@index([userId])
+  @@index([registeredAt])
 }
 
 model Subject {
@@ -168,7 +175,6 @@ model Subject {
   name      String
   shortName String?
 
-  // Relations
   topics            Topic[]
   questions         Question[]
   subjectMastery    SubjectMastery[]
@@ -178,6 +184,8 @@ model Subject {
 
   @@unique([name])
   @@unique([shortName])
+  @@index([name])
+  @@index([id])
 }
 
 model Topic {
@@ -189,7 +197,6 @@ model Topic {
   orderIndex       Int     @default(0)
   estimatedMinutes Int?
 
-  // Relations
   subject           Subject             @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   subTopics         SubTopic[]
   questions         Question[]
@@ -199,6 +206,8 @@ model Topic {
   @@unique([name, subjectId])
   @@unique([slug, subjectId])
   @@index([subjectId, orderIndex])
+  @@index([slug])
+  @@index([id])
 }
 
 model SubTopic {
@@ -209,7 +218,6 @@ model SubTopic {
   orderIndex       Int     @default(0)
   estimatedMinutes Int?
 
-  // Relations
   topic           Topic             @relation(fields: [topicId], references: [id], onDelete: Cascade)
   questions       Question[]
   subtopicMastery SubtopicMastery[]
@@ -217,6 +225,7 @@ model SubTopic {
   @@unique([name, topicId])
   @@unique([slug, topicId])
   @@index([topicId, orderIndex])
+  @@index([id])
 }
 
 // ============================================
@@ -246,7 +255,6 @@ model Question {
   createdBy     String?
   createdAt     DateTime @default(now())
 
-  // Relations
   category          QuestionCategory[]
   questionInsights  QuestionInsights?
   attempts          Attempt[]
@@ -262,6 +270,13 @@ model Question {
   @@index([subtopicId])
   @@index([isPublished])
   @@index([difficulty])
+  @@index([type])
+  @@index([pyqYear])
+  @@index([createdAt])
+  @@index([subjectId, difficulty])
+  @@index([subjectId, isPublished])
+  @@index([topicId, difficulty])
+  @@index([topicId, isPublished])
 }
 
 model QuestionCategory {
@@ -271,6 +286,7 @@ model QuestionCategory {
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@id([questionId, category])
+  @@index([category])
 }
 
 model Option {
@@ -280,6 +296,8 @@ model Option {
   questionId String
 
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([isCorrect])
 }
 
 model QuestionInsights {
@@ -294,6 +312,9 @@ model QuestionInsights {
   updatedAt      DateTime @updatedAt
 
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([accuracy])
+  @@index([totalAttempts])
 }
 
 // ============================================
@@ -315,16 +336,22 @@ model Attempt {
   testParticipationId String?
   practiceSessionId   String?
 
-  // Relations
   question          Question           @relation(fields: [questionId], references: [id], onDelete: Restrict)
   user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   testParticipation TestParticipation? @relation("TestSubmissionAttempts", fields: [testParticipationId], references: [id])
   practiceSession   PracticeSession?   @relation("RevisionSessionAttempts", references: [id], fields: [practiceSessionId])
 
   @@index([userId, questionId])
+  @@index([userId, type, solvedAt])
+  @@index([userId, status])
+  @@index([solvedAt])
   @@index([testParticipationId])
   @@index([practiceSessionId])
-  @@index([userId, type, solvedAt])
+  @@index([questionId])
+  @@index([status])
+  @@index([userId, timing])
+  @@index([userId, status, solvedAt])
+  @@index([practiceSessionId, type, solvedAt])
 }
 
 model PracticeSession {
@@ -338,12 +365,13 @@ model PracticeSession {
   duration        Int?
   createdAt       DateTime  @default(now())
 
-  // Relations
   user      User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions PracticeSessionQuestions[]
   attempts  Attempt[]                  @relation("RevisionSessionAttempts")
 
   @@index([userId, createdAt])
+  @@index([userId, isCompleted])
+  @@index([subjectId])
 }
 
 model PracticeSessionQuestions {
@@ -355,7 +383,6 @@ model PracticeSessionQuestions {
   practiceSession PracticeSession @relation(fields: [practiceSessionId], references: [id], onDelete: Cascade)
 
   @@unique([practiceSessionId, questionId])
-  @@index([questionId])
   @@index([practiceSessionId])
 }
 
@@ -384,14 +411,20 @@ model Test {
   updatedAt      DateTime? @updatedAt
   createdAt      DateTime  @default(now())
 
-  // Relations
   testParticipation TestParticipation[]
   testSection       TestSection[]
   creator           User                @relation("TestsCreated", fields: [createdBy], references: [id], onDelete: Cascade)
   author            User?               @relation("TestsAuthored", fields: [authorId], references: [id], onDelete: SetNull)
 
+  @@index([status])
+  @@index([visibility])
+  @@index([examCode])
+  @@index([startTime])
+  @@index([endTime])
   @@index([createdBy])
-  @@index([authorId])
+  @@index([createdAt])
+  @@index([status, startTime])
+  @@index([visibility, status])
 }
 
 model TestSection {
@@ -403,20 +436,21 @@ model TestSection {
   correctMarks  Float?
   negativeMarks Float?
 
-  // Relations
   test         Test           @relation(fields: [testId], references: [testId], onDelete: Cascade)
   testQuestion TestQuestion[]
+
+  @@index([testId])
 }
 
 model TestQuestion {
   questionId    String
   testSectionId String
 
-  // Relations
   question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
   testSection TestSection? @relation(fields: [testSectionId], references: [id], onDelete: Cascade)
 
   @@id([testSectionId, questionId])
+  @@index([testSectionId])
 }
 
 model TestParticipation {
@@ -437,7 +471,6 @@ model TestParticipation {
   startTime        DateTime @default(now())
   endTime          DateTime @default(now())
 
-  // Relations
   test    Test      @relation(fields: [testId], references: [testId], onDelete: Cascade)
   user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   attempt Attempt[] @relation("TestSubmissionAttempts")
@@ -445,6 +478,12 @@ model TestParticipation {
   @@unique([userId, testId])
   @@index([testId])
   @@index([userId])
+  @@index([status])
+  @@index([score])
+  @@index([startTime])
+  @@index([userId, status])
+  @@index([testId, status])
+  @@index([userId, startTime])
 }
 
 // ============================================
@@ -462,6 +501,7 @@ model Metric {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, metricType])
+  @@index([userId, metricType])
 }
 
 model SubjectMastery {
@@ -472,11 +512,12 @@ model SubjectMastery {
   totalAttempts   Int    @default(0)
   correctAttempts Int    @default(0)
 
-  // Relations
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   @@unique([userId, subjectId])
+  @@index([userId, masteryLevel])
+  @@index([subjectId, masteryLevel])
 }
 
 model TopicMastery {
@@ -488,12 +529,14 @@ model TopicMastery {
   totalAttempts   Int    @default(0)
   correctAttempts Int    @default(0)
 
-  // Relations
   topic          Topic           @relation(fields: [topicId], references: [id], onDelete: Cascade)
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   reviewSchedule ReviewSchedule?
 
   @@unique([userId, topicId])
+  @@index([userId, masteryLevel])
+  @@index([topicId, masteryLevel])
+  @@index([userId, strengthIndex])
 }
 
 model SubtopicMastery {
@@ -506,11 +549,12 @@ model SubtopicMastery {
   totalAttempts   Int    @default(0)
   correctAttempts Int    @default(0)
 
-  // Relations
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   subtopic SubTopic @relation(fields: [subtopicId], references: [id], onDelete: Cascade)
 
   @@unique([userId, subtopicId])
+  @@index([userId, masteryLevel])
+  @@index([subtopicId, masteryLevel])
 }
 
 model ReviewSchedule {
@@ -523,11 +567,12 @@ model ReviewSchedule {
   retentionStrength Float
   completedReviews  Int      @default(0)
 
-  // Relations
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   topicMastery TopicMastery @relation(fields: [userId, topicId], references: [userId, topicId], onDelete: Cascade)
 
   @@unique([userId, topicId])
+  @@index([nextReviewAt])
+  @@index([userId, nextReviewAt])
 }
 
 model MasteryHistory {
@@ -541,11 +586,11 @@ model MasteryHistory {
   totalTimeSpent  Float    @default(0) // in minutes or seconds
   recordedAt      DateTime @default(now())
 
-  // Relations
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   subject Subject? @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   @@index([userId, subjectId, recordedAt])
+  @@index([userId, recordedAt])
 }
 
 // ============================================
@@ -565,8 +610,9 @@ model Achievement {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  // Relations
   userAchievements UserAchievement[]
+
+  @@index([type])
 }
 
 model UserAchievement {
@@ -575,7 +621,6 @@ model UserAchievement {
   achievementId String
   unlockedAt    DateTime @default(now())
 
-  // Relations
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
 
@@ -592,6 +637,9 @@ model activity {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([type])
 }
 
 model CoinTransaction {
@@ -605,6 +653,7 @@ model CoinTransaction {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+  @@index([type])
 }
 
 // ============================================
@@ -628,7 +677,8 @@ model StudySuggestion {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status, createdAt])
-  @@index([userId, triggerType])
+  @@index([userId, type])
+  @@index([displayUntil])
 }
 
 model Notification {
@@ -639,7 +689,6 @@ model Notification {
   scheduledAt DateTime?
   createdAt   DateTime  @default(now())
 
-  // Relations
   userNotifications UserNotification[]
 
   @@index([type, createdAt])
@@ -653,12 +702,12 @@ model UserNotification {
   deliveredAt    DateTime  @default(now())
   readAt         DateTime?
 
-  // Relations
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 
   @@unique([userId, notificationId])
   @@index([userId, status])
+  @@index([deliveredAt])
 }
 
 // ============================================
@@ -677,16 +726,13 @@ model Plan {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relations
   subscriptions Subscription[]
   promoCodes    PromoCode[]    @relation("PlanPromoCodes")
 
   @@unique([id, name])
   @@index([isActive])
-  @@index([name, duration])
-  @@index([name])
-  @@index([id])
-  @@index([name, duration, isActive])
+  @@index([amount])
+  @@index([duration])
 }
 
 model PromoCode {
@@ -702,8 +748,12 @@ model PromoCode {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  // Relations
   applicablePlans Plan[] @relation("PlanPromoCodes")
+
+  @@index([code])
+  @@index([isActive])
+  @@index([validUntil])
+  @@index([isActive, validUntil])
 }
 
 model Subscription {
@@ -723,12 +773,15 @@ model Subscription {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  // Relations
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   plan     Plan?     @relation(fields: [planId], references: [id])
   payments Payment[]
 
-  @@index([planId])
+  @@index([status])
+  @@index([currentPeriodEnd])
+  @@index([trialEndsAt])
+  @@index([userId, status])
+  @@index([status, currentPeriodEnd])
 }
 
 model Payment {
@@ -745,10 +798,13 @@ model Payment {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  // Relations
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
+  @@index([status])
   @@index([userId])
   @@index([subscriptionId])
+  @@index([createdAt])
+  @@index([userId, status])
+  @@index([subscriptionId, status])
 }

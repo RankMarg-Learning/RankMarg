@@ -1,19 +1,18 @@
 import api from '@/utils/api'
 import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/queryKeys';
+import { getQueryConfig } from '@/lib/queryConfig';
 
-
-const fetchTests = (endpoint: string) => async () => {
-    const { data } = await api.get(endpoint)
+const fetchHomeData = async () => {
+    const { data } = await api.get('/v.1.0/home?subtopicsCount=3&sessionsCount=3')
     return data
 }
 
 export function useHome() {
-    const version =  '/v.1.0'
-
-    const { data, isLoading, isError } = useQuery({
-        queryKey: ['homeCombined'],
-        queryFn: fetchTests(`${version}/home?subtopicsCount=3&sessionsCount=3`),
-        staleTime: 60_000,
+    const { data, isLoading, isError, error } = useQuery({
+        queryKey: queryKeys.dashboard.home(),
+        queryFn: fetchHomeData,
+        ...getQueryConfig('DYNAMIC'),
     });
 
     const payload = data?.data;
@@ -24,5 +23,6 @@ export function useHome() {
         session: payload?.sessions,
         isLoading,
         isError,
+        error,
     }
 }

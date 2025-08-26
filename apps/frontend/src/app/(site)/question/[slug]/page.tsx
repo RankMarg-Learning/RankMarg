@@ -5,6 +5,8 @@ import QuestionUISkeleton from '@/components/QuestionUISkeleton';
 import { attempDataProps } from '@/types';
 import { getQuestionBySlug } from '@/services/question.service';
 import { addAttempt } from '@/services';
+import { queryKeys } from '@/lib/queryKeys';
+import { getQueryConfig } from '@/lib/queryConfig';
 
 
 
@@ -13,8 +15,9 @@ const QuestionPage = ({ params }: { params: { slug: string } }) => {
 
   const { slug } = params;
   const { data: question, isLoading } = useQuery({
-    queryKey: ["question", slug],
+    queryKey: queryKeys.questions.bySlug(slug),
     queryFn: () => getQuestionBySlug(slug),
+    ...getQueryConfig('DYNAMIC'),
   });
 
 

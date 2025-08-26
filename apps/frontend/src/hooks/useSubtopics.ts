@@ -5,14 +5,19 @@ import {
   updateSubtopic,
   deleteSubtopic,
 } from '../services/subtopic.service';
+import { queryKeys } from '@/lib/queryKeys';
+import { getQueryConfig } from '@/lib/queryConfig';
+import { useQueryError } from './useQueryError';
 
 export const useSubtopics = (topicId?: string) => {
   const queryClient = useQueryClient();
+  const { handleMutationError } = useQueryError();
 
-  const { data: subtopics = [], isLoading } = useQuery({
-    queryKey: topicId ? ['subtopics', topicId] : ['subtopics', 'all'],
+  const { data: subtopics = [], isLoading, error } = useQuery({
+    queryKey: topicId ? queryKeys.subtopics.byTopic(topicId) : queryKeys.subtopics.all,
     queryFn: () => getSubtopics(topicId),
-    enabled: true, // Always enable the query
+    enabled: true, 
+    ...getQueryConfig('STATIC'),
   });
 
   const saveSubTopic = useMutation({
@@ -32,17 +37,19 @@ export const useSubtopics = (topicId?: string) => {
     },
     onSuccess: () => {
       // Invalidate both specific and all subtopics queries
-      queryClient.invalidateQueries({ queryKey: ['subtopics'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.subtopics.all });
     },
+    onError: (error) => handleMutationError(error, 'saveSubTopic'),
   });
 
   const removeSubTopic = useMutation({
     mutationFn: deleteSubtopic,
     onSuccess: () => {
       // Invalidate both specific and all subtopics queries
-      queryClient.invalidateQueries({ queryKey: ['subtopics'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.subtopics.all });
     },
+    onError: (error) => handleMutationError(error, 'removeSubTopic'),
   });
 
-  return { subtopics, isLoading, saveSubTopic, removeSubTopic };
+  return { subtopics, isLoading, error, saveSubTopic, removeSubTopic };
 };

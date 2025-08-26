@@ -4,10 +4,28 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '../../.env' });
 
 const nextConfig = {
-    // Required to produce .next/standalone used by the Docker runtime image
     output: 'standalone',
     reactStrictMode: true,
     transpilePackages: ["@repo/db", "@repo/suggest"],
+    experimental: {
+        optimizePackageImports: [
+            '@radix-ui/react-icons',
+            'lucide-react',
+            'recharts',
+            'framer-motion',
+            'date-fns',
+            'react-hook-form',
+            'zod'
+        ],
+    },
+    webpack: (config, { dev, isServer }) => {
+        config.optimization = {
+            ...config.optimization,
+            usedExports: true,
+            sideEffects: false,
+        };
+        return config;
+    },
     images: {
         domains: [
             "lh3.googleusercontent.com",
@@ -15,6 +33,41 @@ const nextConfig = {
             "utfs.io",
             "res.cloudinary.com"
         ],
+        formats: ['image/webp', 'image/avif'],
+        deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+        imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    },
+    compress: true,
+    poweredByHeader: false,
+    async headers() {
+        return [
+            {
+                source: '/(.*)',
+                headers: [
+                    {
+                        key: 'X-Content-Type-Options',
+                        value: 'nosniff',
+                    },
+                    {
+                        key: 'X-Frame-Options',
+                        value: 'DENY',
+                    },
+                    {
+                        key: 'X-XSS-Protection',
+                        value: '1; mode=block',
+                    },
+                ],
+            },
+            {
+                source: '/static/(.*)',
+                headers: [
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=31536000, immutable',
+                    },
+                ],
+            },
+        ];
     },
 };
 
