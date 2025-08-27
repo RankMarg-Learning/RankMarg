@@ -57,7 +57,10 @@ export async function GET(request: Request) {
                 select: { accuracy: true, avgScore: true, totalAttempts: true, streak: true }
             }),
             prisma.currentStudyTopic.findMany({
-                where: { userId, isCompleted: false },
+                where: { 
+                    userId,
+                    isCurrent: true
+                },
                 orderBy: { startedAt: 'desc' },
                 select: {
                     id: true,
@@ -128,24 +131,85 @@ export async function GET(request: Request) {
             ? (user.studyHoursPerDay * 60 * 60 / 6)
             : (defaultStudyHours * 60 * 60);
 
-        // Top revision subtopics from today's sessions
-        const subtopicFrequency = new Map<string, { name: string, count: number }>();
+        // Top revision subtopics from today's sessions grouped by subject
+        const subtopicFrequency = new Map<string, { 
+            name: string, 
+            count: number, 
+            subjectId: string, 
+            subjectName: string,
+            topicId: string,
+            topicName: string 
+        }>();
+        
         for (const s of rawSessions || []) {
+            const subjectName = subjectMap[s.subjectId] || 'Unknown Subject';
             for (const q of s.questions || []) {
                 const st = q.question?.subTopic;
-                if (st?.id && st?.name) {
-                    if (subtopicFrequency.has(st.id)) {
-                        subtopicFrequency.get(st.id)!.count += 1;
+                const topic = q.question?.topic;
+                if (st?.id && st?.name && topic?.id && topic?.name) {
+                    const key = st.id;
+                    if (subtopicFrequency.has(key)) {
+                        subtopicFrequency.get(key)!.count += 1;
                     } else {
-                        subtopicFrequency.set(st.id, { name: st.name, count: 1 });
+                        subtopicFrequency.set(key, { 
+                            name: st.name, 
+                            count: 1,
+                            subjectId: s.subjectId,
+                            subjectName: subjectName,
+                            topicId: topic.id,
+                            topicName: topic.name
+                        });
                     }
                 }
             }
         }
-        const revisionSubtopics = Array.from(subtopicFrequency.values())
+        
+        // Group by subject
+        const subtopicsBySubject = new Map<string, {
+            subjectId: string;
+            subjectName: string;
+            subtopics: Array<{
+                id: string;
+                name: string;
+                count: number;
+                topicId: string;
+                topicName: string;
+            }>;
+        }>();
+        
+        for (const [subtopicId, data] of Array.from(subtopicFrequency.entries())) {
+            const subjectKey = data.subjectId;
+            if (!subtopicsBySubject.has(subjectKey)) {
+                subtopicsBySubject.set(subjectKey, {
+                    subjectId: data.subjectId,
+                    subjectName: data.subjectName,
+                    subtopics: []
+                });
+            }
+            subtopicsBySubject.get(subjectKey)!.subtopics.push({
+                id: subtopicId,
+                name: data.name,
+                count: data.count,
+                topicId: data.topicId,
+                topicName: data.topicName
+            });
+        }
+        
+        // Sort subtopics by count within each subject and take top ones
+        for (const subject of Array.from(subtopicsBySubject.values())) {
+            subject.subtopics.sort((a, b) => b.count - a.count);
+        }
+        
+        // Get top subtopics for display (first 3-4 from all subjects combined)
+        const allSubtopics = Array.from(subtopicFrequency.values())
             .sort((a, b) => b.count - a.count)
             .slice(0, subtopicsCount)
             .map(s => s.name);
+        
+        const revisionSubtopics = {
+            display: allSubtopics,
+            grouped: Array.from(subtopicsBySubject.values())
+        };
 
         // Performance and level
         const safePerformance = {
@@ -156,8 +220,7 @@ export async function GET(request: Request) {
         };
         const level = calculateUserLevel(safePerformance);
 
-        // Current studies - unique subjects (latest by startedAt)
-        const subjectSeen = new Set<string>();
+        // Current studies - prioritize current topics and show all topics
         const currentStudies = [] as Array<{
             id: string;
             isCurrent: boolean;
@@ -166,10 +229,8 @@ export async function GET(request: Request) {
             subjectName: string;
             topicName: string;
         }>;
+        
         for (const item of rawCurrentTopics || []) {
-            const sId = item.subject?.id;
-            if (!sId || subjectSeen.has(sId)) continue;
-            subjectSeen.add(sId);
             if (!item.subject?.name || !item.topic?.name) continue;
             currentStudies.push({
                 id: item.id,
