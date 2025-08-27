@@ -29,16 +29,28 @@ export interface MasteryAttempt {
   topics: {
     id: string;
     name: string;
+    slug?: string;
     mastery: number;
     weightage: number;
+    orderIndex: number;
+    estimatedMinutes?: number;
+    totalAttempts: number;
+    masteredCount: number;
+    strengthIndex: number;
     lastPracticed: string | null;
     subtopics: {
       id: string;
       name: string;
+      slug?: string;
       mastery: number;
       totalAttempts: number;
       masteredCount: number;
+      orderIndex: number;
+      estimatedMinutes?: number;
+      strengthIndex: number;
       lastPracticed: string | null;
     }[];
   }[];
+  sortBy?: string;
+  userExamCode?: string;
 };

@@ -5,12 +5,19 @@ import {
   updateTopic,
   deleteTopic,
 } from '../services/topic.service';
+import { queryKeys } from '@/lib/queryKeys';
+import { getQueryConfig } from '@/lib/queryConfig';
+import { useQueryError } from './useQueryError';
 
 export const useTopics = (subjectId?: string) => {
   const queryClient = useQueryClient();
-  const { data: topics = [], isLoading } = useQuery({
-    queryKey: ['topics',subjectId],
+  const { handleMutationError } = useQueryError();
+
+  const { data: topics = [], isLoading, error } = useQuery({
+    queryKey: queryKeys.topics.bySubject(subjectId),
     queryFn: () => getTopics(subjectId),
+    enabled: true,
+    ...getQueryConfig('STATIC'),
   });
 
   const saveTopic = useMutation({
@@ -30,16 +37,18 @@ export const useTopics = (subjectId?: string) => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['topics', subjectId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.topics.bySubject(subjectId) });
     },
+    onError: (error) => handleMutationError(error, 'saveTopic'),
   });
 
   const removeTopic = useMutation({
     mutationFn: deleteTopic,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['topics', subjectId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.topics.bySubject(subjectId) });
     },
+    onError: (error) => handleMutationError(error, 'removeTopic'),
   });
 
-  return { topics, isLoading, saveTopic, removeTopic };
+  return { topics, isLoading, error, saveTopic, removeTopic };
 };

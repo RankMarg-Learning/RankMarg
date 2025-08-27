@@ -4,51 +4,24 @@ import { NextApiRequest } from "next";
 import { Method, protectedApiRoutes, protectedPages } from "./lib/auth-routes";
 import { Role } from "@repo/db/enums";
 
-/**
- * Redirects the user to the sign-in page
- */
-function redirectToSignIn(req: NextRequest) {
-  const signInUrl = req.nextUrl.clone();
-  signInUrl.pathname = "/sign-in";
-  const callbackUrl = req.nextUrl.pathname + req.nextUrl.search;
-  signInUrl.searchParams.set("callbackUrl", callbackUrl);
-
-  return NextResponse.redirect(signInUrl);
-}
-
-
 function matchRoute(url: string, pattern: string): boolean {
   const urlSegments = url.split("?")[0].split("/").filter(Boolean);
   const patternSegments = pattern.split("/").filter(Boolean);
-
+  
   if (urlSegments.length !== patternSegments.length) return false;
-
+  
   return patternSegments.every((segment, index) =>
     segment.startsWith(":") || segment === urlSegments[index]
   );
 }
 
-const PUBLIC_STATIC_ROUTES = [
-  "/_next",
-  "/static",
-  "/images",
-  "/favicon.ico"
-];
-
-const PUBLIC_API_ENDPOINTS = [
-  "/api/users",
-  "/api/auth",
-  "/api/check-username"
-];
-
+const PUBLIC_STATIC_ROUTES = ["/_next", "/static", "/images", "/favicon.ico"];
+const PUBLIC_API_ENDPOINTS = ["/api/users", "/api/auth", "/api/check-username"];
 
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request as unknown as NextApiRequest });
   const method = request.method;
   const url = request.nextUrl.pathname;
-
-  console.log("Method :", method);
-  console.log("URL :", url);
 
   if (PUBLIC_STATIC_ROUTES.some(route => url.startsWith(route))) {
     return NextResponse.next();
@@ -66,8 +39,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  
-
   if (url.startsWith("/api")) {
     if (method === "POST" && PUBLIC_API_ENDPOINTS.includes(url)) {
       return NextResponse.next();
@@ -76,7 +47,7 @@ export async function middleware(request: NextRequest) {
     for (const [route, accessRules] of Object.entries(protectedApiRoutes)) {
       if (matchRoute(url, route)) {
         if (!token) {
-          return redirectToSignIn(request);
+          return NextResponse.redirect(new URL('/sign-in', request.url));
         }
         
         const allowed = accessRules.some(rule =>
@@ -92,13 +63,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const matchedPage = protectedPages.find(({ path }) =>
-  matchRoute(url, path)
-);
+  const matchedPage = protectedPages.find(({ path }) => matchRoute(url, path));
   
   if (matchedPage) {
     if (!token) {
-      return redirectToSignIn(request);
+      return NextResponse.redirect(new URL('/sign-in', request.url));
     }
     
     if (!matchedPage.roles.includes(token.role)) {
@@ -114,7 +83,7 @@ export async function middleware(request: NextRequest) {
     
     if (!token.isNewUser && url === '/onboarding') {
       const redirectUrl = token.role === Role.USER ? '/dashboard' : '/admin';
-        return NextResponse.redirect(new URL(redirectUrl, request.url));
+      return NextResponse.redirect(new URL(redirectUrl, request.url));
     }
   }
 

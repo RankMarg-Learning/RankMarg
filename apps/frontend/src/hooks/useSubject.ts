@@ -1,14 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getSubjects, addSubject, updateSubject, deleteSubject } from '@/services/subject.service';
+import { queryKeys } from '@/lib/queryKeys';
+import { getQueryConfig } from '@/lib/queryConfig';
+import { useQueryError } from './useQueryError';
 
 export const useSubjects = (examCode?: string) => {
   const queryClient = useQueryClient();
+  const { handleMutationError } = useQueryError();
 
-  const { data: subjects = [], isLoading } = useQuery({
-    queryKey: ['subjects'],
-    queryFn:()=> getSubjects(examCode),
+  const { data: subjects = [], isLoading, error } = useQuery({
+    queryKey: queryKeys.subjects.byExam(examCode),
+    queryFn: () => getSubjects(examCode),
+    ...getQueryConfig('STATIC'),
   });
-  
 
   const saveSubject = useMutation({
     mutationFn: async (data: { 
@@ -23,21 +27,23 @@ export const useSubjects = (examCode?: string) => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.subjects.all });
     },
+    onError: (error) => handleMutationError(error, 'saveSubject'),
   });
 
-  // Delete subject
   const removeSubject = useMutation({
     mutationFn: async (id: string) => deleteSubject(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.subjects.all });
     },
+    onError: (error) => handleMutationError(error, 'removeSubject'),
   });
 
   return {
     subjects,
     isLoading,
+    error,
     saveSubject,
     removeSubject,
   };
