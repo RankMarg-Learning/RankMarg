@@ -103,7 +103,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
 
   // Function to replace LaTeX delimiters
   const replaceLatexDelimiters = () => {
-    const fields = ['content', 'hint', 'solution', 'commonMistake'] as const;
+    const fields = ['content', 'hint', 'solution', 'commonMistake', 'strategy'] as const;
 
     fields.forEach(fieldName => {
       const currentValue = getValues(fieldName);
