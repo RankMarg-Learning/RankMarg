@@ -6,6 +6,10 @@
     "tsconfig.json"
   ],
   "tasks": {
+    "depcheck": {
+      "cache": false,
+      "persistent": false
+    },
     "build": {
       "dependsOn": [
         "db:generate",
