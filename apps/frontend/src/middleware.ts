@@ -20,6 +20,7 @@ const PUBLIC_API_ENDPOINTS = ["/api/users", "/api/auth", "/api/check-username"];
 
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request as unknown as NextApiRequest });
+  
   const method = request.method;
   const url = request.nextUrl.pathname;
 

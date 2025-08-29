@@ -12,6 +12,7 @@ const QuerySchema = z.object({
 });
 
 export async function GET(request: Request) {
+    
     try {
         const { searchParams } = new URL(request.url);
         const query = QuerySchema.safeParse({
@@ -30,6 +31,7 @@ export async function GET(request: Request) {
         const { subtopicsCount, sessionsCount } = query.data;
 
         const session = await getAuthSession();
+        
         if (!session?.user?.id) {
             return jsonResponse(null, {
                 message: 'Unauthorized',
@@ -37,13 +39,16 @@ export async function GET(request: Request) {
                 status: 401,
             });
         }
+        
         const userId = session.user.id;
 
         const { from: todayStart, to: todayEnd } = getDayWindow();
 
-        // Fetch everything in parallel where possible
-        const [user, attemptsAgg, userPerformance, rawCurrentTopics, rawSessions] = await prisma.$transaction([
-            prisma.user.findUnique({ where: { id: userId }, select: { studyHoursPerDay: true } }),
+        const [user, attemptsAgg, userPerformance, rawCurrentTopics, rawSessions] = await Promise.all([
+            prisma.user.findUnique({ 
+                where: { id: userId }, 
+                select: { studyHoursPerDay: true } 
+            }),
             prisma.attempt.aggregate({
                 where: {
                     userId,
@@ -108,30 +113,33 @@ export async function GET(request: Request) {
             })
         ]);
 
-        // Map subject names (session has only subjectId, no relation)
-        const subjectIds = Array.from(new Set((rawSessions || []).map(s => s.subjectId).filter(Boolean))) as string[];
-        const subjects = subjectIds.length
-            ? await prisma.subject.findMany({ where: { id: { in: subjectIds } }, select: { id: true, name: true } })
-            : [];
-        const subjectMap = subjects.reduce<Record<string, string>>((acc, s) => {
-            acc[s.id] = s.name;
-            return acc;
-        }, {});
+        const subjectIds = new Set<string>();
+        for (const s of rawSessions || []) {
+            if (s.subjectId) subjectIds.add(s.subjectId);
+        }
+        
+        const subjectMap: Record<string, string> = {};
+        if (subjectIds.size > 0) {
+            const subjects = await prisma.subject.findMany({ 
+                where: { id: { in: Array.from(subjectIds) } }, 
+                select: { id: true, name: true } 
+            });
+            for (const subject of subjects) {
+                subjectMap[subject.id] = subject.name;
+            }
+        }
 
-        // Calculate today's time studied (in seconds) from aggregate
         const todaysSecondsStudied = (() => {
             const t = (attemptsAgg as any)?._sum?.timing;
             const n = typeof t === 'number' ? t : 0;
             return isFinite(n) ? n : 0;
         })();
 
-        // Goal in seconds (preserving existing behavior)
         const defaultStudyHours = 1;
         const dailyGoalSeconds = user?.studyHoursPerDay
             ? (user.studyHoursPerDay * 60 * 60 / 6)
             : (defaultStudyHours * 60 * 60);
 
-        // Top revision subtopics from today's sessions grouped by subject
         const subtopicFrequency = new Map<string, { 
             name: string, 
             count: number, 
@@ -148,8 +156,9 @@ export async function GET(request: Request) {
                 const topic = q.question?.topic;
                 if (st?.id && st?.name && topic?.id && topic?.name) {
                     const key = st.id;
-                    if (subtopicFrequency.has(key)) {
-                        subtopicFrequency.get(key)!.count += 1;
+                    const existing = subtopicFrequency.get(key);
+                    if (existing) {
+                        existing.count += 1;
                     } else {
                         subtopicFrequency.set(key, { 
                             name: st.name, 
@@ -164,7 +173,6 @@ export async function GET(request: Request) {
             }
         }
         
-        // Group by subject
         const subtopicsBySubject = new Map<string, {
             subjectId: string;
             subjectName: string;
@@ -195,12 +203,10 @@ export async function GET(request: Request) {
             });
         }
         
-        // Sort subtopics by count within each subject and take top ones
         for (const subject of Array.from(subtopicsBySubject.values())) {
             subject.subtopics.sort((a, b) => b.count - a.count);
         }
         
-        // Get top subtopics for display (first 3-4 from all subjects combined)
         const allSubtopics = Array.from(subtopicFrequency.values())
             .sort((a, b) => b.count - a.count)
             .slice(0, subtopicsCount)
@@ -211,7 +217,6 @@ export async function GET(request: Request) {
             grouped: Array.from(subtopicsBySubject.values())
         };
 
-        // Performance and level
         const safePerformance = {
             accuracy: userPerformance?.accuracy ?? 0,
             avgScore: userPerformance?.avgScore ?? 0,
@@ -220,34 +225,22 @@ export async function GET(request: Request) {
         };
         const level = calculateUserLevel(safePerformance);
 
-        // Current studies - prioritize current topics and show all topics
-        const currentStudies = [] as Array<{
-            id: string;
-            isCurrent: boolean;
-            isCompleted: boolean;
-            startedAt: Date;
-            subjectName: string;
-            topicName: string;
-        }>;
-        
-        for (const item of rawCurrentTopics || []) {
-            if (!item.subject?.name || !item.topic?.name) continue;
-            currentStudies.push({
+        const currentStudies = (rawCurrentTopics || [])
+            .filter(item => item.subject?.name && item.topic?.name)
+            .map(item => ({
                 id: item.id,
                 isCurrent: item.isCurrent,
                 isCompleted: item.isCompleted,
                 startedAt: item.startedAt,
-                subjectName: item.subject.name,
-                topicName: item.topic.name,
-            });
-        }
-
-        // Sessions formatting
+                subjectName: item.subject!.name,
+                topicName: item.topic!.name,
+            }));
+       
         const sessions = (rawSessions || []).map(s => {
             const sessionQuestions = (s.questions || []).map(q => q.question).filter(Boolean);
 
-            const topicsMap: Record<string, { id: string, name: string, count: number }> = {};
-            const subtopicsMap: Record<string, { id: string, name: string, count: number }> = {};
+            const topicsMap = new Map<string, { id: string, name: string, count: number }>();
+            const subtopicsMap = new Map<string, { id: string, name: string, count: number }>();
             let totalDifficulty = 0;
             let difficultyCounts = 0;
 
@@ -258,17 +251,27 @@ export async function GET(request: Request) {
                 }
                 if (q?.topic?.id && q?.topic?.name) {
                     const id = q.topic.id;
-                    if (!topicsMap[id]) topicsMap[id] = { id, name: q.topic.name, count: 0 };
-                    topicsMap[id].count++;
+                    const existing = topicsMap.get(id);
+                    if (existing) {
+                        existing.count++;
+                    } else {
+                        topicsMap.set(id, { id, name: q.topic.name, count: 1 });
+                    }
                 }
                 if (q?.subTopic?.id && q?.subTopic?.name) {
                     const id = q.subTopic.id;
-                    if (!subtopicsMap[id]) subtopicsMap[id] = { id, name: q.subTopic.name, count: 0 };
-                    subtopicsMap[id].count++;
+                    const existing = subtopicsMap.get(id);
+                    if (existing) {
+                        existing.count++;
+                    } else {
+                        subtopicsMap.set(id, { id, name: q.subTopic.name, count: 1 });
+                    }
                 }
             }
 
-            const sortedSubtopics = Object.values(subtopicsMap).sort((a, b) => b.count - a.count).slice(0, 10);
+            const sortedSubtopics = Array.from(subtopicsMap.values())
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 10);
             const avgDifficulty = difficultyCounts > 0 ? Math.round(((totalDifficulty / difficultyCounts) * 10) / 10) : 0;
 
             const correctAnswers = s.correctAnswers ?? 0;
@@ -295,7 +298,7 @@ export async function GET(request: Request) {
             };
         });
 
-        return jsonResponse({
+        const response = jsonResponse({
             dashboardData: {
                 todaysProgress: {
                     minutesStudied: todaysSecondsStudied,
@@ -314,8 +317,10 @@ export async function GET(request: Request) {
             sessions,
         }, { message: 'Ok', success: true, status: 200, headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' } });
 
+        return response;
+
     } catch (error) {
-        console.error('Home API error:', error);
+        console.error('❌ Home API error:', error);
         return jsonResponse(null, {
             message: 'Internal server error',
             success: false,
