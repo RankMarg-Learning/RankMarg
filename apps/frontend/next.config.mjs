@@ -19,11 +19,14 @@ const nextConfig = {
         ],
     },
     webpack: (config, { dev, isServer }) => {
-        config.optimization = {
-            ...config.optimization,
-            usedExports: true,
-            sideEffects: false,
-        };
+        // Only apply these optimizations in production
+        if (!dev) {
+            config.optimization = {
+                ...config.optimization,
+                usedExports: true,
+                sideEffects: false,
+            };
+        }
         return config;
     },
     images: {

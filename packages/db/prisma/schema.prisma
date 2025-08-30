@@ -352,6 +352,7 @@ model Attempt {
   @@index([userId, timing])
   @@index([userId, status, solvedAt])
   @@index([practiceSessionId, type, solvedAt])
+  @@index([userId, type, solvedAt, timing])
 }
 
 model PracticeSession {
@@ -372,6 +373,7 @@ model PracticeSession {
   @@index([userId, createdAt])
   @@index([userId, isCompleted])
   @@index([subjectId])
+  @@index([userId, createdAt, isCompleted])
 }
 
 model PracticeSessionQuestions {

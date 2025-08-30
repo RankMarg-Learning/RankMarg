@@ -28,9 +28,8 @@ interface UserData {
   }>;
 }
 
-// Constants
-const JWT_MAX_AGE = 60 * 60 * 24 * 10; // 10 days
-const SESSION_UPDATE_AGE = 60 * 60 * 2; // 2 hours
+const JWT_MAX_AGE = 60 * 60 * 24 * 10;
+const SESSION_UPDATE_AGE = 60 * 60 * 2;
 
 const userSelect = {
   id: true,
@@ -75,24 +74,6 @@ const createTrialSubscription = () => ({
   currentPeriodEnd: new Date(Date.now() + SUBSCRIPTION_CONFIG.trial.duration * 24 * 60 * 60 * 1000),
 });
 
-const createUserSession = (userData: UserData) => ({
-  id: userData.id,
-  name: userData.name,
-  email: userData.email,
-  username: userData.username ?? "",
-  image: userData.avatar ?? "",
-  role: userData.role as Role,
-  examCode: userData.examRegistrations[0]?.exam.code ?? "",
-  createdAt: userData.createdAt,
-  isNewUser: !userData.onboardingCompleted,
-  plan: {
-    id: userData.subscription?.planId ?? null,
-    status: userData.subscription?.status as SubscriptionStatus,
-    endAt: userData.subscription?.currentPeriodEnd ?? null,
-  },
-});
-
-// Auth Options Configuration
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -159,22 +140,24 @@ export const authOptions: NextAuthOptions = {
       const email = user?.email ?? token.email;
       
       if (email) {
-        const userData = await getUserData(email);
-        if (userData) {
-          Object.assign(token, {
-            id: userData.id,
-            username: userData.username,
-            email: userData.email,
-            image: userData.avatar,
-            role: userData.role as Role,
-            examCode: userData.examRegistrations[0]?.exam.code ?? "",
-            isNewUser: !userData.onboardingCompleted,
-            plan: {
-              id: userData.subscription?.planId ?? null,
-              status: userData.subscription?.status as SubscriptionStatus,
-              endAt: userData.subscription?.currentPeriodEnd ?? null,
-            },
-          });
+        if (!token.id || trigger === "update") {
+          const userData = await getUserData(email);
+          if (userData) {
+            Object.assign(token, {
+              id: userData.id,
+              username: userData.username,
+              email: userData.email,
+              image: userData.avatar,
+              role: userData.role as Role,
+              examCode: userData.examRegistrations[0]?.exam.code ?? "",
+              isNewUser: !userData.onboardingCompleted,
+              plan: {
+                id: userData.subscription?.planId ?? null,
+                status: userData.subscription?.status as SubscriptionStatus,
+                endAt: userData.subscription?.currentPeriodEnd ?? null,
+              },
+            });
+          }
         }
       }
 
@@ -187,11 +170,23 @@ export const authOptions: NextAuthOptions = {
 
     async session({ session, token }) {
       if (!token?.email) return session;
-
-      const userData = await getUserData(token.email);
-      if (userData) {
-        session.user = createUserSession(userData);
-      }
+      
+      session.user = {
+        id: token.id as string,
+        name: token.name as string,
+        email: token.email as string,
+        username: token.username as string,
+        image: token.image as string,
+        role: token.role as Role,
+        examCode: token.examCode as string,
+        createdAt: token.createdAt as Date,
+        isNewUser: token.isNewUser as boolean,
+        plan: token.plan as {
+          id: string | null;
+          status: SubscriptionStatus;
+          endAt: Date | null;
+        },
+      };
 
       return session;
     },

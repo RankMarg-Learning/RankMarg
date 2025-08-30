@@ -16,12 +16,14 @@
     "backend:dev": "npm run dev --workspace=apps/backend",
     "backend:build": "npm run build --workspace=apps/backend",
     "frontend:dev": "npm run dev --workspace=apps/frontend",
-    "frontend:build": "npm run build --workspace=apps/frontend"
+    "frontend:build": "npm run build --workspace=apps/frontend",
+    "depcheck": "turbo run depcheck"
   },
   "prisma": {
     "schema": "packages/db/src/prisma/schema.prisma"
   },
   "devDependencies": {
+    "depcheck": "^1.4.7",
     "prettier": "^3.2.5",
     "turbo": "^2.1.3",
     "typescript": "^5.4.5"

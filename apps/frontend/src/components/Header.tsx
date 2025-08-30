@@ -23,6 +23,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { data: session , status } = useSession();
+  console.log(session);
   const { setStream } = useSessionStore();
 
   useEffect(() => {
@@ -101,7 +102,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   <Avatar className="h-8 w-8 border border-card-border">
                     <AvatarImage src={session?.user.image} />
                     <AvatarFallback className="bg-subtle-gray text-foreground">
-                      {session?.user.name?.split(" ")
+                      {session?.user.username?.split(" ")
                         .map((n) => n[0])
                         .join("")
                         .toUpperCase()}
@@ -114,7 +115,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   )}
                 </div>
                 <span className="font-medium text-sm hidden md:inline-block">
-                  {session?.user?.name}
+                  {session?.user?.username}
                 </span>
               </div>
             </DropdownMenuTrigger>
