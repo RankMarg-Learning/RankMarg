@@ -14,6 +14,7 @@ import Timer from './Timer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import MistakeFeedbackModal from './MistakeFeedbackModal';
 
+
 interface QuestionShowProps extends Omit<QuestionProps, "attempts" | "createdAt"> { }
 
 interface QuestionUIProps {
@@ -56,6 +57,7 @@ const QuestionUI = ({
   const [time, setTime] = useState(0);
   const [reactionTime, setReactionTime] = useState(0);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [optimisticAttemptId, setOptimisticAttemptId] = useState<string | null>(null);
 
   useEffect(() => {
     if (question.type === "INTEGER") {
@@ -80,6 +82,7 @@ const QuestionUI = ({
     setTime(0);
     setReactionTime(0);
     setIsSubmitting(false);
+    setOptimisticAttemptId(null);
   }, [question.id, question.type, answer, isAnswered]);
 
   const correctOptions = useMemo(() => {
@@ -159,6 +162,10 @@ const QuestionUI = ({
       ? numericalValue?.toString() || ""
       : selectedValues.toString();
 
+    // Generate optimistic attempt ID for immediate UI feedback
+    const tempAttemptId = `temp_${Date.now()}_${question.id}`;
+    setOptimisticAttemptId(tempAttemptId);
+
     const attemptData = {
       questionId: question.id,
       isCorrect,
@@ -167,6 +174,7 @@ const QuestionUI = ({
       isHintUsed,
       reactionTime
     };
+    
     toast({
       title: isCorrect ? "Correct Answer" : "Incorrect Answer",
       variant: "default",
@@ -286,7 +294,7 @@ Best regards,
 
 
       </div>
-      {(!isCorrect && attemptId) && (
+      {(!isCorrect && (attemptId || optimisticAttemptId)) && (
         <div className="flex justify-center">
           <Button
             onClick={() => setShowFeedbackModal(true)}
@@ -392,7 +400,7 @@ Best regards,
         </Motion>
       )}
       <MistakeFeedbackModal
-        attemptId={attemptId}
+        attemptId={attemptId || optimisticAttemptId}
         isOpen={showFeedbackModal}
         onClose={() => setShowFeedbackModal(false)}
       />

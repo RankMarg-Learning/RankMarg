@@ -27,35 +27,69 @@ export async function GET(req: Request, { params }: { params: { sessionId: strin
             });
         }
 
-        // Fetch practice session with proper error handling
+        /**
+         * Optimised fetch – we only select the data actually
+         * consumed by the AiPracticeSession & QuestionUI components.
+         * This drastically reduces payload size as well as the amount
+         * of data Prisma needs to hydrate, resulting in a noticeably
+         * faster response time.
+         */
+
         const practiceSession = await prisma.practiceSession.findUnique({
             where: {
                 id: sessionId,
                 userId: session.user.id,
             },
-            include: {
+            select: {
+                id: true,
+                userId: true,
+                isCompleted: true,
+
+                // minimal question projection
                 questions: {
-                    include: {
+                    select: {
                         question: {
-                            include: {
-                                options: true,
+                            select: {
+                                id: true,
+                                slug: true,
+                                content: true,
+                                type: true,
+                                isNumerical: true,
+                                difficulty: true,
+                                hint: true,
+                                solution: true,
+                                strategy: true,
+                                commonMistake: true,
+
                                 topic: {
                                     select: {
                                         id: true,
-                                        name: true
-                                    }
+                                        name: true,
+                                    },
                                 },
-                                category: {
+
+                                options: {
                                     select: {
-                                        category: true
-                                    }
-                                }
+                                        id: true,
+                                        content: true,
+                                        isCorrect: true,
+                                    },
+                                    orderBy: { id: "asc" }, // keep deterministic order
+                                },
                             },
                         },
                     },
                 },
-                attempts: true,
-            }
+
+                // minimal attempts projection – only what the UI needs
+                attempts: {
+                    select: {
+                        id: true,
+                        questionId: true,
+                        answer: true,
+                    },
+                },
+            },
         });
 
         // Check if practice session exists

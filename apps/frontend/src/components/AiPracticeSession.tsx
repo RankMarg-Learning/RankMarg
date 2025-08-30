@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowRight, SkipForward } from 'lucide-react';
 import QuestionUI from './QuestionUI';
@@ -31,7 +31,9 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
     const userHasNavigated = useRef(false);
 
     // ===== DATA FETCHING =====
-    const { data: session, isLoading, refetch } = useQuery({
+    const queryClient = useQueryClient();
+
+    const { data: session, isLoading } = useQuery({
         queryKey: ["session", sessionId],
         queryFn: () => getAiPracticeSession(sessionId),
         staleTime: STALE_TIME,
@@ -136,7 +138,29 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
 
         setIsSubmitting(true);
 
+        const optimisticAttemptId = `temp_${Date.now()}_${currentQuestion.id}`;
+        
+        const optimisticAttempt = {
+            id: optimisticAttemptId,
+            questionId: currentQuestion.id,
+            answer: attemptData.answer,
+            isOptimistic: true
+        };
+
         try {
+            setAttemptedQuestions(prev => new Set([...Array.from(prev), currentQuestion.id]));
+            
+            queryClient.setQueryData(["session", sessionId], (oldData: any) => {
+                if (!oldData?.data) return oldData;
+                return {
+                    ...oldData,
+                    data: {
+                        ...oldData.data,
+                        attempts: [...(oldData.data.attempts || []), optimisticAttempt],
+                    },
+                };
+            });
+
             const response = await addAttempt({
                 attemptData,
                 attemptType: "SESSION",
@@ -144,17 +168,65 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
             });
 
             if (response.success) {
-                setAttemptedQuestions(prev => new Set([...Array.from(prev), currentQuestion.id]));
-                await refetch();
+                queryClient.setQueryData(["session", sessionId], (oldData: any) => {
+                    if (!oldData?.data) return oldData;
+                    return {
+                        ...oldData,
+                        data: {
+                            ...oldData.data,
+                            attempts: oldData.data.attempts.map((attempt: any) => 
+                                attempt.id === optimisticAttemptId ? response.data : attempt
+                            ),
+                        },
+                    };
+                });
             } else {
+                queryClient.setQueryData(["session", sessionId], (oldData: any) => {
+                    if (!oldData?.data) return oldData;
+                    return {
+                        ...oldData,
+                        data: {
+                            ...oldData.data,
+                            attempts: oldData.data.attempts.filter((attempt: any) => 
+                                attempt.id !== optimisticAttemptId
+                            ),
+                        },
+                    };
+                });
+                
+                setAttemptedQuestions(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(currentQuestion.id);
+                    return newSet;
+                });
+                
                 console.error("Failed to submit attempt:", response.message);
             }
         } catch (error) {
+            queryClient.setQueryData(["session", sessionId], (oldData: any) => {
+                if (!oldData?.data) return oldData;
+                return {
+                    ...oldData,
+                    data: {
+                        ...oldData.data,
+                        attempts: oldData.data.attempts.filter((attempt: any) => 
+                            attempt.id !== optimisticAttemptId
+                        ),
+                    },
+                };
+            });
+            
+            setAttemptedQuestions(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(currentQuestion.id);
+                return newSet;
+            });
+            
             console.error("Error submitting attempt:", error);
         } finally {
             setIsSubmitting(false);
         }
-    }, [currentQuestion, sessionId, refetch, isSubmitting]);
+    }, [currentQuestion, sessionId, isSubmitting, queryClient]);
 
     // ===== RENDER HELPERS =====
     const renderLoadingState = () => <Loading />;

@@ -51,10 +51,13 @@ export async function POST(req: Request): Promise<Response> {
             ...(attemptType === AttemptType.TEST ? { testParticipationId: id } : {}),
         };
 
-        // Single optimized transaction
-        await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        // Single optimised transaction – capture created attempt
+        const createdAttempt = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             // Create attempt
-            await tx.attempt.create({ data: attemptData });
+            const newAttempt = await tx.attempt.create({
+                data: attemptData,
+                select: { id: true, questionId: true, answer: true },
+            });
 
             // Batch all updates in parallel where possible
             const promises: Promise<any>[] = [];
@@ -71,9 +74,11 @@ export async function POST(req: Request): Promise<Response> {
             promises.push(updateUserMetricsOptimized(tx, userId, isCorrect));
 
             await Promise.all(promises);
+
+            return newAttempt;
         });
 
-        return jsonResponse(null, {
+        return jsonResponse(createdAttempt, {
             success: true,
             message: "Ok",
             status: 200,
