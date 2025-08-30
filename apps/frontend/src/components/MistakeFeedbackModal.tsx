@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { MessageCircle, Brain, Calculator, BookOpen, Zap, PenTool } from 'lucide-react';
-import axios from 'axios';
+import { addMistakeFeedback } from '@/services';
 
 // Enum matching your backend structure
 enum MistakeType {
@@ -23,17 +23,15 @@ enum MistakeType {
 }
 
 interface MistakeFeedbackModalProps {
-    attemptId: string;
+    attemptId: string | null;
     isOpen: boolean;
     onClose: () => void;
-    apiEndpoint?: string; // Optional API endpoint override
 }
 
 const MistakeFeedbackModal: React.FC<MistakeFeedbackModalProps> = ({
     attemptId,
     isOpen,
     onClose,
-    apiEndpoint = '/api/mistake-feedback' // Default API endpoint
 }) => {
     const [selectedMistakeType, setSelectedMistakeType] = useState<MistakeType | ''>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -98,11 +96,24 @@ const MistakeFeedbackModal: React.FC<MistakeFeedbackModalProps> = ({
             })
             return;
         }
+
+        if (!attemptId) {
+            toast({
+                title: "Attempt not found. Please try again.",
+                variant: "default",
+                duration: 3000,
+                className: "bg-red-500 text-white",
+            });
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
-            const response = await axios.put(`/api/attempts/${attemptId}`, { mistake: selectedMistakeType })
-            if (!response.data.success) {
+            // Use the new mistake feedback API
+            const response = await addMistakeFeedback(attemptId, selectedMistakeType);
+            
+            if (!response.success) {
                 toast({
                     title: "Submission failed!!",
                     variant: "default",

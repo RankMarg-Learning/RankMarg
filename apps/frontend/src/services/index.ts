@@ -28,10 +28,28 @@ export const addAttempt = async ({
 
     return response.data;
   } catch (error) {
-    console.error("Error adding test:", error);
+    console.error("Error adding attempt:", error);
     return {
       success: false,
-      message: error?.response?.data?.message || "Error adding test",
+      message: error?.response?.data?.message || "Error adding attempt",
+    };
+  }
+};
+
+// Add mistake feedback to existing attempt
+export const addMistakeFeedback = async (attemptId: string, mistake: string) => {
+  try {
+    const response = await api.patch('/attempts/mistake', {
+      attemptId,
+      mistake,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error adding mistake feedback:", error);
+    return {
+      success: false,
+      message: error?.response?.data?.message || "Error adding mistake feedback",
     };
   }
 };

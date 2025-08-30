@@ -153,7 +153,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
           href={href || '#'}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 transition-colors duration-300 hover:text-blue-500 underline hover:no-underline tracking-wide"
+          className="text-primary-600 transition-colors duration-300 hover:text-primary-500 underline hover:no-underline tracking-wide"
           aria-label={href ? `External link to ${href}` : 'External link'}
         >
           {children}
@@ -209,17 +209,16 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
 
       ul: ({ children }: any) => <ul className="list-disc list-inside space-y-1 my-2 leading-relaxed">{children}</ul>,
       ol: ({ children }: any) => <ol className="list-decimal list-inside space-y-1 my-2 leading-relaxed">{children}</ol>,
-      li: ({ children }: any) => <li className="text-gray-700 leading-relaxed text-sm tracking-wide mb-1">{children}</li>,
+      li: ({ children }: any) => <li className="text-gray-700 leading-relaxed  tracking-wide mb-1">{children}</li>,
 
-      p: ({ children }: any) => <p className="text-gray-700 leading-relaxed mb-3 text-sm tracking-wide">{children}</p>,
+      p: ({ children }: any) => <p className="text-gray-700 font-black leading-relaxed  tracking-wide">{children}</p>,
 
       strong: ({ children }: any) => <strong className="font-bold text-gray-900 tracking-wide">{children}</strong>,
       em: ({ children }: any) => <em className="italic text-gray-800 tracking-wide">{children}</em>,
 
       blockquote: ({ children }: any) => (
-        <blockquote className="border-l-2 border-blue-500 pl-4 py-2 my-3 bg-blue-50 rounded-r leading-relaxed">
+        <blockquote className="border-l-2 border-primary-500 pl-4 py-2 my-3 bg-primary-50 rounded-r leading-relaxed">
           <div className="flex items-start">
-            <span className="text-blue-500 mr-2 text-sm">💡</span>
             <div className="text-sm tracking-wide">{children}</div>
           </div>
         </blockquote>
