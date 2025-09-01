@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 import 'katex/dist/katex.min.css';
 import Image from 'next/image';
@@ -87,7 +88,7 @@ export const handleImagePaste = (event: React.ClipboardEvent<HTMLTextAreaElement
 /* ------------------------------ memoized config ------------------------------ */
 
 const REMARK_PLUGINS = [remarkGfm, remarkMath] as const;
-const REHYPE_PLUGINS = [rehypeKatex] as const;
+const REHYPE_PLUGINS = [rehypeRaw, rehypeKatex] as const;
 
 const imageFloatClass = (loc: string) =>
   loc === 'float-left'
@@ -165,6 +166,9 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
           <table className="w-full border-collapse border border-gray-200 rounded shadow-sm">{children}</table>
         </div>
       ),
+      thead: ({ children }: any) => <thead className="bg-gray-50">{children}</thead>,
+      tbody: ({ children }: any) => <tbody className="divide-y divide-gray-100">{children}</tbody>,
+      tr: ({ children }: any) => <tr className="even:bg-gray-50 hover:bg-gray-100/50">{children}</tr>,
       th: ({ children }: any) => (
         <th className="border border-gray-200 px-3 py-2 bg-gray-50 font-semibold text-left text-sm">{children}</th>
       ),
@@ -211,7 +215,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
       ol: ({ children }: any) => <ol className="list-decimal list-inside space-y-1 my-2 leading-relaxed">{children}</ol>,
       li: ({ children }: any) => <li className="text-gray-700 leading-relaxed  tracking-wide mb-1">{children}</li>,
 
-      p: ({ children }: any) => <p className="text-gray-700 font-black leading-relaxed  tracking-wide">{children}</p>,
+      p: ({ children }: any) => <p className="text-gray-700 leading-relaxed tracking-wide">{children}</p>,
 
       strong: ({ children }: any) => <strong className="font-bold text-gray-900 tracking-wide">{children}</strong>,
       em: ({ children }: any) => <em className="italic text-gray-800 tracking-wide">{children}</em>,
@@ -225,6 +229,10 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
       ),
 
       hr: () => <hr className="my-4 border-gray-300" />,
+
+      // Common HTML structural tags often emitted by LLMs
+      details: ({ children }: any) => <details className="my-2 border border-gray-200 rounded p-3">{children}</details>,
+      summary: ({ children }: any) => <summary className="cursor-pointer font-medium text-gray-800">{children}</summary>,
     } as const;
   }, []);
 
@@ -232,9 +240,9 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
     <div
       className={[
         'prose max-w-none',
-        'prose-p:m-0 prose-ul:m-0 prose-li:m-0 prose-pre:m-0 prose-blockquote:m-0',
-        'prose-headings:m-0 prose-h1:m-0 prose-h2:m-0 prose-h3:m-0 prose-h4:m-0 prose-h5:m-0 prose-h6:m-0',
-        'prose-code:m-0 prose-table:m-0 prose-img:m-0',
+        'prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-pre:my-2 prose-blockquote:my-3',
+        'prose-headings:mt-0 prose-h1:mb-2 prose-h2:mb-2 prose-h3:mb-1',
+        'prose-code:my-0 prose-table:my-3 prose-img:my-3',
         className ?? '',
       ].join(' ')}
     >
@@ -246,6 +254,21 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
       >
         {processedContent}
       </ReactMarkdown>
+      <style jsx global>{`
+        /* Ensure block KaTeX (display math) is centered and separated */
+        .prose :where(.katex-display) {
+          margin-top: 1rem;
+          margin-bottom: 1rem;
+          text-align: center !important;
+        }
+        .prose :where(.katex-display > .katex) {
+          display: inline-block;
+        }
+        /* Keep inline math inline */
+        .prose :where(.katex) {
+          white-space: normal;
+        }
+      `}</style>
     </div>
   );
 }, (prev, next) => prev.content === next.content && prev.className === next.className);
