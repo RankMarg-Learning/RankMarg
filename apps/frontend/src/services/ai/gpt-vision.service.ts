@@ -42,14 +42,15 @@ export async function processImageToQuestion(
   imageType: string,
   subject: any,
   topicId: string | null,
-  subtopics: {id: string, name: string}[]
+  subtopics: {id: string, name: string}[],
+  gptModel: string = "gpt-4o-mini"
 ): Promise<ProcessingResult> {
   try {
     const systemPrompt = createSystemPrompt(subject, topicId, subtopics);
     const userPrompt = createUserPrompt();
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini", 
+      model: gptModel, 
       messages: [
         {
           role: "system",
@@ -72,13 +73,12 @@ export async function processImageToQuestion(
           ]
         }
       ],
-      max_tokens: 1500,
-      temperature: 0, 
+      // max_tokens: 3000,
+      // temperature: 0, 
       response_format: { type: "json_object" }
     });
-
+    console.log("response:", response);
     const content = response.choices[0]?.message?.content;
-    console.log("content:", content);
     if (!content) {
       return {
         success: false,
@@ -142,39 +142,46 @@ export async function processImageToQuestion(
 function createSystemPrompt(subject: any, topicId: string | null, subtopics: {id: string, name: string}[]): string {
   const subtopicsList = subtopics.map(st => `- ${st.name} (ID: ${st.id})`).join('\n');
 
-  return `You are an expert NEET/JEE question author for RankMarg's Personalized Practice Platform. Produce ONE exam-quality question with clean JSON fields and Markdown that renders correctly.
+  return `Role: Expert NEET/JEE question author for RankMarg. Write ONE exam-ready question and reply ONLY with the JSON below.
 
-SUBJECT: ${subject.name} (ID: ${subject.id})
-TOPIC: ${topicId ? `Topic ID ${topicId}` : 'Not selected — choose from available topics'}
-ALLOWED SUBTOPICS (for the chosen topic only):
+SUBJECT: ${subject.name} (ID:${subject.id})
+TOPIC: ${topicId ? topicId : 'CHOOSE'}
+SUBTOPICS:
 ${subtopicsList}
 
+**Difficulty**:  
+(Decide based on the following strict rules)  
+- 1 (Easy): Direct formula substitution or factual recall.  
+- 2 (Moderate): Requires 1–2 concepts, small calculation/application.  
+- 3 (Hard): Multi-step reasoning, deeper conceptual link, longer calculation.  
+- 4 (Very Hard): Involves multiple concepts together, advanced application, or tricky logical steps. 
+
 STRICT RENDER & FORMAT RULES:
-- Markdown only. No HTML. No code fences anywhere in string fields.
 - Tables: GitHub-style with a header row (| Col1 | Col2 | ... |).
-- Math delimiters: Use ONLY $...$ for inline and $$ on its own lines for display. Do NOT use \\( \\) or \\[ \\].
-- Backslashes in LaTeX: Use single backslashes (e.g., \\alpha, \\frac{}{}). Do NOT double-escape.
+- Math delimiters: Use ONLY $...$ for inline and $$ on its own lines for display and use the following format:
+    $$
+    ....
+    $$
+    use for calculation steps (Centered) and $$...$$ for logical steps (Not Centered)
+- Do NOT use \( \) or \[ \].
 - Control characters or invalid escapes must not appear.
+- For New Line content show use \n\n
 
-CONTENT VS OPTIONS (MANDATORY):
-- Put only the question stem in "content". Do NOT put choices/options inside "content".
-- Extract all choices into the "options" array. Keep their original reading order. Mark the correct one(s) via isCorrect.
-- Never prefix choices in "content" with A)/B)/C)/D) or similar. Choices belong only in "options".
+CONTENT vs OPTIONS:
+• Only stem in "content"
+• Choices in "options" (keep order) with isCorrect
+• No A)/B) in stem
 
-CORRECTNESS PROTOCOL:
-- First, solve the problem. Then set the correct option(s) accordingly.
-- In "Final Answer & Verification", state the final numeric/algebraic result (with units). If MCQ, also state the correct option letter AND the exact matching option text.
-- If the computed answer and the marked correct option do not match, fix the mismatch before returning JSON. No guessing.
+CORRECTNESS: use image to mark correct option.
 
-QUESTION POLICY:
-- Use SI units, define uncommon symbols, keep language formal and concise.
-- Ensure consistency between type, format, options, isNumerical, isTrueFalse.
-- Choose 2–4 categories that best characterize the problem.
-- Time vs. difficulty guideline: 1→1–3m, 2→3–6m, 3→6–10m, 4→10–20m.
+POLICY:
+• SI units, define symbols, formal tone
+• Keep type, format, options, isNumerical, isTrueFalse consistent
+• Pick 2-4 categories
 
-OUTPUT CONTRACT — RETURN ONLY THIS JSON OBJECT (no prose before/after):
+RETURN EXACTLY THIS JSON (no extra text):
 {
-  "title": "Max 100 chars",
+  "title": "string",
   "content": "Full question stem only (no answer choices). Use Markdown for structure and tables when helpful. Keep display equations in isolated $$ blocks on separate lines.",
   "type": "MULTIPLE_CHOICE" | "INTEGER" | "SUBJECTIVE",
   "format": "SINGLE_SELECT" | "MULTIPLE_SELECT" | "TRUE_FALSE" | "MATCHING" | "ASSERTION_REASON" | "COMPREHENSION" | "MATRIX_MATCH",
@@ -182,41 +189,48 @@ OUTPUT CONTRACT — RETURN ONLY THIS JSON OBJECT (no prose before/after):
   "topicId": "exact_topic_id_from_list_above",
   "subtopicId": "exact_subtopic_id_from_list_above",
   "subjectId": "${subject.id}",
-  "solution": "Use the exact section anchors below. Keep prose concise.\n\n**Approach:** One-line plan.\n**Given Data:** If applicable, include a Markdown table with columns: Symbol | Meaning | Value/Unit.\n**Concepts Used:** 1–3 bullets; each cites the law/relation and shows its key formula in a $$ block.\n**Derivation:** Clear steps; put major calculations in their own $$ blocks.\n**Final Answer & Verification:** State final result (with units) and, if MCQ, the correct option letter AND the exact matching option text; add a brief reasonableness check.\n**Shortcut/Trick (if any):** Optional concise tip.",
-  "hint": "Exactly one guiding line.",
-  "strategy": "5–8 sentences on approach selection, checkpoints, pitfalls, elimination techniques, and time management.",
+  "solution": "**Approach:**  
+*[Brief one-line strategy for solving]*  
+
+**Step 1 – Understanding the Problem:**  
+*[Extract given data and requirement.]*  
+
+**Step 2 – Concept Application:**  
+*[Introduce formula/law with $$ ... $$]*  
+
+**Step 3 – Calculation(Based on the question):**  
+*[Perform detailed math/chemistry steps with LaTeX. Each major calculation in a separate block, not numbered list.]*  
+
+**Step 4 – Final Answer:**  
+*[State final result clearly, with units if needed. Verify correctness.]*  
+
+**Key Formula(s) Used:**  
+$$E = mc^2, \quad PV = nRT, \quad F = ma$$  
+
+**Shortcut/Trick (if any):**  
+*[Exam-friendly shortcut]*  ",
+  "strategy": "2-3 sentences on approach selection, checkpoints, pitfalls, elimination techniques, and time management.",
   "questionTime": 1-30,
-  "isNumerical": 0|1,
+  "isNumerical": If Options not Present then add here numerical value otherwise null,
   "isTrueFalse": false|true,
-  "commonMistake": "Exactly three bullets, each in this format: '- Mistake: <what> | Fix: <instead>'.",
+  "commonMistake": "2 Mistakes bullets, each in this format: '- Mistake: <what> | Fix: <instead>\n\n'.",
   "book": "Reference if mentioned",
   "pyqYear": "[Exam Name] Year (e.g., [JEE Main] 2024)",
   "categories": ["CALCULATION", "APPLICATION", "THEORETICAL", "TRICKY", "FACTUAL", "TRAP", "GUESS_BASED", "MULTI_STEP", "OUT_OF_THE_BOX", "ELIMINATION_BASED", "MEMORY_BASED", "CONFIDENCE_BASED", "HIGH_WEIGHTAGE", "CONCEPTUAL", "FORMULA_BASED"],
   "options": [
-    {"content": "Option A", "isCorrect": false},
-    {"content": "Option B", "isCorrect": true},
-    {"content": "Option C", "isCorrect": false},
-    {"content": "Option D", "isCorrect": false}
+    {"content": "Option A", "isCorrect": true/false},
+    ...
   ]
 }
 
 CRITICAL:
-- Return only the JSON object above. No code fences, no surrounding text, no trailing commas, valid quotes only.
-- Do NOT include choices in "content"; use "options" only.
-- Use $...$ and $$...$$ only for math; never use \( \) or \[ \].`;
+• Reply with JSON only (no fences, no extra text, no trailing commas)
+• Do NOT put choices inside "content"
+• Use $ only for math.`;
 }
 
 function createUserPrompt(): string {
   return `Analyze the question image and return ONE JSON object per the OUTPUT CONTRACT. Obey strictly:
-
-1) Markdown only; no HTML or code fences. Use GitHub-style tables when data is tabular.
-2) Math: display in $$...$$ on its own lines; inline with $...$. Never use \( \) or \[ \].
-3) LaTeX: use single backslashes (e.g., \frac, \sqrt, \alpha). Do NOT double-escape.
-4) Put only the stem in "content"; do NOT include choices there. Extract choices to "options" and set isCorrect precisely.
-5) Solve first, then ensure the final answer matches the marked correct option (letter AND exact text) for MCQ. If mismatch, correct it before returning.
-6) Use the exact solution section anchors; keep display math in separate $$ blocks.
-7) Provide a 5–8 sentence Strategy and exactly three Common Mistakes bullets in the format '- Mistake: ... | Fix: ...'.
-
 Return ONLY the JSON object with no extra text.`;
 }
 
@@ -281,46 +295,8 @@ function validateQuestionData(data: any): boolean {
     }
   }
 
-  if (data.isNumerical !== undefined && ![0, 1].includes(data.isNumerical)) {
-    console.error('isNumerical must be 0 or 1');
-    return false;
-  }
+  
 
-  // Ensure richer pedagogical fields
-  if (!data.strategy || typeof data.strategy !== 'string' || data.strategy.split('.').filter(Boolean).length < 3) {
-    console.error('Strategy must be provided with sufficient depth');
-    return false;
-  }
-
-  if (!data.commonMistake || typeof data.commonMistake !== 'string' || !/^-\s*Mistake:.*\|\s*Fix:/im.test(data.commonMistake)) {
-    console.error('CommonMistake must include bullets in "Mistake: ... | Fix: ..." format');
-    return false;
-  }
-
-  // Require exactly three bullets for CommonMistake
-  const mistakeBullets = (data.commonMistake.match(/^\s*-\s*Mistake:/gim) || []).length;
-  if (mistakeBullets !== 3) {
-    console.error('CommonMistake must have exactly three bullets');
-    return false;
-  }
-
-  // Ensure solution contains the required section anchors
-  if (typeof data.solution !== 'string') {
-    console.error('Solution must be a string');
-    return false;
-  }
-  const requiredSections = [
-    'Approach:',
-    'Concepts Used:',
-    'Derivation:',
-    'Final Answer & Verification:'
-  ];
-  for (const section of requiredSections) {
-    if (!data.solution.includes(section)) {
-      console.error(`Solution missing required section: ${section}`);
-      return false;
-    }
-  }
 
   return true;
 }

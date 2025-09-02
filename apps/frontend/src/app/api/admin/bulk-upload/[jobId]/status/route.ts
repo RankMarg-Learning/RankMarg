@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { jsonResponse } from '@/utils/api-response';
 import { getAuthSession } from '@/utils/session';
-import { jobStorage } from '@/lib/bulk-upload-jobs';
+import { jobStorage } from '@/lib/redis-job-storage';
 
 export async function GET(
   request: NextRequest,
@@ -27,10 +27,12 @@ export async function GET(
       });
     }
 
-    const job = jobStorage.get(jobId);
+    const jobWithMetadata = await jobStorage.getJobWithMetadata(jobId);
     
-    if (!job) {
-      // Return a more specific error message
+    if (!jobWithMetadata) {
+      // Check if job was deleted or never existed
+      console.log(`Job ${jobId} not found - may have expired or been deleted`);
+      
       return jsonResponse({
         id: jobId,
         status: 'failed',
@@ -38,14 +40,19 @@ export async function GET(
         processedFiles: 0,
         successCount: 0,
         errorCount: 0,
-        errors: ['Job not found or expired'],
+        errors: ['Job not found or has expired. Jobs are automatically cleaned up after 24 hours.'],
+        files: [],
         createdAt: new Date().toISOString(),
+        isExpired: true,
+        message: 'Job not found or expired'
       }, {
-        success: true,
-        message: 'Job status retrieved',
-        status: 200, // Return 200 even for not found jobs to handle gracefully on frontend
+        success: false,
+        message: 'Job not found or expired',
+        status: 404,
       });
     }
+
+    const job = jobWithMetadata;
 
     // Check if user owns this job
     if (job.userId !== session.user.id) {
@@ -64,8 +71,16 @@ export async function GET(
       successCount: job.successCount,
       errorCount: job.errorCount,
       errors: job.errors,
+      files: job.files || [],
       createdAt: job.createdAt,
       completedAt: job.completedAt,
+      gptModel: job.gptModel,
+      lastUpdated: job.lastUpdated,
+      isExpired: job.isExpired,
+      timeRemaining: job.timeRemaining,
+      lastUpdatedAgo: job.lastUpdatedAgo,
+      // Add progress percentage for better UX
+      progressPercentage: job.totalFiles > 0 ? Math.round((job.processedFiles / job.totalFiles) * 100) : 0,
     }, {
       success: true,
       message: 'Job status retrieved successfully',

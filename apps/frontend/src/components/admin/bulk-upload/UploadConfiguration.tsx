@@ -1,0 +1,144 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { SearchableSelect } from '@/components/ui/searchable-select'
+import { Upload } from 'lucide-react'
+
+interface UploadConfigurationProps {
+  selectedSubjectId: string
+  setSelectedSubjectId: (value: string) => void
+  selectedTopicId: string
+  setSelectedTopicId: (value: string) => void
+  selectedGptModel: string
+  setSelectedGptModel: (value: string) => void
+  subjects: any[]
+  topics: any[]
+  subjectsLoading: boolean
+  topicsLoading: boolean
+  handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void
+  handleSubmit: () => void
+  isUploading: boolean
+  uploadedFiles: any[]
+}
+
+const GPT_MODELS = [
+  { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Faster, Cost-effective)' },
+  { value: 'gpt-5-mini', label: 'GPT-5 Mini (More Accurate)' },
+]
+
+export const UploadConfiguration = ({
+  selectedSubjectId,
+  setSelectedSubjectId,
+  selectedTopicId,
+  setSelectedTopicId,
+  selectedGptModel,
+  setSelectedGptModel,
+  subjects,
+  topics,
+  subjectsLoading,
+  topicsLoading,
+  handleFileUpload,
+  handleSubmit,
+  isUploading,
+  uploadedFiles,
+}: UploadConfigurationProps) => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Configuration</CardTitle>
+        <CardDescription>
+          Select subject, topic, and AI model for the questions
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="subject">Subject *</Label>
+          <SearchableSelect
+            value={selectedSubjectId}
+            onValueChange={setSelectedSubjectId}
+            disabled={subjectsLoading}
+            placeholder={subjectsLoading ? "Loading subjects..." : "Select subject"}
+            options={subjects.map(subject => ({
+              value: subject.id,
+              label: subject.name
+            }))}
+            emptyMessage="No subjects found"
+            searchPlaceholder="Search subjects..."
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="topic">Topic (Optional)</Label>
+          <SearchableSelect
+            value={selectedTopicId}
+            onValueChange={setSelectedTopicId}
+            disabled={!selectedSubjectId || topicsLoading || subjectsLoading}
+            placeholder="Select topic or let AI decide"
+            options={[
+              { value: 'auto', label: 'Let AI decide topic' },
+              ...(topics?.map(topic => ({
+                value: topic.id,
+                label: topic.name
+              })) || [])
+            ]}
+            emptyMessage={
+              topicsLoading ? "Loading topics..." :
+              selectedSubjectId ? `No topics available for selected subject` :
+              "Select a subject first"
+            }
+            searchPlaceholder="Search topics..."
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="gptModel">AI Model *</Label>
+          <SearchableSelect
+            value={selectedGptModel}
+            onValueChange={setSelectedGptModel}
+            placeholder="Select AI model"
+            options={GPT_MODELS}
+            emptyMessage="No models available"
+            searchPlaceholder="Search models..."
+          />
+          <p className="text-xs text-muted-foreground">
+            GPT-4o Mini is faster and more cost-effective. GPT-4 Turbo provides higher accuracy.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="files">Upload Images</Label>
+          <Input
+            id="files"
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileUpload}
+            disabled={isUploading}
+          />
+          <p className="text-sm text-muted-foreground">
+            Upload screenshots of questions. Supports JPG, PNG, WebP formats.
+          </p>
+        </div>
+
+        <Button
+          onClick={handleSubmit}
+          disabled={isUploading || uploadedFiles.length === 0 || !selectedSubjectId || subjectsLoading}
+          className="w-full"
+        >
+          {isUploading ? (
+            <>
+              <Upload className="mr-2 h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            <>
+              <Upload className="mr-2 h-4 w-4" />
+              Upload & Process ({uploadedFiles.length} files)
+            </>
+          )}
+        </Button>
+      </CardContent>
+    </Card>
+  )
+}

@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma';
 import { v4 as uuidv4 } from 'uuid';
 import { processImageToQuestion } from '@/services/ai/gpt-vision.service';
 import { getSubtopics } from '@/services/subtopic.service';
-import { jobStorage, type BulkUploadJob } from '@/lib/bulk-upload-jobs';
+import { jobStorage, type BulkUploadJob } from '@/lib/redis-job-storage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const subjectId = formData.get('subjectId') as string;
     const topicId = formData.get('topicId') as string | null;
+    const gptModel = formData.get('gptModel') as string || 'gpt-4o-mini';
     const files = formData.getAll('files') as File[];
 
     if (!subjectId) {
@@ -82,16 +83,26 @@ export async function POST(request: NextRequest) {
       successCount: 0,
       errorCount: 0,
       errors: [],
+      files: files.map((file, index) => ({
+        id: `${jobId}-file-${index}`,
+        fileName: file.name,
+        status: 'pending' as const,
+      })),
       createdAt: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
       subjectId,
       topicId: topicId || undefined,
       userId,
+      gptModel,
     };
 
-    jobStorage.set(jobId, job);
+    await jobStorage.set(jobId, job);
+
+    // Add job to Redis processing queue
+    await jobStorage.addJobToQueue(jobId, 1); // Priority 1 for user jobs
 
     // Process files asynchronously
-    processFilesAsync(jobId, files, subject, topicId, userId);
+    processFilesAsync(jobId, files, subject, topicId, userId, gptModel);
 
     return jsonResponse({
       job: {
@@ -125,14 +136,29 @@ async function processFilesAsync(
   files: File[], 
   subject: any, 
   topicId: string | null,
-  userId: string
+  userId: string,
+  gptModel: string
 ) {
-  const job = jobStorage.get(jobId);
-  if (!job) return;
+  const job = await jobStorage.get(jobId);
+  if (!job) {
+    console.error(`Job ${jobId} not found for processing`);
+    return;
+  }
 
   try {
-    job.status = 'processing';
-    jobStorage.set(jobId, job);
+    // Check Redis health before processing
+    const healthCheck = await jobStorage.healthCheck();
+    if (!healthCheck.connected) {
+      console.error('Redis connection failed, cannot process job:', healthCheck.error);
+      await jobStorage.updateJobStatus(jobId, { 
+        status: 'failed',
+        errors: ['Redis connection failed during processing']
+      });
+      return;
+    }
+
+    console.log(`Starting processing for job ${jobId} with ${files.length} files using ${gptModel}`);
+    await jobStorage.updateJobStatus(jobId, { status: 'processing' });
 
     let subjectSubtopics = []; 
     try {
@@ -148,8 +174,30 @@ async function processFilesAsync(
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+      const fileId = job.files[i].id;
       
       try {
+        console.log(`Processing file ${i + 1}/${files.length}: ${file.name}`);
+        
+        // Update file status to processing with retry logic
+        let retryCount = 0;
+        const maxRetries = 3;
+        
+        while (retryCount < maxRetries) {
+          try {
+            await jobStorage.updateFileStatus(jobId, fileId, { status: 'processing' });
+            break;
+          } catch (redisError) {
+            retryCount++;
+            console.error(`Redis update failed (attempt ${retryCount}/${maxRetries}):`, redisError);
+            if (retryCount === maxRetries) {
+              throw new Error('Failed to update file status in Redis after multiple attempts');
+            }
+            // Wait before retry
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          }
+        }
+
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const base64Image = buffer.toString('base64');
@@ -159,41 +207,82 @@ async function processFilesAsync(
           file.type,
           subject,
           topicId,
-          subjectSubtopics
+          subjectSubtopics,
+          gptModel
         );
 
         if (questionData.success && questionData.data) {
-          await saveQuestionToDatabase(questionData.data, userId);
-          job.successCount++;
+          const questionId = await saveQuestionToDatabase(questionData.data, userId);
+          await jobStorage.updateFileStatus(jobId, fileId, {
+            status: 'completed',
+            questionId,
+            processedAt: new Date().toISOString()
+          });
+          console.log(`Successfully processed file: ${file.name} -> Question ID: ${questionId}`);
         } else {
-          job.errorCount++;
-          job.errors.push(`File ${file.name}: ${questionData.message || 'Processing failed'}`);
+          const errorMessage = questionData.message || 'Processing failed';
+          await jobStorage.updateFileStatus(jobId, fileId, {
+            status: 'failed',
+            error: errorMessage
+          });
+          console.error(`Failed to process file ${file.name}: ${errorMessage}`);
         }
 
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error(`Error processing file ${file.name}:`, error);
-        job.errorCount++;
-        job.errors.push(`File ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        
+        try {
+          await jobStorage.updateFileStatus(jobId, fileId, {
+            status: 'failed',
+            error: errorMessage
+          });
+        } catch (redisError) {
+          console.error('Failed to update file status in Redis:', redisError);
+          // Continue processing other files even if Redis update fails
+        }
       }
-
-      job.processedFiles++;
-      jobStorage.set(jobId, job);
     }
 
     // Mark job as completed
-    job.status = job.errorCount === job.totalFiles ? 'failed' : 'completed';
-    job.completedAt = new Date().toISOString();
-    jobStorage.set(jobId, job);
+    const updatedJob = await jobStorage.get(jobId);
+    if (updatedJob) {
+      const finalStatus = updatedJob.errorCount === updatedJob.totalFiles ? 'failed' : 'completed';
+      const completionTime = new Date().toISOString();
+      
+      await jobStorage.updateJobStatus(jobId, {
+        status: finalStatus,
+        completedAt: completionTime
+      });
+
+      console.log(`Job ${jobId} completed with status: ${finalStatus}`);
+      console.log(`Final stats: ${updatedJob.successCount} successful, ${updatedJob.errorCount} failed out of ${updatedJob.totalFiles} total files`);
+      
+      // Publish final completion notification
+      await jobStorage.publishStatusUpdate(jobId, {
+        ...updatedJob,
+        status: finalStatus,
+        completedAt: completionTime
+      });
+    }
 
   } catch (error) {
-    console.error(`Job ${jobId} failed:`, error);
-    job.status = 'failed';
-    job.errors.push(`Job failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    jobStorage.set(jobId, job);
+    console.error(`Job ${jobId} processing failed:`, error);
+    const errorMessage = `Job processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    
+    try {
+      await jobStorage.updateJobStatus(jobId, {
+        status: 'failed',
+        errors: [errorMessage],
+        completedAt: new Date().toISOString()
+      });
+    } catch (redisError) {
+      console.error('Failed to update job status in Redis after job failure:', redisError);
+    }
   }
 }
 
-async function saveQuestionToDatabase(questionData: any, userId: string) {
+async function saveQuestionToDatabase(questionData: any, userId: string): Promise<string> {
   try {
     console.log('\n=== Starting Question Processing ===');
     console.log('Initial Question Data:', {
@@ -322,7 +411,7 @@ async function saveQuestionToDatabase(questionData: any, userId: string) {
     });
 
     // Create question with options
-    await prisma.question.create({
+    const createdQuestion = await prisma.question.create({
       data: {
         slug,
         title: questionData.title,
@@ -356,6 +445,8 @@ async function saveQuestionToDatabase(questionData: any, userId: string) {
         },
       },
     });
+
+    return createdQuestion.id;
   } catch (error) {
     console.error('Error saving question:', error);
     throw new Error(error instanceof Error ? error.message : 'Failed to save question');
@@ -375,8 +466,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Return all jobs for the user
-    const userJobs = jobStorage.getUserJobs(session.user.id)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const userJobs = await jobStorage.getUserJobs(session.user.id);
 
     return jsonResponse({ jobs: userJobs }, {
       success: true,

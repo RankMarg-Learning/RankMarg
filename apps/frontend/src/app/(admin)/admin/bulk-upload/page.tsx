@@ -2,20 +2,15 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { SearchableSelect } from '@/components/ui/searchable-select'
-import { Progress } from '@/components/ui/progress'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { Trash2, Upload, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { useTopics } from '@/hooks/useTopics'
 import { useSubtopics } from '@/hooks/useSubtopics'
 import { useSubjects } from '@/hooks/useSubject'
 import { bulkUploadQuestions, getBulkUploadStatus } from '@/services/bulk-upload.service'
+import { UploadConfiguration } from '@/components/admin/bulk-upload/UploadConfiguration'
+import { FilePreview } from '@/components/admin/bulk-upload/FilePreview'
+import { ProcessingStatus } from '@/components/admin/bulk-upload/ProcessingStatus'
 
 interface UploadedFile {
   id: string
@@ -33,13 +28,17 @@ interface ProcessingJob {
   successCount: number
   errorCount: number
   errors: string[]
+  files: any[]
   createdAt: string
+  gptModel?: string
+  lastUpdated: string
 }
 
 const BulkUpload = () => {
   const router = useRouter()
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('')
   const [selectedTopicId, setSelectedTopicId] = useState<string>('auto')
+  const [selectedGptModel, setSelectedGptModel] = useState<string>('gpt-4o-mini')
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [processingJob, setProcessingJob] = useState<ProcessingJob | null>(null)
@@ -110,6 +109,7 @@ const BulkUpload = () => {
     try {
       const formData = new FormData()
       formData.append('subjectId', selectedSubjectId)
+      formData.append('gptModel', selectedGptModel)
       if (selectedTopicId && selectedTopicId !== 'auto') {
         formData.append('topicId', selectedTopicId)
       }
@@ -125,7 +125,7 @@ const BulkUpload = () => {
         
         toast({
           title: "Upload Started",
-          description: `Processing ${uploadedFiles.length} images. This may take a few minutes.`,
+          description: `Processing ${uploadedFiles.length} images with ${selectedGptModel}. This may take a few minutes.`,
           variant: "default"
         })
 
@@ -147,42 +147,86 @@ const BulkUpload = () => {
   }
 
   const pollJobStatus = async (jobId: string) => {
+    let pollCount = 0
+    const maxPolls = 300 // Stop after 10 minutes (300 * 2 seconds)
+    
     const poll = async () => {
       try {
+        pollCount++
         const response = await getBulkUploadStatus(jobId)
+        
         if (response.success) {
           setProcessingJob(response.data)
           
-          if (response.data.status === 'completed' || response.data.status === 'failed') {
-            // Stop polling
+          // Stop polling if job is completed, failed, or expired
+          if (response.data.status === 'completed' || 
+              response.data.status === 'failed' || 
+              response.data.isExpired) {
+            
+            if (response.data.status === 'completed') {
+              toast({
+                title: "Processing Complete!",
+                description: `Successfully processed ${response.data.successCount} out of ${response.data.totalFiles} files.`,
+                variant: "default"
+              })
+            } else if (response.data.status === 'failed') {
+              toast({
+                title: "Processing Failed",
+                description: `Processing failed. Check the errors below for details.`,
+                variant: "destructive"
+              })
+            } else if (response.data.isExpired) {
+              toast({
+                title: "Job Expired",
+                description: "This job has expired and been cleaned up.",
+                variant: "destructive"
+              })
+            }
             return
           }
           
-          // Continue polling
-          setTimeout(poll, 2000)
+          // Stop polling if we've reached max polls
+          if (pollCount >= maxPolls) {
+            toast({
+              title: "Polling Timeout",
+              description: "Stopped checking for updates. You can refresh the page to check status.",
+              variant: "destructive"
+            })
+            return
+          }
+          
+          // Continue polling with exponential backoff
+          const delay = Math.min(2000 + (pollCount * 100), 5000) // Max 5 seconds
+          setTimeout(poll, delay)
+        } else {
+          // Handle API errors
+          console.error('Status polling error:', response.message)
+          setProcessingJob({
+            ...processingJob!,
+            status: 'failed',
+            errors: [response.message]
+          })
+          
+          toast({
+            title: "Status Check Failed",
+            description: response.message,
+            variant: "destructive"
+          })
         }
       } catch (error) {
         console.error('Status polling error:', error)
-        // Stop polling on error
+        toast({
+          title: "Connection Error",
+          description: "Failed to check job status. Please refresh the page.",
+          variant: "destructive"
+        })
       }
     }
 
     poll()
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'failed':
-      case 'error':
-        return <XCircle className="h-4 w-4 text-red-500" />
-      case 'processing':
-        return <Clock className="h-4 w-4 text-blue-500 animate-spin" />
-      default:
-        return <Clock className="h-4 w-4 text-gray-400" />
-    }
-  }
+
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -204,212 +248,36 @@ const BulkUpload = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Upload Configuration */}
         <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuration</CardTitle>
-              <CardDescription>
-                Select subject and topic for the questions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="subject">Subject *</Label>
-                <SearchableSelect
-                  value={selectedSubjectId}
-                  onValueChange={setSelectedSubjectId}
-                  disabled={subjectsLoading}
-                  placeholder={subjectsLoading ? "Loading subjects..." : "Select subject"}
-                  options={subjects.map(subject => ({
-                    value: subject.id,
-                    label: subject.name
-                  }))}
-                  emptyMessage="No subjects found"
-                  searchPlaceholder="Search subjects..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="topic">Topic (Optional)</Label>
-                <SearchableSelect
-                  value={selectedTopicId}
-                  onValueChange={setSelectedTopicId}
-                  disabled={!selectedSubjectId || topicsLoading || subjectsLoading}
-                  placeholder="Select topic or let AI decide"
-                  options={[
-                    { value: 'auto', label: 'Let AI decide topic' },
-                    ...(topics?.map(topic => ({
-                      value: topic.id,
-                      label: topic.name
-                    })) || [])
-                  ]}
-                  emptyMessage={
-                    topicsLoading ? "Loading topics..." :
-                    selectedSubjectId ? `No topics available for selected subject` :
-                    "Select a subject first"
-                  }
-                  searchPlaceholder="Search topics..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="files">Upload Images</Label>
-                <Input
-                  id="files"
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  disabled={isUploading}
-                />
-                <p className="text-sm text-muted-foreground">
-                  Upload screenshots of questions. Supports JPG, PNG, WebP formats.
-                </p>
-              </div>
-
-              <Button
-                onClick={handleSubmit}
-                disabled={isUploading || uploadedFiles.length === 0 || !selectedSubjectId || subjectsLoading}
-                className="w-full"
-              >
-                {isUploading ? (
-                  <>
-                    <Upload className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload & Process ({uploadedFiles.length} files)
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
+          <UploadConfiguration
+            selectedSubjectId={selectedSubjectId}
+            setSelectedSubjectId={setSelectedSubjectId}
+            selectedTopicId={selectedTopicId}
+            setSelectedTopicId={setSelectedTopicId}
+            selectedGptModel={selectedGptModel}
+            setSelectedGptModel={setSelectedGptModel}
+            subjects={subjects}
+            topics={topics}
+            subjectsLoading={subjectsLoading}
+            topicsLoading={topicsLoading}
+            handleFileUpload={handleFileUpload}
+            handleSubmit={handleSubmit}
+            isUploading={isUploading}
+            uploadedFiles={uploadedFiles}
+          />
         </div>
 
         {/* File Preview */}
         <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Uploaded Files ({uploadedFiles.length})</CardTitle>
-              <CardDescription>
-                Preview of uploaded question screenshots
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {uploadedFiles.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Upload className="mx-auto h-12 w-12 mb-4" />
-                  <p>No files uploaded yet</p>
-                  <p className="text-sm">Select images to get started</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {uploadedFiles.map((file) => (
-                    <div key={file.id} className="relative group">
-                      <div className="aspect-square rounded-lg overflow-hidden border">
-                        <img
-                          src={file.preview}
-                          alt={file.file.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="absolute top-2 right-2 flex gap-1">
-                        <Badge variant="secondary" className="text-xs">
-                          {getStatusIcon(file.status)}
-                        </Badge>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => removeFile(file.id)}
-                          disabled={isUploading}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      <p className="mt-2 text-xs text-muted-foreground truncate">
-                        {file.file.name}
-                      </p>
-                      {file.error && (
-                        <p className="text-xs text-red-500 mt-1">{file.error}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <FilePreview
+            uploadedFiles={uploadedFiles}
+            removeFile={removeFile}
+            isUploading={isUploading}
+          />
         </div>
       </div>
 
       {/* Processing Status */}
-      {processingJob && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {getStatusIcon(processingJob.status)}
-              Processing Status
-            </CardTitle>
-            <CardDescription>
-              Real-time updates on your bulk upload job
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between text-sm">
-              <span>Progress</span>
-              <span>{processingJob.processedFiles} / {processingJob.totalFiles}</span>
-            </div>
-            <Progress 
-              value={(processingJob.processedFiles / processingJob.totalFiles) * 100} 
-              className="w-full"
-            />
-            
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div className="text-center">
-                <div className="font-semibold text-green-600">{processingJob.successCount}</div>
-                <div className="text-muted-foreground">Successful</div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-red-600">{processingJob.errorCount}</div>
-                <div className="text-muted-foreground">Failed</div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-blue-600">
-                  {processingJob.totalFiles - processingJob.processedFiles}
-                </div>
-                <div className="text-muted-foreground">Remaining</div>
-              </div>
-            </div>
-
-            {processingJob.errors.length > 0 && (
-              <Alert>
-                <XCircle className="h-4 w-4" />
-                <AlertDescription>
-                  <div className="font-semibold mb-2">Errors encountered:</div>
-                  <ul className="list-disc list-inside text-sm space-y-1">
-                    {processingJob.errors.slice(0, 5).map((error, index) => (
-                      <li key={index}>{error}</li>
-                    ))}
-                    {processingJob.errors.length > 5 && (
-                      <li>... and {processingJob.errors.length - 5} more errors</li>
-                    )}
-                  </ul>
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {processingJob.status === 'completed' && (
-              <Alert>
-                <CheckCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Bulk upload completed! {processingJob.successCount} questions were successfully processed and added to the database.
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      <ProcessingStatus processingJob={processingJob} />
     </div>
   )
 }
