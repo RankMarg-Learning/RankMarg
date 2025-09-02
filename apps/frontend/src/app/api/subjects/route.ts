@@ -12,12 +12,14 @@ export async function GET(req: Request) {
                 select: { subject: true },
             });
             const subjects = examSubjects.map(es => es.subject);
-            return jsonResponse(subjects, { success: true, message: "Ok", status: 200 })
+            return jsonResponse({ data: subjects }, { success: true, message: "Ok", status: 200 })
         }
         
         
-        const subjects = await prisma.subject.findMany()
-        return jsonResponse(subjects, { success: true, message: "Ok", status: 200 })
+        const subjects = await prisma.subject.findMany({
+            orderBy: { name: 'asc' }
+        })
+        return jsonResponse({ data: subjects }, { success: true, message: "Ok", status: 200 })
 
     } catch (error) {
         console.error("[Subject] :", error);

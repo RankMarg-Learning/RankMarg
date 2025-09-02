@@ -8,11 +8,13 @@ export const useSubjects = (examCode?: string) => {
   const queryClient = useQueryClient();
   const { handleMutationError } = useQueryError();
 
-  const { data: subjects = [], isLoading, error } = useQuery({
+  const { data: response, isLoading, error } = useQuery({
     queryKey: queryKeys.subjects.byExam(examCode),
     queryFn: () => getSubjects(examCode),
     ...getQueryConfig('STATIC'),
   });
+
+  const subjects = response?.data || [];
 
   const saveSubject = useMutation({
     mutationFn: async (data: { 

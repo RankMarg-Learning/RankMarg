@@ -23,6 +23,8 @@ declare module 'next-auth' {
       isNewUser?: boolean;
       plan?: UserPlan;
     };
+    accessToken?: string;
+    refreshToken?: string;
   }
 }
 
@@ -35,6 +37,7 @@ declare module 'next-auth/jwt' {
     role?: Role;
     isNewUser?: boolean;
     plan?: UserPlan;
+    accessToken?: string;
   }
 }
 

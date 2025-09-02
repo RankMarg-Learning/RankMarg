@@ -2,17 +2,20 @@ import api from "@/utils/api";
 
 export const getSubjects = async (examCode?: string) => {
   try {
-    const response = await api.get(`/subjects?examCode=${examCode}`);
-    return response.data;
+    const response = await api.get(`/subjects${examCode ? `?examCode=${examCode}` : ''}`);
+    return {
+      success: true,
+      data: response.data.data || [],
+      message: "Subjects fetched successfully"
+    };
   } catch (error) {
     console.error("Error fetching subjects:", error);
     return {
       success: false,
+      data: [],
       message: "Error fetching subjects",
     };
-
   }
-
 };
 
 export const addSubject = async (name: string, shortName?: string) => {

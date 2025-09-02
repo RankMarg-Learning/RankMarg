@@ -1,6 +1,6 @@
 "use client"
 import { cn } from "@/lib/utils";
-import { Brain,  LayoutDashboard,  LogOut, Settings, TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift } from "lucide-react";
+import { Brain,  LayoutDashboard,  LogOut, Settings, TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -40,6 +40,7 @@ const AdminSidebar = () => {
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
     { icon: Brain, label: "Questions", href: "/admin/questions" },
+    { icon: Upload, label: "Bulk Upload", href: "/admin/bulk-upload" },
     { icon: TestTube, label: "Tests", href: "/admin/tests" },
     { icon: BookOpen, label: "Curriculum", href: "/admin/curriculum" },
     { icon: CreditCard, label: "Plans", href: "/admin/plans" },
