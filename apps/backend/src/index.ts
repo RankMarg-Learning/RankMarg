@@ -10,10 +10,12 @@ import mastery from "./routes/mastery";
 import performance from "./routes/performance";
 import reviews from "./routes/reviews";
 import cronRoutes from "./routes/cron.routes";
+// import profileRoutes from "./routes/profile.routes";
 import { ServerConfig } from "./config/server.config";
 import { cronManager } from "./config/cron.config";
 import redisService from "./lib/redis";
 import { RedisCacheService } from "./services/session/RedisCacheService";
+// import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 
 const app = express();
 
@@ -168,10 +170,17 @@ app.use(`${ServerConfig.api.routes.performance}`, performance);
 app.use(`${ServerConfig.api.routes.reviews}`, reviews);
 app.use(`${ServerConfig.api.prefix}/cron`, cronRoutes);
 
+// New v2 profile routes with proper structure
+// app.use(`${ServerConfig.api.prefix}/v2/profile`, profileRoutes);
+
 // Basic health endpoint for container orchestration
 app.get(ServerConfig.api.routes.health, (_req: Request, res: Response) => {
   res.status(200).json({ ok: true });
 });
+
+// Error handling middleware (must be last)
+// app.use(notFoundHandler);
+// app.use(errorHandler);
 
 initializeRedis().then(() => {
   app.listen(ServerConfig.port, () => {
