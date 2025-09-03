@@ -7,7 +7,7 @@ import {
   ErrorCode,
   SubscriptionTier,
 } from "../types/common";
-import { RedisCacheService } from "./session/RedisCacheService";
+import { RedisCacheService } from "./redisCache.service";
 
 export class CurriculumService {
   private curriculumRepository: CurriculumRepository;

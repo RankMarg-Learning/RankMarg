@@ -1,6 +1,6 @@
-import redisService from "../../lib/redis";
+import redisService from "../lib/redis";
 import { GradeEnum, QCategory } from "@repo/db/enums";
-import { SelectedQuestion, SessionConfig } from "../../type/session.api.types";
+import { SelectedQuestion, SessionConfig } from "../type/session.api.types";
 
 interface CacheStats {
   totalKeys: number;

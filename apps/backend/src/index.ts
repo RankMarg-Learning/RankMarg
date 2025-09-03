@@ -14,7 +14,7 @@ import cronRoutes from "./routes/cron.routes";
 import { ServerConfig } from "./config/server.config";
 import { cronManager } from "./config/cron.config";
 import redisService from "./lib/redis";
-import { RedisCacheService } from "./services/session/RedisCacheService";
+import { RedisCacheService } from "./services/redisCache.service";
 // import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 
 const app = express();

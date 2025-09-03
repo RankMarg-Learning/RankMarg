@@ -2,7 +2,7 @@ import { ProfileRepository } from "../repositories/profile.repository";
 import { ActivityRepository } from "../repositories/activity.repository";
 import { UserProfile, ProfileQuery } from "../types/profile.types";
 import { ApiError, ErrorCode, SubscriptionTier } from "../types/common";
-import { RedisCacheService } from "./session/RedisCacheService";
+import { RedisCacheService } from "./redisCache.service";
 import redisService from "../lib/redis";
 
 export class ProfileService {

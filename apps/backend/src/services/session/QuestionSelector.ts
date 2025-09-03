@@ -2,7 +2,7 @@ import { Subject, PrismaClient } from "@prisma/client";
 import { QCategory, GradeEnum } from "@repo/db/enums";
 import { getDifficultyDistributionByGrade } from "./SessionConfig";
 import { SelectedQuestion, SessionConfig } from "../../type/session.api.types";
-import { RedisCacheService } from "./RedisCacheService";
+import { RedisCacheService } from "../redisCache.service";
 
 export class QuestionSelector {
   private config: SessionConfig;

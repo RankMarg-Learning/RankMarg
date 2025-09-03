@@ -5,7 +5,7 @@ import {
   ActivityResponse,
 } from "../types/profile.types";
 import { ApiError, ErrorCode, SubscriptionTier } from "../types/common";
-import { RedisCacheService } from "./session/RedisCacheService";
+import { RedisCacheService } from "./redisCache.service";
 
 export class ActivityService {
   private activityRepository: ActivityRepository;
