@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { generateUniqueUsername } from "@/lib/generateUniqueUsername";
 import { Role, SubscriptionStatus } from "@repo/db/enums";
 import { SUBSCRIPTION_CONFIG } from "@/config/subscription.config";
+import jwt from "jsonwebtoken";
 
 interface UserData {
   id: string;
@@ -28,7 +29,7 @@ interface UserData {
   }>;
 }
 
-const JWT_MAX_AGE = 60 * 60 * 24 * 10;
+const JWT_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 const SESSION_UPDATE_AGE = 60 * 60 * 2;
 
 const userSelect = {
@@ -55,7 +56,7 @@ const userSelect = {
         },
       },
     },
-    take: 1, 
+    take: 1,
   },
 } as const;
 
@@ -138,7 +139,7 @@ export const authOptions: NextAuthOptions = {
 
     async jwt({ token, user, trigger, session }) {
       const email = user?.email ?? token.email;
-      
+
       if (email) {
         if (!token.id || trigger === "update") {
           const userData = await getUserData(email);
@@ -157,6 +158,11 @@ export const authOptions: NextAuthOptions = {
                 endAt: userData.subscription?.currentPeriodEnd ?? null,
               },
             });
+            const payload = { id: userData.id, 
+              plan: { id: userData.subscription?.planId ?? null, status: userData.subscription?.status as SubscriptionStatus, endAt: userData.subscription?.currentPeriodEnd ?? null }, 
+              examCode: userData.examRegistrations[0]?.exam.code ?? "",
+            };
+            token.accessToken = await jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30d' });
           }
         }
       }
@@ -170,7 +176,7 @@ export const authOptions: NextAuthOptions = {
 
     async session({ session, token }) {
       if (!token?.email) return session;
-      
+
       session.user = {
         id: token.id as string,
         name: token.name as string,
@@ -187,6 +193,7 @@ export const authOptions: NextAuthOptions = {
           endAt: Date | null;
         },
       };
+      session.accessToken = token.accessToken as string;
 
       return session;
     },
