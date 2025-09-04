@@ -127,7 +127,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
               width={width}
               height={height}
               style={{ width: 'auto', height: 'auto' }}
-              className={`w-auto h-20 object-contain ${imageFloatClass(loc)}`}
+              className={`w-auto h-16 object-contain ${imageFloatClass(loc)}`}
               loading="lazy"
             />
           );
@@ -142,7 +142,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
               width={width}
               height={height}
               style={{ width: 'auto', height: 'auto' }}
-              className="w-auto h-20 object-contain"
+              className="w-auto h-16 object-contain"
               loading="lazy"
             />
           </div>
@@ -162,7 +162,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
       ),
 
       table: ({ children }: any) => (
-        <div className="overflow-x-auto my-4">
+        <div className="overflow-x-auto my-1">
           <table className="w-full border-collapse border border-gray-200 rounded shadow-sm">{children}</table>
         </div>
       ),
@@ -170,9 +170,9 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
       tbody: ({ children }: any) => <tbody className="divide-y divide-gray-100">{children}</tbody>,
       tr: ({ children }: any) => <tr className="even:bg-gray-50 hover:bg-gray-100/50">{children}</tr>,
       th: ({ children }: any) => (
-        <th className="border border-gray-200 px-3 py-2 bg-gray-50 font-semibold text-left text-sm">{children}</th>
+        <th className="border border-gray-200 px-1.5 py-1 bg-gray-50 font-semibold text-left text-sm">{children}</th>
       ),
-      td: ({ children }: any) => <td className="border border-gray-200 px-3 py-2 text-sm">{children}</td>,
+      td: ({ children }: any) => <td className="border border-gray-200 px-1.5 py-1 text-sm">{children}</td>,
 
       code: ({ className: cn, children, ...props }: any) => {
         const match = /language-(\w+)/.exec(cn || '');
