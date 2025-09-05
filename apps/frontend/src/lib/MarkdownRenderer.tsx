@@ -161,18 +161,18 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
         </Link>
       ),
 
-      table: ({ children }: any) => (
-        <div className="overflow-x-auto my-1">
-          <table className="w-full border-collapse border border-gray-200 rounded shadow-sm">{children}</table>
-        </div>
-      ),
-      thead: ({ children }: any) => <thead className="bg-gray-50">{children}</thead>,
+        // table: ({ children }: any) => (
+          // <div className="overflow-x-auto my-1">
+            // <table className=" border-collapse border border-gray-200 rounded-sm">{children}</table>
+          // </div>
+        // ),
+      // thead: ({ children }: any) => <thead className="bg-gray-50">{children}</thead>,
       tbody: ({ children }: any) => <tbody className="divide-y divide-gray-100">{children}</tbody>,
       tr: ({ children }: any) => <tr className="even:bg-gray-50 hover:bg-gray-100/50">{children}</tr>,
       th: ({ children }: any) => (
-        <th className="border border-gray-200 px-1.5 py-1 bg-gray-50 font-semibold text-left text-sm">{children}</th>
+        <th className="border border-gray-200 px-1.5 py-1.5 bg-gray-100 font-semibold text-left text-sm">{children}</th>
       ),
-      td: ({ children }: any) => <td className="border border-gray-200 px-1.5 py-1 text-sm">{children}</td>,
+      td: ({ children }: any) => <td className="border border-gray-200 px-1.5 py-1.5 text-sm">{children}</td>,
 
       code: ({ className: cn, children, ...props }: any) => {
         const match = /language-(\w+)/.exec(cn || '');
@@ -202,18 +202,18 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
       },
 
       h1: ({ children }: any) => (
-        <h1 className="text-xl font-bold text-gray-900 mb-2 pb-1 border-b border-gray-200 leading-relaxed tracking-wide">{children}</h1>
+        <h1 className="text-xl font-bold text-gray-900  leading-relaxed tracking-wide">{children}</h1>
       ),
       h2: ({ children }: any) => (
-        <h2 className="text-lg font-semibold text-gray-800 mb-2 mt-3 leading-relaxed tracking-wide">{children}</h2>
+        <h2 className="text-lg font-semibold text-gray-800  leading-relaxed tracking-wide">{children}</h2>
       ),
       h3: ({ children }: any) => (
-        <h3 className="text-base font-medium text-gray-700 mb-1 mt-2 leading-relaxed tracking-wide">{children}</h3>
+        <h3 className="text-base font-medium text-gray-700  leading-relaxed tracking-wide">{children}</h3>
       ),
 
-      ul: ({ children }: any) => <ul className="list-disc list-inside space-y-1 my-2 leading-relaxed">{children}</ul>,
-      ol: ({ children }: any) => <ol className="list-decimal list-inside space-y-1 my-2 leading-relaxed">{children}</ol>,
-      li: ({ children }: any) => <li className="text-gray-700 leading-relaxed  tracking-wide mb-1">{children}</li>,
+      ul: ({ children }: any) => <ul className="list-disc  leading-relaxed">{children}</ul>,
+      ol: ({ children }: any) => <ol className="list-decimal  leading-relaxed">{children}</ol>,
+      li: ({ children }: any) => <li className="text-gray-700">{children}</li>,
 
       p: ({ children }: any) => <p className="text-gray-700 leading-relaxed tracking-wide">{children}</p>,
 
@@ -228,7 +228,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
         </blockquote>
       ),
 
-      hr: () => <hr className="my-4 border-gray-300" />,
+      hr: () => <hr className="my-1 border-gray-300" />,
 
       // Common HTML structural tags often emitted by LLMs
       details: ({ children }: any) => <details className="my-2 border border-gray-200 rounded p-3">{children}</details>,
