@@ -9,7 +9,10 @@ export async function GET(req: Request, {params} : { params: { id: string } }){
             where: { id }
         });
         if (!subject) return jsonResponse(null, { success: false, message: "Subject not found", status: 404 })
-        return jsonResponse(subject, { success: true, message: "Ok", status: 200 })
+        return jsonResponse(subject, { success: true, message: "Ok", status: 200,headers:{
+            "Cache-Control": "public, max-age=60, stale-while-revalidate=60",
+            Vary: "Authorization",
+        } })
 
     } catch (error) {
         return jsonResponse(null, { success: false, message: "Internal Server Error", status: 500 })

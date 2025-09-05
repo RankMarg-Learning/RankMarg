@@ -15,7 +15,6 @@ export class ResponseUtil {
       data,
       message,
       timestamp: new Date().toISOString(),
-      version: "v2.0",
       ...(pagination && { pagination }),
     };
 
@@ -38,7 +37,6 @@ export class ResponseUtil {
       success: false,
       message,
       timestamp: new Date().toISOString(),
-      version: "v2.0",
       ...(errorCode && { error: errorCode }),
       ...(details && { details }),
     };

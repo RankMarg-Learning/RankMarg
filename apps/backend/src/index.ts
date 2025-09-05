@@ -10,11 +10,15 @@ import mastery from "./routes/mastery";
 import performance from "./routes/performance";
 import reviews from "./routes/reviews";
 import cronRoutes from "./routes/cron.routes";
-// import profileRoutes from "./routes/profile.routes";
 import { ServerConfig } from "./config/server.config";
 import { cronManager } from "./config/cron.config";
 import redisService from "./lib/redis";
 import { RedisCacheService } from "./services/redisCache.service";
+import { errorHandler } from "./middleware/error.middleware";
+import dashboardRoutes from "./routes/dashboard.routes";
+import attemptRoutes from "./routes/attempt.routes";
+import currentTopicRoutes from "./routes/currentTopic.routes";
+import onboardingRoutes from "./routes/onboarding.routes";
 // import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 
 const app = express();
@@ -173,6 +177,11 @@ app.use(`${ServerConfig.api.prefix}/cron`, cronRoutes);
 // New v2 profile routes with proper structure
 // app.use(`${ServerConfig.api.prefix}/v2/profile`, profileRoutes);
 
+app.use(`${ServerConfig.api.prefix}/dashboard`, dashboardRoutes);
+app.use(`${ServerConfig.api.prefix}/attempts`, attemptRoutes);
+app.use(`${ServerConfig.api.prefix}/current-topic`, currentTopicRoutes);
+app.use(`${ServerConfig.api.prefix}/onboarding`, onboardingRoutes);
+
 // Basic health endpoint for container orchestration
 app.get(ServerConfig.api.routes.health, (_req: Request, res: Response) => {
   res.status(200).json({ ok: true });
@@ -180,7 +189,7 @@ app.get(ServerConfig.api.routes.health, (_req: Request, res: Response) => {
 
 // Error handling middleware (must be last)
 // app.use(notFoundHandler);
-// app.use(errorHandler);
+app.use(errorHandler);
 
 initializeRedis().then(() => {
   app.listen(ServerConfig.port, () => {

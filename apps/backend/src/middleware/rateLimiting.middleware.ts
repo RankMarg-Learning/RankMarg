@@ -26,7 +26,7 @@ export const rateLimit = () => {
       }
 
       const userId = req.user.id;
-      const userTier = req.user.subscriptionTier;
+      const userTier = req.user.plan.status;
       const rateLimitConfig = RATE_LIMITS[userTier];
 
       const key = `rate_limit:${userId}`;

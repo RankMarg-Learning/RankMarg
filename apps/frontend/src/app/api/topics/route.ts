@@ -17,7 +17,11 @@ export async function GET(req:Request){
         return jsonResponse(topics, {
             success: true,
             message: "Ok",
-            status: 200
+            status: 200,
+            headers:{
+                "Cache-Control": "public, max-age=60, stale-while-revalidate=60",
+                Vary: "Authorization",
+            }
         });
 
     } catch (error) {
