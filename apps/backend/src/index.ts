@@ -19,6 +19,9 @@ import dashboardRoutes from "./routes/dashboard.routes";
 import attemptRoutes from "./routes/attempt.routes";
 import currentTopicRoutes from "./routes/currentTopic.routes";
 import onboardingRoutes from "./routes/onboarding.routes";
+import masteryRoutes from "./routes/mastery.routes";
+import mistakeTrackerRoutes from "./routes/mistakeTracker.route";
+import practiceSessionRoutes from "./routes/practiceSession.routes";
 // import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 
 const app = express();
@@ -181,6 +184,9 @@ app.use(`${ServerConfig.api.prefix}/dashboard`, dashboardRoutes);
 app.use(`${ServerConfig.api.prefix}/attempts`, attemptRoutes);
 app.use(`${ServerConfig.api.prefix}/current-topic`, currentTopicRoutes);
 app.use(`${ServerConfig.api.prefix}/onboarding`, onboardingRoutes);
+app.use(`${ServerConfig.api.prefix}/mastery`, masteryRoutes);
+app.use(`${ServerConfig.api.prefix}/mistake-tracker`, mistakeTrackerRoutes);
+app.use(`${ServerConfig.api.prefix}/practice-sessions`, practiceSessionRoutes);
 
 // Basic health endpoint for container orchestration
 app.get(ServerConfig.api.routes.health, (_req: Request, res: Response) => {

@@ -2,7 +2,7 @@ import { PrismaClient, Subject, Question } from "@prisma/client";
 import { GradeEnum } from "@repo/db/enums";
 import { QuestionSelector } from "./QuestionSelector";
 import { RedisCacheService } from "../redisCache.service";
-import { SelectedQuestion, SessionConfig } from "../../type/session.api.types";
+import { SelectedQuestion, SessionConfig } from "../../types/session.api.types";
 
 type QuestionSource =
   | "currentTopic"

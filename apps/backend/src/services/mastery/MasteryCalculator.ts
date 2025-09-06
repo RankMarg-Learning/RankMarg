@@ -4,7 +4,7 @@ import {
   UserProfileData,
   PerformanceTrend,
   MasteryCalculationContext,
-} from "../../type/mastery.api.types";
+} from "../../types/mastery.api.types";
 import { MasteryConfig } from "./MasteryConfig";
 import { MistakeType } from "@repo/db/enums";
 import { differenceInDays } from "date-fns";

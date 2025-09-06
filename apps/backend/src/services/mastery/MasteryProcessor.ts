@@ -7,7 +7,7 @@ import {
   MasteryAttempt,
   MasteryCalculationContext,
   HierarchicalMasteryData,
-} from "../../type/mastery.api.types";
+} from "../../types/mastery.api.types";
 
 export interface MasteryResult {
   masteryLevel: number;

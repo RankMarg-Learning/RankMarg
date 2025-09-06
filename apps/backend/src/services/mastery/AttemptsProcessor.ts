@@ -9,7 +9,7 @@ import {
   MasteryAttempt,
   UserProfileData,
   PerformanceTrend,
-} from "../../type/mastery.api.types";
+} from "../../types/mastery.api.types";
 import { subDays, startOfDay } from "date-fns";
 
 export class AttemptsProcessor {

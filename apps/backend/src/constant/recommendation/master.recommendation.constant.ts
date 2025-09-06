@@ -1,6 +1,31 @@
-import { Recommendation } from "@/types/recommendation.types";
+export type RecommendationType =
+  | "physics"
+  | "chemistry"
+  | "biology"
+  | "mathematics"
+  | "default";
+export type RecommendationIcon = "info" | "warning" | "check" | "close";
+export type RecommendationColor =
+  | "red"
+  | "blue"
+  | "green"
+  | "purple"
+  | "teal"
+  | "gray"
+  | "indigo"
+  | "lime";
 
-export function generatePhysicsRecommendationByMastery(topic: string, masteryLevel: number): Recommendation {
+export interface Recommendation {
+  icon: RecommendationIcon;
+  color: RecommendationColor;
+  type: RecommendationType;
+  message: string;
+}
+
+export function generatePhysicsRecommendationByMastery(
+  topic: string,
+  masteryLevel: number
+): Recommendation {
   const trimmedTopic = topic.trim();
   if (masteryLevel < 50) {
     return {
@@ -26,7 +51,10 @@ export function generatePhysicsRecommendationByMastery(topic: string, masteryLev
   }
 }
 
-export function generateChemistryRecommendationByMastery(topic: string, masteryLevel: number): Recommendation {
+export function generateChemistryRecommendationByMastery(
+  topic: string,
+  masteryLevel: number
+): Recommendation {
   const trimmedTopic = topic.trim();
   if (masteryLevel < 50) {
     return {
@@ -52,7 +80,10 @@ export function generateChemistryRecommendationByMastery(topic: string, masteryL
   }
 }
 
-export function generateMathematicsRecommendationByMastery(topic: string, masteryLevel: number): Recommendation {
+export function generateMathematicsRecommendationByMastery(
+  topic: string,
+  masteryLevel: number
+): Recommendation {
   const trimmedTopic = topic.trim();
   if (masteryLevel < 50) {
     return {
@@ -78,7 +109,10 @@ export function generateMathematicsRecommendationByMastery(topic: string, master
   }
 }
 
-export function generateBiologyRecommendationByMastery(topic: string, masteryLevel: number): Recommendation {
+export function generateBiologyRecommendationByMastery(
+  topic: string,
+  masteryLevel: number
+): Recommendation {
   const trimmedTopic = topic.trim();
   if (masteryLevel < 50) {
     return {
@@ -103,5 +137,3 @@ export function generateBiologyRecommendationByMastery(topic: string, masteryLev
     };
   }
 }
-
-
