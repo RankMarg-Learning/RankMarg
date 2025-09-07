@@ -107,6 +107,8 @@ export async function processImageToQuestion(
         questionData.topicId = topicId;
         
         if (questionData.subtopicId) {
+          console.log("questionData.subtopicId:", questionData.subtopicId);
+          console.log("subtopics:", subtopics);
           const validSubtopic = subtopics.find(st => st.id === questionData.subtopicId );
           if (!validSubtopic) {
             return {
@@ -215,7 +217,7 @@ $$E = mc^2, \quad PV = nRT, \quad F = ma$$
   "isTrueFalse": false|true,
   "commonMistake": "2 Mistakes bullets, each in this format: '- Mistake: <what> | Fix: <instead>\n\n'.",
   "book": "Reference if mentioned",
-  "pyqYear": "[Exam Name] Year (e.g., [JEE Main] 2024)",
+  "pyqYear": "[Exam Name] Year (e.g., [JEE Main] 2024), null if not mentioned",
   "categories": ["CALCULATION", "APPLICATION", "THEORETICAL", "TRICKY", "FACTUAL", "TRAP", "GUESS_BASED", "MULTI_STEP", "OUT_OF_THE_BOX", "ELIMINATION_BASED", "MEMORY_BASED", "CONFIDENCE_BASED", "HIGH_WEIGHTAGE", "CONCEPTUAL", "FORMULA_BASED"],
   "options": [
     {"content": "Option A", "isCorrect": true/false},
@@ -281,19 +283,29 @@ function validateQuestionData(data: any): boolean {
     }
   }
 
-  if (data.categories && Array.isArray(data.categories)) {
-    const validCategories = Object.values(QCategory);
-    for (const category of data.categories) {
-      // Normalize category by replacing spaces with underscores and converting to uppercase
+  if (!data.categories || !Array.isArray(data.categories) || data.categories.length === 0) {
+    console.error('At least one category is required');
+    return false;
+  }
+
+  const validCategories = Object.values(QCategory);
+  const validatedCategories = data.categories
+    .map(category => {
       const normalizedCategory = category.replace(/\s+/g, '_').toUpperCase();
       if (!validCategories.includes(normalizedCategory)) {
-        console.error(`Invalid category: ${category}. Must be one of: ${validCategories.join(', ')}`);
-        return false;
+        console.warn(`Skipping invalid category: ${category}. Must be one of: ${validCategories.join(', ')}`);
+        return null;
       }
-      // Update the category to the normalized version
-      data.categories[data.categories.indexOf(category)] = normalizedCategory;
-    }
+      return normalizedCategory;
+    })
+    .filter(category => category !== null);
+
+  if (validatedCategories.length === 0) {
+    console.error('No valid categories found after filtering');
+    return false;
   }
+
+  data.categories = validatedCategories;
 
   
 
@@ -301,10 +313,8 @@ function validateQuestionData(data: any): boolean {
   return true;
 }
 
-// Attempts to robustly parse model output into JSON.
-// Handles code fences, leading/trailing text, and invalid escape sequences like \s, \d in LaTeX.
+
 function tryParseQuestionJson(raw: string): any | null {
-  // Fast path
   try {
     return JSON.parse(raw);
   } catch {}
@@ -314,10 +324,8 @@ function tryParseQuestionJson(raw: string): any | null {
     const candidate = extractFirstJsonObject(noFences);
     if (!candidate) return null;
 
-    // Fix invalid escape sequences (e.g., \s, \d) by doubling backslashes when not a valid JSON escape
     const fixedBackslashes = fixInvalidBackslashes(candidate);
 
-    // Remove control characters outside of JSON escapes that can break parsing
     const sanitized = fixedBackslashes.replace(/\u0000/g, '');
 
     return JSON.parse(sanitized);
@@ -328,7 +336,6 @@ function tryParseQuestionJson(raw: string): any | null {
 }
 
 function stripCodeFences(text: string): string {
-  // Remove ```json ... ``` or ``` ... ``` fences
   return text.replace(/```[a-zA-Z]*\n([\s\S]*?)```/g, '$1').trim();
 }
 
@@ -340,8 +347,5 @@ function extractFirstJsonObject(text: string): string | null {
 }
 
 function fixInvalidBackslashes(jsonLike: string): string {
-  // Replace backslashes that are NOT followed by a valid JSON escape char with escaped backslash
-  // Valid escapes: \ \" \/ \b \f \n \r \t \u
-  // Regex: \\ (?!["\\/bfnrtu])
   return jsonLike.replace(/\\(?!["\\\/bfnrtu])/g, '\\\\');
 }

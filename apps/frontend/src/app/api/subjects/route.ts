@@ -12,14 +12,20 @@ export async function GET(req: Request) {
                 select: { subject: true },
             });
             const subjects = examSubjects.map(es => es.subject);
-            return jsonResponse({ data: subjects }, { success: true, message: "Ok", status: 200 })
+            return jsonResponse({ data: subjects }, { success: true, message: "Ok", status: 200 ,headers:{
+                "Cache-Control": "public, max-age=60, stale-while-revalidate=60",
+                Vary: "Authorization",
+            }})
         }
         
         
         const subjects = await prisma.subject.findMany({
             orderBy: { name: 'asc' }
         })
-        return jsonResponse({ data: subjects }, { success: true, message: "Ok", status: 200 })
+        return jsonResponse({ data: subjects }, { success: true, message: "Ok", status: 200 ,headers:{
+            "Cache-Control": "public, max-age=60, stale-while-revalidate=60",
+            Vary: "Authorization",
+        }})
 
     } catch (error) {
         console.error("[Subject] :", error);

@@ -1,5 +1,6 @@
 import axios from "axios";
 import https from "https";
+import { getSession } from "next-auth/react";
 
 // Re-use TCP connection for better latency
 const httpsAgent = new https.Agent({ keepAlive: true });
@@ -19,12 +20,10 @@ const api = axios.create({
 });
 
 // Inject auth token automatically if available in localStorage / cookies
-api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("accessToken"); // adjust according to auth implementation
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
+api.interceptors.request.use(async (config) => {
+  const session = await getSession();
+  if (session?.accessToken) {
+    config.headers["Authorization"] = `Bearer ${session.accessToken}`;
   }
   return config;
 });

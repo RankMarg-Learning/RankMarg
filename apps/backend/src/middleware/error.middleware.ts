@@ -50,7 +50,6 @@ export const errorHandler = (
     message,
     error: errorCode,
     timestamp: new Date().toISOString(),
-    version: "v2.0",
     ...(details && { details }),
     ...(isDevelopment && { stack: error.stack }),
   };
@@ -64,7 +63,6 @@ export const notFoundHandler = (req: Request, res: Response) => {
     message: `Route ${req.method} ${req.url} not found`,
     error: ErrorCode.NOT_FOUND,
     timestamp: new Date().toISOString(),
-    version: "v2.0",
   };
 
   res.status(404).json(response);

@@ -10,7 +10,8 @@ import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] })
 
-const GA_TRACKING_ID = "G-4R4ZKM8YXN";
+const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID;
+
 
 export const metadata: Metadata = {
   title: "RankMarg | Personalized Practice for JEE & NEET",
@@ -31,12 +32,12 @@ export const metadata: Metadata = {
     title: "RankMarg | Personalized Practice for JEE & NEET",
     description:
       "Boost your JEE/NEET rank with AI-powered practice, dynamic tests, and mastery tracking. Experience India's most personalized exam preparation platform.",
-    url: "https://www.rankmarg.in",
+    url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}`,
     type: "website",
     siteName: "RankMarg",
     images: [
       {
-        url: "https://www.rankmarg.in/Logo.svg", 
+        url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/Logo.svg`, 
         width: 1200,
         height: 630,
         alt: "RankMarg – Personalized Practice Platform for JEE & NEET",
@@ -53,7 +54,7 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
   },
-  metadataBase: new URL("https://www.rankmarg.in"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_WEBSITE_URL),
 };
 
 export default function RootLayout({

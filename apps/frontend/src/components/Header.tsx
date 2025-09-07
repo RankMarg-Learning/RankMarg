@@ -14,8 +14,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from './ui/badge';
 import { signOut, useSession } from 'next-auth/react';
-import { useEffect } from 'react';
-import useSessionStore from '@/store/sessionStore';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -23,14 +21,6 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { data: session , status } = useSession();
-  console.log(session);
-  const { setStream } = useSessionStore();
-
-  useEffect(() => {
-    if (session?.user?.examCode) {
-      setStream(session.user.examCode as string);
-    }
-  }, [session?.user?.examCode, setStream]);
 
   return (
     <>
@@ -83,7 +73,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="relative bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border-amber-300 hover:from-amber-100 hover:to-yellow-100 hover:border-amber-400 hover:shadow-md transition-all duration-300 transform hover:scale-105 font-semibold"
+                  className="relative bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border-amber-300  transition-all duration-300 transform  font-semibold"
                 >
                   <span className="relative z-10 flex items-center gap-1">
                     <Crown size={12} className="text-amber-600" />

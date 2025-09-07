@@ -50,18 +50,15 @@ function Heatmap({ attempts }: { attempts: CalenderProps[] }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  
+
   return (
     <div>
       <CalendarHeatmap
         startDate={shiftDate(today, -daysToShow)}
         endDate={today}
         values={heatmapData}
-        classForValue={(value) => {
-          if (!value || value.count === 0) return "color-empty";
-          return value.count < 9
-            ? `color-github-${Math.min(5, Math.ceil(value.count / 2))}`
-            : "color-github-5";
-        }}
+        classForValue={classForValue}
         showWeekdayLabels={false}
         onClick={(value) => {
           if (value) {
@@ -83,6 +80,23 @@ function shiftDate(date: Date, numDays: number) {
   const newDate = new Date(date);
   newDate.setDate(newDate.getDate() + numDays);
   return newDate;
+}
+
+const RANKMARG_THRESHOLDS = [5, 10, 20, 30, 40]; 
+function classForValue(value: { count: number }) {
+  if (!value || typeof value.count !== "number" || isNaN(value.count) || value.count <= 0) {
+    return "color-empty"; 
+  }
+
+  const count = Math.max(0, Math.floor(value.count)); 
+
+  for (let i = 0; i < RANKMARG_THRESHOLDS.length; i++) {
+    if (count <= RANKMARG_THRESHOLDS[i]) {
+      return `color-gitlab-${Math.min(5, i + 1)}`;
+    }
+  }
+
+  return "color-gitlab-5";
 }
 
 export default Heatmap;

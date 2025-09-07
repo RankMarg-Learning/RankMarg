@@ -24,7 +24,6 @@ declare module 'next-auth' {
       plan?: UserPlan;
     };
     accessToken?: string;
-    refreshToken?: string;
   }
 }
 

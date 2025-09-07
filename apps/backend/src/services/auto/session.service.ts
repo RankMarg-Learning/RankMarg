@@ -2,7 +2,7 @@ import prisma from "../../lib/prisma";
 import { GradeEnum } from "@repo/db/enums";
 import { createDefaultSessionConfig } from "../session/SessionConfig";
 import { PracticeSessionGenerator } from "../session/PracticeSessionGenerator";
-import { RedisCacheService } from "../session/RedisCacheService";
+import { RedisCacheService } from "../redisCache.service";
 
 export class PracticeService {
   // ALL USERS PROCESS

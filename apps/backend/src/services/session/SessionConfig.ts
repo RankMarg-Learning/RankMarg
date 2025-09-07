@@ -1,4 +1,4 @@
-import { SessionConfig } from "../../type/session.api.types";
+import { SessionConfig } from "../../types/session.api.types";
 import { GradeEnum, QCategory } from "@repo/db/enums";
 
 export function createDefaultSessionConfig(

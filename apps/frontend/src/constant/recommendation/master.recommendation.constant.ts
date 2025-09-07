@@ -1,4 +1,3 @@
-
 import { Recommendation } from "@/types/recommendation.types";
 
 export function generatePhysicsRecommendationByMastery(topic: string, masteryLevel: number): Recommendation {

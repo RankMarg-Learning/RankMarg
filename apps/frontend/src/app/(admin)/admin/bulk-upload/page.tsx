@@ -129,7 +129,6 @@ const BulkUpload = () => {
           variant: "default"
         })
 
-        // Start polling for status updates
         pollJobStatus(response.data.job.id)
       } else {
         throw new Error(response.message || 'Upload failed')
@@ -148,7 +147,7 @@ const BulkUpload = () => {
 
   const pollJobStatus = async (jobId: string) => {
     let pollCount = 0
-    const maxPolls = 300 // Stop after 10 minutes (300 * 2 seconds)
+    const maxPolls = 300 
     
     const poll = async () => {
       try {
@@ -158,7 +157,6 @@ const BulkUpload = () => {
         if (response.success) {
           setProcessingJob(response.data)
           
-          // Stop polling if job is completed, failed, or expired
           if (response.data.status === 'completed' || 
               response.data.status === 'failed' || 
               response.data.isExpired) {
@@ -185,7 +183,6 @@ const BulkUpload = () => {
             return
           }
           
-          // Stop polling if we've reached max polls
           if (pollCount >= maxPolls) {
             toast({
               title: "Polling Timeout",
@@ -195,11 +192,8 @@ const BulkUpload = () => {
             return
           }
           
-          // Continue polling with exponential backoff
-          const delay = Math.min(2000 + (pollCount * 100), 5000) // Max 5 seconds
-          setTimeout(poll, delay)
+          setTimeout(poll, 30000)  // 30 seconds
         } else {
-          // Handle API errors
           console.error('Status polling error:', response.message)
           setProcessingJob({
             ...processingJob!,

@@ -2,7 +2,7 @@ import api from '@/utils/api'
 import { useQueries } from '@tanstack/react-query'
 
 
-const fetchTests = (endpoint: string) => async () => {
+const fetchData = (endpoint: string) => async () => {
     const { data } = await api.get(endpoint)
     return data
 }
@@ -14,11 +14,11 @@ export function useMasteryDashboard() {
         queries: [
             {
                 queryKey: ['masteryBasic'],
-                queryFn: fetchTests(`${version}/dashboard/mastery?loc=mastery_page`),
+                queryFn: fetchData(`${version}/dashboard/mastery`),
             },
             {
                 queryKey: ['subjectMastery'],
-                queryFn: fetchTests(`${version}/dashboard/mastery/subjects?loc=mastery_page&improvementAreasCount=2&topPerformingCount=3`),
+                queryFn: fetchData(`${version}/dashboard/mastery/subjects?improvementAreasCount=2&topPerformingCount=3`),
             },
             
         ],
