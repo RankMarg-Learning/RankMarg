@@ -15,7 +15,7 @@ export function useHome() {
         ...getQueryConfig('DYNAMIC'),
     });
 
-    const payload = data?.data?.data;
+    const payload = data?.data;
 
     return {
         dashboardBasic: payload?.dashboardData,

@@ -1,3 +1,4 @@
+//Moved to backend
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../auth/[...nextauth]/options";
 import { jsonResponse } from "@/utils/api-response";

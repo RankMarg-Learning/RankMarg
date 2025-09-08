@@ -11,6 +11,7 @@ const QuerySchema = z.object({
 });
 
 export class DashboardController {
+  //[GET] /api/dashboard
   getDashboard = async (
     req: AuthenticatedRequest,
     res: Response,
@@ -351,8 +352,178 @@ export class DashboardController {
       next(error);
     }
   };
+
+  //[GET] /api/dashboard/ai-practice
+  getAiPractice = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const userId = req.user.id;
+      const { from: todayStart, to: todayEnd } = getDayWindow();
+      const recentSessions = await prisma.practiceSession.findMany({
+        where: {
+          userId,
+          createdAt: {
+            gte: todayStart,
+            lt: todayEnd,
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        select: {
+          id: true,
+          subjectId: true,
+          questions: {
+            select: {
+              question: {
+                select: {
+                  subTopic: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          attempts: {
+            select: {
+              questionId: true,
+              status: true,
+              timing: true,
+            },
+          },
+        },
+      });
+      const subjectIdToName = await getSubjectMap();
+
+      let overallTotalQuestions = 0;
+      let overallAttempts = 0;
+      let overallCorrect = 0;
+      let overallTimeSpent = 0;
+      const overallSubtopics = new Set<string>();
+      const subjectSummaries: Record<
+        string,
+        {
+          totalQuestions: number;
+          attempted: number;
+          correctAnswers: number;
+        }
+      > = {};
+
+      recentSessions.forEach((session) => {
+        const questions = Array.isArray(session.questions)
+          ? session.questions
+          : [];
+        const attempts = Array.isArray(session.attempts)
+          ? session.attempts
+          : [];
+
+        const questionCount = questions.length;
+        const attemptedIds = new Set(
+          attempts
+            .filter((a) => a && typeof a.questionId !== "undefined")
+            .map((a) => a.questionId)
+        );
+
+        const correctCount = attempts.filter(
+          (a) => a && a.status === "CORRECT"
+        ).length;
+
+        const totalTime = attempts.reduce((sum, a) => {
+          const timing = typeof a?.timing === "number" ? a.timing : 0;
+          return sum + timing;
+        }, 0);
+
+        questions.forEach((q) => {
+          try {
+            const name = q?.question?.subTopic?.name;
+            if (name && typeof name === "string") {
+              overallSubtopics.add(name);
+            }
+          } catch (error) {
+            console.warn("Error processing subtopic for question:", q, error);
+          }
+        });
+        overallTotalQuestions += questionCount;
+        overallAttempts += attemptedIds.size;
+        overallCorrect += correctCount;
+        overallTimeSpent += totalTime;
+
+        const subjectId = session.subjectId;
+        const subjectName =
+          subjectId && subjectIdToName[subjectId]
+            ? subjectIdToName[subjectId]
+            : "Unknown Subject";
+
+        if (!subjectSummaries[subjectName]) {
+          subjectSummaries[subjectName] = {
+            totalQuestions: 0,
+            attempted: 0,
+            correctAnswers: 0,
+          };
+        }
+
+        subjectSummaries[subjectName].totalQuestions += questionCount;
+        subjectSummaries[subjectName].attempted += attemptedIds.size;
+        subjectSummaries[subjectName].correctAnswers += correctCount;
+      });
+      const subjectWiseSummary = Object.entries(subjectSummaries).map(
+        ([subject, data]) => {
+          const accuracyRate =
+            data.attempted > 0
+              ? Math.round((data.correctAnswers / data.attempted) * 100 * 100) /
+                100
+              : 0;
+
+          return {
+            subject,
+            totalQuestions: data.totalQuestions,
+            correctAnswers: data.correctAnswers,
+            totalAttempts: data.attempted,
+            accuracyRate,
+          };
+        }
+      );
+      const overallAccuracy =
+        overallAttempts > 0
+          ? Math.round((overallCorrect / overallAttempts) * 100 * 100) / 100
+          : 0;
+
+      const timeSpentMinutes = Math.round((overallTimeSpent / 60) * 100) / 100;
+
+      const overallSummary = {
+        totalQuestions: overallTotalQuestions,
+        attempted: overallAttempts,
+        correctAnswers: overallCorrect,
+        timeSpent: timeSpentMinutes,
+        accuracyRate: overallAccuracy,
+        subtopicsCovered: overallSubtopics.size,
+      };
+      ResponseUtil.success(
+        res,
+        {
+          overallSummary,
+          subjectWiseSummary,
+        },
+        "Ok",
+        200
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
+async function getSubjectMap(): Promise<Record<string, string>> {
+  const subjects = await prisma.subject.findMany({
+    select: { id: true, name: true },
+  });
+  return Object.fromEntries(subjects.map((s) => [s.id, s.name]));
+}
 function calculateUserLevel(
   performance: {
     accuracy: number;

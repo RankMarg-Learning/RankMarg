@@ -22,6 +22,8 @@ import onboardingRoutes from "./routes/onboarding.routes";
 import masteryRoutes from "./routes/mastery.routes";
 import mistakeTrackerRoutes from "./routes/mistakeTracker.route";
 import practiceSessionRoutes from "./routes/practiceSession.routes";
+import testRoutes from "./routes/test.routes";
+import analyticsRoutes from "./routes/analytics.routes";
 // import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 
 const app = express();
@@ -187,6 +189,8 @@ app.use(`${ServerConfig.api.prefix}/onboarding`, onboardingRoutes);
 app.use(`${ServerConfig.api.prefix}/mastery`, masteryRoutes);
 app.use(`${ServerConfig.api.prefix}/mistake-tracker`, mistakeTrackerRoutes);
 app.use(`${ServerConfig.api.prefix}/practice-sessions`, practiceSessionRoutes);
+app.use(`${ServerConfig.api.prefix}/test`, testRoutes);
+app.use(`${ServerConfig.api.prefix}/analytics`, analyticsRoutes);
 
 // Basic health endpoint for container orchestration
 app.get(ServerConfig.api.routes.health, (_req: Request, res: Response) => {

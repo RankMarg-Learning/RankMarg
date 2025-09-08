@@ -1,3 +1,4 @@
+//Moved to backend
 export const dynamic = "force-dynamic";
 
 import { jsonResponse } from "@/utils/api-response";

@@ -1,3 +1,4 @@
+// Shifted to Backend
 export const dynamic = 'force-dynamic';
 
 import { unstable_cache } from 'next/cache';
