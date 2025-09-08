@@ -9,7 +9,7 @@ import DashboardSkeleton from '../skeleton/dashboard.skeleton'
 const DashboardPage = () => {
     const { dashboardBasic, currentStudies, session, isLoading, isError } = useHome()
 
-
+    console.log(currentStudies);
     if (isLoading) return <DashboardSkeleton/>
     if (isError) {
         return (

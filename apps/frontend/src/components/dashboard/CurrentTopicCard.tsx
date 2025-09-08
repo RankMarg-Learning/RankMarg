@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 export default function CurrentTopicCard({ currentStudies }: { currentStudies: CurrentStudies[] }) {
   const router = useRouter();
 
-  const groupedTopics = currentStudies.reduce((acc, topic) => {
+  const groupedTopics = currentStudies?.reduce((acc, topic) => {
     if (!acc[topic.subjectName]) {
       acc[topic.subjectName] = {
         topics: [],
