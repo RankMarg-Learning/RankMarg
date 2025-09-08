@@ -11,7 +11,7 @@ import axios from 'axios';
 export function useHome() {
     const { data, isLoading, isError, error } = useQuery({
         queryKey: queryKeys.dashboard.home(),
-        queryFn: async() => await axios.get('http://api.rankmarg.in/api/dashboard?subtopicsCount=3&sessionsCount=3',{
+        queryFn: async() => await axios.get('https://api.rankmarg.in/api/dashboard?subtopicsCount=3&sessionsCount=3',{
             headers: {
                 'Content-Type': 'application/json',
                 'origin': 'https://rankmarg.in',
