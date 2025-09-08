@@ -14,6 +14,7 @@ export function useHome() {
         queryFn: async() => await axios.get('http://api.rankmarg.in/api/dashboard?subtopicsCount=3&sessionsCount=3',{
             headers: {
                 'Content-Type': 'application/json',
+                'origin': 'https://rankmarg.in',
                 'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxZTZhZWJjLTAwZTktNGU0ZC1hMzc5LTAzYjUxMzhjOTNlNiIsInBsYW4iOnsiaWQiOm51bGwsInN0YXR1cyI6IlRSSUFMIiwiZW5kQXQiOiIyMDI1LTA5LTE2VDE4OjA5OjA0LjYyM1oifSwiZXhhbUNvZGUiOiJORUVUIiwiaWF0IjoxNzU3MjU4OTc2LCJleHAiOjE3NTk4NTA5NzZ9.V_Gz9ca37Pkf_yFPbPV1tc4-zCBXSyAmmU6_NEiOrCE`
             }
         }),
