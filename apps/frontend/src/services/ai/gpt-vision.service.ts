@@ -152,11 +152,12 @@ SUBTOPICS:
 ${subtopicsList}
 
 **Difficulty**:  
-(Decide based on the following strict rules)  
+(Decide based on the following strict rules and change difficulty according to subject inside NEET/JEE syllabus)  
 - 1 (Easy): Direct formula substitution or factual recall.  
 - 2 (Moderate): Requires 1–2 concepts, small calculation/application.  
 - 3 (Hard): Multi-step reasoning, deeper conceptual link, longer calculation.  
 - 4 (Very Hard): Involves multiple concepts together, advanced application, or tricky logical steps. 
+- If question is based on subject inside NEET/JEE syllabus then change difficulty according to subject inside NEET/JEE syllabus.
 
 STRICT RENDER & FORMAT RULES:
 - Tables: GitHub-style with a header row (| Col1 | Col2 | ... |).
@@ -186,39 +187,34 @@ RETURN EXACTLY THIS JSON (no extra text):
   "title": "string",
   "content": "Full question stem only (no answer choices). Use Markdown for structure and tables when helpful. Keep display equations in isolated $$ blocks on separate lines.",
   "type": "MULTIPLE_CHOICE" | "INTEGER" | "SUBJECTIVE",
-  "format": "SINGLE_SELECT" | "MULTIPLE_SELECT" | "TRUE_FALSE" | "MATCHING" | "ASSERTION_REASON" | "COMPREHENSION" | "MATRIX_MATCH",
+  "format": "SINGLE_SELECT" | "MULTIPLE_SELECT" | "TRUE_FALSE" | "MATCHING" | "ASSERTION_REASON" | "COMPREHENSION" ,
   "difficulty": 1|2|3|4,
   "topicId": "exact_topic_id_from_list_above",
   "subtopicId": "exact_subtopic_id_from_list_above",
   "subjectId": "${subject.id}",
-  "solution": "**Approach:**  
-*[Brief one-line strategy for solving]*  
+  "solution": "**Approach:**Brief one-line strategy for solving  
 
-**Step 1 – Understanding the Problem:**  
-*[Extract given data and requirement.]*  
+**Understanding the Problem:** Extract given data and requirement.  
 
-**Step 2 – Concept Application:**  
-*[Introduce formula/law with $$ ... $$]*  
+**Concept Application:** Introduce formula/law with $$ ... $$  
 
-**Step 3 – Calculation(Based on the question):**  
-*[Perform detailed math/chemistry steps with LaTeX. Each major calculation in a separate block, not numbered list.]*  
+**Calculation:** Perform detailed math/chemistry steps with LaTeX. Each major calculation in a separate block, not numbered list.(Based on the question)  
 
-**Step 4 – Final Answer:**  
-*[State final result clearly, with units if needed. Verify correctness.]*  
+**Final Answer:** State final result clearly, with units if needed. (Verify correctness.)  
 
-**Key Formula(s) Used:**  
-$$E = mc^2, \quad PV = nRT, \quad F = ma$$  
+INSTRUCTIONS: Based on the question types include the above steps in the solutionor add steps according to need for NEET/JEE aspirants (for example if calculation based question then include step 3 LIKE THIS).
+"
 
-**Shortcut/Trick (if any):**  
-*[Exam-friendly shortcut]*  ",
+Shortcut/Trick :Exam-friendly shortcut (if any) ",
   "strategy": "2-3 sentences on approach selection, checkpoints, pitfalls, elimination techniques, and time management.",
+  "hint": "One guiding line without revealing the answer",
   "questionTime": 1-30,
   "isNumerical": If Options not Present then add here numerical value otherwise null,
   "isTrueFalse": false|true,
   "commonMistake": "2 Mistakes bullets, each in this format: '- Mistake: <what> | Fix: <instead>\n\n'.",
   "book": "Reference if mentioned",
   "pyqYear": "[Exam Name] Year (e.g., [JEE Main] 2024), null if not mentioned",
-  "categories": ["CALCULATION", "APPLICATION", "THEORETICAL", "TRICKY", "FACTUAL", "TRAP", "GUESS_BASED", "MULTI_STEP", "OUT_OF_THE_BOX", "ELIMINATION_BASED", "MEMORY_BASED", "CONFIDENCE_BASED", "HIGH_WEIGHTAGE", "CONCEPTUAL", "FORMULA_BASED"],
+  "categories": ["CALCULATION", "APPLICATION", "THEORETICAL", "TRICKY", "FACTUAL", "TRAP", "GUESS_BASED", "MULTI_STEP", "OUT_OF_THE_BOX", "ELIMINATION_BASED", "MEMORY_BASED", "CONFIDENCE_BASED", "CONCEPTUAL", "FORMULA_BASED"],
   "options": [
     {"content": "Option A", "isCorrect": true/false},
     ...

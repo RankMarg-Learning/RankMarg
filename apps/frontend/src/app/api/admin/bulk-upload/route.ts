@@ -4,7 +4,6 @@ import { getAuthSession } from '@/utils/session';
 import prisma from '@/lib/prisma';
 import { v4 as uuidv4 } from 'uuid';
 import { processImageToQuestion } from '@/services/ai/gpt-vision.service';
-import { getSubtopics } from '@/services/subtopic.service';
 import { jobStorage, type BulkUploadJob } from '@/lib/redis-job-storage';
 
 export async function POST(request: NextRequest) {
@@ -146,7 +145,6 @@ async function processFilesAsync(
   }
 
   try {
-    // Check Redis health before processing
     const healthCheck = await jobStorage.healthCheck();
     if (!healthCheck.connected) {
       console.error('Redis connection failed, cannot process job:', healthCheck.error);
@@ -160,15 +158,22 @@ async function processFilesAsync(
     console.log(`Starting processing for job ${jobId} with ${files.length} files using ${gptModel}`);
     await jobStorage.updateJobStatus(jobId, { status: 'processing' });
 
-    let subjectSubtopics = []; 
-    try {
-      const subtopicsData = await getSubtopics(topicId);
+    let subjectSubtopics = [] as { id: string; name: string }[];
 
-      if (subtopicsData && Array.isArray(subtopicsData?.data)) {
-        subjectSubtopics = subtopicsData?.data.map((st: any) => ({id: st.id, name: st.name}));
+    try {
+      if (topicId) {
+        subjectSubtopics = await prisma.subTopic.findMany({
+          where: { topicId },
+          select: { id: true, name: true },
+        });
+      } else {
+        subjectSubtopics = await prisma.subTopic.findMany({
+          where: { topic: { subjectId: subject.id } },
+          select: { id: true, name: true },
+        });
       }
     } catch (error) {
-      console.error('Error fetching subtopics:', error);
+      console.error('Database error fetching subtopics:', error);
     }
 
 
