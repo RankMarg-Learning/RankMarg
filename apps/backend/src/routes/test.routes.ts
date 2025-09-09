@@ -6,7 +6,7 @@ const router = Router();
 const testController = new TestController();
 
 router.post("/", authenticate, testController.createTest);
-router.post("/join", authenticate, testController.joinTest);
+router.post("/ai/join", authenticate, testController.joinTest);
 router.get("/:testId", authenticate, testController.getTestById);
 router.put("/:testId", authenticate, testController.updateTestById);
 router.delete("/:testId", authenticate, testController.deleteTestById);
@@ -17,4 +17,12 @@ router.get(
   testController.getTestParticipantById
 );
 router.post("/:testId/submit", authenticate, testController.submitTest);
+router.get("/ai/available", authenticate, testController.getAiAvailableTests);
+router.get(
+  "/ai/recommended",
+  authenticate,
+  testController.getAiRecommendedTests
+);
+router.get("/ai/results", authenticate, testController.getAiTestResults);
+router.get("/ai/scheduled", authenticate, testController.getAiScheduledTests);
 export default router;

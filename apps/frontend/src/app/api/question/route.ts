@@ -1,3 +1,4 @@
+//shifted to backend
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { QCategory, Question } from "@/types/typeAdmin";

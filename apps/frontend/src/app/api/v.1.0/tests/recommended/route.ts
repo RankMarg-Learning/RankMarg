@@ -1,3 +1,4 @@
+//shifted to backend
 export const dynamic = "force-dynamic";
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";

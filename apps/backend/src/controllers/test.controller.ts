@@ -1,8 +1,15 @@
 import prisma from "@/lib/prisma";
 import { AuthenticatedRequest } from "@/middleware/auth.middleware";
 import { ResponseUtil } from "@/utils/response.util";
-import { AttemptType, SubmitStatus } from "@repo/db/enums";
+import {
+  AttemptType,
+  ExamType,
+  SubmitStatus,
+  TestStatus,
+  Visibility,
+} from "@repo/db/enums";
 import { NextFunction, Response } from "express";
+import z from "zod";
 
 export interface TestSection {
   id?: string;
@@ -19,6 +26,11 @@ export interface TestQuestion {
   title?: string;
   testSectionId?: string;
 }
+
+const querySchemaAvailableTests = z.object({
+  limit: z.coerce.number().int().positive().max(100).default(10),
+  type: z.nativeEnum(ExamType).optional(),
+});
 
 export class TestController {
   //[POST] /api/test
@@ -110,7 +122,7 @@ export class TestController {
     }
   };
 
-  //[POST] /api/test/join
+  //[POST] /api/test/ai/join
   joinTest = async (
     req: AuthenticatedRequest,
     res: Response,
@@ -498,6 +510,204 @@ export class TestController {
         "Ok",
         200
       );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  //[GET] /api/test/ai/available
+  getAiAvailableTests = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const { limit, type } = querySchemaAvailableTests.parse(req.query);
+    try {
+      const examCode = req.user.examCode;
+      const whereClause = {
+        status: TestStatus.ACTIVE,
+        visibility: Visibility.PUBLIC,
+        ...(type
+          ? { examType: type }
+          : {
+              examType: {
+                in: [ExamType.FULL_LENGTH, ExamType.SUBJECT_WISE, ExamType.PYQ],
+              },
+            }),
+        ...(examCode && { examCode }),
+      };
+      const availableTests = await prisma.test.findMany({
+        where: whereClause,
+        select: {
+          testId: true,
+          title: true,
+          description: true,
+          totalMarks: true,
+          totalQuestions: true,
+          difficulty: true,
+          duration: true,
+          examType: true,
+          startTime: true,
+          endTime: true,
+          createdAt: true,
+          examCode: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+      });
+      ResponseUtil.success(res, availableTests, "Ok", 200);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  //[GET] /api/test/ai/recommended
+  getAiRecommendedTests = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const userId = req.user.id;
+      const weakestSubject = await prisma.subjectMastery.findFirst({
+        where: { userId },
+        orderBy: { masteryLevel: "asc" },
+        select: {
+          subject: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+      const weakestSubjectId = weakestSubject?.subject?.id;
+
+      const recommendedTest = await prisma.test.findFirst({
+        where: {
+          ...(weakestSubjectId
+            ? {
+                testSection: {
+                  some: {
+                    testQuestion: {
+                      some: {
+                        question: {
+                          subjectId: weakestSubjectId,
+                        },
+                      },
+                    },
+                  },
+                },
+              }
+            : {}),
+        },
+        orderBy: { createdAt: "desc" },
+        select: {
+          testId: true,
+          title: true,
+          description: true,
+          totalMarks: true,
+          totalQuestions: true,
+          difficulty: true,
+          duration: true,
+          status: true,
+          visibility: true,
+          examType: true,
+          startTime: true,
+          endTime: true,
+          createdAt: true,
+          updatedAt: true,
+          examCode: true,
+        },
+      });
+      if (!recommendedTest) {
+        ResponseUtil.success(res, null, "No recommended tests found", 200);
+      }
+      ResponseUtil.success(res, recommendedTest, "Ok", 200);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  //[GET] /api/test/ai/results
+  getAiTestResults = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const { limit: limitParam } = req.query;
+    try {
+      const userId = req.user.id;
+      const limit = parseInt(limitParam as string) || 10;
+      const testResults = await prisma.testParticipation.findMany({
+        where: {
+          userId,
+          status: "COMPLETED",
+        },
+        include: {
+          test: {
+            select: {
+              testId: true,
+              title: true,
+              description: true,
+              examCode: true,
+              totalMarks: true,
+              totalQuestions: true,
+              difficulty: true,
+              duration: true,
+              examType: true,
+            },
+          },
+        },
+        orderBy: {
+          endTime: "desc",
+        },
+        take: limit,
+      });
+      if (testResults.length === 0) {
+        ResponseUtil.success(res, null, "No completed tests found", 200);
+      }
+      ResponseUtil.success(res, testResults, "Ok", 200);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  //[GET] /api/test/ai/scheduled
+  getAiScheduledTests = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const userId = req.user.id;
+      const examCode = req.user.examCode;
+      const now = new Date();
+
+      const upcomingTests = await prisma.test.findMany({
+        where: {
+          examCode,
+          startTime: { gt: now },
+          status: "ACTIVE",
+          visibility: "PUBLIC",
+        },
+        orderBy: { startTime: "asc" },
+        select: {
+          testId: true,
+          title: true,
+          description: true,
+          startTime: true,
+          endTime: true,
+          difficulty: true,
+          duration: true,
+          totalMarks: true,
+          totalQuestions: true,
+          examType: true,
+        },
+      });
+      if (upcomingTests.length === 0) {
+        ResponseUtil.success(res, null, "No upcoming tests found", 200);
+      }
+      ResponseUtil.success(res, upcomingTests, "Ok", 200);
     } catch (error) {
       next(error);
     }
