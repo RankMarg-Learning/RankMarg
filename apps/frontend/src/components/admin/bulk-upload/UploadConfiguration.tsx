@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { Upload } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 
 interface UploadConfigurationProps {
   selectedSubjectId: string
@@ -20,11 +21,14 @@ interface UploadConfigurationProps {
   handleSubmit: () => void
   isUploading: boolean
   uploadedFiles: any[]
+  additionalInstructions: string
+  setAdditionalInstructions: (value: string) => void
 }
 
 const GPT_MODELS = [
   { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Faster, Cost-effective)' },
   { value: 'gpt-5-mini', label: 'GPT-5 Mini (More Accurate)' },
+  { value: 'gpt-5', label: 'GPT-5 (More Accurate)' },
 ]
 
 export const UploadConfiguration = ({
@@ -42,6 +46,8 @@ export const UploadConfiguration = ({
   handleSubmit,
   isUploading,
   uploadedFiles,
+  additionalInstructions,
+  setAdditionalInstructions,
 }: UploadConfigurationProps) => {
   return (
     <Card>
@@ -107,6 +113,19 @@ export const UploadConfiguration = ({
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="additionalInstructions">Additional AI Instructions (Optional)</Label>
+          <Textarea
+            id="additionalInstructions"
+            value={additionalInstructions}
+            onChange={(e) => setAdditionalInstructions(e.target.value)}
+            placeholder="e.g., Focus on numerical questions, Include detailed solutions"
+          />
+          <p className="text-xs text-muted-foreground">
+            Custom instructions for the AI processing
+          </p>
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="files">Upload Images</Label>
           <Input
             id="files"
@@ -123,7 +142,7 @@ export const UploadConfiguration = ({
 
         <Button
           onClick={handleSubmit}
-          disabled={isUploading || uploadedFiles.length === 0 || !selectedSubjectId || subjectsLoading}
+          disabled={isUploading || uploadedFiles.length === 0 || !selectedSubjectId || !selectedGptModel || subjectsLoading}
           className="w-full"
         >
           {isUploading ? (

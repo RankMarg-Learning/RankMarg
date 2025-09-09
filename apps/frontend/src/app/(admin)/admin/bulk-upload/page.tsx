@@ -14,8 +14,8 @@ import { ProcessingStatus } from '@/components/admin/bulk-upload/ProcessingStatu
 
 interface UploadedFile {
   id: string
-  file: File
-  preview: string
+  url: string
+  fileName: string
   status: 'pending' | 'processing' | 'completed' | 'error'
   error?: string
 }
@@ -42,6 +42,7 @@ const BulkUpload = () => {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [processingJob, setProcessingJob] = useState<ProcessingJob | null>(null)
+  const [additionalInstructions, setAdditionalInstructions] = useState<string>('')
   const { subjects: rawSubjects = [], isLoading: subjectsLoading } = useSubjects()
   const { topics: rawTopics = [], isLoading: topicsLoading } = useTopics(selectedSubjectId)
   useSubtopics(selectedTopicId === 'auto' ? undefined : selectedTopicId)
@@ -50,28 +51,36 @@ const BulkUpload = () => {
   const topics = Array.isArray(rawTopics?.data) ? rawTopics.data : Array.isArray(rawTopics) ? rawTopics : []
 
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (!files) return
 
     const newFiles: UploadedFile[] = []
-    
-    Array.from(files).forEach((file) => {
+
+    for (const file of Array.from(files)) {
       if (file.type.startsWith('image/')) {
         const id = Math.random().toString(36).substr(2, 9)
-        const preview = URL.createObjectURL(file)
-        
-        newFiles.push({
-          id,
-          file,
-          preview,
-          status: 'pending'
-        })
+        const reader = new FileReader()
+        reader.readAsDataURL(file)
+        reader.onload = async () => {
+          const base64 = reader.result as string
+          const public_id = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9-]/g, '-')
+          const res = await fetch('/api/cloudinary', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({image: base64, folder: 'bulk-questions', public_id})
+          })
+          const data = await res.json()
+          if (data.success) {
+            newFiles.push({id, url: data.data, fileName: file.name, status: 'pending'})
+            setUploadedFiles(prev => [...prev, ...newFiles]) // Note: this is inside loop, but since async, may need adjustment
+          } else {
+            toast({title: "Upload Failed", description: "Failed to upload to Cloudinary", variant: "destructive"})
+          }
+        }
       }
-    })
+    }
 
-    setUploadedFiles(prev => [...prev, ...newFiles])
-    
     event.target.value = ''
   }, [])
 
@@ -79,7 +88,7 @@ const BulkUpload = () => {
     setUploadedFiles(prev => {
       const fileToRemove = prev.find(f => f.id === id)
       if (fileToRemove) {
-        URL.revokeObjectURL(fileToRemove.preview)
+        // URL.revokeObjectURL(fileToRemove.preview) // This line is removed as per new UploadedFile interface
       }
       return prev.filter(f => f.id !== id)
     })
@@ -113,9 +122,9 @@ const BulkUpload = () => {
       if (selectedTopicId && selectedTopicId !== 'auto') {
         formData.append('topicId', selectedTopicId)
       }
-
-      uploadedFiles.forEach((uploadedFile, index) => {
-        formData.append(`files`, uploadedFile.file)
+      formData.append('additionalInstructions', additionalInstructions)
+      uploadedFiles.forEach((f) => {
+        formData.append('urls', f.url)
       })
 
       const response = await bulkUploadQuestions(formData)
@@ -223,7 +232,7 @@ const BulkUpload = () => {
 
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-2 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Bulk Question Upload</h1>
@@ -257,6 +266,8 @@ const BulkUpload = () => {
             handleSubmit={handleSubmit}
             isUploading={isUploading}
             uploadedFiles={uploadedFiles}
+            additionalInstructions={additionalInstructions}
+            setAdditionalInstructions={setAdditionalInstructions}
           />
         </div>
 

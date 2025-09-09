@@ -16,14 +16,15 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { image, folder = "user-avatars" } = body
+    const { image, folder = "user-avatars", public_id } = body
 
     if (!image) {
       return jsonResponse(null, { success: false, message: "Image is required", status: 400 })
     }
 
     const result = await cloudinary.uploader.upload(image, {
-      folder: folder, 
+      folder,
+      ...(public_id ? { public_id } : {})
     })
     
     return jsonResponse(result.secure_url, { success: true, message: "Image uploaded successfully", status: 200 })

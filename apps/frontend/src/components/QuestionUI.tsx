@@ -350,17 +350,6 @@ Best regards,
                 <AccordionContent className="text-xs sm:text-sm text-purple-800 mt-1 transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
                   {question?.solution ? (
                     <div className="space-y-3">
-                      {/* Step-by-Step Analysis */}
-                      <div className="bg-white rounded-lg border border-purple-200 p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <BookOpen className="h-4 w-4 text-purple-600" />
-                          <h4 className="font-semibold text-purple-900 text-sm">Step-by-Step Analysis</h4>
-                        </div>
-                        <div className="prose prose-sm max-w-none">
-                          <MarkdownRenderer content={question.solution} className="text-sm" />
-                        </div>
-                      </div>
-
                       {/* Solving Strategy */}
                       {question?.strategy && (
                         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-3">
@@ -373,7 +362,6 @@ Best regards,
                           </div>
                         </div>
                       )}
-
                       {/* Common Mistakes */}
                       {question?.commonMistake && (
                         <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-200 p-3">
@@ -386,6 +374,17 @@ Best regards,
                           </div>
                         </div>
                       )}
+                      {/* Step-by-Step Analysis */}
+                      <div className="bg-white rounded-lg border border-purple-200 p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <BookOpen className="h-4 w-4 text-purple-600" />
+                          <h4 className="font-semibold text-purple-900 text-sm">Step-by-Step Analysis</h4>
+                        </div>
+                        <div className="prose prose-sm max-w-none">
+                          <MarkdownRenderer content={question.solution} className="text-sm" />
+                        </div>
+                      </div>
+
                     </div>
                   ) : (
                     <div className="text-center py-4">

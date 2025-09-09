@@ -38,19 +38,19 @@ interface ProcessingResult {
 }
 
 export async function processImageToQuestion(
-  base64Image: string,
-  imageType: string,
+  imageUrl: string,
   subject: any,
   topicId: string | null,
-  subtopics: {id: string, name: string}[],
-  gptModel: string = "gpt-4o-mini"
+  subtopics: { id: string, name: string }[],
+  gptModel: string = "gpt-4o-mini",
+  additionalInstructions: string = ''
 ): Promise<ProcessingResult> {
   try {
     const systemPrompt = createSystemPrompt(subject, topicId, subtopics);
-    const userPrompt = createUserPrompt();
+    const userPrompt = createUserPrompt(additionalInstructions);
 
     const response = await openai.chat.completions.create({
-      model: gptModel, 
+      model: gptModel,
       messages: [
         {
           role: "system",
@@ -59,17 +59,8 @@ export async function processImageToQuestion(
         {
           role: "user",
           content: [
-            {
-              type: "text",
-              text: userPrompt
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:${imageType};base64,${base64Image}`,
-                detail: "low" 
-              }
-            }
+            {type: "text", text: userPrompt},
+            {type: "image_url", image_url: {url: imageUrl, detail: "low"}}
           ]
         }
       ],
@@ -94,7 +85,7 @@ export async function processImageToQuestion(
           message: 'Failed to parse AI response'
         };
       }
-      
+
       if (!validateQuestionData(questionData)) {
         return {
           success: false,
@@ -105,11 +96,11 @@ export async function processImageToQuestion(
       questionData.subjectId = subject.id;
       if (topicId) {
         questionData.topicId = topicId;
-        
+
         if (questionData.subtopicId) {
           console.log("questionData.subtopicId:", questionData.subtopicId);
           console.log("subtopics:", subtopics);
-          const validSubtopic = subtopics.find(st => st.id === questionData.subtopicId );
+          const validSubtopic = subtopics.find(st => st.id === questionData.subtopicId);
           if (!validSubtopic) {
             return {
               success: false,
@@ -141,7 +132,7 @@ export async function processImageToQuestion(
   }
 }
 
-function createSystemPrompt(subject: any, topicId: string | null, subtopics: {id: string, name: string}[]): string {
+function createSystemPrompt(subject: any, topicId: string | null, subtopics: { id: string, name: string }[]): string {
   const subtopicsList = subtopics.map(st => `- ${st.name} (ID: ${st.id})`).join('\n');
 
   return `Role: Expert NEET/JEE question author for RankMarg. Write ONE exam-ready question and reply ONLY with the JSON below.
@@ -185,33 +176,35 @@ POLICY:
 RETURN EXACTLY THIS JSON (no extra text):
 {
   "title": "string",
-  "content": "Full question stem only (no answer choices). Use Markdown for structure and tables when helpful. Keep display equations in isolated $$ blocks on separate lines.",
+  "content": "Full question stem only exactly like image (no answer choices). Use Markdown for structure and tables when helpful. Keep display equations in isolated $$ blocks on separate lines.",
   "type": "MULTIPLE_CHOICE" | "INTEGER" | "SUBJECTIVE",
   "format": "SINGLE_SELECT" | "MULTIPLE_SELECT" | "TRUE_FALSE" | "MATCHING" | "ASSERTION_REASON" | "COMPREHENSION" ,
   "difficulty": 1|2|3|4,
   "topicId": "exact_topic_id_from_list_above",
   "subtopicId": "exact_subtopic_id_from_list_above",
   "subjectId": "${subject.id}",
-  "solution": "**Approach:**Brief one-line strategy for solving  
+  "solution"(INSTRUCTIONS: Based on the question types include the above steps in the solution or add steps according to need for NEET/JEE aspirants (for example if calculation based question then include step 3 LIKE THIS) if not used step don't include it.): "
+  **Approach:** Brief one-line strategy for solving  
 
-**Understanding the Problem:** Extract given data and requirement.  
+  **Understanding the Problem:** Extract given data and requirement.  
 
-**Concept Application:** Introduce formula/law with $$ ... $$  
+  **Concept Application:** Introduce formula/law with $$ ... $$  
 
-**Calculation:** Perform detailed math/chemistry steps with LaTeX. Each major calculation in a separate block, not numbered list.(Based on the question)  
+  **Calculation:** Perform detailed math/chemistry steps with LaTeX. Each major calculation in a separate block, not numbered list.(Based on the question)  
 
-**Final Answer:** State final result clearly, with units if needed. (Verify correctness.)  
+  **Final Answer:** State final result clearly, with units if needed. (Verify correctness.)  
+  
+  **Shortcut/Trick :** Exam-friendly shortcut (if any)
 
-INSTRUCTIONS: Based on the question types include the above steps in the solutionor add steps according to need for NEET/JEE aspirants (for example if calculation based question then include step 3 LIKE THIS).
-"
+  **Exploratory:** Provide one concise paragraph of relevant knowledge or advanced concepts that are not in the NCERT syllabus but are connected to the question.(If any for conceptual question)
 
-Shortcut/Trick :Exam-friendly shortcut (if any) ",
+",
   "strategy": "2-3 sentences on approach selection, checkpoints, pitfalls, elimination techniques, and time management.",
   "hint": "One guiding line without revealing the answer",
   "questionTime": 1-30,
   "isNumerical": If Options not Present then add here numerical value otherwise null,
   "isTrueFalse": false|true,
-  "commonMistake": "2 Mistakes bullets, each in this format: '- Mistake: <what> | Fix: <instead>\n\n'.",
+  "commonMistake": "2 IMP Mistakes bullets, each in this format: '- Mistake: <what> | Fix: <instead>\n\n'.",
   "book": "Reference if mentioned",
   "pyqYear": "[Exam Name] Year (e.g., [JEE Main] 2024), null if not mentioned",
   "categories": ["CALCULATION", "APPLICATION", "THEORETICAL", "TRICKY", "FACTUAL", "TRAP", "GUESS_BASED", "MULTI_STEP", "OUT_OF_THE_BOX", "ELIMINATION_BASED", "MEMORY_BASED", "CONFIDENCE_BASED", "CONCEPTUAL", "FORMULA_BASED"],
@@ -227,9 +220,9 @@ CRITICAL:
 • Use $ only for math.`;
 }
 
-function createUserPrompt(): string {
+function createUserPrompt(additionalInstructions: string = ''): string {
   return `Analyze the question image and return ONE JSON object per the OUTPUT CONTRACT. Obey strictly:
-Return ONLY the JSON object with no extra text.`;
+Return ONLY the JSON object with no extra text.${additionalInstructions ? `\nAdditional instructions: ${additionalInstructions}` : ''}`;
 }
 
 function validateQuestionData(data: any): boolean {
@@ -303,7 +296,7 @@ function validateQuestionData(data: any): boolean {
 
   data.categories = validatedCategories;
 
-  
+
 
 
   return true;
@@ -313,7 +306,7 @@ function validateQuestionData(data: any): boolean {
 function tryParseQuestionJson(raw: string): any | null {
   try {
     return JSON.parse(raw);
-  } catch {}
+  } catch { }
 
   try {
     const noFences = stripCodeFences(raw);

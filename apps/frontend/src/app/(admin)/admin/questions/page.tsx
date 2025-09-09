@@ -37,6 +37,7 @@ export default function Tests() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteQuestionSlug, setDeleteQuestionSlug] = useState(null);
   const router = useRouter()
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; question: any } | null>(null);
 
   const { data: questions, refetch ,isLoading } = useQuery({
     queryKey: ["questions"],
@@ -67,11 +68,11 @@ export default function Tests() {
   const getDifficultyBadge = (difficulty: number) => {
     switch (difficulty) {
       case 1:
-        return <Badge className="bg-green-500">Easy</Badge>;
+        return <Badge variant="Easy">Easy</Badge>;
       case 2:
-        return <Badge className="bg-yellow-500">Medium</Badge>;
+        return <Badge variant="Medium">Medium</Badge>;
       case 3:
-        return <Badge className="bg-orange-500">Hard</Badge>;
+        return <Badge variant="Hard">Hard</Badge>;
       case 4:
         return <Badge className="bg-red-500">Very Hard</Badge>;
       default:
@@ -82,11 +83,11 @@ export default function Tests() {
   const getTypeBadge = (type: QuestionType) => {
     switch (type) {
       case QuestionType.MULTIPLE_CHOICE:
-        return <Badge className="bg-edu-blue">Single Correct</Badge>;
+        return <Badge variant="outline">Single Correct</Badge>;
       case QuestionType.INTEGER:
-        return <Badge className="bg-edu-teal">Integer</Badge>;
+        return <Badge variant="outline">Integer</Badge>;
       case QuestionType.SUBJECTIVE:
-        return <Badge className="bg-purple-500">Subjective</Badge>;
+        return <Badge variant="outline">Subjective</Badge>;
       default:
         return <Badge>Unknown</Badge>;
     }
@@ -173,7 +174,13 @@ export default function Tests() {
               ) : (
                 questions?.data?.questions
                   .map((question) => (
-                    <TableRow key={question.id}>
+                    <TableRow 
+                      key={question.id}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        setContextMenu({ x: e.pageX, y: e.pageY, question });
+                      }}
+                    >
                       <TableCell className="font-medium">{question.id.substring(0, 6)}</TableCell>
                       <TableCell className="max-w-[250px] truncate">{question.title}</TableCell>
                       <TableCell>{getTypeBadge(question.type)}</TableCell>
@@ -184,7 +191,7 @@ export default function Tests() {
                       </TableCell>
                       <TableCell className="text-center">
                         {question.isPublished ? (
-                          <Badge className="bg-green-500">Yes</Badge>
+                          <Badge variant="Easy">Yes</Badge>
                         ) : (
                           <Badge variant="outline">No</Badge>
                         )}
@@ -236,6 +243,27 @@ export default function Tests() {
           </div>
         </div>
       </div>
+
+      <DropdownMenu open={!!contextMenu} onOpenChange={() => setContextMenu(null)}>
+        <DropdownMenuContent 
+          style={{ 
+            position: 'absolute', 
+            left: `${contextMenu?.x}px`, 
+            top: `${contextMenu?.y}px`, 
+            zIndex: 1000 
+          }}
+        >
+          <DropdownMenuItem 
+            className="flex items-center gap-2"
+            onClick={() => {
+              router.push(`/admin/questions/${contextMenu.question.slug}/edit`);
+              setContextMenu(null);
+            }}
+          >
+            <Edit className="h-4 w-4" /> Edit
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
 

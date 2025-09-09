@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
     const subjectId = formData.get('subjectId') as string;
     const topicId = formData.get('topicId') as string | null;
     const gptModel = formData.get('gptModel') as string || 'gpt-4o-mini';
-    const files = formData.getAll('files') as File[];
+    const urls = formData.getAll('urls') as string[];
+    const additionalInstructions = formData.get('additionalInstructions') as string || '';
 
     if (!subjectId) {
       return jsonResponse(null, {
@@ -35,12 +36,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    if (files.length === 0) {
-      return jsonResponse(null, {
-        success: false,
-        message: 'At least one file is required',
-        status: 400,
-      });
+    if (urls.length === 0) {
+      return jsonResponse(null, { success: false, message: 'At least one URL is required', status: 400 });
     }
 
     // Validate subject exists
@@ -77,15 +74,16 @@ export async function POST(request: NextRequest) {
     const job: BulkUploadJob = {
       id: jobId,
       status: 'pending',
-      totalFiles: files.length,
+      totalFiles: urls.length,
       processedFiles: 0,
       successCount: 0,
       errorCount: 0,
       errors: [],
-      files: files.map((file, index) => ({
+      files: urls.map((url, index) => ({
         id: `${jobId}-file-${index}`,
-        fileName: file.name,
+        fileName: `image-${index}`,
         status: 'pending' as const,
+        url
       })),
       createdAt: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
@@ -101,7 +99,7 @@ export async function POST(request: NextRequest) {
     await jobStorage.addJobToQueue(jobId, 1); // Priority 1 for user jobs
 
     // Process files asynchronously
-    processFilesAsync(jobId, files, subject, topicId, userId, gptModel);
+    processFilesAsync(jobId, urls, subject, topicId, userId, gptModel, additionalInstructions);
 
     return jsonResponse({
       job: {
@@ -132,11 +130,12 @@ export async function POST(request: NextRequest) {
 
 async function processFilesAsync(
   jobId: string, 
-  files: File[], 
+  urls: string[], 
   subject: any, 
   topicId: string | null,
   userId: string,
-  gptModel: string
+  gptModel: string,
+  additionalInstructions: string
 ) {
   const job = await jobStorage.get(jobId);
   if (!job) {
@@ -155,7 +154,7 @@ async function processFilesAsync(
       return;
     }
 
-    console.log(`Starting processing for job ${jobId} with ${files.length} files using ${gptModel}`);
+    console.log(`Starting processing for job ${jobId} with ${urls.length} files using ${gptModel}`);
     await jobStorage.updateJobStatus(jobId, { status: 'processing' });
 
     let subjectSubtopics = [] as { id: string; name: string }[];
@@ -177,12 +176,12 @@ async function processFilesAsync(
     }
 
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+    for (let i = 0; i < urls.length; i++) {
+      const url = urls[i];
       const fileId = job.files[i].id;
       
       try {
-        console.log(`Processing file ${i + 1}/${files.length}: ${file.name}`);
+        console.log(`Processing file ${i + 1}/${urls.length}: ${url}`);
         
         // Update file status to processing with retry logic
         let retryCount = 0;
@@ -203,17 +202,13 @@ async function processFilesAsync(
           }
         }
 
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const base64Image = buffer.toString('base64');
-
         const questionData = await processImageToQuestion(
-          base64Image,
-          file.type,
+          url,
           subject,
           topicId,
           subjectSubtopics,
-          gptModel
+          gptModel,
+          additionalInstructions
         );
 
         if (questionData.success && questionData.data) {
@@ -223,19 +218,19 @@ async function processFilesAsync(
             questionId,
             processedAt: new Date().toISOString()
           });
-          console.log(`Successfully processed file: ${file.name} -> Question ID: ${questionId}`);
+          console.log(`Successfully processed file: ${url} -> Question ID: ${questionId}`);
         } else {
           const errorMessage = questionData.message || 'Processing failed';
           await jobStorage.updateFileStatus(jobId, fileId, {
             status: 'failed',
             error: errorMessage
           });
-          console.error(`Failed to process file ${file.name}: ${errorMessage}`);
+          console.error(`Failed to process file ${url}: ${errorMessage}`);
         }
 
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error(`Error processing file ${file.name}:`, error);
+        console.error(`Error processing file ${url}:`, error);
         
         try {
           await jobStorage.updateFileStatus(jobId, fileId, {

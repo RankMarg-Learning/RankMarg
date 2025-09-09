@@ -27,7 +27,7 @@ export default function RootLayout({
     // <QueryProvider>
       <div className="flex h-screen ">
         <AdminSidebar />
-        <main className="flex-1 overflow-x-auto p-8">
+        <main className="flex-1 overflow-x-auto p-2 md:p-8">
           {children}
           <Toaster />
         </main>

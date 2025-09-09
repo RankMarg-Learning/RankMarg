@@ -6,8 +6,8 @@ import { Trash2, Upload, CheckCircle, XCircle, Clock, Eye } from 'lucide-react'
 
 interface UploadedFile {
   id: string
-  file: File
-  preview: string
+  url: string
+  fileName: string
   status: 'pending' | 'processing' | 'completed' | 'error'
   error?: string
 }
@@ -72,15 +72,15 @@ export const FilePreview = ({
               <div key={file.id} className="relative group">
                 <div className="aspect-square rounded-lg overflow-hidden border">
                   <img
-                    src={file.preview}
-                    alt={file.file.name}
+                    src={file.url}
+                    alt={file.fileName}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="absolute top-2 right-2 flex gap-1">
                   <Badge 
                     variant="secondary" 
-                    className={`text-xs ${getStatusColor(file.status)}`}
+                    className={`text-xs hidden ${getStatusColor(file.status)}`}
                   >
                     <span className="flex items-center gap-1">
                       {getStatusIcon(file.status)}
@@ -102,13 +102,13 @@ export const FilePreview = ({
                     size="sm"
                     variant="secondary"
                     className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => window.open(file.preview, '_blank')}
+                    onClick={() => window.open(file.url, '_blank')}
                   >
                     <Eye className="h-3 w-3" />
                   </Button>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground truncate">
-                  {file.file.name}
+                  {file.fileName}
                 </p>
                 {file.error && (
                   <p className="text-xs text-red-500 mt-1" title={file.error}>
