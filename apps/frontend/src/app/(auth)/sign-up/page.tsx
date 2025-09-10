@@ -286,7 +286,7 @@ const SignUpForm = () => {
                 </div>
                 
                 {msg && (
-                  <Alert className={`mb-4 ${getMessageStyles()}`}>
+                  <Alert className={`mb-2 ${getMessageStyles()}`}>
                     <AlertDescription>{msg}</AlertDescription>
                   </Alert>
                 )}

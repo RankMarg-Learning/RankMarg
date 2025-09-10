@@ -65,7 +65,7 @@ const SignInForm = () => {
         setMsgType("success");
         setTimeout(() => {
           router.push("/dashboard");
-        }, 1000);
+        }, 500);
       }
     } catch (error) {
       console.error("Login failed:", error);
@@ -149,7 +149,7 @@ const SignInForm = () => {
               </div>
               
               {msg && (
-                <Alert className={`mt-4 mb-4 ${getMessageStyles()}`}>
+                <Alert className={`mt-2 mb-2 ${getMessageStyles()}`}>
                   <AlertDescription>{msg}</AlertDescription>
                 </Alert>
               )}

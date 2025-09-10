@@ -26,6 +26,7 @@
     "@repo/db": "*",
     "@repo/suggest": "^1.0.0",
     "@types/ws": "^8.5.12",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "date-fns": "^4.1.0",
