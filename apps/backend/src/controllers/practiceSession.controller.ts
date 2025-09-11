@@ -267,7 +267,11 @@ export class PracticeSessionController {
         res,
         formatted,
         "Practice sessions retrieved successfully",
-        200
+        200,
+        undefined,
+        {
+          "Cache-Control": "public, max-age=60, stale-while-revalidate=30",
+        }
       );
     } catch (error) {
       next(error);

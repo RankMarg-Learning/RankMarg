@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState, Suspense } from "react";
-import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import api from "@/utils/api";
@@ -16,6 +15,8 @@ import { useSubjects } from "@/hooks/useSubject";
 import { useTopics } from "@/hooks/useTopics";
 import { CheckCircle2, Circle, PlayCircle } from "lucide-react";
 import CurriculumSkeleton from "@/components/skeleton/curriculum.skeleton";
+import { useUser } from "@/hooks/useUser";
+import { Skeleton } from "./ui/skeleton";
 
 type CurrentState = {
 	topicId: string;
@@ -24,16 +25,15 @@ type CurrentState = {
 };
 
 function MyCurriculumContent() {
-	const { data: session } = useSession();
+	const { user } = useUser();
 	const queryClient = useQueryClient();
 	const searchParams = useSearchParams();
 
 	const [selectedSubjectId, setSelectedSubjectId] = useState<string>("");
-
-	const { subjects, isLoading: isLoadingSubjects } = useSubjects(session?.user?.examCode || "NEET");
+	const { subjects, isLoading: isLoadingSubjects } = useSubjects(user?.examCode || "NEET");
 	const { topics, isLoading: isLoadingTopics } = useTopics(selectedSubjectId);
 
-	const { data: currentTopicStates, isLoading: isLoadingStates } = useQuery({
+	const { data: currentTopicStates, isLoading: isLoadingStates, refetch: refetchCurrentStates } = useQuery({
 		queryKey: ["current-topic-states", selectedSubjectId],
 		queryFn: async () => {
 			if (!selectedSubjectId) return [] as CurrentState[];
@@ -46,30 +46,32 @@ function MyCurriculumContent() {
 		refetchOnWindowFocus: false,
 	});
 
-// Global current-topic states not required for per-subject cap; remove to keep UI lean
 
 	const currentMap = useMemo(() => {
 		const map = new Map<string, CurrentState>();
 		(currentTopicStates || []).forEach((s) => map.set(s.topicId, s));
+		console.log("map", map)
 		return map;
 	}, [currentTopicStates]);
 
 	const splitByStatus = useMemo(() => {
-		const all = (topics?.data || []) as Array<any>;
+		const all = (topics || []) as Array<any>;
+		console.log("all", all)
 		const current: any[] = [];
 		const completed: any[] = [];
 		const pending: any[] = [];
 		all.forEach((t) => {
 			const st = currentMap.get(t.id);
+			console.log("st", st)
 			if (st?.isCurrent) current.push(t);
 			else if (st?.isCompleted) completed.push(t);
 			else pending.push(t);
 		});
 
 		return { current, pending, completed };
-	}, [topics?.data, currentMap]);
+	}, [topics, currentMap]);
 
-// Note: per-subject cap is displayed; global states kept for future use if needed
+
 
 	const setCurrentMutation = useMutation({
 		mutationFn: async ({ subjectId, topicId }: { subjectId: string; topicId: string }) => {
@@ -82,6 +84,7 @@ function MyCurriculumContent() {
 					queryClient.invalidateQueries({ queryKey: ["current-topic-states", selectedSubjectId] }),
 					queryClient.invalidateQueries({ queryKey: ["current-topic-global"] }),
 					queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+					refetchCurrentStates(),
 				]);
 			} else {
 				toast({ title: res?.message || "Failed to update", className: "bg-red-500 text-white" });
@@ -98,7 +101,16 @@ function MyCurriculumContent() {
 		},
 		onSuccess: async (res) => {
 			if (res?.success) {
-				await queryClient.invalidateQueries({ queryKey: ["current-topic-states", selectedSubjectId] });
+				toast({
+					title: "Topic marked as completed",
+					variant: "default"
+				});
+				await Promise.all([
+					queryClient.invalidateQueries({ queryKey: ["current-topic-states", selectedSubjectId] }),
+					queryClient.invalidateQueries({ queryKey: ["current-topic-global"] }),
+					queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+					refetchCurrentStates(),
+				]);
 			} else {
 				toast({ title: res?.message || "Failed to update", className: "bg-red-500 text-white" });
 			}
@@ -114,32 +126,39 @@ function MyCurriculumContent() {
 			setSelectedSubjectId(subjectIdParam);
 			return;
 		}
-		if (!selectedSubjectId && subjects?.data?.length) {
-			setSelectedSubjectId(subjects.data[0].id);
+		if (!selectedSubjectId && subjects?.length) {
+			setSelectedSubjectId(subjects[0].id);
 		}
-	}, [subjects?.data, selectedSubjectId, searchParams]);
+	}, [subjects, selectedSubjectId, searchParams]);
 
 	if (isLoadingSubjects || isLoadingTopics || isLoadingStates) {
 		return <CurriculumSkeleton />;
 	}
 
 	return (
-		<div className="container mx-auto px-4 py-6 space-y-6">
+		<div className="container mx-auto md:px-4 px-2 py-6 space-y-6">
 			<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 				<h1 className="text-lg font-semibold sm:text-xl">My Curriculum</h1>
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3 w-full sm:w-auto">
 					<Badge className="w-full sm:w-auto justify-center" variant="outline">Current in subject: {splitByStatus.current.length}/2</Badge>
 					<div className="w-full sm:w-64">
-						<Select value={selectedSubjectId} onValueChange={setSelectedSubjectId}>
-							<SelectTrigger className="w-full">
-								<SelectValue placeholder="Select subject" />
-							</SelectTrigger>
-							<SelectContent>
-								{subjects?.data?.map((s: any) => (
-									<SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+						{
+							!isLoadingSubjects ? (
+
+								<Select value={selectedSubjectId} onValueChange={setSelectedSubjectId}>
+									<SelectTrigger className="w-full">
+										<SelectValue placeholder="Select subject" />
+									</SelectTrigger>
+									<SelectContent>
+										{subjects?.map((s: any) => (
+											<SelectItem key={s.id} value={s.id}>{s.name} </SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							) : (
+								<Skeleton className="w-full h-10" />
+							)
+						}
 					</div>
 				</div>
 			</div>
@@ -262,8 +281,8 @@ function Row({ status, topic, isCompleted, onMakeCurrent, onToggleDone, disableM
 	const styles = isCurrent
 		? "border-green-200 bg-green-50"
 		: status === "completed"
-		? "border-gray-200 bg-gray-50"
-		: "border-amber-100 bg-amber-50";
+			? "border-gray-200 bg-gray-50"
+			: "border-amber-100 bg-amber-50";
 
 	return (
 		<div className={`${base} ${styles}`}>

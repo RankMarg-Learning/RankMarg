@@ -13,10 +13,7 @@ import {
 
 
 function ProfilePage({ username }: { username: string }) {
-    const { userBasic, activities, currentStudies, isError, isLoading } = useProfileData({
-        id: "0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5",
-        username
-    })
+    const { userBasic, activities, currentStudies, isError, isLoading } = useProfileData({ username })
 
     if (isLoading) {
         return <ProfileSkeleton />

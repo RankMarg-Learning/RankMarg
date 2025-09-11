@@ -2,7 +2,6 @@ import api from '@/utils/api'
 import { useQueries } from '@tanstack/react-query'
 
 type QueryParams = {
-    id?: string
     username?: string
 }
 
@@ -11,25 +10,21 @@ const fetchTests = (endpoint: string) => async () => {
     return data
 }
 
-export function useProfileData({ id, username }: QueryParams = {}) {
-    const version = process.env.VERSION || '/v.1.0'
+export function useProfileData({ username }: QueryParams = {}) {
 
     const queries = useQueries({
         queries: [
             {
                 queryKey: ['userBasic', username],
-                queryFn: fetchTests(`profile/${username}`),
-                enabled: !!username,
+                queryFn: fetchTests(`/user/profile?username=${username}`),
             },
             {
-                queryKey: ['currentStudies', id],
-                queryFn: fetchTests(`${version}/current_curriculum?id=${id}&includeTopic=true&includeSubject=true&isCurrent=true`),
-                enabled: !!id,
+                queryKey: ['currentStudies'],
+                queryFn: fetchTests(`/current-topic?includeTopic=true&includeSubject=true&isCurrent=true`),
             },
             {
-                queryKey: ['activities', id],
-                queryFn: fetchTests(`${version}/activity?id=${id}&limit=4`),
-                enabled: !!id,
+                queryKey: ['activities'],
+                queryFn: fetchTests(`/user/activity?limit=4`),
             },
         ],
     })

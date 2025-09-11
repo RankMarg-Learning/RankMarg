@@ -507,3 +507,60 @@ Please make sure your database server is running at `ep-wandering-bonus-a18liwbe
 2025-09-09 22:09:57 [ERROR]: Redis client error: Connection timeout
 2025-09-09 23:07:42 [ERROR]: Redis client error: read ECONNRESET
 2025-09-09 23:07:42 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 14:03:47 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 14:03:51 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:03:52 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:03:54 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:03:58 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:04:03 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:04:08 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:04:13 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:04:18 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:04:24 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:04:29 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:17:14 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 14:17:14 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 14:17:33 [ERROR]: Redis client error: Connection timeout
+2025-09-10 14:17:44 [ERROR]: Redis client error: Connection timeout
+2025-09-10 15:45:28 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 15:45:28 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 15:45:38 [ERROR]: Redis client error: Connection timeout
+2025-09-10 15:45:39 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 15:45:51 [ERROR]: Redis client error: Connection timeout
+2025-09-10 15:45:55 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 15:46:00 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 15:46:05 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 15:46:20 [ERROR]: Redis client error: Connection timeout
+2025-09-10 15:46:35 [ERROR]: Redis client error: Connection timeout
+2025-09-10 15:46:40 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 15:46:45 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 15:47:00 [ERROR]: Redis client error: Connection timeout
+2025-09-10 15:47:15 [ERROR]: Redis max reconnection attempts reached
+2025-09-10 15:47:15 [ERROR]: Redis client error: Connection timeout
+2025-09-10 16:06:23 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 16:06:23 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 16:06:33 [ERROR]: Redis client error: Connection timeout
+2025-09-10 16:06:35 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 16:10:08 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 16:10:08 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 16:10:18 [ERROR]: Redis client error: Connection timeout
+2025-09-10 16:10:20 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 16:10:40 [ERROR]: Redis client error: Connection timeout
+2025-09-10 16:10:54 [ERROR]: Redis client error: Connection timeout
+2025-09-11 19:57:35 [ERROR]: Redis client error: read ECONNRESET
+2025-09-11 19:57:35 [ERROR]: Redis client error: read ECONNRESET
+2025-09-11 19:57:35 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 19:57:36 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 19:57:38 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 19:57:42 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:08 [ERROR]: Redis client error: read ECONNRESET
+2025-09-11 22:46:08 [ERROR]: Redis client error: read ECONNRESET
+2025-09-11 22:46:18 [ERROR]: Redis client error: Connection timeout
+2025-09-11 22:46:19 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:21 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:25 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:33 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:38 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:43 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:48 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:55 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io

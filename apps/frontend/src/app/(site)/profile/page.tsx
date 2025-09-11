@@ -14,6 +14,7 @@ import { z } from "zod"
 import ProfileSkeleton from "@/components/skeleton/skel_profile"
 import { TextFormator } from "@/utils/textFormator"
 import { StandardEnum } from "@repo/db/enums"
+import api from "@/utils/api"
 
 
 
@@ -50,17 +51,17 @@ export default function ProfileUpdate() {
   const [editValue, setEditValue] = useState<string>("")
 
   const { data: profile, isLoading } = useQuery({
-    queryKey: ["profile"],
+    queryKey: ["profile-edit"],
     queryFn: async (): Promise<Profile> => {
-      const { data } = await axios.get(`/api/profile/edit`)
-      return data
+      const { data } = await api.get(`/user/profile`)
+      return data?.data
     },
   })
 
   const mutation = useMutation({
     mutationFn: async ({ field, value }: { field: ProfileField; value: string | number }) => {
       if (field === 'username' && typeof value === 'string') {
-        const res = await axios.get(`/api/profile/check-username?username=${value}`)
+        const res = await api.get(`/auth/check-username?username=${value}`)
         if (!res.data.data.available) {
           throw new Error('Username is already taken')
         }
@@ -79,14 +80,14 @@ export default function ProfileUpdate() {
         }
       }
 
-      await axios.put(`/api/profile/edit`, { [field]: processedValue })
+      await api.put(`/user/profile/edit`, { [field]: processedValue })
       return { field, value: processedValue }
     },
     onMutate: async ({ field, value }) => {
-      await queryClient.cancelQueries({ queryKey: ["profile"] })
-      const previousProfile = queryClient.getQueryData<Profile>(["profile"])
+      await queryClient.cancelQueries({ queryKey: ["profile-edit"] })
+      const previousProfile = queryClient.getQueryData<Profile>(["profile-edit"])
 
-      queryClient.setQueryData(["profile"], (old: Profile | undefined) => {
+      queryClient.setQueryData(["profile-edit"], (old: Profile | undefined) => {
         if (!old) return old
 
         let processedValue: string | number = value
@@ -103,7 +104,7 @@ export default function ProfileUpdate() {
       return { previousProfile }
     },
     onError: (err: Error, _, context) => {
-      queryClient.setQueryData(["profile"], context?.previousProfile)
+      queryClient.setQueryData(["profile-edit"], context?.previousProfile)
       toast({
         title: err.message || "Failed to update profile!!",
         variant: "default",
@@ -112,7 +113,7 @@ export default function ProfileUpdate() {
       })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["profile"] })
+      queryClient.invalidateQueries({ queryKey: ["profile-edit"] })
       setEditingField(null)
       toast({
         title: "Profile Updated Successfully!!",
@@ -127,10 +128,12 @@ export default function ProfileUpdate() {
     if (profile) {
       if (field === "email" as string) return;
 
-      let value = profile[field]
+      let value = profile?.[field]
 
       if (typeof value === 'number') {
         value = value.toString()
+      } else {
+        value = value || "No value found"
       }
       setEditValue(value as string || "")
     }
@@ -268,12 +271,12 @@ export default function ProfileUpdate() {
               <div className="relative w-28 h-28 mb-4 mx-auto flex items-center justify-center">
                 <Avatar className="w-full h-full">
                   <AvatarImage
-                    src={profile?.avatar || "/default-avatar.png"}
+                    src={profile?.avatar || "No avatar found"}
                     alt={profile?.name}
                     className="object-cover rounded-full border-4 border-white"
                   />
-                  <AvatarFallback className="rounded-full text-xl">
-                    {profile?.name?.charAt(0)}
+                  <AvatarFallback className="rounded-full text-4xl">
+                    {profile?.name?.charAt(0) || "No name found"}
                   </AvatarFallback>
                 </Avatar>
 
@@ -319,7 +322,7 @@ export default function ProfileUpdate() {
                   <Input
                     id="email"
                     name="email"
-                    value={profile?.email || ""}
+                    value={profile?.email || "No email found"}
                     disabled
                     className="bg-gray-50"
                   />
@@ -338,7 +341,7 @@ export default function ProfileUpdate() {
                   <div className="space-y-1 flex-grow">
                     <Label htmlFor="standard">Grade Level</Label>
                     <Select
-                      value={profile?.standard || ""}
+                      value={profile?.standard || "No standard found"}
                       onValueChange={(value) => handleSave("standard", value)}
                       disabled={editingField !== "standard"}
                     >
@@ -368,7 +371,7 @@ export default function ProfileUpdate() {
                   <div className="space-y-1 flex-grow">
                     <Label htmlFor="targetYear">Target Exam Year</Label>
                     <Select
-                      value={profile?.targetYear?.toString() || ""}
+                      value={profile?.targetYear?.toString() || "No target year found"}
                       onValueChange={(value) => handleSave("targetYear", value)}
                       disabled={editingField !== "targetYear"}
                     >
@@ -404,7 +407,7 @@ export default function ProfileUpdate() {
                       min="0"
                       max="24"
                       step="0.5"
-                      value={editingField === "studyHoursPerDay" ? editValue : (profile?.studyHoursPerDay?.toString() || "")}
+                      value={editingField === "studyHoursPerDay" ? editValue : (profile?.studyHoursPerDay?.toString() || "No study hours per day found")}
                       onChange={(e) => setEditValue(e.target.value)}
                       disabled={editingField !== "studyHoursPerDay"}
                     />
@@ -425,7 +428,7 @@ export default function ProfileUpdate() {
                     <Input
                       id="location"
                       name="location"
-                      value={editingField === "location" ? editValue : (profile?.location || "")}
+                      value={editingField === "location" ? editValue : (profile?.location || "No location found")}
                       onChange={(e) => setEditValue(e.target.value)}
                       disabled={editingField !== "location"}
                     />

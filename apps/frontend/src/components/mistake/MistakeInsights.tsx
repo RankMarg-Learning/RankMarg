@@ -23,6 +23,7 @@ interface InsightStyles {
 }
 
 const MistakeInsights: React.FC<MistakeInsightsProps> = ({ insights = [] }) => {
+  console.log(insights)
   const getInsightStyles = (type: Insight['type'], severity: Insight['severity']): InsightStyles => {
     if (type === 'WEAKNESS') {
       switch (severity) {
@@ -135,7 +136,7 @@ const MistakeInsights: React.FC<MistakeInsightsProps> = ({ insights = [] }) => {
     <div className="bg-white rounded-xl border border-neutral-200/30 p-6">
       <h3 className="text-lg font-semibold mb-4 text-gray-800">Personalized Insights</h3>
       <div className="space-y-4">
-        {insights.map((insight: Insight, index: number) => {
+        {insights?.map((insight: Insight, index: number) => {
           const styles: InsightStyles = getInsightStyles(insight.type, insight.severity);
           
           return (

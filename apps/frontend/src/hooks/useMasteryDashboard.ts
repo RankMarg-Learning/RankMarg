@@ -8,17 +8,16 @@ const fetchData = (endpoint: string) => async () => {
 }
 
 export function useMasteryDashboard() {
-    const version = '/v.1.0'
 
     const queries = useQueries({
         queries: [
             {
                 queryKey: ['masteryBasic'],
-                queryFn: fetchData(`${version}/dashboard/mastery`),
+                queryFn: fetchData(`/mastery`),
             },
             {
                 queryKey: ['subjectMastery'],
-                queryFn: fetchData(`${version}/dashboard/mastery/subjects?improvementAreasCount=2&topPerformingCount=3`),
+                queryFn: fetchData(`/mastery/subjects?improvementAreasCount=2&topPerformingCount=3`),
             },
             
         ],

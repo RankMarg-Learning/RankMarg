@@ -1,0 +1,58 @@
+import jwt from "jsonwebtoken";
+import { ServerConfig } from "@/config/server.config";
+import { CookieOptions, Response } from "express";
+
+// Default cookie configuration
+const cookieConfig: CookieOptions = {
+  httpOnly: true,
+  secure: false,
+  sameSite: "lax",
+  maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  path: "/",
+};
+
+export const AuthUtil = {
+  /**
+   * Generate JWT token
+   */
+  generateToken(payload: any): string {
+    return jwt.sign(payload, ServerConfig.security.jwtSecret, {
+      expiresIn: "30d",
+    });
+  },
+
+  /**
+   * Set JWT token in HttpOnly cookie
+   */
+  setTokenCookie(res: Response, token: string): void {
+    res.cookie("x-auth-token", token, cookieConfig);
+  },
+
+  /**
+   * Clear auth token cookie
+   */
+  clearTokenCookie(res: Response): void {
+    res.clearCookie("x-auth-token", {
+      ...cookieConfig,
+      maxAge: 0,
+    });
+  },
+
+  /**
+   * Extract token from cookie or header
+   */
+  extractToken(req: any): string | null {
+    // First try to get from cookie
+    if (req.cookies && req.cookies["x-auth-token"]) {
+      return req.cookies["x-auth-token"];
+    }
+
+    // Fall back to Authorization header
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      return authHeader.substring(7);
+    }
+
+    return null;
+  },
+};

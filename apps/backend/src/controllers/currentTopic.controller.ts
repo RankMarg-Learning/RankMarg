@@ -11,19 +11,53 @@ export class CurrentTopicController {
   ) => {
     try {
       const userId = req.user.id;
+      const { subjectId, isCompleted, isCurrent } = req.query;
+      const where: any = {};
+      if (subjectId) where.subjectId = subjectId;
+      if (isCurrent !== undefined) where.isCurrent = isCurrent === "true";
+      if (isCompleted !== undefined) where.isCompleted = isCompleted === "true";
+      if (userId) where.userId = userId;
+
       const topics = await prisma.currentStudyTopic.findMany({
-        where: { userId },
+        where,
         select: {
-          topicId: true,
           isCurrent: true,
           isCompleted: true,
+          topic: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          subject: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          startedAt: true,
         },
         orderBy: { startedAt: "desc" },
       });
-      ResponseUtil.success(res, topics, "Ok", 200, undefined, {
-        "Cache-Control": "public, max-age=30, stale-while-revalidate=30",
-        Vary: "Authorization",
+      //filter such that data will give proper json like subjectName, topicName, topicId, isCurrent, isCompleted, startedAt
+      const uniqueSubjects = topics.map((subject: any) => {
+        subject.topicName = subject.topic.name;
+        subject.topicId = subject.topic.id;
+        subject.subjectName = subject.subject.name;
+        subject.subjectId = subject.subject.id;
+        subject.isCurrent = subject.isCurrent;
+        subject.isCompleted = subject.isCompleted;
+        subject.startedAt = subject.startedAt;
+        delete subject.subject;
+        delete subject.topic;
+        return subject;
       });
+      ResponseUtil.success(
+        res,
+        uniqueSubjects,
+        "Current topics fetched successfully",
+        200
+      );
     } catch (error) {
       next(error);
     }

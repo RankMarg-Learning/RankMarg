@@ -8,7 +8,7 @@ const masteryController = new MasteryController();
 router.get("/", authenticate, masteryController.getMasteryDashboard);
 router.get("/subjects", authenticate, masteryController.getTopMasteryBySubject);
 router.get(
-  "/:subjectId",
+  "/subjects/:subjectId",
   authenticate,
   masteryController.getFullMasteryBySubjectId
 );

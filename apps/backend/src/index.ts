@@ -5,7 +5,11 @@ moduleAlias.addAliases({
 
 import express, { Request, Response } from "express";
 import cors from "cors";
-import session from "./routes/session";
+import passport from "passport";
+import expressSession from "express-session";
+import cookieParser from "cookie-parser";
+import configurePassport from "./config/passport.config";
+import sessionRoutes from "./routes/session";
 import mastery from "./routes/mastery";
 import performance from "./routes/performance";
 import reviews from "./routes/reviews";
@@ -15,26 +19,23 @@ import { cronManager } from "./config/cron.config";
 import redisService from "./lib/redis";
 import { RedisCacheService } from "./services/redisCache.service";
 import { errorHandler } from "./middleware/error.middleware";
-import dashboardRoutes from "./routes/dashboard.routes";
-import attemptRoutes from "./routes/attempt.routes";
-import currentTopicRoutes from "./routes/currentTopic.routes";
-import onboardingRoutes from "./routes/onboarding.routes";
-import masteryRoutes from "./routes/mastery.routes";
-import mistakeTrackerRoutes from "./routes/mistakeTracker.route";
-import practiceSessionRoutes from "./routes/practiceSession.routes";
-import testRoutes from "./routes/test.routes";
-import analyticsRoutes from "./routes/analytics.routes";
-import curriculumRoutes from "./routes/topics.routes";
-import topicsRoutes from "./routes/topics.routes";
-import subjectsRoutes from "./routes/subjects.routes";
-import subtopicsRoutes from "./routes/subtopics.routes";
-import questionRoutes from "./routes/question.routes";
+
+import { routes } from "./routes";
 // import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 
 const app = express();
 
 app.use(cors(ServerConfig.cors));
 app.use(express.json({ limit: ServerConfig.performance.maxPayloadSize }));
+app.use(cookieParser(ServerConfig.security.session.secret)); // Parse cookies with the same secret as sessions
+
+// Configure session
+app.use(expressSession(ServerConfig.security.session));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+configurePassport();
 
 async function initializeRedis() {
   try {
@@ -178,7 +179,7 @@ app.get(`${ServerConfig.api.routes.cache}/stats`, async (res: Response) => {
 cronManager.initialize();
 
 // API routes
-app.use(`${ServerConfig.api.routes.session}`, session);
+app.use(`${ServerConfig.api.routes.session}`, sessionRoutes);
 app.use(`${ServerConfig.api.routes.mastery}`, mastery);
 app.use(`${ServerConfig.api.routes.performance}`, performance);
 app.use(`${ServerConfig.api.routes.reviews}`, reviews);
@@ -187,19 +188,24 @@ app.use(`${ServerConfig.api.prefix}/cron`, cronRoutes);
 // New v2 profile routes with proper structure
 // app.use(`${ServerConfig.api.prefix}/v2/profile`, profileRoutes);
 
-app.use(`${ServerConfig.api.prefix}/dashboard`, dashboardRoutes);
-app.use(`${ServerConfig.api.prefix}/attempts`, attemptRoutes);
-app.use(`${ServerConfig.api.prefix}/current-topic`, currentTopicRoutes);
-app.use(`${ServerConfig.api.prefix}/onboarding`, onboardingRoutes);
-app.use(`${ServerConfig.api.prefix}/mastery`, masteryRoutes);
-app.use(`${ServerConfig.api.prefix}/mistake-tracker`, mistakeTrackerRoutes);
-app.use(`${ServerConfig.api.prefix}/practice-sessions`, practiceSessionRoutes);
-app.use(`${ServerConfig.api.prefix}/test`, testRoutes);
-app.use(`${ServerConfig.api.prefix}/analytics`, analyticsRoutes);
-app.use(`${ServerConfig.api.prefix}/topics`, topicsRoutes);
-app.use(`${ServerConfig.api.prefix}/subjects`, subjectsRoutes);
-app.use(`${ServerConfig.api.prefix}/subtopics`, subtopicsRoutes);
-app.use(`${ServerConfig.api.prefix}/question`, questionRoutes);
+app.use(`${ServerConfig.api.prefix}/dashboard`, routes.dashboard);
+app.use(`${ServerConfig.api.prefix}/attempts`, routes.attempt);
+app.use(`${ServerConfig.api.prefix}/current-topic`, routes.currentTopic);
+app.use(`${ServerConfig.api.prefix}/onboarding`, routes.onboarding);
+app.use(`${ServerConfig.api.prefix}/mastery`, routes.mastery);
+app.use(`${ServerConfig.api.prefix}/mistake-tracker`, routes.mistakeTracker);
+app.use(`${ServerConfig.api.prefix}/practice-sessions`, routes.practiceSession);
+app.use(`${ServerConfig.api.prefix}/test`, routes.test);
+app.use(`${ServerConfig.api.prefix}/analytics`, routes.analytics);
+app.use(`${ServerConfig.api.prefix}/topics`, routes.topics);
+app.use(`${ServerConfig.api.prefix}/subjects`, routes.subjects);
+app.use(`${ServerConfig.api.prefix}/subtopics`, routes.subtopics);
+app.use(`${ServerConfig.api.prefix}/question`, routes.question);
+app.use(`${ServerConfig.api.prefix}/suggestion`, routes.suggestion);
+app.use(`${ServerConfig.api.prefix}/user`, routes.user);
+
+// Authentication routes
+app.use(`${ServerConfig.api.prefix}/auth`, routes.auth);
 
 // Basic health endpoint for container orchestration
 app.get(ServerConfig.api.routes.health, (_req: Request, res: Response) => {

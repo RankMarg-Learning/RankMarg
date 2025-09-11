@@ -1,3 +1,4 @@
+//shifted to backend : /api/current-topic
 export const dynamic = 'force-dynamic';
 
 import prisma from '@/lib/prisma';

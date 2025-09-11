@@ -13,14 +13,26 @@ import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from './ui/badge';
-import { signOut, useSession } from 'next-auth/react';
+import { useUser } from '@/hooks/useUser';
+import api from '@/utils/api';
+import router from 'next/router';
+import { Skeleton } from './ui/skeleton';
 
 interface HeaderProps {
   onMenuClick?: () => void;
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
-  const { data: session , status } = useSession();
+  const { user, isLoading } = useUser();
+
+  const handleSignOut = async() => {
+    try {
+      await api.post("/auth/sign-out");
+      router.push("/sign-in");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <>
@@ -68,8 +80,9 @@ export function Header({ onMenuClick }: HeaderProps) {
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-accent rounded-full"></span>
           </Button>
           {
-            session?.user?.plan?.status !== "ACTIVE" && status === "authenticated" && (
-              <Link href={`/pricing?ref=header_upgrade&id=${session?.user?.id}&current_plan=${session?.user?.plan?.status}`} className="md:hidden flex items-center">
+            
+            user?.plan?.status !== "ACTIVE" && (
+              <Link href={`/pricing?ref=header_upgrade&id=${user?.id}&current_plan=${user?.plan?.status}`} className="md:hidden flex items-center">
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -85,27 +98,32 @@ export function Header({ onMenuClick }: HeaderProps) {
             )
           }
 
+          {
+            isLoading ? (
+              <Skeleton className="w-8 h-8 rounded-full mr-3 gap-2" />
+            ) : (
+              
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <div className="flex items-center gap-2 cursor-pointer mr-3">
                 <div className="relative">
                   <Avatar className="h-8 w-8 border border-card-border">
-                    <AvatarImage src={session?.user.image} />
+                    <AvatarImage src={user?.image} />
                     <AvatarFallback className="bg-subtle-gray text-foreground">
-                      {session?.user.username?.split(" ")
+                      {user?.username?.split(" ")
                         .map((n) => n[0])
                         .join("")
                         .toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  {session?.user?.plan?.status === "ACTIVE" && (
+                  {user?.plan?.status === "ACTIVE" && (
                     <Badge variant="outline" className="absolute -top-2 -right-2 bg-amber-50 text-amber-700 border-amber-200 p-0.5 gap-0.5 flex">
                       <Crown size={8} className="text-amber-500" />
                     </Badge>
                   )}
                 </div>
                 <span className="font-medium text-sm hidden md:inline-block">
-                  {session?.user?.username}
+                  {user?.username}
                 </span>
               </div>
             </DropdownMenuTrigger>
@@ -113,7 +131,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href={`/u/${session?.user?.username}`} className="flex items-center cursor-pointer">
+                <Link href={`/u/${user?.username}`} className="flex items-center cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </Link>
@@ -127,13 +145,14 @@ export function Header({ onMenuClick }: HeaderProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="flex items-center cursor-pointer text-red-500 focus:text-red-500"
-                onClick={() => signOut({ callbackUrl: "/" })}
+                onClick={handleSignOut}
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+            )}
         </div>
       </div>
     </header>

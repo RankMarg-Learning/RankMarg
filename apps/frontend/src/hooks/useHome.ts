@@ -4,7 +4,7 @@ import { getQueryConfig } from '@/lib/queryConfig';
 import api from '@/utils/api';
 
 const fetchHomeData = async () => {
-    const { data } = await api.get('/v.1.0/home?subtopicsCount=3&sessionsCount=3')
+    const { data } = await api.get('/dashboard?subtopicsCount=3&sessionsCount=3')
     return data
 }
 

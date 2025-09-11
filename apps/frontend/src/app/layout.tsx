@@ -72,9 +72,9 @@ export default function RootLayout({
         >
           <Script id="razorpay-checkout-js" src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload"/>
           <QueryProvider>
-            <ClientSessionProvider>
+            {/* <ClientSessionProvider> */}
               {children}
-            </ClientSessionProvider>
+            {/* </ClientSessionProvider> */}
           </QueryProvider>
         </body>
       </html>

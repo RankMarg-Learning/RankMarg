@@ -8,17 +8,16 @@ const fetchTests = (endpoint: string) => async () => {
 }
 
 export function useAnalyticsDashboard() {
-    const version =  '/v.1.0'
 
     const queries = useQueries({
         queries: [
             {
                 queryKey: ['analytics'],
-                queryFn: fetchTests(`${version}/analytics?loc=analytics_page`),
+                queryFn: fetchTests(`/analytics?loc=analytics_page`),
             },
             {
                 queryKey: ['attempts'],
-                queryFn: fetchTests(`${version}/attempts?loc=attempts_page&type=calendar`),
+                queryFn: fetchTests(`/attempts?loc=attempts_page&type=calendar`),
             }
             
         ],

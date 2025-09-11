@@ -1594,3 +1594,466 @@ Please make sure your database server is running at `ep-wandering-bonus-a18liwbe
 2025-09-09 23:31:38 [INFO]: Connected to Upstash Redis
 2025-09-09 23:31:39 [INFO]: Redis client ready
 2025-09-09 23:49:21 [INFO]: Redis client disconnected
+2025-09-10 11:11:05 [INFO]: Redis client connected
+2025-09-10 11:11:05 [INFO]: Connected to Upstash Redis
+2025-09-10 11:11:05 [INFO]: Redis client ready
+2025-09-10 11:22:05 [INFO]: Redis client connected
+2025-09-10 11:22:05 [INFO]: Connected to Upstash Redis
+2025-09-10 11:22:05 [INFO]: Redis client ready
+2025-09-10 11:26:22 [INFO]: Redis client connected
+2025-09-10 11:26:22 [INFO]: Connected to Upstash Redis
+2025-09-10 11:26:22 [INFO]: Redis client ready
+2025-09-10 12:33:18 [INFO]: Redis client connected
+2025-09-10 12:33:18 [INFO]: Connected to Upstash Redis
+2025-09-10 12:33:18 [INFO]: Redis client ready
+2025-09-10 12:34:57 [INFO]: Redis client connected
+2025-09-10 12:34:57 [INFO]: Connected to Upstash Redis
+2025-09-10 12:34:57 [INFO]: Redis client ready
+2025-09-10 12:47:46 [INFO]: Redis client connected
+2025-09-10 12:47:46 [INFO]: Connected to Upstash Redis
+2025-09-10 12:47:46 [INFO]: Redis client ready
+2025-09-10 12:47:57 [INFO]: Redis client connected
+2025-09-10 12:47:57 [INFO]: Connected to Upstash Redis
+2025-09-10 12:47:58 [INFO]: Redis client ready
+2025-09-10 12:48:12 [INFO]: Redis client connected
+2025-09-10 12:48:12 [INFO]: Connected to Upstash Redis
+2025-09-10 12:48:12 [INFO]: Redis client ready
+2025-09-10 12:48:35 [INFO]: Redis client connected
+2025-09-10 12:48:35 [INFO]: Connected to Upstash Redis
+2025-09-10 12:48:36 [INFO]: Redis client ready
+2025-09-10 12:55:06 [INFO]: Redis client connected
+2025-09-10 12:55:06 [INFO]: Connected to Upstash Redis
+2025-09-10 12:55:06 [INFO]: Redis client ready
+2025-09-10 13:00:21 [INFO]: Redis client connected
+2025-09-10 13:00:21 [INFO]: Connected to Upstash Redis
+2025-09-10 13:00:21 [INFO]: Redis client ready
+2025-09-10 13:03:55 [INFO]: Redis client connected
+2025-09-10 13:03:55 [INFO]: Connected to Upstash Redis
+2025-09-10 13:03:55 [INFO]: Redis client ready
+2025-09-10 13:03:58 [INFO]: Redis client connected
+2025-09-10 13:03:58 [INFO]: Connected to Upstash Redis
+2025-09-10 13:03:59 [INFO]: Redis client ready
+2025-09-10 13:04:05 [INFO]: Redis client connected
+2025-09-10 13:04:05 [INFO]: Connected to Upstash Redis
+2025-09-10 13:04:05 [INFO]: Redis client ready
+2025-09-10 13:04:19 [INFO]: Redis client connected
+2025-09-10 13:04:19 [INFO]: Connected to Upstash Redis
+2025-09-10 13:04:19 [INFO]: Redis client ready
+2025-09-10 13:09:24 [INFO]: Redis client connected
+2025-09-10 13:09:24 [INFO]: Connected to Upstash Redis
+2025-09-10 13:09:24 [INFO]: Redis client ready
+2025-09-10 13:09:26 [INFO]: Redis client connected
+2025-09-10 13:09:26 [INFO]: Connected to Upstash Redis
+2025-09-10 13:09:26 [INFO]: Redis client ready
+2025-09-10 13:27:56 [INFO]: Redis client connected
+2025-09-10 13:27:56 [INFO]: Connected to Upstash Redis
+2025-09-10 13:27:56 [INFO]: Redis client ready
+2025-09-10 14:03:47 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 14:03:49 [INFO]: Redis client reconnecting...
+2025-09-10 14:03:51 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:03:52 [INFO]: Redis client reconnecting...
+2025-09-10 14:03:52 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:03:54 [INFO]: Redis client reconnecting...
+2025-09-10 14:03:54 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:03:58 [INFO]: Redis client reconnecting...
+2025-09-10 14:03:58 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:04:03 [INFO]: Redis client reconnecting...
+2025-09-10 14:04:03 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:04:08 [INFO]: Redis client reconnecting...
+2025-09-10 14:04:08 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:04:13 [INFO]: Redis client reconnecting...
+2025-09-10 14:04:13 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:04:18 [INFO]: Redis client reconnecting...
+2025-09-10 14:04:18 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:04:24 [INFO]: Redis client reconnecting...
+2025-09-10 14:04:24 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:04:29 [INFO]: Redis client reconnecting...
+2025-09-10 14:04:29 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 14:04:34 [INFO]: Redis client reconnecting...
+2025-09-10 14:04:39 [INFO]: Redis client connected
+2025-09-10 14:04:39 [INFO]: Connected to Upstash Redis
+2025-09-10 14:04:40 [INFO]: Redis client ready
+2025-09-10 14:17:14 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 14:17:14 [INFO]: Redis client reconnecting...
+2025-09-10 14:17:14 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 14:17:33 [ERROR]: Redis client error: Connection timeout
+2025-09-10 14:17:34 [INFO]: Redis client reconnecting...
+2025-09-10 14:17:44 [ERROR]: Redis client error: Connection timeout
+2025-09-10 14:17:46 [INFO]: Redis client reconnecting...
+2025-09-10 14:17:56 [INFO]: Redis client connected
+2025-09-10 14:17:56 [INFO]: Connected to Upstash Redis
+2025-09-10 14:17:56 [INFO]: Redis client ready
+2025-09-10 14:30:32 [INFO]: Redis client connected
+2025-09-10 14:30:32 [INFO]: Connected to Upstash Redis
+2025-09-10 14:30:32 [INFO]: Redis client ready
+2025-09-10 14:45:43 [INFO]: Redis client connected
+2025-09-10 14:45:43 [INFO]: Connected to Upstash Redis
+2025-09-10 14:45:43 [INFO]: Redis client ready
+2025-09-10 14:47:53 [INFO]: Redis client connected
+2025-09-10 14:47:53 [INFO]: Connected to Upstash Redis
+2025-09-10 14:47:53 [INFO]: Redis client ready
+2025-09-10 14:49:31 [INFO]: Redis client connected
+2025-09-10 14:49:31 [INFO]: Connected to Upstash Redis
+2025-09-10 14:49:31 [INFO]: Redis client ready
+2025-09-10 14:50:08 [INFO]: Redis client connected
+2025-09-10 14:50:08 [INFO]: Connected to Upstash Redis
+2025-09-10 14:50:08 [INFO]: Redis client ready
+2025-09-10 14:50:21 [INFO]: Redis client connected
+2025-09-10 14:50:21 [INFO]: Connected to Upstash Redis
+2025-09-10 14:50:21 [INFO]: Redis client ready
+2025-09-10 14:55:24 [INFO]: Redis client connected
+2025-09-10 14:55:24 [INFO]: Connected to Upstash Redis
+2025-09-10 14:55:24 [INFO]: Redis client ready
+2025-09-10 14:56:35 [INFO]: Redis client connected
+2025-09-10 14:56:35 [INFO]: Connected to Upstash Redis
+2025-09-10 14:56:35 [INFO]: Redis client ready
+2025-09-10 15:00:26 [INFO]: Redis client connected
+2025-09-10 15:00:26 [INFO]: Connected to Upstash Redis
+2025-09-10 15:00:26 [INFO]: Redis client ready
+2025-09-10 15:01:14 [INFO]: Redis client connected
+2025-09-10 15:01:14 [INFO]: Connected to Upstash Redis
+2025-09-10 15:01:14 [INFO]: Redis client ready
+2025-09-10 15:03:12 [INFO]: Redis client connected
+2025-09-10 15:03:12 [INFO]: Connected to Upstash Redis
+2025-09-10 15:03:12 [INFO]: Redis client ready
+2025-09-10 15:03:49 [INFO]: Redis client connected
+2025-09-10 15:03:49 [INFO]: Connected to Upstash Redis
+2025-09-10 15:03:49 [INFO]: Redis client ready
+2025-09-10 15:04:24 [INFO]: Redis client connected
+2025-09-10 15:04:24 [INFO]: Connected to Upstash Redis
+2025-09-10 15:04:24 [INFO]: Redis client ready
+2025-09-10 15:05:17 [INFO]: Redis client connected
+2025-09-10 15:05:17 [INFO]: Connected to Upstash Redis
+2025-09-10 15:05:17 [INFO]: Redis client ready
+2025-09-10 15:06:38 [INFO]: Redis client connected
+2025-09-10 15:06:38 [INFO]: Connected to Upstash Redis
+2025-09-10 15:06:38 [INFO]: Redis client ready
+2025-09-10 15:06:41 [INFO]: Redis client connected
+2025-09-10 15:06:41 [INFO]: Connected to Upstash Redis
+2025-09-10 15:06:41 [INFO]: Redis client ready
+2025-09-10 15:09:50 [INFO]: Redis client connected
+2025-09-10 15:09:50 [INFO]: Connected to Upstash Redis
+2025-09-10 15:09:50 [INFO]: Redis client ready
+2025-09-10 15:10:56 [INFO]: Redis client connected
+2025-09-10 15:10:56 [INFO]: Connected to Upstash Redis
+2025-09-10 15:10:56 [INFO]: Redis client ready
+2025-09-10 15:12:11 [INFO]: Redis client connected
+2025-09-10 15:12:11 [INFO]: Connected to Upstash Redis
+2025-09-10 15:12:11 [INFO]: Redis client ready
+2025-09-10 15:12:44 [INFO]: Redis client connected
+2025-09-10 15:12:44 [INFO]: Connected to Upstash Redis
+2025-09-10 15:12:45 [INFO]: Redis client ready
+2025-09-10 15:13:30 [INFO]: Redis client connected
+2025-09-10 15:13:30 [INFO]: Connected to Upstash Redis
+2025-09-10 15:13:30 [INFO]: Redis client ready
+2025-09-10 15:14:16 [INFO]: Redis client connected
+2025-09-10 15:14:16 [INFO]: Connected to Upstash Redis
+2025-09-10 15:14:16 [INFO]: Redis client ready
+2025-09-10 15:14:29 [INFO]: Redis client connected
+2025-09-10 15:14:29 [INFO]: Connected to Upstash Redis
+2025-09-10 15:14:29 [INFO]: Redis client ready
+2025-09-10 15:27:11 [INFO]: Redis client connected
+2025-09-10 15:27:11 [INFO]: Connected to Upstash Redis
+2025-09-10 15:27:12 [INFO]: Redis client ready
+2025-09-10 15:39:16 [INFO]: Redis client connected
+2025-09-10 15:39:16 [INFO]: Connected to Upstash Redis
+2025-09-10 15:39:16 [INFO]: Redis client ready
+2025-09-10 15:45:28 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 15:45:28 [INFO]: Redis client reconnecting...
+2025-09-10 15:45:28 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 15:45:38 [ERROR]: Redis client error: Connection timeout
+2025-09-10 15:45:39 [INFO]: Redis client reconnecting...
+2025-09-10 15:45:39 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 15:45:41 [INFO]: Redis client reconnecting...
+2025-09-10 15:45:51 [ERROR]: Redis client error: Connection timeout
+2025-09-10 15:45:55 [INFO]: Redis client reconnecting...
+2025-09-10 15:45:55 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 15:46:00 [INFO]: Redis client reconnecting...
+2025-09-10 15:46:00 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 15:46:05 [INFO]: Redis client reconnecting...
+2025-09-10 15:46:05 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 15:46:10 [INFO]: Redis client reconnecting...
+2025-09-10 15:46:20 [ERROR]: Redis client error: Connection timeout
+2025-09-10 15:46:25 [INFO]: Redis client reconnecting...
+2025-09-10 15:46:35 [ERROR]: Redis client error: Connection timeout
+2025-09-10 15:46:40 [INFO]: Redis client reconnecting...
+2025-09-10 15:46:40 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 15:46:45 [INFO]: Redis client reconnecting...
+2025-09-10 15:46:45 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 15:46:50 [INFO]: Redis client reconnecting...
+2025-09-10 15:47:00 [ERROR]: Redis client error: Connection timeout
+2025-09-10 15:47:05 [INFO]: Redis client reconnecting...
+2025-09-10 15:47:15 [ERROR]: Redis max reconnection attempts reached
+2025-09-10 15:47:15 [ERROR]: Redis client error: Connection timeout
+2025-09-10 16:04:13 [INFO]: Redis client connected
+2025-09-10 16:04:13 [INFO]: Connected to Upstash Redis
+2025-09-10 16:04:13 [INFO]: Redis client ready
+2025-09-10 16:06:23 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 16:06:23 [INFO]: Redis client reconnecting...
+2025-09-10 16:06:23 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 16:06:33 [ERROR]: Redis client error: Connection timeout
+2025-09-10 16:06:34 [INFO]: Redis client reconnecting...
+2025-09-10 16:06:35 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 16:06:37 [INFO]: Redis client reconnecting...
+2025-09-10 16:06:46 [INFO]: Redis client connected
+2025-09-10 16:06:46 [INFO]: Connected to Upstash Redis
+2025-09-10 16:06:46 [INFO]: Redis client ready
+2025-09-10 16:08:27 [INFO]: Redis client connected
+2025-09-10 16:08:27 [INFO]: Connected to Upstash Redis
+2025-09-10 16:08:27 [INFO]: Redis client ready
+2025-09-10 16:10:08 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 16:10:08 [INFO]: Redis client reconnecting...
+2025-09-10 16:10:08 [ERROR]: Redis client error: read ECONNRESET
+2025-09-10 16:10:18 [ERROR]: Redis client error: Connection timeout
+2025-09-10 16:10:19 [INFO]: Redis client reconnecting...
+2025-09-10 16:10:20 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-10 16:10:22 [INFO]: Redis client reconnecting...
+2025-09-10 16:10:40 [ERROR]: Redis client error: Connection timeout
+2025-09-10 16:10:44 [INFO]: Redis client reconnecting...
+2025-09-10 16:10:54 [ERROR]: Redis client error: Connection timeout
+2025-09-10 16:10:59 [INFO]: Redis client reconnecting...
+2025-09-10 16:11:07 [INFO]: Redis client connected
+2025-09-10 16:11:07 [INFO]: Connected to Upstash Redis
+2025-09-10 16:11:10 [INFO]: Redis client ready
+2025-09-10 16:33:00 [INFO]: Redis client connected
+2025-09-10 16:33:00 [INFO]: Connected to Upstash Redis
+2025-09-10 16:33:00 [INFO]: Redis client ready
+2025-09-10 16:34:55 [INFO]: Redis client connected
+2025-09-10 16:34:55 [INFO]: Connected to Upstash Redis
+2025-09-10 16:34:58 [INFO]: Redis client ready
+2025-09-10 16:35:44 [INFO]: Redis client connected
+2025-09-10 16:35:44 [INFO]: Connected to Upstash Redis
+2025-09-10 16:35:44 [INFO]: Redis client ready
+2025-09-10 16:37:06 [INFO]: Redis client connected
+2025-09-10 16:37:06 [INFO]: Connected to Upstash Redis
+2025-09-10 16:37:07 [INFO]: Redis client ready
+2025-09-10 16:37:15 [INFO]: Redis client connected
+2025-09-10 16:37:15 [INFO]: Connected to Upstash Redis
+2025-09-10 16:37:15 [INFO]: Redis client ready
+2025-09-10 16:38:09 [INFO]: Redis client connected
+2025-09-10 16:38:09 [INFO]: Connected to Upstash Redis
+2025-09-10 16:38:10 [INFO]: Redis client ready
+2025-09-10 16:39:39 [INFO]: Redis client connected
+2025-09-10 16:39:39 [INFO]: Connected to Upstash Redis
+2025-09-10 16:39:39 [INFO]: Redis client ready
+2025-09-10 16:39:49 [INFO]: Redis client connected
+2025-09-10 16:39:49 [INFO]: Connected to Upstash Redis
+2025-09-10 16:39:49 [INFO]: Redis client ready
+2025-09-10 16:39:56 [INFO]: Redis client connected
+2025-09-10 16:39:56 [INFO]: Connected to Upstash Redis
+2025-09-10 16:39:56 [INFO]: Redis client ready
+2025-09-10 16:44:05 [INFO]: Redis client disconnected
+2025-09-10 16:44:18 [INFO]: Redis client connected
+2025-09-10 16:44:18 [INFO]: Connected to Upstash Redis
+2025-09-10 16:44:18 [INFO]: Redis client ready
+2025-09-10 16:46:52 [INFO]: Redis client connected
+2025-09-10 16:46:52 [INFO]: Connected to Upstash Redis
+2025-09-10 16:46:55 [INFO]: Redis client ready
+2025-09-10 16:47:50 [INFO]: Redis client connected
+2025-09-10 16:47:50 [INFO]: Connected to Upstash Redis
+2025-09-10 16:47:50 [INFO]: Redis client ready
+2025-09-10 16:48:26 [INFO]: Redis client connected
+2025-09-10 16:48:26 [INFO]: Connected to Upstash Redis
+2025-09-10 16:48:27 [INFO]: Redis client ready
+2025-09-10 16:48:56 [INFO]: Redis client connected
+2025-09-10 16:48:56 [INFO]: Connected to Upstash Redis
+2025-09-10 16:48:56 [INFO]: Redis client ready
+2025-09-10 16:49:19 [INFO]: Redis client connected
+2025-09-10 16:49:19 [INFO]: Connected to Upstash Redis
+2025-09-10 16:49:20 [INFO]: Redis client ready
+2025-09-10 16:49:44 [INFO]: Redis client connected
+2025-09-10 16:49:44 [INFO]: Connected to Upstash Redis
+2025-09-10 16:49:46 [INFO]: Redis client connected
+2025-09-10 16:49:46 [INFO]: Connected to Upstash Redis
+2025-09-10 16:49:47 [INFO]: Redis client ready
+2025-09-10 16:51:48 [INFO]: Redis client connected
+2025-09-10 16:51:48 [INFO]: Connected to Upstash Redis
+2025-09-10 16:51:48 [INFO]: Redis client ready
+2025-09-10 16:52:11 [INFO]: Redis client connected
+2025-09-10 16:52:11 [INFO]: Connected to Upstash Redis
+2025-09-10 16:52:13 [INFO]: Redis client ready
+2025-09-10 16:52:49 [INFO]: Redis client connected
+2025-09-10 16:52:49 [INFO]: Connected to Upstash Redis
+2025-09-10 16:52:53 [INFO]: Redis client ready
+2025-09-10 16:56:34 [INFO]: Redis client connected
+2025-09-10 16:56:34 [INFO]: Connected to Upstash Redis
+2025-09-10 16:56:34 [INFO]: Redis client ready
+2025-09-10 16:57:54 [INFO]: Redis client connected
+2025-09-10 16:57:54 [INFO]: Connected to Upstash Redis
+2025-09-10 16:57:54 [INFO]: Redis client ready
+2025-09-10 17:08:15 [INFO]: Redis client connected
+2025-09-10 17:08:15 [INFO]: Connected to Upstash Redis
+2025-09-10 17:08:15 [INFO]: Redis client ready
+2025-09-10 17:18:27 [INFO]: Redis client disconnected
+2025-09-11 11:07:01 [INFO]: Redis client connected
+2025-09-11 11:07:01 [INFO]: Connected to Upstash Redis
+2025-09-11 11:07:01 [INFO]: Redis client ready
+2025-09-11 11:16:40 [INFO]: Redis client connected
+2025-09-11 11:16:40 [INFO]: Connected to Upstash Redis
+2025-09-11 11:16:40 [INFO]: Redis client ready
+2025-09-11 11:48:56 [INFO]: Redis client connected
+2025-09-11 11:48:56 [INFO]: Connected to Upstash Redis
+2025-09-11 11:48:56 [INFO]: Redis client ready
+2025-09-11 11:53:07 [INFO]: Redis client connected
+2025-09-11 11:53:07 [INFO]: Connected to Upstash Redis
+2025-09-11 11:53:07 [INFO]: Redis client ready
+2025-09-11 11:54:19 [INFO]: Redis client connected
+2025-09-11 11:54:19 [INFO]: Connected to Upstash Redis
+2025-09-11 11:54:19 [INFO]: Redis client ready
+2025-09-11 11:57:00 [INFO]: Redis client connected
+2025-09-11 11:57:00 [INFO]: Connected to Upstash Redis
+2025-09-11 11:57:00 [INFO]: Redis client ready
+2025-09-11 11:58:15 [INFO]: Redis client connected
+2025-09-11 11:58:15 [INFO]: Connected to Upstash Redis
+2025-09-11 11:58:15 [INFO]: Redis client ready
+2025-09-11 12:05:27 [INFO]: Redis client connected
+2025-09-11 12:05:27 [INFO]: Connected to Upstash Redis
+2025-09-11 12:05:28 [INFO]: Redis client ready
+2025-09-11 12:15:42 [INFO]: Redis client connected
+2025-09-11 12:15:42 [INFO]: Connected to Upstash Redis
+2025-09-11 12:15:45 [INFO]: Redis client ready
+2025-09-11 12:16:17 [INFO]: Redis client connected
+2025-09-11 12:16:17 [INFO]: Connected to Upstash Redis
+2025-09-11 12:16:17 [INFO]: Redis client ready
+2025-09-11 12:40:49 [INFO]: Redis client connected
+2025-09-11 12:40:49 [INFO]: Connected to Upstash Redis
+2025-09-11 12:40:49 [INFO]: Redis client ready
+2025-09-11 12:41:03 [INFO]: Redis client connected
+2025-09-11 12:41:03 [INFO]: Connected to Upstash Redis
+2025-09-11 12:41:03 [INFO]: Redis client ready
+2025-09-11 12:42:30 [INFO]: Redis client connected
+2025-09-11 12:42:30 [INFO]: Connected to Upstash Redis
+2025-09-11 12:42:30 [INFO]: Redis client ready
+2025-09-11 12:45:48 [INFO]: Redis client connected
+2025-09-11 12:45:48 [INFO]: Connected to Upstash Redis
+2025-09-11 12:45:48 [INFO]: Redis client ready
+2025-09-11 12:54:21 [INFO]: Redis client disconnected
+2025-09-11 18:31:15 [INFO]: Redis client connected
+2025-09-11 18:31:15 [INFO]: Connected to Upstash Redis
+2025-09-11 18:31:15 [INFO]: Redis client ready
+2025-09-11 18:51:18 [INFO]: Redis client connected
+2025-09-11 18:51:18 [INFO]: Connected to Upstash Redis
+2025-09-11 18:51:19 [INFO]: Redis client ready
+2025-09-11 18:52:07 [INFO]: Redis client connected
+2025-09-11 18:52:07 [INFO]: Connected to Upstash Redis
+2025-09-11 18:52:08 [INFO]: Redis client ready
+2025-09-11 18:56:04 [INFO]: Redis client connected
+2025-09-11 18:56:04 [INFO]: Connected to Upstash Redis
+2025-09-11 18:56:04 [INFO]: Redis client ready
+2025-09-11 19:15:10 [INFO]: Redis client connected
+2025-09-11 19:15:10 [INFO]: Connected to Upstash Redis
+2025-09-11 19:15:11 [INFO]: Redis client ready
+2025-09-11 19:22:45 [INFO]: Redis client connected
+2025-09-11 19:22:45 [INFO]: Connected to Upstash Redis
+2025-09-11 19:22:45 [INFO]: Redis client ready
+2025-09-11 19:30:01 [INFO]: Redis client connected
+2025-09-11 19:30:01 [INFO]: Connected to Upstash Redis
+2025-09-11 19:30:01 [INFO]: Redis client ready
+2025-09-11 19:50:57 [INFO]: Redis client connected
+2025-09-11 19:50:57 [INFO]: Connected to Upstash Redis
+2025-09-11 19:50:58 [INFO]: Redis client ready
+2025-09-11 19:51:54 [INFO]: Redis client connected
+2025-09-11 19:51:54 [INFO]: Connected to Upstash Redis
+2025-09-11 19:51:54 [INFO]: Redis client ready
+2025-09-11 19:57:35 [ERROR]: Redis client error: read ECONNRESET
+2025-09-11 19:57:35 [INFO]: Redis client reconnecting...
+2025-09-11 19:57:35 [ERROR]: Redis client error: read ECONNRESET
+2025-09-11 19:57:35 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 19:57:36 [INFO]: Redis client reconnecting...
+2025-09-11 19:57:36 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 19:57:38 [INFO]: Redis client reconnecting...
+2025-09-11 19:57:38 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 19:57:42 [INFO]: Redis client reconnecting...
+2025-09-11 19:57:42 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 19:57:47 [INFO]: Redis client reconnecting...
+2025-09-11 19:57:48 [INFO]: Redis client connected
+2025-09-11 19:57:48 [INFO]: Connected to Upstash Redis
+2025-09-11 19:57:48 [INFO]: Redis client ready
+2025-09-11 20:01:02 [INFO]: Redis client connected
+2025-09-11 20:01:02 [INFO]: Connected to Upstash Redis
+2025-09-11 20:01:02 [INFO]: Redis client ready
+2025-09-11 20:15:24 [INFO]: Redis client connected
+2025-09-11 20:15:24 [INFO]: Connected to Upstash Redis
+2025-09-11 20:15:24 [INFO]: Redis client ready
+2025-09-11 20:15:54 [INFO]: Redis client connected
+2025-09-11 20:15:54 [INFO]: Connected to Upstash Redis
+2025-09-11 20:15:55 [INFO]: Redis client ready
+2025-09-11 20:16:16 [INFO]: Redis client connected
+2025-09-11 20:16:16 [INFO]: Connected to Upstash Redis
+2025-09-11 20:16:16 [INFO]: Redis client ready
+2025-09-11 20:16:20 [INFO]: Redis client connected
+2025-09-11 20:16:20 [INFO]: Connected to Upstash Redis
+2025-09-11 20:16:20 [INFO]: Redis client ready
+2025-09-11 20:19:27 [INFO]: Redis client connected
+2025-09-11 20:19:27 [INFO]: Connected to Upstash Redis
+2025-09-11 20:19:27 [INFO]: Redis client ready
+2025-09-11 20:20:00 [INFO]: Redis client connected
+2025-09-11 20:20:00 [INFO]: Connected to Upstash Redis
+2025-09-11 20:20:00 [INFO]: Redis client ready
+2025-09-11 20:23:22 [INFO]: Redis client connected
+2025-09-11 20:23:22 [INFO]: Connected to Upstash Redis
+2025-09-11 20:23:22 [INFO]: Redis client ready
+2025-09-11 20:42:53 [INFO]: Redis client connected
+2025-09-11 20:42:53 [INFO]: Connected to Upstash Redis
+2025-09-11 20:42:53 [INFO]: Redis client ready
+2025-09-11 20:47:06 [INFO]: Redis client connected
+2025-09-11 20:47:06 [INFO]: Connected to Upstash Redis
+2025-09-11 20:47:06 [INFO]: Redis client ready
+2025-09-11 20:52:30 [INFO]: Redis client connected
+2025-09-11 20:52:30 [INFO]: Connected to Upstash Redis
+2025-09-11 20:52:30 [INFO]: Redis client ready
+2025-09-11 20:57:56 [INFO]: Redis client connected
+2025-09-11 20:57:56 [INFO]: Connected to Upstash Redis
+2025-09-11 20:57:56 [INFO]: Redis client ready
+2025-09-11 21:00:40 [INFO]: Redis client connected
+2025-09-11 21:00:40 [INFO]: Connected to Upstash Redis
+2025-09-11 21:00:40 [INFO]: Redis client ready
+2025-09-11 21:01:58 [INFO]: Redis client connected
+2025-09-11 21:01:58 [INFO]: Connected to Upstash Redis
+2025-09-11 21:01:58 [INFO]: Redis client ready
+2025-09-11 21:02:24 [INFO]: Redis client connected
+2025-09-11 21:02:24 [INFO]: Connected to Upstash Redis
+2025-09-11 21:02:24 [INFO]: Redis client ready
+2025-09-11 21:08:52 [INFO]: Redis client connected
+2025-09-11 21:08:52 [INFO]: Connected to Upstash Redis
+2025-09-11 21:08:52 [INFO]: Redis client ready
+2025-09-11 21:18:53 [INFO]: Redis client disconnected
+2025-09-11 22:38:57 [INFO]: Redis client connected
+2025-09-11 22:38:57 [INFO]: Connected to Upstash Redis
+2025-09-11 22:38:57 [INFO]: Redis client ready
+2025-09-11 22:46:08 [ERROR]: Redis client error: read ECONNRESET
+2025-09-11 22:46:08 [INFO]: Redis client reconnecting...
+2025-09-11 22:46:08 [ERROR]: Redis client error: read ECONNRESET
+2025-09-11 22:46:18 [ERROR]: Redis client error: Connection timeout
+2025-09-11 22:46:19 [INFO]: Redis client reconnecting...
+2025-09-11 22:46:19 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:21 [INFO]: Redis client reconnecting...
+2025-09-11 22:46:21 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:25 [INFO]: Redis client reconnecting...
+2025-09-11 22:46:25 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:30 [INFO]: Redis client reconnecting...
+2025-09-11 22:46:33 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:38 [INFO]: Redis client reconnecting...
+2025-09-11 22:46:38 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:43 [INFO]: Redis client reconnecting...
+2025-09-11 22:46:43 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:48 [INFO]: Redis client reconnecting...
+2025-09-11 22:46:48 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:46:53 [INFO]: Redis client reconnecting...
+2025-09-11 22:46:55 [ERROR]: Redis client error: getaddrinfo ENOTFOUND together-coral-45482.upstash.io
+2025-09-11 22:47:00 [INFO]: Redis client reconnecting...
+2025-09-11 22:47:00 [INFO]: Redis client connected
+2025-09-11 22:47:00 [INFO]: Connected to Upstash Redis
+2025-09-11 22:47:00 [INFO]: Redis client ready
+2025-09-11 22:50:08 [INFO]: Redis client connected
+2025-09-11 22:50:08 [INFO]: Connected to Upstash Redis
+2025-09-11 22:50:08 [INFO]: Redis client ready
+2025-09-11 22:53:06 [INFO]: Redis client connected
+2025-09-11 22:53:06 [INFO]: Connected to Upstash Redis
+2025-09-11 22:53:06 [INFO]: Redis client ready
+2025-09-11 23:00:51 [INFO]: Redis client connected
+2025-09-11 23:00:51 [INFO]: Connected to Upstash Redis
+2025-09-11 23:00:51 [INFO]: Redis client ready
+2025-09-11 23:01:29 [INFO]: Redis client connected
+2025-09-11 23:01:29 [INFO]: Connected to Upstash Redis
+2025-09-11 23:01:29 [INFO]: Redis client ready

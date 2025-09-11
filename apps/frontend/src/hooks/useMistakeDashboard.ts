@@ -9,21 +9,20 @@ const fetchData = (endpoint: string) => async () => {
 }
 
 export function useMistakeDashboard() {
-    const version =  '/v.1.0'
 
     const queries = useQueries({
         queries: [
             {
                 queryKey: ['distribution'],
-                queryFn: fetchData(`${version}/mistakes-tracker/distribution`),
+                queryFn: fetchData(`/mistake-tracker/distribution?range=30`),
             },
             {
                 queryKey: ['overview'],
-                queryFn: fetchData(`${version}/mistakes-tracker`),
+                queryFn: fetchData(`/mistake-tracker`),
             },
             {
                 queryKey: ['insight'],
-                queryFn: fetchData(`${version}/mistakes-tracker/insight`),
+                queryFn: fetchData(`/mistake-tracker/insight?range=30`),
             },
             
         ],
@@ -33,7 +32,7 @@ export function useMistakeDashboard() {
 
     return {
         distribution: distribution.data,
-        insight: insight.data,
+        insight: insight.data?.insights || [],
         overview: overview.data,
         isLoading: queries.some(q => q.isLoading),
         isError: queries.some(q => q.isError),

@@ -1,3 +1,4 @@
+//Shited to Backend
 export const dynamic = 'force-dynamic';
 
 import prisma from "@/lib/prisma";

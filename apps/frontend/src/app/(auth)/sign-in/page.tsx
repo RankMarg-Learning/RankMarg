@@ -19,6 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import api from "@/utils/api";
 
 // Define Zod schema for validation
 const signInSchema = z.object({
@@ -51,14 +52,10 @@ const SignInForm = () => {
     setMsg("");
     
     try {
-      const result = await signIn("credentials", {
-        email: data.username,
-        password: data.password,
-        redirect: false,
-      });
+      const response = await api.post("/auth/sign-in", data);
       
-      if (result?.error) {
-        setMsg("Invalid username or password");
+      if (response.data.data.success) {
+        setMsg(response.data.data.message || "Something went wrong!");
         setMsgType("error");
       } else {
         setMsg("Welcome back! Redirecting to your dashboard...");

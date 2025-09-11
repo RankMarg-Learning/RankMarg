@@ -13,12 +13,13 @@ export const useTopics = (subjectId?: string) => {
   const queryClient = useQueryClient();
   const { handleMutationError } = useQueryError();
 
-  const { data: topics = [], isLoading, error } = useQuery({
+  const { data: response, isLoading, error } = useQuery({
     queryKey: queryKeys.topics.bySubject(subjectId),
     queryFn: () => getTopics(subjectId),
     enabled: true,
     ...getQueryConfig('STATIC'),
   });
+  const topics = response?.data || [];
 
   const saveTopic = useMutation({
     mutationFn: async (data: { 

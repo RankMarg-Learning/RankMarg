@@ -11,9 +11,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import axios from "axios";
-import { addUser } from "@/services/user.service";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import api from "@/utils/api";
 
 const signUpSchema = z.object({
   fullname: z.string().min(1, "Full name is required"),
@@ -75,15 +74,15 @@ const SignUpForm = () => {
     }
 
     try {
-      const response = await addUser(data);
-      if (response.success) {
+      const response = await api.post("/auth/sign-up", data);
+      if (response.data.success) {
         setMsg("Account created successfully. Redirecting to sign-in page...");
         setMsgType("success");
         setTimeout(() => {
           router.push("/sign-in");
         }, 1500);
       } else {
-        setMsg(response.message || "Something went wrong!");
+        setMsg(response.data.message || "Something went wrong!");
         setMsgType("error");
       }
     } catch (error) {
@@ -103,12 +102,13 @@ const SignUpForm = () => {
 
     setIsCheckingUsername(true);
     try {
-      const res = await axios.get(`/api/check-username`, {
+      const res = await api.get(`/auth/check-username`, {
         params: { username: username.trim() },
       });
+      console.log(res.data.data);
   
       // Fixed: Access the success property correctly from API response
-      setIsUsernameAvailable(res.data.success);
+      setIsUsernameAvailable(res.data.data.available);
     } catch (error: any) {
       console.error("Username check failed:", error);
       // On API error, assume username is not available to be safe
@@ -159,6 +159,15 @@ const SignUpForm = () => {
            !isLoading && 
            watchUsername && 
            watchUsername.trim() !== "";
+  };
+
+  //Time To Fix it
+  const handleSignUpWithGoogle = async () => {
+    try {
+        signIn("google");
+    } catch (error) {
+      console.log("Check",error);
+    }
   };
 
   return (
@@ -319,7 +328,7 @@ const SignUpForm = () => {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => signIn("google")}
+                onClick={()=>handleSignUpWithGoogle()}
               >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path

@@ -23,7 +23,7 @@ export const ServerConfig = {
   },
 
   cors: {
-    origin: process.env.CORS_ORIGIN || "*",
+    origin: "http://localhost:3000",
     credentials: true,
   },
 
@@ -65,6 +65,25 @@ export const ServerConfig = {
   security: {
     jwtSecret: process.env.JWT_SECRET,
     bcryptRounds: 12,
+    session: {
+      secret: process.env.SESSION_SECRET || "rankmargsessionsecret",
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      },
+    },
+  },
+
+  oauth: {
+    google: {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL:
+        process.env.GOOGLE_CALLBACK_URL ||
+        "http://localhost:3001/api/auth/google/callback",
+    },
   },
 
   performance: {

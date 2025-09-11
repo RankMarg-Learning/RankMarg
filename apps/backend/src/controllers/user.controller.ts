@@ -17,8 +17,8 @@ const userSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters long"),
 });
-export const userController = {
-  getUsers: async (
+export class userController {
+  getUsers = async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
@@ -29,10 +29,9 @@ export const userController = {
     } catch (error) {
       next(error);
     }
-  },
+  };
 
-  //NO need of next function here because anyone create the users when it is logged in
-  createUser: async (req: Request, res: Response) => {
+  createUser = async (req: Request, res: Response) => {
     try {
       const body = await req.body;
       const result = userSchema.safeParse(body);
@@ -72,5 +71,76 @@ export const userController = {
     } catch (error) {
       ResponseUtil.error(res, "Internal Server Error", 500);
     }
-  },
-};
+  };
+
+  getUserProfile = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userId = req.user.id;
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          name: true,
+          avatar: true,
+          phone: true,
+          standard: true,
+          examRegistrations: {
+            select: { exam: { select: { code: true, name: true } } },
+          },
+          coins: true,
+          location: true,
+          targetYear: true,
+          studyHoursPerDay: true,
+          userPerformance: {
+            select: {
+              accuracy: true,
+              streak: true,
+              avgScore: true,
+              subjectWiseAccuracy: true,
+            },
+          },
+          createdAt: true,
+        },
+      });
+      if (!user) {
+        ResponseUtil.error(res, "User not found", 404);
+      }
+      ResponseUtil.success(
+        res,
+        user,
+        "User profile fetched successfully",
+        200,
+        undefined,
+        {
+          "Cache-Control": "public, max-age=30, stale-while-revalidate=30",
+        }
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateUserProfile = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userId = req.user.id;
+      const updates = req.body;
+      const user = await prisma.user.update({
+        where: { id: userId },
+        data: updates,
+      });
+      ResponseUtil.success(res, user, "User profile updated successfully", 200);
+    } catch (error) {
+      next(error);
+    }
+  };
+}
