@@ -13,12 +13,14 @@ export const useSubtopics = (topicId?: string) => {
   const queryClient = useQueryClient();
   const { handleMutationError } = useQueryError();
 
-  const { data: subtopics = [], isLoading, error } = useQuery({
+  const { data: response, isLoading, error } = useQuery({
     queryKey: topicId ? queryKeys.subtopics.byTopic(topicId) : queryKeys.subtopics.all,
     queryFn: () => getSubtopics(topicId),
     enabled: true, 
     ...getQueryConfig('STATIC'),
   });
+
+  const subtopics = response?.data || [];
 
   const saveSubTopic = useMutation({
     mutationFn: async (data: { 

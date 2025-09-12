@@ -39,7 +39,7 @@ export interface PromoCode {
   validFrom: string
   validUntil: string
   isActive: boolean
-  applicablePlans: string[]
+  applicablePlans: Plan[] // Changed from string[] to Plan[] to match backend response
   createdAt: string
   updatedAt: string
 }

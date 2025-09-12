@@ -1,5 +1,5 @@
 import { plans } from "@/constant/pricing.constant";
-import axios from "axios";
+import api from "@/utils/api";
 import { Check, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -22,7 +22,7 @@ const PricingDialog = ({ onClose }) => {
   
     const applyCoupon = async() => {
         try {
-            const couponRes = await axios.get('/api/check/coupon', {
+            const couponRes = await api.get('/m/check/coupon', {
                 params: { coupon, planId: plan.plandId },
                 headers: { 'Content-Type': 'application/json' }
                 });
@@ -50,7 +50,7 @@ const PricingDialog = ({ onClose }) => {
     const handlePayment = async() => {
         setPaying(true);
         try {
-            const response = await axios.post('/api/payment/create-order', {
+            const response = await api.post('/payment/create-order', {
                 planId: plan.plandId,
                 amount: finalPrice,
                 duration: plan.days
@@ -69,8 +69,8 @@ const PricingDialog = ({ onClose }) => {
                 name: 'RANK BOOSTER PLAN',
                 description:  `Subscription for ${plan.label} plan`,
                 handler: async function (response: any) {
-                   const verifyResponse = await axios.post(
-                     '/api/payment/verify',
+                   const verifyResponse = await api.post(
+                     '/payment/verify',
                      {
                         coupon:coupon,
                         discount,

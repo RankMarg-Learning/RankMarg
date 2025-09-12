@@ -22,11 +22,20 @@ export const ServerConfig = {
     upstashToken: process.env.UPSTASH_REDIS_REST_TOKEN!,
   },
 
-  cors: {
-    origin: "http://localhost:3000",
-    credentials: true,
+  cloudinary: {
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
   },
 
+  razorpay: {
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  },
+  cors: {
+    origin: process.env.CORS_ORIGIN!,
+    credentials: true,
+  },
   cron: {
     daily: {
       resetStreak: "0 0 * * *",

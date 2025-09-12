@@ -11,6 +11,7 @@ import { bulkUploadQuestions, getBulkUploadStatus } from '@/services/bulk-upload
 import { UploadConfiguration } from '@/components/admin/bulk-upload/UploadConfiguration'
 import { FilePreview } from '@/components/admin/bulk-upload/FilePreview'
 import { ProcessingStatus } from '@/components/admin/bulk-upload/ProcessingStatus'
+import api from '@/utils/api'
 
 interface UploadedFile {
   id: string
@@ -65,12 +66,14 @@ const BulkUpload = () => {
         reader.onload = async () => {
           const base64 = reader.result as string
           const public_id = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9-]/g, '-')
-          const res = await fetch('/api/cloudinary', {
-            method: 'POST',
+          const res = await api.post('/m/upload-cloudinary', {
+            image: base64,
+            folder: 'bulk-questions',
+            public_id
+          }, {
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({image: base64, folder: 'bulk-questions', public_id})
           })
-          const data = await res.json()
+          const data = res.data
           if (data.success) {
             newFiles.push({id, url: data.data, fileName: file.name, status: 'pending'})
             setUploadedFiles(prev => [...prev, ...newFiles]) // Note: this is inside loop, but since async, may need adjustment

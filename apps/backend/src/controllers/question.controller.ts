@@ -83,10 +83,12 @@ export class QuestionController {
         type,
         search,
         isPublished,
-        skip,
-        limit,
+        page = 1,
+        limit = 25,
       } = req.query;
       const userID = req.user.id;
+      const l = Number(limit) || 25;
+      const skip = (Number(page) - 1) * l;
       const whereClause: WhereClauseProps = {};
       if (subjectId) whereClause.subjectId = subjectId as string;
       if (topicId) whereClause.topicId = topicId as string;
@@ -112,47 +114,54 @@ export class QuestionController {
             },
           },
         ];
-      if (isPublished)
-        whereClause.isPublished = isPublished as unknown as boolean;
-      const questions = await prisma.question.findMany({
-        where: whereClause,
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          type: true,
-          format: true,
-          content: true,
-          difficulty: true,
-          isPublished: true,
+      if (isPublished) {
+        whereClause.isPublished = isPublished === "true";
+      }
+      const [questions, total] = await Promise.all([
+        prisma.question.findMany({
+          where: whereClause,
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            type: true,
+            format: true,
+            content: true,
+            difficulty: true,
+            isPublished: true,
 
-          pyqYear: true,
-          createdBy: true,
-          createdAt: true,
-          attempts: {
-            where: { userId: userID, status: SubmitStatus.CORRECT }, // TODO: WATCHDOG
-            select: { id: true },
+            pyqYear: true,
+            createdBy: true,
+            createdAt: true,
+            attempts: {
+              where: { userId: userID, status: SubmitStatus.CORRECT }, // TODO: WATCHDOG
+              select: { id: true },
+            },
+            topic: {
+              select: { name: true },
+            },
+            subTopic: {
+              select: { name: true },
+            },
+            subject: {
+              select: { name: true },
+            },
           },
-          topic: {
-            select: { name: true },
-          },
-          subTopic: {
-            select: { name: true },
-          },
-          subject: {
-            select: { name: true },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-        skip: skip as unknown as number,
-        take: limit as unknown as number,
-      });
-      ResponseUtil.success(
-        res,
+          orderBy: { createdAt: "desc" },
+          skip: skip as number,
+          take: l as number,
+        }),
+        prisma.question.count({ where: whereClause }),
+      ]);
+
+      const currentPage = Math.ceil(total / l);
+      const totalPages = Math.ceil(total / l);
+      const payload = {
         questions,
-        "Questions fetched successfully",
-        200
-      );
+        currentPage,
+        totalPages,
+      };
+      ResponseUtil.success(res, payload, "Questions fetched successfully", 200);
     } catch (error) {
       next(error);
     }

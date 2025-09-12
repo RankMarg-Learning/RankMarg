@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Pencil, Check } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
-import axios from "axios"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
 import ProfileSkeleton from "@/components/skeleton/skel_profile"
@@ -208,8 +207,9 @@ export default function ProfileUpdate() {
 
       const squareImage = canvas.toDataURL("image/jpeg", 0.9)
 
-      const { data } = await axios.post("/api/cloudinary", {
-        image: squareImage
+      const { data } = await api.post("/m/upload-cloudinary", {
+        image: squareImage,
+        folder: "user-avatars"
       })
 
       mutation.mutate({ field: "avatar", value: data.data })

@@ -15,7 +15,11 @@ import questionRoutes from "./question.routes";
 import authRoutes from "./auth.routes";
 import suggestionRoutes from "./suggestion.routes";
 import userRoutes from "./user.routes";
-
+import miscRoutes from "./misc.routes";
+import paymentRoutes from "./payment.routes";
+import examRoutes from "./exam.routes";
+import planRoutes from "./subscription/plan.routes";
+import promoCodeRoutes from "./subscription/promoCode.routes";
 // Add new routes here
 export const routes = {
   auth: authRoutes,
@@ -35,4 +39,9 @@ export const routes = {
   question: questionRoutes,
   suggestion: suggestionRoutes,
   user: userRoutes,
+  misc: miscRoutes,
+  payment: paymentRoutes,
+  exam: examRoutes,
+  plan: planRoutes,
+  promoCode: promoCodeRoutes,
 };

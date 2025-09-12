@@ -89,20 +89,20 @@ const Curriculum = () => {
 
   // Memoized filtered data for performance
   const filteredSubjects = useMemo(() =>
-    subjects?.data?.filter(subject =>
-      subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ) || [], [subjects?.data, searchTerm]
+    subjects?.filter(subject =>
+      subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ) || [], [subjects, searchTerm]
   );
 
   const filteredTopics = useMemo(() =>
-    topics?.data?.filter(topic =>
+    topics?.filter(topic =>
       topic.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [], [topics?.data, searchTerm]
+    ) || [], [topics, searchTerm]
   );
 
   const filteredSubtopics = useMemo(() =>
-    subtopics?.data?.filter(subtopic =>
+    subtopics?.filter(subtopic =>
       subtopic.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [], [subtopics?.data, searchTerm]
+    ) || [], [subtopics, searchTerm]
   );
 
   const filteredExams = useMemo(() =>

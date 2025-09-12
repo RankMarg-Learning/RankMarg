@@ -18,25 +18,24 @@ export function useTestDashboardData({
     availableType = 'FULL_LENGTH',
     resultsLimit = 10
 }: QueryParams = {}) {
-    const version =  '/v.1.0'
 
     const queries = useQueries({
         queries: [
             {
                 queryKey: ['tests', 'available', availableLimit, availableType],
-                queryFn: fetchTests(`${version}/tests/available?limit=${availableLimit}&type=${availableType}`),
+                queryFn: fetchTests(`/test/ai/available?limit=${availableLimit}&type=${availableType}`),
             },
             {
                 queryKey: ['tests', 'recommended'],
-                queryFn: fetchTests(`${version}/tests/recommended`),
+                queryFn: fetchTests(`/test/ai/recommended`),
             },
             {
                 queryKey: ['tests', 'results', resultsLimit],
-                queryFn: fetchTests(`${version}/tests/results?limit=${resultsLimit}`),
+                queryFn: fetchTests(`/test/ai/results?limit=${resultsLimit}`),
             },
             {
                 queryKey: ['tests', 'schedule'],
-                queryFn: fetchTests(`${version}/tests/scheduled`),
+                queryFn: fetchTests(`/test/ai/scheduled`),
             }
         ]
     })

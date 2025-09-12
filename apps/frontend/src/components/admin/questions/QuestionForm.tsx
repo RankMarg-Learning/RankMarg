@@ -33,7 +33,7 @@ import { generateSlug } from "@/lib/generateSlug";
 import { TextFormator } from "@/utils/textFormator";
 import { CategoryMultiSelect } from "./CategoryMultiSelect";
 import { SearchableSelect } from "@/components/ui/searchable-select";
-import axios from "axios";
+import api from "@/utils/api";
 
 interface QuestionFormProps {
   initialQuestion?: Question;
@@ -238,8 +238,8 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
 
   // Handle hierarchical relationship when subtopic is selected
   const handleSubtopicChange = (subtopicId: string) => {
-    if (allSubtopics?.data) {
-      const selectedSubtopic = allSubtopics.data.find(st => st.id === subtopicId);
+    if (allSubtopics) {
+      const selectedSubtopic = allSubtopics.find(st => st.id === subtopicId);
       if (selectedSubtopic && selectedSubtopic.topic && selectedSubtopic.topic.subject) {
         setValue("topicId", selectedSubtopic.topic.id);
         setValue("subjectId", selectedSubtopic.topic.subject.id);
@@ -410,7 +410,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
 
       const originalImage = canvas.toDataURL("image/png", 0.9);
 
-      const response = await axios.post("/api/cloudinary", {
+      const response = await api.post("/m/upload-cloudinary", {
         image: originalImage,
         folder: "question-images"
       });
@@ -745,7 +745,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                   onValueChange={handleSubtopicChange}
                   placeholder="Search and select subtopic"
                   options={
-                    allSubtopics?.data?.map(st => ({
+                    allSubtopics?.map(st => ({
                       value: st.id,
                       label: `${st.name} (${st.topic?.name} - ${st.topic?.subject?.name})`
                     })) || []

@@ -8,10 +8,9 @@ import {
 import { ResponseUtil } from "@/utils/response.util";
 import prisma from "@repo/db";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { ServerConfig } from "@/config/server.config";
 import { AuthUtil } from "@/utils/auth.util";
-import { ErrorCode, ApiError } from "@/types/common";
+import { ErrorCode } from "@/types/common";
 import { Role } from "@repo/db/enums";
 import { createTrialSubscription } from "@/utils/subscription.util";
 import { AuthenticatedRequest } from "@/middleware/auth.middleware";

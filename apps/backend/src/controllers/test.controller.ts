@@ -122,6 +122,24 @@ export class TestController {
     }
   };
 
+  //[GET] /api/test
+  getTests = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const tests = await prisma.test.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+      ResponseUtil.success(res, tests, "Tests fetched successfully", 200);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   //[POST] /api/test/ai/join
   joinTest = async (
     req: AuthenticatedRequest,

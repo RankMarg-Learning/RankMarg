@@ -3,7 +3,7 @@ import { QuestionWithOptions } from '@/types';
 import { QuestionStatus } from '@/utils';
 import { calculateMarks } from '@/utils/test/calculateMarks';
 import { SubmitStatus } from '@repo/db/enums';
-import axios from 'axios';
+import api from '@/utils/api';
 import { useRouter } from 'next/navigation';
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback } from 'react';
 
@@ -215,7 +215,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
 
         const marks = calculateMarks(submissions, testSection);
         
-        const response = await axios.post(`/api/test/${testInfo.testId}/submit`, {
+        const response = await api.post(`/test/${testInfo.testId}/submit`, {
           submissions,
           marks,
           timing: remainingTimer,
