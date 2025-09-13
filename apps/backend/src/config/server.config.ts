@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
 import path from "path";
 
-// Load environment variables
 try {
+  // dotenv.config({ path: path.resolve(__dirname, "../../../../../.env") });
   dotenv.config({ path: path.resolve(__dirname, "../../../../.env") });
 } catch (error) {
   console.log("No .env file found, using system environment variables");
@@ -17,9 +17,12 @@ export const ServerConfig = {
   },
 
   redis: {
-    url: process.env.REDIS_URL!,
-    upstashUrl: process.env.UPSTASH_REDIS_REST_URL!,
-    upstashToken: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    url: process.env.REDIS_URL,
+    upstashUrl: process.env.UPSTASH_REDIS_REST_URL,
+    upstashToken: process.env.UPSTASH_REDIS_REST_TOKEN,
+  },
+  redisFrontend: {
+    url: process.env.REDIS_URL_FRONTEND!,
   },
 
   cloudinary: {
@@ -27,10 +30,13 @@ export const ServerConfig = {
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
   },
-
+  openai: {
+    api_key: process.env.OPENAI_API_KEY,
+  },
   razorpay: {
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET,
+    webhook_secret: process.env.RAZORPAY_WEBHOOK_SECRET,
   },
   cors: {
     origin: process.env.CORS_ORIGIN!,

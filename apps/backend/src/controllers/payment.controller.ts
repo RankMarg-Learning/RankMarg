@@ -100,7 +100,7 @@ export class paymentController {
       const text = `${orderId}|${razorpayPaymentId}`;
 
       const generatedSignature = crypto
-        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+        .createHmac("sha256", ServerConfig.razorpay.key_secret!)
         .update(text)
         .digest("hex");
 
@@ -156,7 +156,7 @@ export class paymentController {
       const rawBody = JSON.stringify(req.body);
       const signature = req.headers["x-razorpay-signature"] as string;
       const expectedSignature = crypto
-        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+        .createHmac("sha256", ServerConfig.razorpay.webhook_secret!)
         .update(rawBody)
         .digest("hex");
       if (signature !== expectedSignature) {

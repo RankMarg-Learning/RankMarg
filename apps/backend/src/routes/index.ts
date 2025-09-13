@@ -20,6 +20,7 @@ import paymentRoutes from "./payment.routes";
 import examRoutes from "./exam.routes";
 import planRoutes from "./subscription/plan.routes";
 import promoCodeRoutes from "./subscription/promoCode.routes";
+import bulkUploadRoutes from "./bulkUpload.routes";
 // Add new routes here
 export const routes = {
   auth: authRoutes,
@@ -44,4 +45,5 @@ export const routes = {
   exam: examRoutes,
   plan: planRoutes,
   promoCode: promoCodeRoutes,
+  bulkUpload: bulkUploadRoutes,
 };

@@ -208,6 +208,7 @@ app.use(`${ServerConfig.api.prefix}/payment`, routes.payment);
 app.use(`${ServerConfig.api.prefix}/exam`, routes.exam);
 app.use(`${ServerConfig.api.prefix}/plans`, routes.plan);
 app.use(`${ServerConfig.api.prefix}/promocodes`, routes.promoCode);
+app.use(`${ServerConfig.api.prefix}/bulk-upload`, routes.bulkUpload);
 
 // Authentication routes
 app.use(`${ServerConfig.api.prefix}/auth`, routes.auth);
