@@ -205,7 +205,7 @@ app.use(`${ServerConfig.api.prefix}/suggestion`, routes.suggestion);
 app.use(`${ServerConfig.api.prefix}/user`, routes.user);
 app.use(`${ServerConfig.api.prefix}/m`, routes.misc);
 app.use(`${ServerConfig.api.prefix}/payment`, routes.payment);
-app.use(`${ServerConfig.api.prefix}/exam`, routes.exam);
+app.use(`${ServerConfig.api.prefix}/exams`, routes.exam);
 app.use(`${ServerConfig.api.prefix}/plans`, routes.plan);
 app.use(`${ServerConfig.api.prefix}/promocodes`, routes.promoCode);
 app.use(`${ServerConfig.api.prefix}/bulk-upload`, routes.bulkUpload);

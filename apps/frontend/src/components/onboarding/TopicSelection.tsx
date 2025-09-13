@@ -38,7 +38,7 @@ const TopicSelection: React.FC = () => {
     const selectionMap = new Map();
 
     if (subjects && selectedTopics.length > 0) {
-      subjects?.data?.forEach(subject => {
+      subjects?.forEach(subject => {
         const hasSelection = selectedTopics.some(topic => topic.subjectId === subject.id);
         selectionMap.set(subject.id, hasSelection);
       });
@@ -63,14 +63,14 @@ const TopicSelection: React.FC = () => {
   };
 
   const hasMinimumSelections = React.useMemo(() => {
-    if (!subjects || subjects?.data?.length === 0) return false;
+    if (!subjects || subjects?.length === 0) return false;
 
-    return subjects?.data?.every(subject => subjectsWithSelections.get(subject.id));
+    return subjects?.every(subject => subjectsWithSelections.get(subject.id));
   }, [subjects, subjectsWithSelections]);
 
   const incompleteSubjects = React.useMemo(() => {
     if (!subjects) return [];
-    return subjects?.data?.filter(subject => !subjectsWithSelections.get(subject.id));
+    return subjects?.filter(subject => !subjectsWithSelections.get(subject.id));
   }, [subjects, subjectsWithSelections]);
 
   return (
@@ -97,7 +97,7 @@ const TopicSelection: React.FC = () => {
                     <h3 className="text-sm font-medium">Selected Topics</h3>
                   </div>
                   <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
-                    {selectedTopics.length} of {subjects?.data?.length || 0}
+                    {selectedTopics.length} of {subjects?.length || 0}
                   </span>
                 </div>
                 {selectedTopics.length > 0 ? (
@@ -143,7 +143,7 @@ const TopicSelection: React.FC = () => {
                   </Motion>
                 )}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {subjects?.data?.map((subject) => {
+                  {subjects?.map((subject) => {
                     const hasSelection = subjectsWithSelections.get(subject.id);
                     const isSelected = selectedSubjectId === subject.id;
                     const selectedTopic = selectedTopics.find(t => t.subjectId === subject.id);
@@ -188,7 +188,7 @@ const TopicSelection: React.FC = () => {
               <DialogContent className="max-w-md w-full">
                 <DialogHeader>
                   <DialogTitle>
-                    {selectedSubjectId && subjects?.data?.find(s => s.id === selectedSubjectId)?.name}
+                    {selectedSubjectId && subjects?.find(s => s.id === selectedSubjectId)?.name}
                   </DialogTitle>
                 </DialogHeader>
                 <div className="mt-2">
@@ -204,7 +204,7 @@ const TopicSelection: React.FC = () => {
                       <CommandList>
                         <CommandEmpty>No topic found.</CommandEmpty>
                         <CommandGroup>
-                          {topics?.data?.filter(topic => topic.subjectId === selectedSubjectId)
+                          {topics?.filter(topic => topic.subjectId === selectedSubjectId)
                             .map((topic) => {
                               const isSelected = selectedTopics.some(t => t.id === topic.id);
                               return (

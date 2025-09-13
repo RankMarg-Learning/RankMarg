@@ -37,6 +37,9 @@ export const AuthUtil = {
       maxAge: 0,
     });
   },
+  verifyToken(token: string): any {
+    return jwt.verify(token, ServerConfig.security.jwtSecret);
+  },
 
   /**
    * Extract token from cookie or header

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Exam } from "@/types/typeAdmin";
 import { toast } from "@/hooks/use-toast";
+import api from "@/utils/api";
 
 interface UseExamsReturn {
   exams: { data: Exam[]; loading: boolean; error: string | null };
@@ -23,8 +24,8 @@ export const useExams = (): UseExamsReturn => {
   const fetchExams = async () => {
     try {
       setExams(prev => ({ ...prev, loading: true }));
-      const response = await fetch('/api/exams');
-      const result = await response.json();
+      const response = await api.get('/exams');
+      const result = await response.data;
       
       if (result.success) {
         setExams({ data: result.data, loading: false, error: null });
@@ -43,13 +44,9 @@ export const useExams = (): UseExamsReturn => {
   const saveExam = async (exam: Omit<Exam, 'id' | 'createdAt' | 'updatedAt'>) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/exams', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(exam),
-      });
+      const response = await api.post('/exams', exam);
       
-      const result = await response.json();
+      const result = await response.data;
       
       if (result.success) {
         toast({
@@ -78,13 +75,9 @@ export const useExams = (): UseExamsReturn => {
   const updateExam = async (id: string, exam: Partial<Exam>) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/exams/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(exam),
-      });
+      const response = await api.put(`/exams/${id}`, exam);
       
-      const result = await response.json();
+      const result = await response.data;
       
       if (result.success) {
         toast({
@@ -113,11 +106,9 @@ export const useExams = (): UseExamsReturn => {
   const removeExam = async (id: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/exams/${id}`, {
-        method: 'DELETE',
-      });
+      const response = await api.delete(`/exams/${id}`);
       
-      const result = await response.json();
+      const result = await response.data;
       
       if (result.success) {
         toast({

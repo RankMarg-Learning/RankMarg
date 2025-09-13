@@ -197,6 +197,7 @@ export const authController = {
         },
         examCode: user.examRegistrations[0]?.exam.code ?? "",
         role: user.role,
+        isNewUser: !user.onboardingCompleted,
       };
 
       // Generate JWT
@@ -259,6 +260,7 @@ export const authController = {
         plan: user.plan,
         examCode: user.examCode || "",
         role: user.role,
+        isNewUser: user.isNewUser,
       };
 
       // Generate JWT

@@ -1,4 +1,5 @@
 import { AuthenticatedRequest } from "@/middleware/auth.middleware";
+import { AuthUtil } from "@/utils/auth.util";
 import { ResponseUtil } from "@/utils/response.util";
 import prisma from "@repo/db";
 import { NextFunction, Response } from "express";
@@ -40,7 +41,6 @@ export class OnboardingController {
         selectedTopics.length > 0
       ) {
         const topicIds = selectedTopics.map((topic) => topic.id);
-        console.log("topicIds:", topicIds);
         const topicsData = await prisma.topic.findMany({
           where: { id: { in: topicIds } },
           select: { id: true, subjectId: true },
@@ -74,6 +74,16 @@ export class OnboardingController {
           });
         }
       }
+
+      //*NOTE:update token in cookie
+
+      const token = req.cookies["x-auth-token"];
+      const payload = AuthUtil.verifyToken(token);
+      const { exp, iat, ...cleanPayload } = payload;
+      cleanPayload.isNewUser = false;
+      const newToken = AuthUtil.generateToken(cleanPayload);
+      AuthUtil.setTokenCookie(res, newToken);
+
       ResponseUtil.success(
         res,
         null,

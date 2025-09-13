@@ -55,11 +55,32 @@ const SignInForm = () => {
       const response = await api.post("/auth/sign-in", data);
       
       // Check if the response indicates success
-      if (response.data.success) {
-        setMsg("Welcome back! Redirecting to your dashboard...");
+      if (response.data.success && response.data.data) {
+        setMsg("Welcome back! Redirecting...");
         setMsgType("success");
+        
+        // Get redirect path based on user role and onboarding status
+        const user = response.data.data.user;
+        let redirectPath = '/dashboard';
+        
+        if (user.isNewUser) {
+          redirectPath = '/onboarding';
+        } else {
+          switch (user.role) {
+            case 'ADMIN':
+              redirectPath = '/admin';
+              break;
+            case 'INSTRUCTOR':
+              redirectPath = '/instructor';
+              break;
+            default:
+              redirectPath = '/dashboard';
+          }
+        }
+        
+        // Small delay for better UX
         setTimeout(() => {
-          router.push("/dashboard");
+          router.push(redirectPath);
         }, 500);
       } else {
         // Handle API error response

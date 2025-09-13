@@ -11,9 +11,7 @@ import StudyHoursSelection from '@/components/onboarding/StudyHoursSelection';
 import Chip from '@/components/ui/chip';
 import YearSelection from '@/components/onboarding/YearSelection';
 import TopicSelection from '@/components/onboarding/TopicSelection';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { TextFormator } from '@/utils/textFormator';
 import PhoneSection from './PhoneSection';
 import {
@@ -24,9 +22,9 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import api from '@/utils/api';
 
 const DashboardPreview = () => {
-  const { update } = useSession();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentProcess, setCurrentProcess] = useState('');
@@ -70,7 +68,7 @@ const DashboardPreview = () => {
     try {
       const progressPromise = simulateProgress(processSteps);
       
-      const onboardingResponse = await axios.post('/api/onboarding', {
+      const onboardingResponse = await api.post('/onboarding', {
         phone,
         examCode,
         gradeLevel,
@@ -86,7 +84,7 @@ const DashboardPreview = () => {
 
         while (!sessionCreated && retryCount <= maxRetries) {
           try {
-            await axios.post('/api/onboarding/session');
+            await api.post('/onboarding/session');
             sessionCreated = true;
           } catch (sessionError) {
             retryCount++;
@@ -101,7 +99,6 @@ const DashboardPreview = () => {
       await progressPromise;
       
       if(onboardingResponse.data.success) {
-        await update({ isNewUser: false });
         
         setCurrentProcess('Complete! Redirecting...');
         await new Promise(resolve => setTimeout(resolve, 800));
