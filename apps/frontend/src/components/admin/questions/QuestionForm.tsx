@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -202,11 +202,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
     const options = watch("options") || [];
     const newRefs: { [key: number]: React.RefObject<HTMLTextAreaElement> } = {};
     options.forEach((_, index) => {
-      if (!optionRefs[index]) {
-        newRefs[index] = { current: null };
-      } else {
-        newRefs[index] = optionRefs[index];
-      }
+      newRefs[index] = optionRefs[index] || React.createRef<HTMLTextAreaElement>();
     });
     setOptionRefs(newRefs);
   }, [watch("options")]);
@@ -229,12 +225,11 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
 
   useEffect(() => {
     const title = watch("title");
-
     if (title) {
       const slug = generateSlug(title);
-      setValue("slug", slug);
+      setValue("slug", slug, { shouldValidate: true });
     }
-  }, [watch("title"), , setValue]);
+  }, [watch("title")]);
 
   // Handle hierarchical relationship when subtopic is selected
   const handleSubtopicChange = (subtopicId: string) => {
@@ -867,18 +862,18 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                         </div>
 
                         <div className="relative">
-                          <Input
-                            // ref={optionRefs[index]}
+                          <Textarea
+                            ref={optionRefs[index]}
                             value={option.content}
                             onChange={(e) => handleOptionContentChange(index, e.target.value)}
-                            placeholder={`Enter option ${index + 1} content...`}
-                            // rows={1}
+                            placeholder={`Enter option ${index + 1} content... You can drag and drop images here or use the upload button.`}
+                            rows={1}
                             className="border border-gray-300 transition-all duration-200"
                             onDragOver={(e) => handleOptionDragOver(e, index)}
                             onDragLeave={(e) => handleOptionDragLeave(e, index)}
                             onDrop={(e) => handleOptionDrop(e, index)}
                           />
-                          <div className="absolute top-1 right-1">
+                          <div className="absolute top-2 right-2">
                             <input
                               type="file"
                               id={`image-upload-option-${index}`}

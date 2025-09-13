@@ -54,19 +54,38 @@ const SignInForm = () => {
     try {
       const response = await api.post("/auth/sign-in", data);
       
-      if (response.data.data.success) {
-        setMsg(response.data.data.message || "Something went wrong!");
-        setMsgType("error");
-      } else {
+      // Check if the response indicates success
+      if (response.data.success) {
         setMsg("Welcome back! Redirecting to your dashboard...");
         setMsgType("success");
         setTimeout(() => {
           router.push("/dashboard");
         }, 500);
+      } else {
+        // Handle API error response
+        setMsg(response.data.message || "Login failed. Please try again.");
+        setMsgType("error");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login failed:", error);
-      setMsg("An unexpected error occurred. Please try again later.");
+      
+      // Handle different types of errors
+      if (error.response?.data?.message) {
+        // API returned an error message
+        setMsg(error.response.data.message);
+      } else if (error.response?.data?.error === "UNAUTHORIZED") {
+        // Specific unauthorized error
+        setMsg("Invalid username or password. Please check your credentials and try again.");
+      } else if (error.response?.status === 401) {
+        // Generic unauthorized error
+        setMsg("Invalid username or password. Please check your credentials and try again.");
+      } else if (error.response?.status >= 500) {
+        // Server error
+        setMsg("Server error. Please try again later.");
+      } else {
+        // Network or other errors
+        setMsg("An unexpected error occurred. Please check your connection and try again.");
+      }
       setMsgType("error");
     } finally {
       setIsLoading(false);
@@ -146,7 +165,7 @@ const SignInForm = () => {
               </div>
               
               {msg && (
-                <Alert className={`mt-2 mb-2 ${getMessageStyles()}`}>
+                <Alert className={`mt-2  ${getMessageStyles()}`}>
                   <AlertDescription>{msg}</AlertDescription>
                 </Alert>
               )}

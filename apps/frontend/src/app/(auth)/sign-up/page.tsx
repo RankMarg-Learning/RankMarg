@@ -82,12 +82,33 @@ const SignUpForm = () => {
           router.push("/sign-in");
         }, 1500);
       } else {
-        setMsg(response.data.message || "Something went wrong!");
+        // Handle API error response
+        setMsg(response.data.message || "Account creation failed. Please try again.");
         setMsgType("error");
       }
-    } catch (error) {
-      console.log(error);
-      setMsg("An error occurred, please try again.");
+    } catch (error: any) {
+      console.error("Sign-up failed:", error);
+      
+      // Handle different types of errors
+      if (error.response?.data?.message) {
+        // API returned an error message
+        setMsg(error.response.data.message);
+      } else if (error.response?.data?.error === "UNAUTHORIZED") {
+        // Specific unauthorized error
+        setMsg("Account creation failed. Please check your information and try again.");
+      } else if (error.response?.status === 400) {
+        // Bad request - validation errors
+        setMsg("Please check your information and try again.");
+      } else if (error.response?.status === 409) {
+        // Conflict - user already exists
+        setMsg("An account with this email or username already exists.");
+      } else if (error.response?.status >= 500) {
+        // Server error
+        setMsg("Server error. Please try again later.");
+      } else {
+        // Network or other errors
+        setMsg("An unexpected error occurred. Please check your connection and try again.");
+      }
       setMsgType("error");
     } finally {
       setIsLoading(false);
