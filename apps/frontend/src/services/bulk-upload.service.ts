@@ -42,11 +42,17 @@ export interface BulkUploadStatusResponse {
   data: BulkUploadJob;
 }
 
-export const bulkUploadQuestions = async (formData: FormData): Promise<BulkUploadResponse> => {
+export const bulkUploadQuestions = async (requestData: {
+  subjectId: string;
+  gptModel: string;
+  topicId?: string;
+  additionalInstructions: string;
+  urls: string[];
+}): Promise<BulkUploadResponse> => {
   try {
-    const response = await api.post('/admin/bulk-upload', formData, {
+    const response = await api.post('/bulk-upload', requestData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/json',
       },
     });
     return response.data;
@@ -61,7 +67,7 @@ export const bulkUploadQuestions = async (formData: FormData): Promise<BulkUploa
 
 export const getBulkUploadStatus = async (jobId: string): Promise<BulkUploadStatusResponse> => {
   try {
-    const response = await api.get(`/admin/bulk-upload/${jobId}/status`);
+    const response = await api.get(`/bulk-upload/${jobId}/status`);
     return response.data;
   } catch (error: any) {
     console.error("Error fetching bulk upload status:", error);
@@ -95,7 +101,7 @@ export const getBulkUploadStatus = async (jobId: string): Promise<BulkUploadStat
 
 export const getAllBulkUploadJobs = async () => {
   try {
-    const response = await api.get('/admin/bulk-upload/jobs');
+    const response = await api.get('/bulk-upload');
     return response.data;
   } catch (error) {
     console.error("Error fetching bulk upload jobs:", error);
@@ -108,7 +114,7 @@ export const getAllBulkUploadJobs = async () => {
 
 export const getBulkUploadHealth = async () => {
   try {
-    const response = await api.get('/admin/bulk-upload/health');
+    const response = await api.get('/bulk-upload/health');
     return response.data;
   } catch (error) {
     console.error("Error fetching bulk upload health:", error);

@@ -42,6 +42,7 @@ export const ServerConfig = {
     origin: process.env.CORS_ORIGIN!,
     credentials: true,
   },
+  adminAPIKey: process.env.ADMIN_API_KEY,
   cron: {
     daily: {
       resetStreak: "0 0 * * *",

@@ -213,5 +213,5 @@ export const authOptions: NextAuthOptions = {
     maxAge: JWT_MAX_AGE,
   },
 
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.JWT_SECRET,
 };

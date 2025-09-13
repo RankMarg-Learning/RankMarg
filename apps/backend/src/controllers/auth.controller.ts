@@ -294,7 +294,7 @@ export const authController = {
 
       // For browser response, redirect to frontend
       // The token is already in the cookie, so no need to include in URL
-      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+      const frontendUrl = ServerConfig.cors.origin || "http://localhost:3000";
       res.redirect(`${frontendUrl}${redirectUrl}`);
     } catch (error) {
       next(error);

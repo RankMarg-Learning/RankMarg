@@ -1,3 +1,4 @@
+import { ServerConfig } from "@/config/server.config";
 import { ReviewScheduleService } from "@/services/learning/LearningReviewScheduler";
 import { Request, Response } from "express";
 
@@ -17,7 +18,7 @@ export const updateReviews = async (req: Request, res: Response) => {
       return;
     }
     const apiKey = authHeader.split(" ")[1];
-    if (apiKey !== process.env.ADMIN_API_KEY) {
+    if (apiKey !== ServerConfig.adminAPIKey) {
       res.status(403).json({
         success: false,
         message: "Invalid API key",

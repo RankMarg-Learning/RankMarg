@@ -20,13 +20,9 @@ export async function POST(request: NextRequest) {
 
     const userId = session.user.id;
 
-    // Parse form data
-    const formData = await request.formData();
-    const subjectId = formData.get('subjectId') as string;
-    const topicId = formData.get('topicId') as string | null;
-    const gptModel = formData.get('gptModel') as string || 'gpt-4o-mini';
-    const urls = formData.getAll('urls') as string[];
-    const additionalInstructions = formData.get('additionalInstructions') as string || '';
+    // Parse JSON data
+    const requestData = await request.json();
+    const { subjectId, topicId, gptModel = 'gpt-4o-mini', urls, additionalInstructions = '' } = requestData;
 
     if (!subjectId) {
       return jsonResponse(null, {

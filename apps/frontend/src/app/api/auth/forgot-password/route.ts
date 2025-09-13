@@ -25,10 +25,10 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
     
     const resetToken = jwt.sign(
         { email, purpose: 'password-reset', exp: Math.floor(Date.now() / 1000) + 3600 }, // 1-hour expiry
-        process.env.JWT_SECRET_RESET
+        process.env.JWT_SECRET
       );
     // Create the reset URL
-    const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.NEXT_PUBLIC_WEBSITE_URL}/reset-password?token=${resetToken}`;
     // // Send the reset email
     const transporter  = nodemailer.createTransport({
       host: process.env.SMTP_HOST,

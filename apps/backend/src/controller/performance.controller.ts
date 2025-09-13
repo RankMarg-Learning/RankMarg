@@ -1,3 +1,4 @@
+import { ServerConfig } from "@/config/server.config";
 import { PerformanceService } from "../services/auto/performance.service";
 import { Request, Response } from "express";
 
@@ -22,7 +23,7 @@ export const updatePerformance = async (req: Request, res: Response) => {
       return;
     }
     const apiKey = authHeader.split(" ")[1];
-    if (apiKey !== process.env.ADMIN_API_KEY) {
+    if (apiKey !== ServerConfig.adminAPIKey) {
       res.status(403).json({
         success: false,
         message: "Invalid API key",

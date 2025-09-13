@@ -4,10 +4,7 @@ import https from "https";
 
 const httpsAgent = new https.Agent({ keepAlive: true });
 
-const baseURL =
-  typeof window === "undefined"
-    ? process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api"
-    : "http://localhost:3001/api";
+const baseURL =`${process.env.NEXT_PUBLIC_API_BASE_URL}/api`;
 
 const api = axios.create({
   baseURL,

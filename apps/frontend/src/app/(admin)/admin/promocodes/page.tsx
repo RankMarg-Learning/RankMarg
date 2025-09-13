@@ -255,7 +255,7 @@ const PromoCodesPage = () => {
       validFrom: promoCode.validFrom,
       validUntil: promoCode.validUntil,
       isActive: promoCode.isActive,
-      applicablePlans: promoCode.applicablePlans
+      applicablePlans: promoCode.applicablePlans.map(plan => plan.id)
     })
     setIsEditDialogOpen(true)
   }
@@ -547,7 +547,7 @@ const PromoCodesPage = () => {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm text-muted-foreground max-w-32">
-                          {getApplicablePlansText(promoCode.applicablePlans)}
+                          {getApplicablePlansText(promoCode.applicablePlans.map(plan => plan.id))}
                         </div>
                       </TableCell>
                       <TableCell>

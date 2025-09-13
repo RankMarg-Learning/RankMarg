@@ -48,8 +48,8 @@ const BulkUpload = () => {
   const { topics: rawTopics = [], isLoading: topicsLoading } = useTopics(selectedSubjectId)
   useSubtopics(selectedTopicId === 'auto' ? undefined : selectedTopicId)
 
-  const subjects = Array.isArray(rawSubjects?.data) ? rawSubjects.data : Array.isArray(rawSubjects) ? rawSubjects : []
-  const topics = Array.isArray(rawTopics?.data) ? rawTopics.data : Array.isArray(rawTopics) ? rawTopics : []
+  const subjects = Array.isArray(rawSubjects) ? rawSubjects : Array.isArray(rawSubjects) ? rawSubjects : []
+  const topics = Array.isArray(rawTopics) ? rawTopics : Array.isArray(rawTopics) ? rawTopics : []
 
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,7 +76,7 @@ const BulkUpload = () => {
           const data = res.data
           if (data.success) {
             newFiles.push({id, url: data.data, fileName: file.name, status: 'pending'})
-            setUploadedFiles(prev => [...prev, ...newFiles]) // Note: this is inside loop, but since async, may need adjustment
+            setUploadedFiles(prev => [...prev, ...newFiles])
           } else {
             toast({title: "Upload Failed", description: "Failed to upload to Cloudinary", variant: "destructive"})
           }
@@ -119,18 +119,15 @@ const BulkUpload = () => {
     setIsUploading(true)
 
     try {
-      const formData = new FormData()
-      formData.append('subjectId', selectedSubjectId)
-      formData.append('gptModel', selectedGptModel)
-      if (selectedTopicId && selectedTopicId !== 'auto') {
-        formData.append('topicId', selectedTopicId)
+      const requestData = {
+        subjectId: selectedSubjectId,
+        gptModel: selectedGptModel,
+        topicId: selectedTopicId && selectedTopicId !== 'auto' ? selectedTopicId : undefined,
+        additionalInstructions,
+        urls: uploadedFiles.map(f => f.url)
       }
-      formData.append('additionalInstructions', additionalInstructions)
-      uploadedFiles.forEach((f) => {
-        formData.append('urls', f.url)
-      })
 
-      const response = await bulkUploadQuestions(formData)
+      const response = await bulkUploadQuestions(requestData)
 
       if (response.success) {
         setProcessingJob(response.data.job)

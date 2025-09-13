@@ -2,7 +2,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google"
 import "./globals.css";
-import ClientSessionProvider from "@/context/ClientSessionProvider";
 import GoogleAnalytics from "@/lib/GoogleAnalytics";
 import QueryProvider from "@/context/QueryContext";
 import Script from "next/script";

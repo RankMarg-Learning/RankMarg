@@ -11,7 +11,7 @@ export async function POST(req:Request){
             return jsonResponse(null,{success:false,message:"Token and password are required.",status:400});
         }
 
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET_RESET);
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
         if (!decodedToken) {
             return jsonResponse(null,{success:false,message:"Invalid token.",status:401});
