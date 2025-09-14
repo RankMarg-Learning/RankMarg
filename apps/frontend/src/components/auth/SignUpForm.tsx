@@ -183,7 +183,7 @@ const SignUpForm = () => {
 
   const handleSignUpWithGoogle = () => {
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
       
       window.location.href = `${backendUrl}/api/auth/google`;
     } catch (error) {
