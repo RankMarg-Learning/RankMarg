@@ -2,7 +2,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { Button } from './ui/button'
 import MarkdownRenderer from '@/lib/MarkdownRenderer'
-import { useSession } from 'next-auth/react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { attempDataProps, QuestionProps } from '@/types';
@@ -31,8 +30,6 @@ const QuestionUI = ({
   answer,
   attemptId
 }: QuestionUIProps) => {
-  const { data: session } = useSession();
-  const router = useRouter();
   const { toast } = useToast();
 
   const isAnswered = useMemo(() => Boolean(answer) || isSolutionShow, [answer, isSolutionShow]);
@@ -149,11 +146,6 @@ const QuestionUI = ({
 
   const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!session) {
-      router.push('/sign-in');
-      return;
-    }
-
     setIsRunning(false);
     setIsSubmitting(true);
 
