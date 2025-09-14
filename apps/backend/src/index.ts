@@ -14,20 +14,19 @@ import mastery from "./routes/mastery";
 import performance from "./routes/performance";
 import reviews from "./routes/reviews";
 import cronRoutes from "./routes/cron.routes";
+import redisRoutes from "./routes/redis.routes";
 import { ServerConfig } from "./config/server.config";
 import { cronManager } from "./config/cron.config";
 import redisService from "./lib/redis";
 import { RedisCacheService } from "./services/redisCache.service";
 import { errorHandler } from "./middleware/error.middleware";
-
 import { routes } from "./routes";
-// import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 
 const app = express();
 
 app.use(cors(ServerConfig.cors));
 app.use(express.json({ limit: ServerConfig.performance.maxPayloadSize }));
-app.use(cookieParser(ServerConfig.security.session.secret)); // Parse cookies with the same secret as sessions
+app.use(cookieParser(ServerConfig.security.session.secret));
 
 // Configure session
 app.use(expressSession(ServerConfig.security.session));
@@ -58,123 +57,6 @@ async function initializeRedis() {
   }
 }
 
-app.get(`${ServerConfig.api.routes.redis}`, async (res: Response) => {
-  try {
-    const isHealthy = await RedisCacheService.healthCheck();
-    const stats = await RedisCacheService.getCacheStats();
-    const connectionTest = await RedisCacheService.testConnection();
-
-    res.json({
-      status: isHealthy ? "healthy" : "unhealthy",
-      redis: {
-        connected: redisService.isClientConnected(),
-        ping: await RedisCacheService.ping(),
-        stats,
-        upstash: {
-          connectionTest,
-          isUpstash:
-            process.env.REDIS_URL?.includes("upstash.io") ||
-            process.env.UPSTASH_REDIS_REST_URL?.includes("upstash.io"),
-        },
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: "error",
-      message: "Redis health check failed",
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
-});
-
-app.get(`${ServerConfig.api.routes.upstash}/stats`, async (res: Response) => {
-  try {
-    const detailedStats = await RedisCacheService.getDetailedStats();
-    res.json(detailedStats);
-  } catch (error) {
-    res.status(500).json({
-      error: "Failed to get Upstash stats",
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
-});
-
-app.get(`${ServerConfig.api.routes.upstash}/test`, async (res: Response) => {
-  try {
-    const connectionTest = await RedisCacheService.testConnection();
-    res.json(connectionTest);
-  } catch (error) {
-    res.status(500).json({
-      error: "Failed to test Upstash connection",
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
-});
-
-app.post(
-  `${ServerConfig.api.routes.upstash}/warm-cache`,
-  async (req: Request, res: Response) => {
-    try {
-      const { userId, subjectId } = req.body;
-
-      if (!userId || !subjectId) {
-        res.status(400).json({
-          error: "Missing required parameters: userId and subjectId",
-        });
-        return;
-      }
-
-      await RedisCacheService.warmCache(userId, subjectId);
-      res.json({
-        success: true,
-        message: `Cache warming initiated for user ${userId} and subject ${subjectId}`,
-      });
-    } catch (error) {
-      res.status(500).json({
-        error: "Failed to warm cache",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  }
-);
-
-app.post(
-  `${ServerConfig.api.routes.cache}/clear`,
-  async (req: Request, res: Response) => {
-    try {
-      const { userId, subjectId } = req.body;
-
-      if (userId) {
-        await RedisCacheService.invalidateUserCache(userId);
-      }
-
-      if (subjectId) {
-        await RedisCacheService.invalidateSubjectCache(subjectId);
-      }
-
-      res.json({ success: true, message: "Cache cleared successfully" });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: "Failed to clear cache",
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  }
-);
-
-app.get(`${ServerConfig.api.routes.cache}/stats`, async (res: Response) => {
-  try {
-    const stats = await RedisCacheService.getCacheStats();
-    res.json(stats);
-  } catch (error) {
-    res.status(500).json({
-      error: "Failed to get cache stats",
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
-});
-
 // Initialize cron jobs
 cronManager.initialize();
 
@@ -185,8 +67,10 @@ app.use(`${ServerConfig.api.routes.performance}`, performance);
 app.use(`${ServerConfig.api.routes.reviews}`, reviews);
 app.use(`${ServerConfig.api.prefix}/cron`, cronRoutes);
 
-// New v2 profile routes with proper structure
-// app.use(`${ServerConfig.api.prefix}/v2/profile`, profileRoutes);
+// Redis and cache management routes
+app.use("/health/redis", redisRoutes);
+app.use("/cache", redisRoutes);
+app.use("/upstash", redisRoutes);
 
 app.use(`${ServerConfig.api.prefix}/dashboard`, routes.dashboard);
 app.use(`${ServerConfig.api.prefix}/attempts`, routes.attempt);
@@ -225,15 +109,9 @@ app.use(errorHandler);
 initializeRedis().then(() => {
   app.listen(ServerConfig.port, () => {
     console.log(`🚀 API running on port ${ServerConfig.port}`);
-    console.log(
-      `📊 Redis health check available at ${ServerConfig.api.routes.redis}`
-    );
-    console.log(
-      `🗑️  Cache management available at ${ServerConfig.api.routes.cache}/*`
-    );
-    console.log(
-      `☁️  Upstash specific endpoints available at ${ServerConfig.api.routes.upstash}/*`
-    );
+    console.log(`📊 Redis health check available at /health/redis/health`);
+    console.log(`🗑️  Cache management available at /cache/*`);
+    console.log(`☁️  Upstash specific endpoints available at /upstash/*`);
     console.log(
       `⏰ Cron job management available at ${ServerConfig.api.prefix}/cron/*`
     );

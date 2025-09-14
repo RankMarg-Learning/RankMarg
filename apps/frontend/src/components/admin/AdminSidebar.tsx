@@ -1,11 +1,11 @@
 "use client"
 import { cn } from "@/lib/utils";
 import { Brain,  LayoutDashboard,  LogOut, Settings, TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload } from "lucide-react";
-import { signOut } from "next-auth/react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "../ui/button";
+import api from "@/utils/api";
 
 interface SidebarItemProps {
   icon: React.ElementType;
@@ -36,7 +36,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon: Icon, label, href, isAc
 const AdminSidebar = () => {
   const currentPath = usePathname()
   const [collapsed, setCollapsed] = useState(false);
-
+  const router = useRouter();
+  
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
     { icon: Brain, label: "Questions", href: "/admin/questions" },
@@ -47,6 +48,17 @@ const AdminSidebar = () => {
     { icon: Gift, label: "PromoCodes", href: "/admin/promocodes" },
     { icon: Settings, label: "Settings", href: "/admin/settings" },
   ];
+
+  const handleSignOut = async() => {
+    try {
+      const res = await api.post("/auth/sign-out");
+      if(res.data.success){
+        router.push("/sign-in");
+      }
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <div className={cn(
@@ -91,7 +103,7 @@ const AdminSidebar = () => {
       <div className="p-3 border-t border-gray-200">
         <Button 
           className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors text-sm"
-          onClick={() => signOut({ callbackUrl: "/" })}
+          onClick={handleSignOut}
         >
           <LogOut className="h-4 w-4" />
           {!collapsed && <span className="font-medium">Logout</span>}

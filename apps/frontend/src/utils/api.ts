@@ -1,66 +1,80 @@
-// api.ts
-import axios from "axios";
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import https from "https";
+
+const isProd = process.env.NODE_ENV === "production";
+const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`;
 
 const httpsAgent = new https.Agent({ keepAlive: true });
 
-const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`;
+const MAX_RETRIES = 2;
+function shouldRetry(error: AxiosError) {
+  if (!error || !error.config) return false;
+  const status = error.response?.status;
+  return (
+    error.code === "ECONNABORTED" ||
+    !error.response ||
+    (status !== undefined && status >= 500 && status < 600)
+  );
+}
 
+async function retryRequest(originalConfig: AxiosRequestConfig) {
+  const config: any = originalConfig;
+  config.__retryCount = config.__retryCount || 0;
+
+  if (config.__retryCount >= MAX_RETRIES) {
+    throw new Error("Max retries exceeded");
+  }
+
+  config.__retryCount += 1;
+  const backoff = 200 * Math.pow(2, config.__retryCount);
+  await new Promise((res) => setTimeout(res, backoff));
+  return api.request(config);
+} 
+
+const defaultTimeout = isProd ? 30000 : 10000;
 const api = axios.create({
   baseURL,
   httpsAgent,
   headers: { "Content-Type": "application/json" },
   withCredentials: true, 
-  timeout: 10000, // 10 second timeout
+  timeout: defaultTimeout,
 });
 
-// Request interceptor to add auth token and handle caching
 api.interceptors.request.use(
   (config) => {
-    // Add timestamp to prevent caching for auth-critical requests
+
     if (config.url?.includes('/auth/')) {
       config.params = { ...config.params, _t: Date.now() };
     }
-
-    // Add cache control for GET requests
-    if (config.method === 'get') {
-      config.headers['Cache-Control'] = 'no-store';
+    if (!isProd) {
+      console.debug("[api] request:", { url: config.url, method: config.method, params: config.params });
     }
-
     return config;
   },
+  
   (error) => {
     return Promise.reject(error);
   }
 );
 
-// Response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
+    if (!isProd) {
+      console.debug("[api] response:", { url: response.config.url, method: response.config.method, data: response.data });
+    }
     return response;
   },
-  (error) => {
-    // Handle specific error cases
-    if (error.response?.status === 401) {
-      // Token expired or invalid - clear any cached auth data
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth_cache');
-        sessionStorage.removeItem('auth_cache');
-        
-        // Redirect to login if not already on auth page
-        const currentPath = window.location.pathname;
-        if (!currentPath.startsWith('/sign-in') && !currentPath.startsWith('/sign-up')) {
-          window.location.href = '/sign-in';
+  async(error:AxiosError) => {
+    if (shouldRetry(error) && error.config) {
+      try {
+        if(!isProd) {
+          console.debug("[api] retrying request", { url: error.config.url, retryCount: (error.config as any).__retryCount || 0 });
         }
-      }
-    } else if (error.response?.status >= 500) {
-      // Server error - could implement retry logic here
-      console.error('Server error:', error.response.status, error.response.data);
-    } else if (error.code === 'ECONNABORTED') {
-      // Request timeout
-      console.error('Request timeout:', error.message);
+        return await retryRequest(error.config);
+      } catch (error) {
+        if(!isProd) console.warn("[api] retries exhausted for", error.config?.url);
     }
-
+    }
     return Promise.reject(error);
   }
 );

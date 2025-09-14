@@ -11,6 +11,7 @@ try {
 export const ServerConfig = {
   port: process.env.PORT || 3001,
   nodeEnv: process.env.NODE_ENV || "development",
+  cookieDomain: process.env.COOKIE_DOMAIN || undefined,
 
   database: {
     url: process.env.DATABASE_URL,
@@ -39,7 +40,7 @@ export const ServerConfig = {
     webhook_secret: process.env.RAZORPAY_WEBHOOK_SECRET,
   },
   cors: {
-    origin: process.env.CORS_ORIGIN!,
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
     credentials: true,
   },
   adminAPIKey: process.env.ADMIN_API_KEY,
@@ -82,12 +83,14 @@ export const ServerConfig = {
     jwtSecret: process.env.JWT_SECRET,
     bcryptRounds: 12,
     session: {
-      secret: process.env.SESSION_SECRET || "rankmargsessionsecret",
+      secret: process.env.JWT_SECRET || "rankmargsessionsecret",
       resave: false,
       saveUninitialized: false,
       cookie: {
         secure: process.env.NODE_ENV === "production",
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        domain: process.env.COOKIE_DOMAIN || undefined,
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       },
     },
   },
@@ -98,7 +101,7 @@ export const ServerConfig = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL:
         process.env.GOOGLE_CALLBACK_URL ||
-        "http://localhost:3001/api/auth/google/callback",
+        `${process.env.NODE_ENV === "production" ? "https://" : "http://"}${process.env.NODE_ENV === "production" ? process.env.BACKEND_DOMAIN || "api.rankmarg.in" : "localhost:3001"}/api/auth/google/callback`,
     },
   },
 

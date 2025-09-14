@@ -17,8 +17,8 @@ export const configurePassport = () => {
       {
         jwtFromRequest: (req) => {
           // First check cookies
-          if (req.cookies && req.cookies.auth_token) {
-            return req.cookies.auth_token;
+          if (req.cookies && req.cookies["x-auth-token"]) {
+            return req.cookies["x-auth-token"];
           }
           // Fall back to Authorization header
           return ExtractJwt.fromAuthHeaderAsBearerToken()(req);

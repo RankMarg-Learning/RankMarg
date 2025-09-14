@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from 'lucide-react';
-import axios from 'axios';
+import api from '@/utils/api';
 
 type CountryCode = {
   code: string;
@@ -74,7 +74,7 @@ const PhoneSection: React.FC = () => {
 
   const checkPhoneAvailability = async (phone: string) => {
     try {
-      const { data } = await axios.post('/api/check/phone', { phone });
+      const { data } = await api.post('/m/check/phone', { phone });
       
       if (!data.success) {
         setError(data.message);
@@ -82,17 +82,7 @@ const PhoneSection: React.FC = () => {
       }
       return true;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.message;
-        setError(errorMessage || 'Failed to validate phone number');
-        
-        // If the error is specifically about the number being already registered
-        if (error.response?.status === 409) {
-          return false;
-        }
-      } else {
-        setError('Failed to validate phone number. Please try again.');
-      }
+      setError('Failed to validate phone number. Please try again.');
       return false;
     }
   };
@@ -102,12 +92,10 @@ const PhoneSection: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // First validate the format
       if (!validatePhoneNumber(phoneNumber)) {
         throw new Error('Invalid phone number format');
       }
 
-      // Then check availability through API
       const isAvailable = await checkPhoneAvailability(selectedCountryCode.code + phoneNumber);
       if (!isAvailable) {
         throw new Error('Phone number validation failed');

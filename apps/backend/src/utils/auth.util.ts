@@ -2,11 +2,13 @@ import jwt from "jsonwebtoken";
 import { ServerConfig } from "@/config/server.config";
 import { CookieOptions, Response } from "express";
 
-// Default cookie configuration
+const isProd = process.env.NODE_ENV === "production";
+
 const cookieConfig: CookieOptions = {
   httpOnly: true,
-  secure: false,
-  sameSite: "lax",
+  secure: isProd,
+  sameSite: isProd ? "none" : "lax",
+  domain: isProd ? ServerConfig.cookieDomain : undefined,
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   path: "/",
 };

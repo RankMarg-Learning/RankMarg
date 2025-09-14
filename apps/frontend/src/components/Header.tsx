@@ -15,8 +15,8 @@ import Image from 'next/image';
 import { Badge } from './ui/badge';
 import { useUser } from '@/hooks/useUser';
 import api from '@/utils/api';
-import router from 'next/router';
 import { Skeleton } from './ui/skeleton';
+import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -24,11 +24,13 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, isLoading } = useUser();
-
+  const router = useRouter()
   const handleSignOut = async() => {
     try {
-      await api.post("/auth/sign-out");
-      router.push("/sign-in");
+      const res = await api.post("/auth/sign-out");
+      if(res.data.success){
+        router.push("/sign-in");
+      }
     } catch (error) {
       console.error("Error signing out:", error);
     }
