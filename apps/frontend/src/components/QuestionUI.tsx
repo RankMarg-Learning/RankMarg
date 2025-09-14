@@ -3,7 +3,6 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { Button } from './ui/button'
 import MarkdownRenderer from '@/lib/MarkdownRenderer'
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 import { attempDataProps, QuestionProps } from '@/types';
 import Options from './Options';
 import { AlertCircle, BookOpen, Lightbulb, AlertTriangle } from 'lucide-react';
