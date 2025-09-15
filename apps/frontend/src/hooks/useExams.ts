@@ -25,8 +25,7 @@ export const useExams = (): UseExamsReturn => {
     try {
       setExams(prev => ({ ...prev, loading: true }));
       const response = await api.get('/exams');
-      const result = await response.data;
-      
+      const result =  response.data;
       if (result.success) {
         setExams({ data: result.data, loading: false, error: null });
       } else {

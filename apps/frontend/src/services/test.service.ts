@@ -43,9 +43,9 @@ export const addTest = async (test: Partial<test>) => {
 
 };
 
-export const updateTest = async (id: string, test: Partial<test>) => {
+export const updateTest = async (testId: string, test: Partial<test>) => {
   try {
-    const response = await api.put(`/test/${id}`, test);
+    const response = await api.put(`/test/${testId}`, test);
     return response.data;
   } catch (error) {
     console.error("Error updating test:", error);
@@ -57,9 +57,9 @@ export const updateTest = async (id: string, test: Partial<test>) => {
 
 };
 
-export const deleteTest = async (id: string) => {
+export const deleteTest = async (testId: string) => {
   try {
-    const response = await api.delete(`/test/${id}`);
+    const response = await api.delete(`/test/${testId}`);
     return response.data;
   } catch (error) {
     console.error("Error deleting test:", error);

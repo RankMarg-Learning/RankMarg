@@ -266,7 +266,7 @@ export class QuestionController {
   ) => {
     try {
       const { slug } = req.params;
-      const { body } = req.body;
+      const body = req.body;
       await prisma.question.update({
         where: {
           slug,

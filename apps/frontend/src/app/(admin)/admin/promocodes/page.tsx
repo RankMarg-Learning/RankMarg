@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast"
 import { Plus, Edit, Trash2, Copy, Search, Filter, MoreHorizontal, Calendar, Percent, Users } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Checkbox } from "@/components/ui/checkbox"
+import { DateTimePicker } from "@/utils/test/date-time-picker"
 import { promoCodeService, planService, PromoCode, CreatePromoCodeData, Plan } from "@/services/subscription.service"
 
 const PromoCodesPage = () => {
@@ -42,6 +44,10 @@ const PromoCodesPage = () => {
     isActive: true,
     applicablePlans: []
   })
+
+  // Date states for DateTimePicker
+  const [validFromDate, setValidFromDate] = useState<Date | undefined>(undefined)
+  const [validUntilDate, setValidUntilDate] = useState<Date | undefined>(undefined)
 
   // Fetch data on component mount
   useEffect(() => {
@@ -106,7 +112,7 @@ const PromoCodesPage = () => {
   }, [promoCodes, searchTerm, statusFilter])
 
   const handleCreatePromoCode = async () => {
-    if (!formData.code || !formData.discount || !formData.validFrom || !formData.validUntil) {
+    if (!formData.code || !formData.discount || !validFromDate || !validUntilDate) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields",
@@ -115,7 +121,7 @@ const PromoCodesPage = () => {
       return
     }
 
-    if (new Date(formData.validFrom) >= new Date(formData.validUntil)) {
+    if (validFromDate >= validUntilDate) {
       toast({
         title: "Validation Error",
         description: "Valid until date must be after valid from date",
@@ -126,7 +132,12 @@ const PromoCodesPage = () => {
 
     setIsLoading(true)
     try {
-      const newPromoCode = await promoCodeService.createPromoCode(formData)
+      const createData = {
+        ...formData,
+        validFrom: validFromDate.toISOString().split('T')[0],
+        validUntil: validUntilDate.toISOString().split('T')[0]
+      }
+      const newPromoCode = await promoCodeService.createPromoCode(createData)
       setPromoCodes(prev => [newPromoCode, ...prev])
       setIsCreateDialogOpen(false)
       resetForm()
@@ -147,7 +158,7 @@ const PromoCodesPage = () => {
   }
 
   const handleEditPromoCode = async () => {
-    if (!editingPromoCode || !formData.code || !formData.discount || !formData.validFrom || !formData.validUntil) {
+    if (!editingPromoCode || !formData.code || !formData.discount || !validFromDate || !validUntilDate) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields",
@@ -156,7 +167,7 @@ const PromoCodesPage = () => {
       return
     }
 
-    if (new Date(formData.validFrom) >= new Date(formData.validUntil)) {
+    if (validFromDate >= validUntilDate) {
       toast({
         title: "Validation Error",
         description: "Valid until date must be after valid from date",
@@ -167,10 +178,13 @@ const PromoCodesPage = () => {
 
     setIsLoading(true)
     try {
-      const updatedPromoCode = await promoCodeService.updatePromoCode({
+      const updateData = {
         ...formData,
+        validFrom: validFromDate.toISOString().split('T')[0],
+        validUntil: validUntilDate.toISOString().split('T')[0],
         id: editingPromoCode.id
-      })
+      }
+      const updatedPromoCode = await promoCodeService.updatePromoCode(updateData)
       setPromoCodes(prev => prev.map(promo => promo.id === editingPromoCode.id ? updatedPromoCode : promo))
       setIsEditDialogOpen(false)
       setEditingPromoCode(null)
@@ -243,6 +257,8 @@ const PromoCodesPage = () => {
       isActive: true,
       applicablePlans: []
     })
+    setValidFromDate(undefined)
+    setValidUntilDate(undefined)
   }
 
   const openEditDialog = (promoCode: PromoCode) => {
@@ -257,6 +273,8 @@ const PromoCodesPage = () => {
       isActive: promoCode.isActive,
       applicablePlans: promoCode.applicablePlans.map(plan => plan.id)
     })
+    setValidFromDate(new Date(promoCode.validFrom))
+    setValidUntilDate(new Date(promoCode.validUntil))
     setIsEditDialogOpen(true)
   }
 
@@ -366,20 +384,16 @@ const PromoCodesPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="validFrom">Valid From *</Label>
-                  <Input
-                    id="validFrom"
-                    type="date"
-                    value={formData.validFrom}
-                    onChange={(e) => setFormData(prev => ({ ...prev, validFrom: e.target.value }))}
+                  <DateTimePicker
+                    date={validFromDate}
+                    setDate={setValidFromDate}
                   />
                 </div>
                 <div>
                   <Label htmlFor="validUntil">Valid Until *</Label>
-                  <Input
-                    id="validUntil"
-                    type="date"
-                    value={formData.validUntil}
-                    onChange={(e) => setFormData(prev => ({ ...prev, validUntil: e.target.value }))}
+                  <DateTimePicker
+                    date={validUntilDate}
+                    setDate={setValidUntilDate}
                   />
                 </div>
               </div>
@@ -396,15 +410,14 @@ const PromoCodesPage = () => {
               </div>
               <div>
                 <Label>Applicable Plans</Label>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {plans.map((plan) => (
-                    <div key={plan.id} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
+                    <div key={plan.id} className="flex items-center space-x-3">
+                      <Checkbox
                         id={`plan-${plan.id}`}
                         checked={formData.applicablePlans.includes(plan.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
+                        onCheckedChange={(checked) => {
+                          if (checked) {
                             setFormData(prev => ({
                               ...prev,
                               applicablePlans: [...prev.applicablePlans, plan.id]
@@ -417,7 +430,12 @@ const PromoCodesPage = () => {
                           }
                         }}
                       />
-                      <Label htmlFor={`plan-${plan.id}`}>{plan.name}</Label>
+                      <Label 
+                        htmlFor={`plan-${plan.id}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        {plan.name}
+                      </Label>
                     </div>
                   ))}
                 </div>
@@ -515,7 +533,7 @@ const PromoCodesPage = () => {
                       </TableCell>
                       <TableCell>
                         <div className="max-w-xs">
-                          <p className="text-sm font-medium">{promoCode.description}</p>
+                          <p className="text-sm font-medium">{promoCode.description || "No description"}</p>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -634,20 +652,16 @@ const PromoCodesPage = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="edit-validFrom">Valid From *</Label>
-                <Input
-                  id="edit-validFrom"
-                  type="date"
-                  value={formData.validFrom}
-                  onChange={(e) => setFormData(prev => ({ ...prev, validFrom: e.target.value }))}
+                <DateTimePicker
+                  date={validFromDate}
+                  setDate={setValidFromDate}
                 />
               </div>
               <div>
                 <Label htmlFor="edit-validUntil">Valid Until *</Label>
-                <Input
-                  id="edit-validUntil"
-                  type="date"
-                  value={formData.validUntil}
-                  onChange={(e) => setFormData(prev => ({ ...prev, validUntil: e.target.value }))}
+                <DateTimePicker
+                  date={validUntilDate}
+                  setDate={setValidUntilDate}
                 />
               </div>
             </div>
@@ -664,15 +678,14 @@ const PromoCodesPage = () => {
             </div>
             <div>
               <Label>Applicable Plans</Label>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {plans.map((plan) => (
-                  <div key={plan.id} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
+                  <div key={plan.id} className="flex items-center space-x-3">
+                    <Checkbox
                       id={`edit-plan-${plan.id}`}
                       checked={formData.applicablePlans.includes(plan.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
+                      onCheckedChange={(checked) => {
+                        if (checked) {
                           setFormData(prev => ({
                             ...prev,
                             applicablePlans: [...prev.applicablePlans, plan.id]
@@ -685,7 +698,12 @@ const PromoCodesPage = () => {
                         }
                       }}
                     />
-                    <Label htmlFor={`edit-plan-${plan.id}`}>{plan.name}</Label>
+                    <Label 
+                      htmlFor={`edit-plan-${plan.id}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {plan.name}
+                    </Label>
                   </div>
                 ))}
               </div>

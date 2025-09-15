@@ -14,7 +14,7 @@ export class ExamController {
       const exams = await prisma.exam.findMany({
         where: {
           ...(category && { category: category as string }),
-          ...(isActive !== null && { isActive: isActive === "true" }),
+          ...(isActive !== undefined && { isActive: isActive === "true" }),
         },
         include: {
           examSubjects: {

@@ -63,9 +63,11 @@ export const addQuestions = async (question: Partial<Question>) => {
   
 };
 
-export const updateQuestion = async (id: string, question: Partial<Question>) => {
+export const updateQuestion = async (slug: string, question: Partial<Question>) => {
+  console.log("question", question);
+  console.log("id", slug);
   try {
-    const response = await api.put(`/question/${id}`, question);
+    const response = await api.put(`/question/${slug}`, question);
     return response.data;
   } catch (error) {
     console.error(error);

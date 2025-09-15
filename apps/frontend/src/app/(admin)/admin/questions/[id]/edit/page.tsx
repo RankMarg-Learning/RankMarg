@@ -27,6 +27,8 @@ const EditQuestion = ({ params }: { params: { id: string } }) => {
     const handleSave = async (questionData: Partial<Question>) => {
         if (!id) return;
         try {
+            console.log("id", id);
+            console.log("questionData", questionData);
             setLoading(true);
            const res =  await updateQuestion(id, questionData);
             if(!res.success){

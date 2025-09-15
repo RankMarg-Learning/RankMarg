@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface DateTimePickerProps {
   date?: Date | undefined;
@@ -47,6 +47,7 @@ export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
   };
 
   const hours = Array.from({ length: 12 }, (_, i) => i + 1);
+  const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -60,56 +61,78 @@ export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
-        <div className="sm:flex">
+        <div className="flex">
+          {/* Calendar Section */}
           <Calendar mode="single" selected={date} onSelect={handleDateSelect} initialFocus />
-          <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
-            <ScrollArea className="w-64 sm:w-auto">
-              <div className="flex sm:flex-col p-2">
-                {hours.reverse().map((hour) => (
-                  <Button
-                    key={hour}
-                    size="icon"
-                    variant={date && date.getHours() % 12 === hour % 12 ? "default" : "ghost"}
-                    className="sm:w-full shrink-0 aspect-square"
-                    onClick={() => handleTimeChange("hour", hour.toString())}
-                  >
-                    {hour}
-                  </Button>
-                ))}
-              </div>
-              <ScrollBar orientation="horizontal" className="sm:hidden" />
-            </ScrollArea>
-            <ScrollArea className="w-64 sm:w-auto">
-              <div className="flex sm:flex-col p-2">
-                {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => (
-                  <Button
-                    key={minute}
-                    size="icon"
-                    variant={date && date.getMinutes() === minute ? "default" : "ghost"}
-                    className="sm:w-full shrink-0 aspect-square"
-                    onClick={() => handleTimeChange("minute", minute.toString())}
-                  >
-                    {minute}
-                  </Button>
-                ))}
-              </div>
-              <ScrollBar orientation="horizontal" className="sm:hidden" />
-            </ScrollArea>
-            <ScrollArea>
-              <div className="flex sm:flex-col p-2">
+          
+          {/* Time Selection Section - Calendar UI Style */}
+          <div className="border-l flex flex-row">
+            {/* Hours */}
+            <div className="p-3">
+              <div className="text-sm font-medium text-center mb-2 text-muted-foreground">Hour</div>
+              <ScrollArea className="h-64">
+                <div className="grid grid-cols-1 space-y-1">
+                  {hours.map((hour) => (
+                    <button
+                      key={hour}
+                      className={cn(
+                        "h-9 w-9 p-0 rounded-md font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-sm",
+                        date && (date.getHours() % 12 === 0 ? 12 : date.getHours() % 12) === hour
+                          ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground"
+                          : "bg-transparent"
+                      )}
+                      onClick={() => handleTimeChange("hour", hour.toString())}
+                    >
+                      {hour}
+                    </button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+
+            {/* Minutes */}
+            <div className="p-3 border-l">
+              <div className="text-sm font-medium text-center mb-2 text-muted-foreground">Minute</div>
+              <ScrollArea className="h-64">
+                <div className="grid grid-cols-1 space-y-1">
+                  {minutes.map((minute) => (
+                    <button
+                      key={minute}
+                      className={cn(
+                        "h-9 w-9 p-0 rounded-md font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-sm",
+                        date && date.getMinutes() === minute
+                          ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground"
+                          : "bg-transparent"
+                      )}
+                      onClick={() => handleTimeChange("minute", minute.toString())}
+                    >
+                      {minute.toString().padStart(2, '0')}
+                    </button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+
+            {/* AM/PM */}
+            <div className="p-3 border-l">
+              <div className="text-sm font-medium text-center mb-2 text-muted-foreground">Period</div>
+              <div className="flex flex-col space-y-1">
                 {["AM", "PM"].map((ampm) => (
-                  <Button
+                  <button
                     key={ampm}
-                    size="icon"
-                    variant={date && ((ampm === "AM" && date.getHours() < 12) || (ampm === "PM" && date.getHours() >= 12)) ? "default" : "ghost"}
-                    className="sm:w-full shrink-0 aspect-square"
+                    className={cn(
+                      "h-9 w-10 p-0 rounded-md font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-sm",
+                      date && ((ampm === "AM" && date.getHours() < 12) || (ampm === "PM" && date.getHours() >= 12))
+                        ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground"
+                        : "bg-transparent"
+                    )}
                     onClick={() => handleTimeChange("ampm", ampm)}
                   >
                     {ampm}
-                  </Button>
+                  </button>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
           </div>
         </div>
       </PopoverContent>

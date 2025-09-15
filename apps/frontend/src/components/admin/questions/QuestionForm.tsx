@@ -225,11 +225,11 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
 
   useEffect(() => {
     const title = watch("title");
-    if (title) {
+    if (title && !initialQuestion) {
       const slug = generateSlug(title);
       setValue("slug", slug, { shouldValidate: true });
     }
-  }, [watch("title")]);
+  }, [watch("title"), !initialQuestion]);
 
   // Handle hierarchical relationship when subtopic is selected
   const handleSubtopicChange = (subtopicId: string) => {
