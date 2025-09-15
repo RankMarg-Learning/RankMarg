@@ -2,7 +2,7 @@ name: Build and Push Backend to ECR
 
 on:
   push:
-    branches: ["integrate/dev"]
+    branches: ["main"]
     paths:
       - "apps/backend/**"
       - "packages/**"
