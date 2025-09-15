@@ -126,12 +126,8 @@ jobs:
           echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
           echo "ECR_REPOSITORY=${{ vars.ECR_REPOSITORY }}" >> $GITHUB_ENV
 
-          # Construct IMAGE_URI based on branch since the build outputs might be empty
-          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            IMAGE_URI="$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:latest"
-          else
-            IMAGE_URI="$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}"
-          fi
+          # Always use latest tag since it's available in ECR
+          IMAGE_URI="$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:latest"
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
           # Debug: Show what we constructed
