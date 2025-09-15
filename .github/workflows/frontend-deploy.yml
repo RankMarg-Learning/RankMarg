@@ -1,9 +1,9 @@
-name: Deploy and Run Prisma Migrations
+name: Frontend Deploy
 
 on:
   push:
     branches:
-      - main # Replace with your production branch
+      - main
 
 jobs:
   deploy:
