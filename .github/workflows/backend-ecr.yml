@@ -115,11 +115,6 @@ jobs:
       - name: Prepare variables
         id: prep
         run: |
-          if [ "${{ github.ref }}" = "refs/heads/main" ]; then \
-            echo "IMAGE_URI=${{ needs.build-and-push.outputs.image_latest }}" >> $GITHUB_ENV; \
-          else \
-            echo "IMAGE_URI=${{ needs.build-and-push.outputs.image_sha }}" >> $GITHUB_ENV; \
-          fi
           # Set ECR_REGISTRY with fallback
           ECR_REGISTRY="${{ needs.build-and-push.outputs.registry }}"
           if [ -z "$ECR_REGISTRY" ]; then
@@ -130,6 +125,18 @@ jobs:
           echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_ENV
           echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
           echo "ECR_REPOSITORY=${{ vars.ECR_REPOSITORY }}" >> $GITHUB_ENV
+
+          # Construct IMAGE_URI based on branch since the build outputs might be empty
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            IMAGE_URI="$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:latest"
+          else
+            IMAGE_URI="$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}"
+          fi
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+
+          # Debug: Show what we constructed
+          echo "Constructed ECR_REGISTRY: $ECR_REGISTRY"
+          echo "Constructed IMAGE_URI: $IMAGE_URI"
       - name: SSH and deploy on EC2
         uses: appleboy/ssh-action@v1.2.0
         with:
