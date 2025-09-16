@@ -27,7 +27,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { deleteQuestion, getAllQuestions } from "@/services/question.service";
+import { deleteQuestion, getQuestionByFilter } from "@/services/question.service";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 import { QuestionType } from "@repo/db/enums";
@@ -37,11 +37,13 @@ export default function Tests() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteQuestionSlug, setDeleteQuestionSlug] = useState(null);
   const router = useRouter()
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 25;
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; question: any } | null>(null);
 
   const { data: questions, refetch ,isLoading } = useQuery({
-    queryKey: ["questions"],
-    queryFn: () => getAllQuestions()
+    queryKey: ["questions", currentPage],
+    queryFn: () => getQuestionByFilter({ page: currentPage, limit })
   });
   
   
@@ -231,13 +233,13 @@ export default function Tests() {
         </div>
         <div className="flex items-center justify-between px-4 py-3 border-t">
           <div className="text-sm text-gray-500">
-            Showing <span className="font-medium">1</span> to <span className="font-medium">{questions?.data.currentPage}</span> of <span className="font-medium">{questions?.data.totalPages}</span> results
+            Showing <span className="font-medium">{(currentPage - 1) * limit + 1}</span> to <span className="font-medium">{(currentPage - 1) * limit + (questions?.data?.questions?.length || 0)}</span> of <span className="font-medium">{questions?.data?.totalPages * limit || 0}</span> results
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm" disabled>
+            <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)}>
               Previous
             </Button>
-            <Button variant="outline" size="sm" disabled>
+            <Button variant="outline" size="sm" disabled={currentPage >= (questions?.data?.totalPages || 1)} onClick={() => setCurrentPage(prev => prev + 1)}>
               Next
             </Button>
           </div>
