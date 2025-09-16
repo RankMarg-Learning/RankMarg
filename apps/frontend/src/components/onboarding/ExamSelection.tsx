@@ -5,10 +5,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import Motion from '@/components/ui/motion';
 import OnboardingLayout from './OnboardingLayout';
 import { useExams } from '@/hooks/useExams';
+import { Skeleton } from '../ui/skeleton';
 
 const ExamSelection: React.FC = () => {
 	const { examCode, setExamCode } = useOnboardingStore();
-	const { exams } = useExams();
+	const { exams, isLoading } = useExams();
 
 	const handleSelectExam = (selectedExamCode: string) => {
 		setExamCode(selectedExamCode);
@@ -21,7 +22,13 @@ const ExamSelection: React.FC = () => {
 			nextDisabled={!examCode}
 		>
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
-				{(exams.data || []).map((exam, index) => (
+				{ isLoading ? (
+					<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-0">
+						{Array.from({ length: 3 }).map((_, i) => (
+							<Skeleton key={i} className="h-[64px] w-full rounded-xl" />
+						))}
+					</div>
+				) : (exams.data || []).map((exam, index) => (
 					<Motion
 						key={exam.code}
 						animation="scale-in"

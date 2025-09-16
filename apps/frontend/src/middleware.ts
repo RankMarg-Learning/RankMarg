@@ -79,7 +79,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const matchedPage = protectedPages.find(({ path }) => matchesRoute(pathname, path));
-  
+
   if (matchedPage) {
     if (!user) {
       return NextResponse.redirect(new URL('/sign-in', request.url));
@@ -95,11 +95,9 @@ export async function middleware(request: NextRequest) {
     if (user.isNewUser && pathname !== '/onboarding') {
       return NextResponse.redirect(new URL('/onboarding', request.url));
     }
-    
-    if (!user.isNewUser && pathname === '/onboarding') {
-      const redirectUrl = user.role === Role.USER ? '/dashboard' : '/admin';
-      return NextResponse.redirect(new URL(redirectUrl, request.url));
-    }
+  }else{
+    const redirectUrl = user.role === Role.USER ? '/dashboard' : '/admin';
+    return NextResponse.redirect(new URL(redirectUrl, request.url));
   }
    
   return NextResponse.next();

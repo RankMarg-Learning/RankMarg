@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Target,
   Brain,
@@ -11,10 +11,11 @@ import {
   X,
   Sparkles
 } from "lucide-react";
-import PricingDialog from './PricingDialog';
+import { useRouter } from 'next/navigation';
 
 const SaasPricing = () => {
-  const [showDialog, setShowDialog] = useState(false);
+
+  const router = useRouter();
 
    const features = [
     {
@@ -82,7 +83,7 @@ const SaasPricing = () => {
     }
   ];
 
-  const FeatureRow = ({ feature, index }) => (
+  const FeatureRow = ({ feature, index }: { feature: any, index: number }) => (
     <div
       className={`flex items-start px-4 md:px-6 py-4 border-b last:border-b-0 ${
         index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
@@ -149,7 +150,7 @@ const SaasPricing = () => {
         </header>
 
         {/* Feature Comparison Card */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="bg-gradient-to-r from-primary-600 to-primary-600 text-white px-4 md:px-6 py-4">
             <h2 className="text-lg md:text-xl font-bold mb-2">Feature Comparison</h2>
             <p className="text-purple-100 text-sm">See what's included in each plan</p>
@@ -177,12 +178,12 @@ const SaasPricing = () => {
             <div className="text-center sm:text-left">
               <div className="text-sm text-gray-600 mb-1">Starting from</div>
               <div className="text-2xl font-bold text-gray-900">
-                ₹1,999<span className="text-sm font-normal text-gray-500">/year</span>
+                ₹2,499<span className="text-sm font-normal text-gray-500">/year</span>
               </div>
             </div>
             <button
               className="w-full sm:w-auto bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold px-6 md:px-8 py-3 rounded-xl shadow-lg text-base md:text-lg hover:scale-105 transition-transform duration-200"
-              onClick={() => setShowDialog(true)}
+              onClick={() => router.push('/subscription?plan=rank')}
             >
               Enroll Now
             </button>
@@ -190,8 +191,8 @@ const SaasPricing = () => {
         </div>
 
         {/* Trust Indicators */}
-        <div className="mt-8 md:mt-12">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-lg border border-gray-200">
+        <div className="mt-8 md:mt-12 hidden">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {trustIndicators.map((indicator, index) => (
                 <div key={index} className="flex items-center justify-center">
@@ -207,10 +208,9 @@ const SaasPricing = () => {
             </div>
           </div>
         </div>
+        
       </div>
 
-      {/* Enrollment Dialog */}
-      {showDialog && <PricingDialog onClose={() => setShowDialog(false)} />}
     </div>
   );
 };
