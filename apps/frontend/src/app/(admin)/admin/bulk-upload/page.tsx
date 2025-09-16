@@ -56,8 +56,6 @@ const BulkUpload = () => {
     const files = event.target.files
     if (!files) return
 
-    const newFiles: UploadedFile[] = []
-
     for (const file of Array.from(files)) {
       if (file.type.startsWith('image/')) {
         const id = Math.random().toString(36).substr(2, 9)
@@ -75,15 +73,17 @@ const BulkUpload = () => {
           })
           const data = res.data
           if (data.success) {
-            newFiles.push({id, url: data.data, fileName: file.name, status: 'pending'})
-            setUploadedFiles(prev => [...prev, ...newFiles])
+            const newFile: UploadedFile = {id, url: data.data, fileName: file.name, status: 'pending'}
+            setUploadedFiles(prev => {
+              if (prev.some(f => f.url === newFile.url)) return prev
+              return [...prev, newFile]
+            })
           } else {
             toast({title: "Upload Failed", description: "Failed to upload to Cloudinary", variant: "destructive"})
           }
         }
       }
     }
-
     event.target.value = ''
   }, [])
 
@@ -126,7 +126,7 @@ const BulkUpload = () => {
         additionalInstructions,
         urls: uploadedFiles.map(f => f.url)
       }
-
+      console.log("requestData", requestData);
       const response = await bulkUploadQuestions(requestData)
 
       if (response.success) {
