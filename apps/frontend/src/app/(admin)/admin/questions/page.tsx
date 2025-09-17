@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,  DialogDescription, DialogClose } from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
@@ -142,6 +142,7 @@ export default function Tests() {
   
 
   return (
+    <Suspense fallback={<div className="flex items-center justify-center py-10 text-gray-500">Loading...</div>}>
     <>
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
         <div>
@@ -242,7 +243,7 @@ export default function Tests() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
                               className="flex items-center gap-2"
-                              onClick={() => router.push(`/admin/questions/${question.slug}/edit`)}
+                              onClick={() => router.push(`/admin/questions/${question.slug}/edit?page=${currentPage}`)}
                             >
                               <Edit className="h-4 w-4" /> Edit
                             </DropdownMenuItem>
@@ -291,7 +292,7 @@ export default function Tests() {
           <DropdownMenuItem 
             className="flex items-center gap-2"
             onClick={() => {
-              router.push(`/admin/questions/${contextMenu.question.slug}/edit`);
+              router.push(`/admin/questions/${contextMenu.question.slug}/edit?page=${currentPage}`);
               setContextMenu(null);
             }}
           >
@@ -316,6 +317,7 @@ export default function Tests() {
         </DialogContent>
       </Dialog>
     </>
+    </Suspense>
   )
 }
 
