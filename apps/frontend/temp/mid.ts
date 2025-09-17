@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { NextApiRequest } from "next";
 import { Role } from "@repo/db/enums";
-import { Method, protectedApiRoutes, protectedPages } from "@/lib/auth-routes";
+import { Method, protectedApiRoutes, protectedPages } from "@/lib/AccessPage";
 
 function matchRoute(url: string, pattern: string): boolean {
   const urlSegments = url.split("?")[0].split("/").filter(Boolean);
