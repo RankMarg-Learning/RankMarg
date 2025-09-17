@@ -33,7 +33,7 @@ import { toast } from "@/hooks/use-toast";
 import { QuestionType } from "@repo/db/enums";
 
 
-export default function Tests() {
+function QuestionsContent() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteQuestionSlug, setDeleteQuestionSlug] = useState(null);
   const router = useRouter()
@@ -77,6 +77,7 @@ export default function Tests() {
     if (normalized !== currentPage) {
       setCurrentPage(normalized);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
   
   
@@ -142,7 +143,6 @@ export default function Tests() {
   
 
   return (
-    <Suspense fallback={<div className="flex items-center justify-center py-10 text-gray-500">Loading...</div>}>
     <>
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
         <div>
@@ -317,6 +317,13 @@ export default function Tests() {
         </DialogContent>
       </Dialog>
     </>
+  )
+}
+
+export default function Tests() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-10 text-gray-500">Loading...</div>}>
+      <QuestionsContent />
     </Suspense>
   )
 }
