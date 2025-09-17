@@ -10,7 +10,6 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger
@@ -85,9 +84,6 @@ const Curriculum = () => {
   const { removeSubTopic, isLoading: isLoadingSubtopics, saveSubTopic, subtopics } = useSubtopics(selectedTopicForSubtopics)
   const { exams, saveExam, updateExam, removeExam, addSubjectToExam, removeSubjectFromExam, isLoading: isLoadingExams } = useExams()
 
-
-
-  // Memoized filtered data for performance
   const filteredSubjects = useMemo(() =>
     subjects?.filter(subject =>
       subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ) || [], [subjects, searchTerm]
@@ -115,15 +111,13 @@ const Curriculum = () => {
 
   // Statistics
   const stats = useMemo(() => ({
-    totalSubjects: subjects?.data?.length || 0,
-    totalTopics: topics?.data?.length || 0,
-    totalSubtopics: subtopics?.data?.length || 0,
+    totalSubjects: subjects?.length || 0,
+    totalTopics: topics?.length || 0,
+    totalSubtopics: subtopics?.length || 0,
     totalExams: exams.data.length || 0,
     activeExams: exams.data.filter(e => e.isActive).length || 0,
     totalSubjectsInExams: exams.data.reduce((acc, exam) => acc + (exam.examSubjects?.length || 0), 0),
-    completionRate: subjects?.data?.length ?
-      Math.round((subjects.data.filter(s => s.topics && s.topics.length > 0).length / subjects.data.length) * 100) : 0
-  }), [subjects?.data, topics?.data, subtopics?.data, exams.data]);
+  }), [subjects?.length, topics?.length, subtopics?.length, exams.data]);
 
   // Handlers
   const handleAddSubject = useCallback(() => {
@@ -468,8 +462,7 @@ const Curriculum = () => {
               </div>
               <BookText className="w-8 h-8 text-blue-600" />
             </div>
-            <Progress value={stats.completionRate} className="mt-2" />
-            <p className="text-xs text-muted-foreground mt-1">{stats.completionRate}% Complete</p>
+              <p className="text-xs text-muted-foreground mt-1">Unique Subjects</p>
           </CardContent>
         </Card>
 
@@ -693,7 +686,7 @@ const Curriculum = () => {
                     placeholder="All Subjects"
                     options={[
                       { value: "all", label: "All Subjects" },
-                      ...(subjects?.data?.map((subject) => ({
+                      ...(subjects?.map((subject) => ({
                         value: subject.id,
                         label: subject.name,
                       })) || [])
@@ -761,7 +754,7 @@ const Curriculum = () => {
                           </TableCell>
                           <TableCell>
                             <Badge variant="secondary">
-                              {subjects?.data?.find(s => s.id === topic.subjectId)?.name}
+                              {subjects?.find(s => s.id === topic.subjectId)?.name}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -838,7 +831,7 @@ const Curriculum = () => {
                     placeholder="All Topics"
                     options={[
                       { value: "all", label: "All Topics" },
-                      ...(topics?.data?.map((topic) => ({
+                      ...(topics?.map((topic) => ({
                         value: topic.id,
                         label: topic.name,
                       })) || [])
@@ -906,12 +899,12 @@ const Curriculum = () => {
                           </TableCell>
                           <TableCell>
                             <Badge variant="secondary">
-                              {topics?.data?.find(t => t.id === subtopic.topicId)?.name}
+                              {topics?.find(t => t.id === subtopic.topicId)?.name}
                             </Badge>
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline">
-                              {subjects?.data?.find(s => s.id === topics?.data?.find(t => t.id === subtopic.topicId)?.subjectId)?.name}
+                              {subjects?.find(s => s.id === topics?.find(t => t.id === subtopic.topicId)?.subjectId)?.name}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -1173,7 +1166,7 @@ const Curriculum = () => {
           </DialogHeader>
           <TopicForm
             initialTopic={selectedTopic}
-            subjects={subjects?.data || []}
+            subjects={subjects || []}
             selectedSubjectId={selectedSubjectForTopics}
             onSave={handleSaveTopic}
             onCancel={() => setTopicDialogOpen(false)}
@@ -1190,7 +1183,7 @@ const Curriculum = () => {
           </DialogHeader>
           <SubtopicForm
             initialSubtopic={selectedSubtopic}
-            topics={topics?.data || []}
+            topics={topics || []}
             selectedTopicId={selectedTopicForSubtopics}
             onSave={handleSaveSubtopic}
             onCancel={() => setSubtopicDialogOpen(false)}
@@ -1207,7 +1200,7 @@ const Curriculum = () => {
           </DialogHeader>
           <ExamForm
             initialExam={selectedExam}
-            subjects={subjects?.data || []}
+            subjects={subjects || []}
             onSave={handleSaveExam}
             onCancel={() => setExamDialogOpen(false)}
           />
@@ -1217,11 +1210,11 @@ const Curriculum = () => {
       <Dialog open={examSubjectDialogOpen} onOpenChange={setExamSubjectDialogOpen}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add Subject to Exam</DialogTitle>
+            <DialogTitle>Add Subject to Exam ({selectedExam?.code})</DialogTitle>
           </DialogHeader>
           <ExamSubjectForm
             examCode={selectedExam?.code || ""}
-            subjects={subjects?.data || []}
+            subjects={subjects || []}
             existingExamSubjects={selectedExam?.examSubjects}
             onSave={handleSaveExamSubject}
             onCancel={() => setExamSubjectDialogOpen(false)}

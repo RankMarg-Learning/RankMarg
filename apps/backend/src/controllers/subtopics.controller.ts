@@ -1,6 +1,7 @@
 import { AuthenticatedRequest } from "@/middleware/auth.middleware";
 import { ResponseUtil } from "@/utils/response.util";
 import prisma from "@repo/db";
+import { Role } from "@repo/db/enums";
 import { NextFunction, Response } from "express";
 
 export class SubtopicsController {
@@ -107,9 +108,17 @@ export class SubtopicsController {
   ) => {
     const { id } = req.params;
     try {
-      await prisma.subTopic.delete({
-        where: { id },
-      });
+      if (req.user.role === Role.ADMIN) {
+        await prisma.subTopic.delete({
+          where: { id },
+        });
+      } else {
+        ResponseUtil.error(
+          res,
+          "You are not authorized to delete this subtopic",
+          403
+        );
+      }
       ResponseUtil.success(res, null, "Subtopic deleted successfully", 200);
     } catch (error) {
       next(error);

@@ -17,7 +17,6 @@ const ExamSubjectForm = ({ examCode, subjects, existingExamSubjects = [], onSave
   const [subjectId, setSubjectId] = useState("");
   const [weightage, setWeightage] = useState(0);
 
-  // Filter out subjects that are already assigned to this exam
   const availableSubjects = subjects.filter(subject => 
     !existingExamSubjects.some(es => es.subjectId === subject.id)
   );

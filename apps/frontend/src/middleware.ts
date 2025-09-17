@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 import { Role } from '@repo/db/enums';
-import { protectedPages } from './lib/auth-routes';
+import { 
+  checkRouteAccess, 
+  getDefaultRedirectUrl
+} from './lib/AccessPage';
 
 interface User {
   id: string;
@@ -16,8 +19,6 @@ interface User {
   isNewUser?: boolean;
 }
 
-const PUBLIC_STATIC_ROUTES = ["/_next", "/static", "/images", "/favicon.ico"];
-
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'your-secret-key'
 );
@@ -29,17 +30,6 @@ async function verifyToken(token: string): Promise<User | null> {
   } catch (error) {
     return null;
   }
-}
-
-function matchesRoute(url: string, pattern: string): boolean {
-  const urlSegments = url.split("?")[0].split("/").filter(Boolean);
-  const patternSegments = pattern.split("/").filter(Boolean);
-  
-  if (urlSegments.length !== patternSegments.length) return false;
-  
-  return patternSegments.every((segment, index) =>
-    segment.startsWith(":") || segment === urlSegments[index]
-  );
 }
 
 async function getUser(request: NextRequest): Promise<User | null> {
@@ -63,44 +53,44 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const isPublicRoute = matchesRoute(pathname, PUBLIC_STATIC_ROUTES.join("/"));
+  const user = await getUser(request);
 
-  if (isPublicRoute) {
+  // Handle root and auth pages with special redirect logic
+  if (pathname === "/" || pathname === "/sign-in" || pathname === "/sign-up") {
+    if (user) {
+      // Redirect authenticated users to their default page
+      const redirectUrl = getDefaultRedirectUrl(user);
+      return NextResponse.redirect(new URL(redirectUrl, request.url));
+    }
+    // Allow unauthenticated users to access these pages
     return NextResponse.next();
   }
 
-  const user = await getUser(request);
-
-  if(pathname === "/" || pathname === "/sign-in" || pathname === "/sign-up") {
-    if(user) {
-      const redirectUrl = user.role === Role.USER ? '/dashboard' : '/admin';
-        return NextResponse.redirect(new URL(redirectUrl, request.url));
-    }
-  }
-
-  const matchedPage = protectedPages.find(({ path }) => matchesRoute(pathname, path));
-  
-  if (matchedPage) {
-    if (!user) {
-      return NextResponse.redirect(new URL('/sign-in', request.url));
-    }
-    
-    if (!matchedPage.roles.includes(user.role)) {
-      const fromUrl = encodeURIComponent(pathname);
-      return NextResponse.redirect(new URL(`/unauthorized?from=${fromUrl}`, request.url));
-    }
-  }
-
-  if (user && pathname !== "/onboarding") {
-    if (user.isNewUser && pathname !== '/onboarding') {
+  // Handle new user onboarding flow
+  if (user && user.isNewUser) {
+    // New users must complete onboarding first
+    if (pathname !== '/onboarding') {
       return NextResponse.redirect(new URL('/onboarding', request.url));
     }
-    
-    if (!user.isNewUser && pathname === '/onboarding') {
-      const redirectUrl = user.role === Role.USER ? '/dashboard' : '/admin';
-      return NextResponse.redirect(new URL(redirectUrl, request.url));
-    }
+    // Allow access to onboarding page
+    return NextResponse.next();
   }
-   
+
+  // Check route access using the new system
+  const accessResult = checkRouteAccess(pathname, user);
+
+  // If access is denied and we have a redirect destination
+  if (!accessResult.hasAccess && accessResult.redirectTo) {
+    return NextResponse.redirect(new URL(accessResult.redirectTo, request.url));
+  }
+
+  // If access is denied but no specific redirect (shouldn't happen with our system)
+  if (!accessResult.hasAccess) {
+    // Fallback redirect based on authentication status
+    const fallbackUrl = user ? '/unauthorized' : '/sign-in';
+    return NextResponse.redirect(new URL(fallbackUrl, request.url));
+  }
+
+  // Access granted or unknown route (let Next.js handle 404s)
   return NextResponse.next();
 }

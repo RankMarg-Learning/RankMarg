@@ -26,7 +26,7 @@ const RecentTestResults: React.FC<RecentTestResultsProps> = ({ results, allResul
     return new Date(dateString).toLocaleDateString('en-IN', options);
   };
 
-  const transformedResults = results.map((r) => {
+  const transformedResults = results?.map((r) => {
     const scoreRaw = `${r.score}/${r.test.totalMarks}`;
     const scorePercentage = (r.score / r.test.totalMarks) * 100;
     const percentile = r.accuracy; 
@@ -52,7 +52,7 @@ const RecentTestResults: React.FC<RecentTestResultsProps> = ({ results, allResul
       <h2 className="text-lg font-bold text-gray-900 mb-4">Your Recent Test Results</h2>
 
       <div className="p-3 flex flex-col divide-y divide-gray-100">
-        {transformedResults.length>0 ?transformedResults.map((result) => (
+        {transformedResults?.length>0 ?transformedResults?.map((result) => (
           <div key={result.id} className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="items-center gap-2 mb-2">
               <h3 className="text-base font-semibold text-gray-800 mb-2">{result.title}</h3>
@@ -105,7 +105,7 @@ const RecentTestResults: React.FC<RecentTestResultsProps> = ({ results, allResul
         )}
       </div>
       {
-        !allResults && transformedResults.length>0   && (
+        !allResults && transformedResults?.length>0   && (
           <div className="mt-4 text-center">
             <Link href="/tests/results" className="text-primary-600 hover:text-primary-800">
               View All Test Results

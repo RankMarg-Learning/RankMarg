@@ -6,7 +6,7 @@ const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`;
 
 const httpsAgent = new https.Agent({ keepAlive: true });
 
-const MAX_RETRIES = 2;
+const MAX_RETRIES = 1;
 function shouldRetry(error: AxiosError) {
   if (!error || !error.config) return false;
   const status = error.response?.status;

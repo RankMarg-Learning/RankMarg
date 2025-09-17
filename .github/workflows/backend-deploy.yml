@@ -1,0 +1,190 @@
+name: Build and Push Backend to ECR
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "apps/backend/**"
+      - "packages/**"
+      - "package*.json"
+      - "turbo.json"
+      - ".github/workflows/backend-ecr.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: backend-ecr-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      registry: ${{ steps.login-ecr.outputs.registry }}
+      image_sha: ${{ steps.image-sha.outputs.value }}
+      image_latest: ${{ steps.image-latest.outputs.value }}
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (Access Keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS configuration
+        run: |
+          test -n "$AWS_REGION" || { echo "AWS_REGION repo variable is required"; exit 1; }
+          test -n "$ECR_REPOSITORY" || { echo "ECR_REPOSITORY repo variable is required"; exit 1; }
+
+      - name: Ensure ECR repository exists
+        run: |
+          aws ecr describe-repositories --repository-names "$ECR_REPOSITORY" >/dev/null 2>&1 || \
+          aws ecr create-repository --repository-name "$ECR_REPOSITORY" \
+            --image-scanning-configuration scanOnPush=true \
+            --encryption-configuration encryptionType=AES256 >/dev/null
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+
+      - name: Set image (SHA) output
+        id: image-sha
+        env:
+          IMAGE_URI: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+        run: |
+          echo "value=${IMAGE_URI}" >> $GITHUB_OUTPUT
+
+      - name: Set image (latest) output
+        id: image-latest
+        env:
+          IMAGE_URI: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+        run: |
+          echo "value=${IMAGE_URI}" >> $GITHUB_OUTPUT
+
+      - name: Debug ECR outputs
+        run: |
+          echo "ECR Registry: ${{ steps.login-ecr.outputs.registry }}"
+          echo "ECR Repository: ${{ env.ECR_REPOSITORY }}"
+          echo "AWS Region: ${{ env.AWS_REGION }}"
+
+  deploy-ec2:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/integrate/dev' }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Prepare variables
+        id: prep
+        run: |
+          # Set ECR_REGISTRY with fallback
+          ECR_REGISTRY="${{ needs.build-and-push.outputs.registry }}"
+          if [ -z "$ECR_REGISTRY" ]; then
+            # Construct ECR registry URL manually if output is empty
+            AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+            ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
+          fi
+          echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_ENV
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
+          echo "ECR_REPOSITORY=${{ vars.ECR_REPOSITORY }}" >> $GITHUB_ENV
+
+          # Always use latest tag since it's available in ECR
+          IMAGE_URI="$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:latest"
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+
+          # Debug: Show what we constructed
+          echo "Constructed ECR_REGISTRY: $ECR_REGISTRY"
+          echo "Constructed IMAGE_URI: $IMAGE_URI"
+      - name: SSH and deploy on EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT }}
+          envs: ECR_REGISTRY,IMAGE_URI,AWS_REGION,ECR_REPOSITORY
+          script: |
+            # Set default port if not provided
+            PORT=${{ secrets.EC2_PORT }}
+            if [ -z "$PORT" ]; then
+              PORT=22
+            fi
+            echo "Using port: $PORT"
+
+            # Debug: Show environment variables
+            echo "ECR_REGISTRY: $ECR_REGISTRY"
+            echo "IMAGE_URI: $IMAGE_URI"
+            echo "AWS_REGION: $AWS_REGION"
+            echo "ECR_REPOSITORY: $ECR_REPOSITORY"
+
+            # If the backend container exists, backup its image with a timestamp tag
+            if sudo docker inspect rankmarg-backend >/dev/null 2>&1; then
+              PREV_IMAGE=$(sudo docker inspect rankmarg-backend --format='{{.Config.Image}}')
+              BACKUP_TAG="backup-$(date +%Y%m%d%H%M%S)"
+              echo "Tagging previous image $PREV_IMAGE as $ECR_REGISTRY/$ECR_REPOSITORY:$BACKUP_TAG"
+              sudo docker tag "$PREV_IMAGE" "$ECR_REGISTRY/$ECR_REPOSITORY:$BACKUP_TAG"
+              # Push the backup tag to ECR (ignore errors so deployment continues even if push fails)
+              sudo docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$BACKUP_TAG" || true
+            else
+              echo "No existing backend container found to backup."
+            fi
+
+            # Login to ECR
+            echo "Logging in to ECR registry: $ECR_REGISTRY"
+            aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REGISTRY && echo "ECR login successful" || { echo "ECR login failed"; exit 1; }
+
+            # Pull the new image
+            echo "Pulling new image: $IMAGE_URI"
+            sudo docker pull $IMAGE_URI && echo "Pull successful" || { echo "Pull failed"; exit 1; }
+
+            # Tag the new image as latest locally
+            sudo docker tag $IMAGE_URI $ECR_REGISTRY/$ECR_REPOSITORY:latest
+            echo "Tagged new image as latest locally."
+
+            # Redeploy container
+            echo "Stopping and removing existing backend container (if any)..."
+            sudo docker rm -f rankmarg-backend || true
+            echo "Starting new backend container..."
+            sudo docker run -d --name rankmarg-backend -p 3001:3001 --restart unless-stopped \
+              --env-file /home/ubuntu/.env \
+              $IMAGE_URI && echo "Container started successfully" || { echo "Failed to start container"; exit 1; }
+
+            echo "Deployment completed"

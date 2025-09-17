@@ -4,6 +4,7 @@ import { ResponseUtil } from "@/utils/response.util";
 import {
   AttemptType,
   ExamType,
+  Role,
   SubmitStatus,
   TestStatus,
   Visibility,
@@ -331,14 +332,20 @@ export class TestController {
     res: Response,
     next: NextFunction
   ): Promise<void> => {
-    const { testId } = req.body;
+    const { testId } = req.params;
     try {
       const userId = req.user.id;
-      const test = await prisma.test.findUnique({
-        where: {
-          testId: testId,
+      let where: any = {
+        testId: testId,
+      };
+      if (req.user.role != Role.ADMIN) {
+        where = {
+          ...where,
           createdBy: userId,
-        },
+        };
+      }
+      const test = await prisma.test.findUnique({
+        where: where,
       });
 
       if (!test) {

@@ -4,11 +4,10 @@
 node_modules
 .pnp
 .pnp.js
-logs
+logs/
 
 # Local env files
 .env
-
 .env.local
 .env.development.local
 .env.test.local
@@ -44,3 +43,9 @@ yarn-error.log*
 
 #Full Admin App
 apps/admin
+
+
+# Backend logs (ensure both relative and explicit paths are ignored)
+apps/backend/logs/
+apps/backend/logs/*
+apps/backend/logs/**

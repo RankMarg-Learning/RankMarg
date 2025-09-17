@@ -60,12 +60,12 @@ RUN npm ci --only=production
 
 # Copy built packages from build stage
 COPY --from=base /app/packages/db/dist ./packages/db/dist
-COPY --from=base /app/packages/db/node_modules ./packages/db/node_modules
+# COPY --from=base /app/packages/db/node_modules ./packages/db/node_modules
 COPY --from=base /app/packages/suggest-engine/dist ./packages/suggest-engine/dist
 
 # Copy built backend
 COPY --from=base /app/apps/backend/dist ./apps/backend/dist
-COPY --from=base /app/apps/backend/node_modules ./apps/backend/node_modules
+# COPY --from=base /app/apps/backend/node_modules ./apps/backend/node_modules
 
 # Copy Prisma schema and generated client
 COPY --from=base /app/packages/db/prisma ./packages/db/prisma

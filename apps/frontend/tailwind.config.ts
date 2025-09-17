@@ -28,7 +28,7 @@ const config: Config = {
 				  200: '#fef08a',
 				  300: '#fde047',
 				  400: '#facc15',
-				  500: '#eab308', // Main color
+				  500: '#eab308', 
 				  600: '#ca8a04',
 				  700: '#a16207',
 				  800: '#854d0e',
@@ -41,10 +41,6 @@ const config: Config = {
   			muted: {
   				DEFAULT: 'hsl(var(--muted))',
   				foreground: 'hsl(var(--muted-foreground))'
-  			},
-  			accent: {
-  				DEFAULT: 'hsl(var(--accent))',
-  				foreground: 'hsl(var(--accent-foreground))'
   			},
   			destructive: {
   				DEFAULT: 'hsl(var(--destructive))',
