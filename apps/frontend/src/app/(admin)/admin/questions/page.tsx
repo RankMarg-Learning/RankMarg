@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,  DialogDescription, DialogClose } from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
@@ -28,16 +28,21 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { deleteQuestion, getQuestionByFilter } from "@/services/question.service";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 import { QuestionType } from "@repo/db/enums";
 
 
-export default function Tests() {
+function QuestionsContent() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteQuestionSlug, setDeleteQuestionSlug] = useState(null);
   const router = useRouter()
-  const [currentPage, setCurrentPage] = useState(1);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const initialPageFromUrl = Number(searchParams.get("page") || "1");
+  const [currentPage, setCurrentPage] = useState<number>(
+    Number.isNaN(initialPageFromUrl) || initialPageFromUrl < 1 ? 1 : initialPageFromUrl
+  );
   const limit = 25;
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; question: any } | null>(null);
 
@@ -45,6 +50,35 @@ export default function Tests() {
     queryKey: ["questions", currentPage],
     queryFn: () => getQuestionByFilter({ page: currentPage, limit })
   });
+  
+  const updatePageInUrl = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    if (newPage <= 1) {
+      params.delete("page");
+    } else {
+      params.set("page", String(newPage));
+    }
+    const next = params.toString();
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  };
+
+  const goToPage = (updater: (prev: number) => number) => {
+    setCurrentPage(prev => {
+      const nextPage = updater(prev);
+      const normalized = nextPage < 1 ? 1 : nextPage;
+      updatePageInUrl(normalized);
+      return normalized;
+    });
+  };
+
+  useEffect(() => {
+    const pageFromUrl = Number(searchParams.get("page") || "1");
+    const normalized = Number.isNaN(pageFromUrl) || pageFromUrl < 1 ? 1 : pageFromUrl;
+    if (normalized !== currentPage) {
+      setCurrentPage(normalized);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
   
   
 
@@ -209,7 +243,7 @@ export default function Tests() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
                               className="flex items-center gap-2"
-                              onClick={() => router.push(`/admin/questions/${question.slug}/edit`)}
+                              onClick={() => router.push(`/admin/questions/${question.slug}/edit?page=${currentPage}`)}
                             >
                               <Edit className="h-4 w-4" /> Edit
                             </DropdownMenuItem>
@@ -236,10 +270,10 @@ export default function Tests() {
             Showing <span className="font-medium">{(currentPage - 1) * limit + 1}</span> to <span className="font-medium">{(currentPage - 1) * limit + (questions?.data?.questions?.length || 0)}</span> of <span className="font-medium">{questions?.data?.totalPages * limit || 0}</span> results
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)}>
+            <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => goToPage(prev => prev - 1)}>
               Previous
             </Button>
-            <Button variant="outline" size="sm" disabled={currentPage >= (questions?.data?.totalPages || 1)} onClick={() => setCurrentPage(prev => prev + 1)}>
+            <Button variant="outline" size="sm" disabled={currentPage >= (questions?.data?.totalPages || 1)} onClick={() => goToPage(prev => prev + 1)}>
               Next
             </Button>
           </div>
@@ -258,7 +292,7 @@ export default function Tests() {
           <DropdownMenuItem 
             className="flex items-center gap-2"
             onClick={() => {
-              router.push(`/admin/questions/${contextMenu.question.slug}/edit`);
+              router.push(`/admin/questions/${contextMenu.question.slug}/edit?page=${currentPage}`);
               setContextMenu(null);
             }}
           >
@@ -283,6 +317,14 @@ export default function Tests() {
         </DialogContent>
       </Dialog>
     </>
+  )
+}
+
+export default function Tests() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-10 text-gray-500">Loading...</div>}>
+      <QuestionsContent />
+    </Suspense>
   )
 }
 

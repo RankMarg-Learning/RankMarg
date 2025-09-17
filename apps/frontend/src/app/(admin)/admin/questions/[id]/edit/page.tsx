@@ -5,12 +5,15 @@ import { toast } from '@/hooks/use-toast';
 import { getQuestionBySlug, updateQuestion } from '@/services/question.service';
 import { Question } from '@/types/typeAdmin';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import React, {  useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { Suspense,  useState } from 'react'
 
 const EditQuestion = ({ params }: { params: { id: string } }) => {
     const { id } = params;
     const [loading, setLoading] = useState(false);
+    const searchParams = useSearchParams();
+    const pageFromUrl = searchParams.get('page');
+    const backTo = pageFromUrl ? `/admin/questions?page=${pageFromUrl}` : '/admin/questions';
     const router = useRouter();
     const { data: question, isLoading, isError } = useQuery({
         queryKey: ["question", id],
@@ -20,7 +23,7 @@ const EditQuestion = ({ params }: { params: { id: string } }) => {
         staleTime: 5 * 60 * 1000,
     });
     if (!isLoading && !isError && !question) {
-        router.push("/admin/questions");
+        router.push(backTo);
         return null;
     }
 
@@ -47,7 +50,7 @@ const EditQuestion = ({ params }: { params: { id: string } }) => {
                 className: "bg-gray-100 text-gray-800",
               })
 
-            router.push("/admin/questions");
+            router.push(backTo);
 
         } catch (error) {
             toast({
@@ -65,13 +68,14 @@ const EditQuestion = ({ params }: { params: { id: string } }) => {
     };
 
     return (
+        <Suspense fallback={<Loading />}>
         <div>
                 {
                     !isLoading ? (
                         <QuestionForm
                             initialQuestion={question.data}
                             onSave={handleSave}
-                            onCancel={() => router.push('/admin/questions')}
+                            onCancel={() => router.push(backTo)}
                             loading={loading}
                         />
                     ) : (
@@ -79,6 +83,7 @@ const EditQuestion = ({ params }: { params: { id: string } }) => {
                     )
                 }
         </div>
+        </Suspense>
     )
 }
 
