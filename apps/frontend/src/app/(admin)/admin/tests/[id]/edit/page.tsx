@@ -65,10 +65,6 @@ const EditTest = ({ params }: { params: { id: string } }) => {
     if (isLoading) return <Loading />
     return (
         <>
-            <div className="mb-6">
-                <h2 className="text-2xl font-semibold text-gray-800">Add New Test</h2>
-                <p className="text-gray-500">Create a new test for your exams</p>
-            </div>
             <TestForm
                 initialTest={test.data}
                 onSave={handleSave}
