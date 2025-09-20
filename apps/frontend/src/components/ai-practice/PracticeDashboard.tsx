@@ -8,12 +8,13 @@ import RecentPracticeResults from './RecentPracticeResults'
 import { useAiPractice } from '@/hooks/useAiPractice'
 import PracticeDashboardSkeleton from '../skeleton/practice.dashboard.skeleton'
 import { toast } from '@/hooks/use-toast'
+import Error from '../error'
 
 const PracticeDashboard = () => {
     const [visible, setVisible] = useState(true);
     const { overview, results, sessions,suggestions, isLoading, isError } = useAiPractice()
     if (isLoading) return <PracticeDashboardSkeleton />
-    if (isError) return <div>Error loading data</div>
+    if (isError) return <Error message={ 'Something went wrong while loading your practice results.'} />
 
     const handleClick = () => {
         setVisible(false);
