@@ -13,12 +13,18 @@ import {
 import { DateTimePicker } from '@/utils/test/date-time-picker';
 import { Label } from '@/components/ui/label';
 import { Visibility } from '@/types/typeAdmin';
+import { TestStatus } from '@repo/db/enums';
 import { TextFormator } from '@/utils/textFormator';
 
 const ReviewForm: React.FC = () => {
   const { state, setReviewInfo, totalQuestions, totalMarks } = useTestBuilder();
 
   const visibilityOptions = Object.entries(Visibility).map(([key, value]) => ({
+    value: key,
+    label: TextFormator(value),
+  }));
+
+  const testStatusOptions = Object.entries(TestStatus).map(([key, value]) => ({
     value: key,
     label: TextFormator(value),
   }));
@@ -170,6 +176,16 @@ const ReviewForm: React.FC = () => {
           options={visibilityOptions}
           required
           id="visibility"
+        />
+
+        <SelectField
+          label="Test Status"
+          value={state.status}
+          onChange={(value) => handleFieldChange('status', value)}
+          placeholder="Select test status"
+          options={testStatusOptions}
+          required
+          id="status"
         />
       </div>
 
