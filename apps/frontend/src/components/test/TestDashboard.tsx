@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
+import { AlertCircle, RefreshCw, TrendingUp, Calendar, BookOpen, BarChart3 } from 'lucide-react'
 import RecommendedTest from './RecommendedTest'
 import ScheduledTests from './ScheduledTests'
 import AvailableTests from './AvailableTests'
@@ -8,10 +9,21 @@ import RecentTestResults from './RecentTestResults'
 import { useTestDashboardData } from '@/hooks/useTestDashboardData'
 import { useRouter } from 'next/navigation'
 import TestDashboardSkeleton from '../skeleton/test.dashboard.skeleton'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+
+interface DashboardStats {
+  totalTests: number
+  completedTests: number
+  averageScore: number
+  upcomingTests: number
+}
 
 const TestDashboard = () => {
-  const router = useRouter();
-  const [activeFilter, setActiveFilter] = useState('FULL_LENGTH');
+  const router = useRouter()
+  const [activeFilter, setActiveFilter] = useState('FULL_LENGTH')
+  const [retryCount, setRetryCount] = useState(0)
 
   const {
     available,
@@ -20,68 +32,271 @@ const TestDashboard = () => {
     schedule,
     isLoading,
     isError,
+    refetch
   } = useTestDashboardData({
-    availableLimit: 5,
+    availableLimit: 6,
     availableType: activeFilter,
     resultsLimit: 5
   })
 
+  // Calculate dashboard statistics
+  const dashboardStats: DashboardStats = useMemo(() => {
+    const totalTests = available?.data?.length || 0
+    const completedTests = results?.data?.length || 0
+    const upcomingTests = schedule?.data?.length || 0
+    
+    const averageScore = results?.data?.length > 0 
+      ? results.data.reduce((sum: number, result: any) => sum + (result.score / result.test.totalMarks * 100), 0) / results.data.length
+      : 0
+
+    return {
+      totalTests,
+      completedTests,
+      averageScore: Math.round(averageScore),
+      upcomingTests
+    }
+  }, [available, results, schedule])
+
   const handleStartTest = (testId: string) => {
-    router.push(`/test/${testId}/instructions`);
-  };
+    router.push(`/test/${testId}/instructions`)
+  }
 
   const handleFilterChange = (filter: string) => {
-    setActiveFilter(filter);
-  };
+    setActiveFilter(filter)
+  }
 
-  if (isLoading) return <TestDashboardSkeleton/>
-  if (isError) return <div> Error Happen.</div>;
+  const handleRetry = async () => {
+    setRetryCount(prev => prev + 1)
+    try {
+      await refetch()
+    } catch (error) {
+      console.error('Failed to retry:', error)
+    }
+  }
 
-  if (!available?.success || !recommended?.success || !results?.success || !schedule?.success) {
-    return <div>Something Wrong </div>
+  // Enhanced loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <TestDashboardSkeleton />
+      </div>
+    )
+  }
+
+  // Enhanced error state
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-3 bg-red-100 rounded-full">
+                <AlertCircle className="h-8 w-8 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Unable to Load Dashboard
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  We're having trouble loading your test dashboard. This might be a temporary issue.
+                </p>
+              </div>
+              <Button 
+                onClick={handleRetry}
+                className="w-full"
+                disabled={retryCount >= 3}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Try Again {retryCount > 0 && `(${retryCount}/3)`}
+              </Button>
+              {retryCount >= 3 && (
+                <p className="text-xs text-gray-500">
+                  If the problem persists, please contact support.
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Data validation
+  const hasValidData = available?.success && recommended?.success && results?.success && schedule?.success
+
+  if (!hasValidData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-3 bg-yellow-100 rounded-full">
+                <AlertCircle className="h-8 w-8 text-yellow-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Data Loading Issue
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Some dashboard data couldn't be loaded properly. Please try refreshing the page.
+                </p>
+              </div>
+              <Button onClick={handleRetry} className="w-full">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh Dashboard
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
-    <main className="flex-grow px-4 py-4 md:px-4 md:py-6 max-w-7xl mx-auto w-full">
-      <div className="mb-6">
-        {
-          recommended?.data && (
+    <div className="min-h-screen ">
+      <main className="max-w-7xl mx-auto px-4 py-6 space-y-8">
+        {/* Dashboard Header */}
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Test Dashboard</h1>
+              <p className="text-gray-600 mt-1 text-sm">Track your progress and discover new tests</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-sm">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                {dashboardStats.averageScore}% Avg Score
+              </Badge>
+            </div>
+          </div>
+
+          {/* Dashboard Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="bg-gray-50  border-0 shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <BookOpen className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-gray-900">{dashboardStats.totalTests}</p>
+                    <p className="text-sm text-gray-600">Available Tests</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-50 border-0 shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <BarChart3 className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-gray-900">{dashboardStats.completedTests}</p>
+                    <p className="text-sm text-gray-600">Completed</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-50 border-0 shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-gray-900">{dashboardStats.averageScore}%</p>
+                    <p className="text-sm text-gray-600">Average Score</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-50 border-0 shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <Calendar className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-gray-900">{dashboardStats.upcomingTests}</p>
+                    <p className="text-sm text-gray-600">Scheduled</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Recommended Test Section */}
+        {recommended?.data && (
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="h-1 w-8 bg-primary-500 rounded-full"></div>
+              <h2 className="text-lg font-semibold text-gray-900">Recommended for You</h2>
+            </div>
             <RecommendedTest
-              testId={recommended?.data?.testId}
-              testName={recommended?.data?.title}
-              examType={recommended?.data?.examType}
-              totalQuestions={recommended?.data?.totalQuestions}
-              totalMarks={recommended?.data?.totalMarks}
-              examCode={recommended?.data?.examCode}
-              duration={recommended?.data?.duration}
-              difficulty={recommended?.data?.difficulty}
+              testId={recommended.data.testId}
+              testName={recommended.data.title}
+              examType={recommended.data.examType}
+              totalQuestions={recommended.data.totalQuestions}
+              totalMarks={recommended.data.totalMarks}
+              examCode={recommended.data.examCode}
+              duration={recommended.data.duration}
+              difficulty={recommended.data.difficulty}
               onStartTest={handleStartTest}
             />
-          )
-        }
+          </section>
+        )}
 
-      </div>
-      {
-        schedule?.data ? (
-          <ScheduledTests
-            tests={schedule?.data}
+        {/* Scheduled Tests Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="h-1 w-8 bg-orange-500 rounded-full"></div>
+            <h2 className="text-lg font-semibold text-gray-900">Upcoming Tests</h2>
+          </div>
+          {schedule?.data && schedule.data.length > 0 ? (
+            <ScheduledTests
+              tests={schedule.data}
+              onStartTest={handleStartTest}
+            />
+          ) : (
+            <Card className="bg-gray-50 border-0 shadow-sm">
+              <CardContent className="p-8 text-center">
+                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-base font-medium text-gray-900 mb-2">No Scheduled Tests</h3>
+                <p className="text-gray-600 text-sm">You don't have any upcoming tests scheduled. Check out available tests below!</p>
+              </CardContent>
+            </Card>
+          )}
+        </section>
+
+        {/* Available Tests Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="h-1 w-8 bg-blue-500 rounded-full"></div>
+            <h2 className="text-lg font-semibold text-gray-900">Available Tests</h2>
+          </div>
+          <AvailableTests
+            tests={available?.data || []}
             onStartTest={handleStartTest}
+            onFilterChange={handleFilterChange}
+            activeFilter={activeFilter}
           />
-        ) : (
-          <div className="text-center text-gray-500">No scheduled tests available.</div>
-        )
-      }
+        </section>
 
-      <AvailableTests
-        tests={available?.data || []}
-        onStartTest={handleStartTest}
-        onFilterChange={handleFilterChange}
-        activeFilter={activeFilter}
-      />
-      <RecentTestResults
-        results={results?.data}
-      />
-    </main>
+        {/* Recent Results Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="h-1 w-8 bg-green-500 rounded-full"></div>
+            <h2 className="text-lg font-semibold text-gray-900">Recent Performance</h2>
+          </div>
+          <RecentTestResults results={results?.data} />
+        </section>
+      </main>
+    </div>
   )
 }
 

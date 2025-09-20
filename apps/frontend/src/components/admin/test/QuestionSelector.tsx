@@ -1,5 +1,5 @@
 "use client"
-import {  useState } from "react";
+import {  useState, useMemo, useCallback } from "react";
 import { testQuestion } from "@/types/typeAdmin";
 import { Button } from "@/components/ui/button";
 import { Trash2, Check, GripVertical} from "lucide-react";
@@ -24,6 +24,16 @@ const QuestionSelector = ({
   examCode,
 }: QuestionSelectorProps) => {
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+  
+  // Stable key that only changes when examCode changes
+  const questionTableKey = useMemo(() => `question-table-${examCode}`, [examCode]);
+  
+  // Memoize the selected questions to prevent unnecessary re-renders
+  const memoizedSelectedQuestions = useMemo(() => 
+    selectedQuestions.map((q) => ({
+      id: q.id,
+      title: q.title
+    })), [selectedQuestions]);
 
   const removeQuestion = (questionId: string) => {
     onQuestionsChange(
@@ -65,7 +75,7 @@ const QuestionSelector = ({
   };
 
 
-  const handleQuestionSelect = (questions: SelectedQuestion[]) => {
+  const handleQuestionSelect = useCallback((questions: SelectedQuestion[]) => {
     const uniqueMap = new Map<string, SelectedQuestion>();
     questions.forEach((q) => {
       if (!uniqueMap.has(q.id)) uniqueMap.set(q.id, q);
@@ -74,18 +84,16 @@ const QuestionSelector = ({
       .slice(0, Math.max(0, maxQuestions))
       .map((q) => ({ id: q.id, title: q.title }));
     onQuestionsChange(limited);
-  };
+  }, [maxQuestions, onQuestionsChange]);
 
   return (
     <div className="space-y-3">
       <div className="flex space-x-2">
         <div className="w-full">
           <Questionset
+            key={questionTableKey}
             onSelectedQuestionsChange={handleQuestionSelect}
-            selectedQuestions={selectedQuestions.map((q) => ({
-              id: q.id,
-              title: q.title
-            }))}
+            selectedQuestions={memoizedSelectedQuestions}
             isCheckBox={true}
             isPublished={true}
             examCode={examCode}

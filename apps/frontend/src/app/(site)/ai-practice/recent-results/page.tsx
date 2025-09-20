@@ -1,6 +1,7 @@
 'use client'
 
 import RecentPracticeResults from '@/components/ai-practice/RecentPracticeResults'
+import Error from '@/components/error'
 import Loading from '@/components/Loading'
 import api from '@/utils/api'
 import { useInfiniteQuery } from '@tanstack/react-query'
@@ -22,7 +23,7 @@ const SessionPage = () => {
     queryFn: async ({ pageParam = 1 }) => {
       try {
         const response = await api.get(
-          `/v.1.0/session/subject_practice_session?loc=ai_practice&_done_item=true&_type=all&_count=${PAGE_SIZE}&_page=${pageParam}`
+          `/practice-sessions?loc=ai_practice&_done_item=true&_type=all&_count=${PAGE_SIZE}&_page=${pageParam}`
         )
 
         const responseData = Array.isArray(response?.data?.data)
@@ -66,20 +67,7 @@ const SessionPage = () => {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
-        <div className="text-red-500 text-lg font-medium mb-2">
-          Error loading data
-        </div>
-        <div className="text-gray-600 text-sm text-center">
-          {error?.message || 'Something went wrong while loading your practice results.'}
-        </div>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
-        >
-          Try Again
-        </button>
-      </div>
+      <Error message={error?.message || 'Something went wrong while loading your practice results.'} />
     )
   }
 

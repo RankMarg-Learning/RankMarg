@@ -81,7 +81,6 @@ const AvailableTests: React.FC<AvailableTestsProps> = ({
   return (
     <div>
       <div className="border-gray-200 flex justify-between items-center flex-wrap gap-4">
-        <h2 className="text-lg font-semibold text-gray-900">Available Mock Tests</h2>
 
         <div className="flex gap-2">
           {['FULL_LENGTH', 'SUBJECT_WISE', 'CHAPTER_WISE'].map((filter) => (
