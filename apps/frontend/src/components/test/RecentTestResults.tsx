@@ -49,7 +49,6 @@ const RecentTestResults: React.FC<RecentTestResultsProps> = ({ results, allResul
 
   return (
     <div className="md:my-6 my-4">
-      <h2 className="text-lg font-bold text-gray-900 mb-4">Your Recent Test Results</h2>
 
       <div className="p-3 flex flex-col divide-y divide-gray-100">
         {transformedResults?.length>0 ?transformedResults?.map((result) => (

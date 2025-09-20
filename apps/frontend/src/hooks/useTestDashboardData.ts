@@ -42,6 +42,10 @@ export function useTestDashboardData({
 
     const [available, recommended, results, schedule] = queries
 
+    const refetch = async () => {
+        await Promise.all(queries.map(query => query.refetch()))
+    }
+
     return {
         available: available.data,
         recommended: recommended.data,
@@ -49,5 +53,6 @@ export function useTestDashboardData({
         schedule: schedule.data,
         isLoading: queries.some(q => q.isLoading),
         isError: queries.some(q => q.isError),
+        refetch,
     }
 }
