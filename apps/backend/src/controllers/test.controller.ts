@@ -6,6 +6,8 @@ import {
   ExamType,
   Role,
   SubmitStatus,
+  SubscriptionStatus,
+  TestParticipationStatus,
   TestStatus,
   Visibility,
 } from "@repo/db/enums";
@@ -136,51 +138,6 @@ export class TestController {
         },
       });
       ResponseUtil.success(res, tests, "Tests fetched successfully", 200);
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  //[POST] /api/test/ai/join
-  joinTest = async (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    try {
-      const { testId } = req.body;
-      const userId = req.user.id;
-      const isReJoin = await prisma.testParticipation.findFirst({
-        where: {
-          userId: userId,
-          testId: testId,
-        },
-      });
-      if (!isReJoin) {
-        await prisma.testParticipation.create({
-          data: {
-            testId: testId,
-            userId: userId,
-          },
-          include: {
-            test: true,
-            user: true,
-          },
-        });
-      }
-
-      await prisma.testParticipation.update({
-        where: {
-          userId_testId: {
-            userId: userId,
-            testId: testId,
-          },
-        },
-        data: {
-          status: "STARTED",
-        },
-      });
-      ResponseUtil.success(res, null, "Ok", 200);
     } catch (error) {
       next(error);
     }
@@ -540,6 +497,51 @@ export class TestController {
     }
   };
 
+  //[POST] /api/test/ai/join
+  joinTest = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const { testId } = req.body;
+      const userId = req.user.id;
+      const isReJoin = await prisma.testParticipation.findFirst({
+        where: {
+          userId: userId,
+          testId: testId,
+        },
+      });
+      if (!isReJoin) {
+        await prisma.testParticipation.create({
+          data: {
+            testId: testId,
+            userId: userId,
+          },
+          include: {
+            test: true,
+            user: true,
+          },
+        });
+      }
+
+      await prisma.testParticipation.update({
+        where: {
+          userId_testId: {
+            userId: userId,
+            testId: testId,
+          },
+        },
+        data: {
+          status: "STARTED",
+        },
+      });
+      ResponseUtil.success(res, null, "Ok", 200);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   //[GET] /api/test/ai/available
   getAiAvailableTests = async (
     req: AuthenticatedRequest,
@@ -548,7 +550,33 @@ export class TestController {
   ): Promise<void> => {
     const { limit, type } = querySchemaAvailableTests.parse(req.query);
     try {
+      const userId = req.user.id;
       const examCode = req.user.examCode;
+      const subscriptionStatus = req.user.plan.status;
+
+      const hasActiveSubscription =
+        subscriptionStatus === SubscriptionStatus.ACTIVE;
+
+      let userTestCount = 0;
+      let isLimitExceeded = false;
+
+      if (!hasActiveSubscription) {
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        userTestCount = await prisma.testParticipation.count({
+          where: {
+            userId: userId,
+            status: "COMPLETED",
+            endTime: {
+              gte: monthStart,
+            },
+          },
+        });
+
+        isLimitExceeded = userTestCount >= 2;
+      }
+
       const whereClause = {
         status: TestStatus.ACTIVE,
         visibility: Visibility.PUBLIC,
@@ -561,8 +589,17 @@ export class TestController {
             }),
         ...(examCode && { examCode }),
       };
+
       const availableTests = await prisma.test.findMany({
-        where: whereClause,
+        where: {
+          ...whereClause,
+          testParticipation: {
+            none: {
+              userId: userId,
+              status: TestParticipationStatus.COMPLETED,
+            },
+          },
+        },
         select: {
           testId: true,
           title: true,
@@ -580,7 +617,15 @@ export class TestController {
         orderBy: { createdAt: "desc" },
         take: limit,
       });
-      ResponseUtil.success(res, availableTests, "Ok", 200);
+
+      const payload = {
+        tests: availableTests,
+        isLimitExceeded,
+        userTestCount,
+        monthlyLimit: 2,
+      };
+
+      ResponseUtil.success(res, payload, "Ok", 200);
     } catch (error) {
       next(error);
     }
@@ -594,6 +639,18 @@ export class TestController {
   ): Promise<void> => {
     try {
       const userId = req.user.id;
+
+      if (
+        req.user.plan.status === SubscriptionStatus.EXPIRED ||
+        req.user.plan.status === SubscriptionStatus.CANCELLED
+      ) {
+        ResponseUtil.error(
+          res,
+          "Upgrade your plan to get recommended tests",
+          403
+        );
+      }
+
       const weakestSubject = await prisma.subjectMastery.findFirst({
         where: { userId },
         orderBy: { masteryLevel: "asc" },
@@ -624,6 +681,7 @@ export class TestController {
                 },
               }
             : {}),
+          visibility: Visibility.PUBLIC,
         },
         orderBy: { createdAt: "desc" },
         select: {
@@ -647,7 +705,9 @@ export class TestController {
       if (!recommendedTest) {
         ResponseUtil.success(res, null, "No recommended tests found", 200);
       }
-      ResponseUtil.success(res, recommendedTest, "Ok", 200);
+      ResponseUtil.success(res, recommendedTest, "Ok", 200, null, {
+        "Cache-Control": "public, max-age=300, stale-while-revalidate=60",
+      });
     } catch (error) {
       next(error);
     }
@@ -704,7 +764,6 @@ export class TestController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      const userId = req.user.id;
       const examCode = req.user.examCode;
       const now = new Date();
 

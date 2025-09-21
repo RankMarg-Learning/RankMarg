@@ -19,6 +19,7 @@ export class OnboardingController {
         studyHoursPerDay,
         selectedTopics,
       } = req.body;
+
       const userId = req.user.id;
       await prisma.user.update({
         where: { id: userId },
@@ -77,12 +78,11 @@ export class OnboardingController {
 
       //*NOTE:update token in cookie
 
-      const token = req.cookies["x-auth-token"];
-      const payload = AuthUtil.verifyToken(token);
-      const { exp, iat, ...cleanPayload } = payload;
-      cleanPayload.isNewUser = false;
-      const newToken = AuthUtil.generateToken(cleanPayload);
-      AuthUtil.setTokenCookie(res, newToken);
+      AuthUtil.updateTokenCookie(req, res, (payload) => ({
+        ...payload,
+        isNewUser: false,
+        examCode: examCode,
+      }));
 
       ResponseUtil.success(
         res,

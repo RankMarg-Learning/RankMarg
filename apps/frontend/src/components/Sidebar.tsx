@@ -77,13 +77,12 @@ export function Sidebar({ className }: SidebarProps)   {
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  location === item.href
+                  location.startsWith(item.href)
                     ? "bg-gradient-to-tr from-primary-600 to-primary-500 text-white"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 )}
               >
                 <item.icon size={18} />
-                {/* On desktop: show label when not collapsed, on mobile: always show */}
                 <span className={cn(
                   "lg:block",
                   collapsed && "lg:hidden"

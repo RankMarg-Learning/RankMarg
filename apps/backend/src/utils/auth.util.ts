@@ -1,8 +1,10 @@
 import jwt from "jsonwebtoken";
 import { ServerConfig } from "@/config/server.config";
-import { CookieOptions, Response } from "express";
+import { CookieOptions, Response, Request } from "express";
 
 const isProd = process.env.NODE_ENV === "production";
+
+type UpdatePayloadFn = (payload: any) => any;
 
 const cookieConfig: CookieOptions = {
   httpOnly: true,
@@ -28,6 +30,25 @@ export const AuthUtil = {
    */
   setTokenCookie(res: Response, token: string): void {
     res.cookie("x-auth-token", token, cookieConfig);
+  },
+
+  /**
+   * Update JWT token in HttpOnly cookie
+   */
+  updateTokenCookie(req: Request, res: Response, updateFn: UpdatePayloadFn) {
+    const token = req.cookies["x-auth-token"];
+
+    if (!token) {
+      throw new Error("Token not found in cookies");
+    }
+    const payload = AuthUtil.verifyToken(token);
+    const { exp, iat, ...cleanPayload } = payload;
+
+    const updatedPayload = updateFn(cleanPayload);
+
+    const newToken = AuthUtil.generateToken(updatedPayload);
+    AuthUtil.setTokenCookie(res, newToken);
+    return newToken;
   },
 
   /**
