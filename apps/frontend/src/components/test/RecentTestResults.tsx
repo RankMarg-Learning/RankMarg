@@ -24,7 +24,6 @@ interface RecentTestResultsProps {
 }
 
 const RecentTestResults: React.FC<RecentTestResultsProps> = ({ results, allResults= false }) => {
-  console.log(results)
   const formatDate = (dateString: string): string => {
     const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
     return new Date(dateString).toLocaleDateString('en-IN', options);
