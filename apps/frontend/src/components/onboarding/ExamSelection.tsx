@@ -10,7 +10,6 @@ import { Skeleton } from '../ui/skeleton';
 const ExamSelection: React.FC = () => {
 	const { examCode, setExamCode } = useOnboardingStore();
 	const { exams, isLoading } = useExams();
-	console.log(isLoading);
 	const handleSelectExam = (selectedExamCode: string) => {
 		setExamCode(selectedExamCode);
 	};
