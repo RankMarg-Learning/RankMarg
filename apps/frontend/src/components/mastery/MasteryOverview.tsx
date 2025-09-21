@@ -6,7 +6,7 @@ import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 import { MasteryOverviewProps } from '@/types/mastery.types'
 
 const MasteryOverview = ({ overview }: { overview: MasteryOverviewProps }) => {
-  console.log(overview)
+  
   return (
     <Card className="border border-gray-100 shadow-sm mb-6 overflow-hidden ">
       <div className="border-0 bg-gradient-to-r from-primary-50 to-primary-100 shadow-md animate-fade-in overflow-hidden md:p-6 p-4">
