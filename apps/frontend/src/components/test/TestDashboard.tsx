@@ -11,8 +11,8 @@ import { useRouter } from 'next/navigation'
 import TestDashboardSkeleton from '../skeleton/test.dashboard.skeleton'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import Error from '../Error'
 import BannerUpgrade from '../upgrade/bannerUpgrade'
+import Error from '../Error'
 
 interface DashboardStats {
   totalTests: number
@@ -75,12 +75,12 @@ const TestDashboard = () => {
   }
 
   // Enhanced error state
-  if (isError) <Error message={'Something went wrong while loading your test dashboard.'} />
+  if (isError) return <Error message={'Something went wrong while loading your test dashboard.'} />
 
   // Data validation
   const hasValidData = available?.success && recommended?.success && results?.success && schedule?.success
 
-  if (!hasValidData) <Error message={'Something went wrong while loading your test dashboard.'} />
+  if (!hasValidData) return <Error message={'Something went wrong while loading your test dashboard.'} />
 
   return (
     <div className="min-h-screen ">

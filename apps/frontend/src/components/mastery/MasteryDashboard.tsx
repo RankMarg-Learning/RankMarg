@@ -5,8 +5,8 @@ import SubjectMasteryCard from './SubjectMasteryCard'
 import { useMasteryDashboard } from '@/hooks/useMasteryDashboard'
 import MasteryDashboardSkeleton from '../skeleton/mastery.dashboard.skeleton'
 import { CheckIcon, Lightbulb, Star, Target } from 'lucide-react'
-import Error from '../Error'
 import PageUpgrade from '../upgrade/pageUpgrade'
+import Error from '../Error'
 
 
 
