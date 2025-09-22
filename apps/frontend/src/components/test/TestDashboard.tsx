@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 import TestDashboardSkeleton from '../skeleton/test.dashboard.skeleton'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import Error from '../error'
+import Error from '../Error'
 import BannerUpgrade from '../upgrade/bannerUpgrade'
 
 interface DashboardStats {

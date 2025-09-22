@@ -8,7 +8,7 @@ import RecentPracticeResults from './RecentPracticeResults'
 import { useAiPractice } from '@/hooks/useAiPractice'
 import PracticeDashboardSkeleton from '../skeleton/practice.dashboard.skeleton'
 import { toast } from '@/hooks/use-toast'
-import Error from '../error'
+import Error from '../Error'
 
 const PracticeDashboard = () => {
     const [visible, setVisible] = useState(true);

@@ -1,7 +1,7 @@
 'use client'
 
 import RecentPracticeResults from '@/components/ai-practice/RecentPracticeResults'
-import Error from '@/components/error'
+import Error from '@/components/Error'
 import Loading from '@/components/Loading'
 import api from '@/utils/api'
 import { useInfiniteQuery } from '@tanstack/react-query'

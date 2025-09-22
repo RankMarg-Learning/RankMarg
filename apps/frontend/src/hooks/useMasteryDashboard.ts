@@ -1,5 +1,6 @@
 import api from '@/utils/api'
 import { useQueries } from '@tanstack/react-query'
+import type { AxiosError } from 'axios'
 
 
 const fetchData = (endpoint: string) => async () => {
@@ -24,11 +25,13 @@ export function useMasteryDashboard() {
     })
 
     const [masteryBasic, subjectMastery] = queries
+ 
 
     return {
         masteryBasic: masteryBasic.data,
         subjectMastery: subjectMastery.data,
         isLoading: queries.some(q => q.isLoading),
         isError: queries.some(q => q.isError),
+        isSubscriptionError: queries.some(q => (q.error as AxiosError | undefined)?.response?.status === 403),
     }
 }

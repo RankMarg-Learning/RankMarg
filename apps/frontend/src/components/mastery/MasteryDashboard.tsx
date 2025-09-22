@@ -5,22 +5,18 @@ import SubjectMasteryCard from './SubjectMasteryCard'
 import { useMasteryDashboard } from '@/hooks/useMasteryDashboard'
 import MasteryDashboardSkeleton from '../skeleton/mastery.dashboard.skeleton'
 import { CheckIcon, Lightbulb, Star, Target } from 'lucide-react'
+import Error from '../Error'
+import PageUpgrade from '../upgrade/pageUpgrade'
 
 
 
 const MasteryDashboard = () => {
 
-  const {masteryBasic,subjectMastery,isLoading,isError} = useMasteryDashboard()
+  const {masteryBasic,subjectMastery,isLoading,isError,isSubscriptionError} = useMasteryDashboard()
 
   if(isLoading) return <MasteryDashboardSkeleton/>
-
-  if(isError) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-red-500">Error loading data</p>
-      </div>
-    )
-  }
+  if(isSubscriptionError) return <PageUpgrade message={ 'Upgrade required to access Mastery Dashboard.'} reference={"mastery_dashboard_upgrade"} />
+  if(isError) return <Error message={ 'Something went wrong while loading your mastery data.'} />
 
 
   return (

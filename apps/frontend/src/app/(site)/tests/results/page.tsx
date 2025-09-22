@@ -1,6 +1,6 @@
 'use client'
 
-import Error from '@/components/error'
+import Error from '@/components/Error'
 import Loading from '@/components/Loading'
 import RecentTestResults from '@/components/test/RecentTestResults'
 import { getTestResults } from '@/services/test.service'
