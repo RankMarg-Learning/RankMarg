@@ -1,7 +1,7 @@
 'use client'
 
 import RecentPracticeResults from '@/components/ai-practice/RecentPracticeResults'
-import Error from '@/components/Error'
+import ErrorCTA from '@/components/error'
 import Loading from '@/components/Loading'
 import api from '@/utils/api'
 import { useInfiniteQuery } from '@tanstack/react-query'
@@ -67,7 +67,7 @@ const SessionPage = () => {
 
   if (isError) {
     return (
-      <Error message={error?.message || 'Something went wrong while loading your practice results.'} />
+      <ErrorCTA message={error?.message || 'Something went wrong while loading your practice results.'} />
     )
   }
 

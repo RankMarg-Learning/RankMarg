@@ -1,6 +1,6 @@
 'use client'
 
-import Error from '@/components/Error'
+import ErrorCTA from '@/components/error'
 import Loading from '@/components/Loading'
 import RecentTestResults from '@/components/test/RecentTestResults'
 import { getTestResults } from '@/services/test.service'
@@ -44,7 +44,7 @@ const TestResultPage = () => {
   }, [hasNextPage, fetchNextPage]);
 
   if (isLoading) return <Loading />;
-  if (error) return <Error message='Error loading results.' />
+  if (error) return <ErrorCTA message='Error loading results.' />
 
   const results = data?.pages.flatMap((page) => page.data) ?? [];
 

@@ -1,7 +1,7 @@
 import { RefreshCcwIcon } from 'lucide-react'
 import React from 'react'
 
-const Error = ({ message }: { message: string }) => {
+const ErrorCTA = ({ message }: { message: string }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
         <div className="text-red-500 text-lg font-medium mb-2">
@@ -21,4 +21,4 @@ const Error = ({ message }: { message: string }) => {
   )
 }
 
-export default Error
+export default ErrorCTA
