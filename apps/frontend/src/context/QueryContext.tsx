@@ -36,7 +36,7 @@ const QueryProvider = ({ children }: PropsWithChildren) => {
       {process.env.NODE_ENV === "development" && (
         <ReactQueryDevtools
           initialIsOpen={false}
-          buttonPosition="top-right"
+          buttonPosition="bottom-right"
         />
       )}
     </QueryClientProvider>

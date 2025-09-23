@@ -83,7 +83,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             </Button>
             {
 
-              user?.plan?.status !== "ACTIVE" && (
+              user?.plan?.status !== "ACTIVE" && !isLoading && (
                 <Link href={`/pricing?ref=header_upgrade&id=${user?.id}&current_plan=${user?.plan?.status}`} className=" flex items-center">
                   <Button
                     variant="outline"
@@ -102,7 +102,10 @@ export function Header({ onMenuClick }: HeaderProps) {
 
             {
               isLoading ? (
-                <Skeleton className="w-8 h-8 rounded-full mr-3 gap-2" />
+                <>
+                <Skeleton className="w-8 h-8 rounded-full  gap-1" />
+                <Skeleton className=" h-8 w-20 mr-2 gap-1" />
+                </>
               ) : (
 
                 <DropdownMenu>

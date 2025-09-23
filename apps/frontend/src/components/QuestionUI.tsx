@@ -427,18 +427,22 @@ const QuestionUI = ({
         onClose={() => setShowFeedbackModal(false)}
       />
       {isReportOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-4">
-            <h3 className="text-base font-semibold mb-3">Report this question</h3>
-            <div className="space-y-3">
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/40 overflow-y-auto">
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="bg-white rounded-lg shadow-lg w-full max-w-md sm:max-w-lg md:max-w-xl p-4 sm:p-5 m-3 sm:m-6"
+          >
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Report this question</h3>
+            <div className="space-y-3 sm:space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-700">Reason</label>
-                <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                   {REPORT_TYPES.map((t) => (
                     <button
                       key={t.value}
                       type="button"
-                      className={`text-left border rounded-md p-2 text-sm transition-colors ${
+                      className={`text-left border rounded-md p-2 sm:p-2.5 text-sm transition-colors ${
                         reportType === t.value
                           ? 'border-primary-500 bg-primary-50 text-primary-700'
                           : 'border-gray-200 hover:border-gray-300'
@@ -453,15 +457,27 @@ const QuestionUI = ({
               <div>
                 <label className="text-sm font-medium text-gray-700">Details</label>
                 <textarea
-                  className="mt-1 w-full border rounded-md p-2 text-sm min-h-[100px]"
+                  className="mt-1 w-full border rounded-md p-2 sm:p-3 text-sm min-h-[60px] md:min-h-[140px]"
                   placeholder="Describe the issue..."
                   value={reportText}
                   onChange={(e) => setReportText(e.target.value)}
                 />
               </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={() => setIsReportOpen(false)}>Cancel</Button>
-                <Button size="sm" onClick={handleReportSubmit} disabled={isReporting}>
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full sm:w-auto"
+                  onClick={() => setIsReportOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  className="w-full sm:w-auto"
+                  onClick={handleReportSubmit}
+                  disabled={isReporting}
+                >
                   {isReporting ? 'Submitting...' : 'Submit Report'}
                 </Button>
               </div>
