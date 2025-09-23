@@ -309,4 +309,28 @@ export class QuestionController {
       next(error);
     }
   };
+  reportQuestion = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { slug } = req.params;
+      const { type, feedback } = req.body as { type: string; feedback: string };
+      const userId = req.user.id;
+
+      const created = await prisma.reportQuestion.create({
+        data: {
+          userId,
+          slug: slug,
+          type,
+          feedback,
+        },
+      });
+
+      ResponseUtil.success(res, created, "Report submitted", 201);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

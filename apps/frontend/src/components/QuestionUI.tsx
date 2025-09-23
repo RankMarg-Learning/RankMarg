@@ -12,6 +12,7 @@ import Timer from './Timer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import MistakeFeedbackModal from './MistakeFeedbackModal';
 import { useRouter } from 'next/navigation';
+import { reportQuestion } from '@/services/question.service';
 
 
 interface QuestionShowProps extends Omit<QuestionProps, "attempts" | "createdAt"> { }
@@ -179,29 +180,34 @@ const QuestionUI = ({
     handleAttempt(attemptData);
   };
 
-  const reportData = useMemo(() => ({
-    email: 'support@rankmarg.in',
-    subject: `Report: ${question?.slug}`,
-    body: `Hello,
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportType, setReportType] = useState<string>('WRONG_ANSWER');
+  const [reportText, setReportText] = useState<string>('');
+  const [isReporting, setIsReporting] = useState(false);
 
-I would like to report an issue with the following question:
+  const REPORT_TYPES: { value: string; label: string; hint?: string }[] = [
+    { value: 'WRONG_ANSWER', label: 'Wrong Answer' },
+    { value: 'WRONG_SOLUTION', label: 'Wrong Solution' },
+    { value: 'WRONG_QUESTION', label: 'Wrong Question' },
+    { value: 'MISSING_INFO', label: 'Missing Information' },
+    { value: 'TYPO', label: 'Grammar/typo' },
+    { value: 'OTHER', label: 'Other' },
+  ];
 
-- **Question Id**: ${question?.id}
-
-Please look into this issue at your earliest convenience. Here is some additional information (optional):
-
-[Provide details about the issue, such as incorrect information, inappropriate content, etc.]
-
-Thank you for your assistance.
-
-Best regards,
-[Your Name]
-`
-  }), [question?.id, question?.slug]);
-
-  const handleReport = () => {
-    const mailtoLink = `mailto:${reportData.email}?subject=${encodeURIComponent(reportData.subject)}&body=${encodeURIComponent(reportData.body)}`;
-    window.location.href = mailtoLink;
+  const handleReportSubmit = async () => {
+    if (!question?.slug) return;
+   
+    setIsReporting(true);
+    const res = await reportQuestion(question.slug, { type: reportType, feedback: reportText });
+    setIsReporting(false);
+    if (res?.success !== false) {
+      toast({ title: 'Report submitted. Thank you!', variant: 'default' });
+      setIsReportOpen(false);
+      setReportText('');
+      setReportType('OPTION_WRONG');
+    } else {
+      toast({ title: 'Failed to submit report', variant: 'destructive' });
+    }
   };
 
   return (
@@ -233,7 +239,7 @@ Best regards,
               </span>
               <span
                 className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium flex items-center gap-1 hover:underline cursor-pointer"
-                onClick={handleReport}
+                onClick={() => setIsReportOpen(true)}
               >
                 Report
               </span>
@@ -420,6 +426,49 @@ Best regards,
         isOpen={showFeedbackModal}
         onClose={() => setShowFeedbackModal(false)}
       />
+      {isReportOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-4">
+            <h3 className="text-base font-semibold mb-3">Report this question</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Reason</label>
+                <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {REPORT_TYPES.map((t) => (
+                    <button
+                      key={t.value}
+                      type="button"
+                      className={`text-left border rounded-md p-2 text-sm transition-colors ${
+                        reportType === t.value
+                          ? 'border-primary-500 bg-primary-50 text-primary-700'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => setReportType(t.value)}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Details</label>
+                <textarea
+                  className="mt-1 w-full border rounded-md p-2 text-sm min-h-[100px]"
+                  placeholder="Describe the issue..."
+                  value={reportText}
+                  onChange={(e) => setReportText(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" size="sm" onClick={() => setIsReportOpen(false)}>Cancel</Button>
+                <Button size="sm" onClick={handleReportSubmit} disabled={isReporting}>
+                  {isReporting ? 'Submitting...' : 'Submit Report'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

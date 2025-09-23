@@ -596,6 +596,22 @@ model MasteryHistory {
 }
 
 // ============================================
+// FEEDBACK & REPORTING
+// ============================================
+
+model ReportQuestion {
+  id        String   @id @default(uuid())
+  userId    String
+  slug      String?
+  type      String   @db.Text
+  feedback  String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([slug])
+}
+
+// ============================================
 // GAMIFICATION & REWARDS
 // ============================================
 
