@@ -5,12 +5,13 @@ import MarkdownRenderer from '@/lib/MarkdownRenderer'
 import { useToast } from '@/hooks/use-toast';
 import { attempDataProps, QuestionProps } from '@/types';
 import Options from './Options';
-import { AlertCircle, BookOpen, Lightbulb, AlertTriangle } from 'lucide-react';
+import { AlertCircle, BookOpen, Lightbulb, AlertTriangle, Lock } from 'lucide-react';
 import { getDifficultyLabel } from '@/utils/getDifficultyLabel';
 import Motion from './ui/motion';
 import Timer from './Timer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import MistakeFeedbackModal from './MistakeFeedbackModal';
+import { useRouter } from 'next/navigation';
 
 
 interface QuestionShowProps extends Omit<QuestionProps, "attempts" | "createdAt"> { }
@@ -21,16 +22,18 @@ interface QuestionUIProps {
   handleAttempt: (attemptData: attempDataProps) => void;
   answer?: string | null;
   attemptId?: string;
+  isUnlocked?: boolean;
 }
 const QuestionUI = ({
   question,
   handleAttempt,
   isSolutionShow = false,
   answer,
-  attemptId
+  attemptId,
+  isUnlocked = true
 }: QuestionUIProps) => {
   const { toast } = useToast();
-
+  const router = useRouter();
   const isAnswered = useMemo(() => Boolean(answer) || isSolutionShow, [answer, isSolutionShow]);
 
   const initialSelectedValues = useMemo(() => {
@@ -165,7 +168,7 @@ const QuestionUI = ({
       isHintUsed,
       reactionTime
     };
-    
+
     toast({
       title: isCorrect ? "Correct Answer" : "Incorrect Answer",
       variant: "default",
@@ -291,10 +294,10 @@ Best regards,
             onClick={() => setShowFeedbackModal(true)}
             variant="outline"
             size="sm"
-            className="bg-amber-400 text-black font-medium rounded-md py-2 px-4 shadow-sm
-    hover:bg-amber-500 focus:bg-amber-500
-    active:bg-amber-600
-    disabled:bg-amber-400/50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="bg-primary-500 text-white font-medium rounded-md py-2 px-4 shadow-sm
+    hover:bg-primary-600/90 focus:bg-primary-600
+    active:bg-primary-600
+    disabled:bg-primary-600/50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <AlertCircle className="w-4 h-4" />
             Select Error Reason
@@ -341,30 +344,53 @@ Best regards,
                 <AccordionContent className="text-xs sm:text-sm text-purple-800 mt-1 transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
                   {question?.solution ? (
                     <div className="space-y-3">
-                      {/* Solving Strategy */}
-                      {question?.strategy && (
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Lightbulb className="h-4 w-4 text-blue-600" />
-                            <h4 className="font-semibold text-blue-900 text-sm">Solving Strategy</h4>
+                      {
+                        isUnlocked ? (
+                          <>
+                            {/* Solving Strategy */}
+                            {question?.strategy && (
+                              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-3">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Lightbulb className="h-4 w-4 text-blue-600" />
+                                  <h4 className="font-semibold text-blue-900 text-sm">Solving Strategy</h4>
+                                </div>
+                                <div className="prose prose-sm max-w-none">
+                                  <MarkdownRenderer content={question.strategy} className="text-sm" />
+                                </div>
+                              </div>
+                            )}
+                            {/* Common Mistakes */}
+                            {question?.commonMistake && (
+                              <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-200 p-3">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                                  <h4 className="font-semibold text-red-900 text-sm">Common Mistakes to Avoid</h4>
+                                </div>
+                                <div className="prose prose-sm max-w-none">
+                                  <MarkdownRenderer content={question.commonMistake} className="text-sm" />
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div
+                            className="text-center my-2 bg-primary-50/60 hover:bg-primary-50 transition rounded-lg border border-primary-400 p-3 cursor-pointer shadow-sm"
+                            onClick={() => router.push(`/subscription?plan=rank&ref=solution_locked_banner`)}
+                          >
+                            <Lock className="h-6 w-6 text-primary-600 mx-auto mb-2" />
+                            <span className="block text-xs md:text-sm text-primary-700 font-medium">
+                              Unlock <span className="font-semibold">Solving Strategy</span> & <span className="font-semibold">Common Mistakes to Avoid</span>
+                            </span>
+                            <span className="block text-xs md:text-sm text-primary-600 mt-1">
+                              Get full access with <span className="font-semibold">Rank Subscription</span>
+                            </span>
+                            <span className="inline-block mt-2 text-xs md:text-sm bg-primary-500 text-white px-3 py-1 rounded-md font-medium">
+                              Upgrade Now
+                            </span>
                           </div>
-                          <div className="prose prose-sm max-w-none">
-                            <MarkdownRenderer content={question.strategy} className="text-sm" />
-                          </div>
-                        </div>
-                      )}
-                      {/* Common Mistakes */}
-                      {question?.commonMistake && (
-                        <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-200 p-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <AlertTriangle className="h-4 w-4 text-red-600" />
-                            <h4 className="font-semibold text-red-900 text-sm">Common Mistakes to Avoid</h4>
-                          </div>
-                          <div className="prose prose-sm max-w-none">
-                            <MarkdownRenderer content={question.commonMistake} className="text-sm" />
-                          </div>
-                        </div>
-                      )}
+                        )
+                      }
+
                       {/* Step-by-Step Analysis */}
                       <div className="bg-white rounded-lg border border-purple-200 p-3">
                         <div className="flex items-center gap-2 mb-2">

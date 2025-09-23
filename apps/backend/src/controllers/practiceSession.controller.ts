@@ -2,6 +2,7 @@ import { getDayWindow } from "@/lib/dayRange";
 import { AuthenticatedRequest } from "@/middleware/auth.middleware";
 import { ResponseUtil } from "@/utils/response.util";
 import prisma from "@repo/db";
+import { SubscriptionStatus } from "@repo/db/enums";
 import { NextFunction, Response } from "express";
 
 type SessionType = "all" | "individual" | "today";
@@ -435,6 +436,9 @@ export class PracticeSessionController {
     try {
       const userId = req.user.id;
       const { sessionId } = req.params;
+      const plan = req.user.plan;
+
+      const isUnlocked = plan?.endAt && plan?.endAt > new Date();
 
       const practiceSession = await prisma.practiceSession.findUnique({
         where: {
@@ -446,7 +450,6 @@ export class PracticeSessionController {
           userId: true,
           isCompleted: true,
 
-          // minimal question projection
           questions: {
             select: {
               question: {
@@ -459,30 +462,26 @@ export class PracticeSessionController {
                   difficulty: true,
                   hint: true,
                   solution: true,
-                  strategy: true,
-                  commonMistake: true,
-
+                  strategy: isUnlocked,
+                  commonMistake: isUnlocked,
                   topic: {
                     select: {
                       id: true,
                       name: true,
                     },
                   },
-
                   options: {
                     select: {
                       id: true,
                       content: true,
                       isCorrect: true,
                     },
-                    orderBy: { id: "asc" }, // keep deterministic order
+                    orderBy: { id: "asc" },
                   },
                 },
               },
             },
           },
-
-          // minimal attempts projection – only what the UI needs
           attempts: {
             select: {
               id: true,
@@ -497,8 +496,11 @@ export class PracticeSessionController {
       }
       ResponseUtil.success(
         res,
-        practiceSession,
-        "Practice session retrieved successfully",
+        {
+          ...practiceSession,
+          isUnlocked,
+        },
+        "Ok",
         200
       );
     } catch (error) {

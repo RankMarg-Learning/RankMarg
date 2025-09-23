@@ -1,0 +1,50 @@
+"use client";
+
+import React, { createContext, useContext, useMemo, useState } from "react";
+import { useUser } from "@/hooks/useUser";
+
+interface ClientContextProps {
+    user: any;
+    isLoading: boolean;
+    isError: boolean;
+    mutate: () => void;
+    mobileMenuOpen: boolean;
+    setMobileMenuOpen: (mobileMenuOpen: boolean) => void;
+}
+
+const ClientContext = createContext<ClientContextProps | undefined>(undefined);
+
+export const useUserData = () => {
+    const context = useContext(ClientContext);
+    if (!context) {
+        throw new Error("useClientContext must be used within a ClientContextProvider");
+    }
+    return context;
+};
+
+const ClientContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { user, isLoading, isError, mutate } = useUser();
+
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+
+    const value = useMemo(
+        () => ({
+            user,
+            isLoading,
+            isError,
+            mutate,
+            mobileMenuOpen,
+            setMobileMenuOpen,
+        }),
+        [user, isLoading, isError, mutate, mobileMenuOpen, setMobileMenuOpen]
+    );
+
+    return (
+        <ClientContext.Provider value={value}>
+            {children}
+        </ClientContext.Provider>
+    );
+};
+
+export default ClientContextProvider;

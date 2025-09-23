@@ -9,6 +9,8 @@ import { Progress } from './ui/progress';
 import Loading from './Loading';
 import { addAttempt, getAiPracticeSession } from '@/services';
 import { attempDataProps } from '@/types';
+import { useUserData } from '@/context/ClientContextProvider';
+import { cn } from '@/lib/utils';
 
 // Constants
 const STALE_TIME = 5 * 60 * 1000; // 5 minutes
@@ -20,9 +22,10 @@ interface AiPracticeSessionProps {
 
 const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
     // ===== HOOKS & STATE =====
+    const { mobileMenuOpen } = useUserData()
     const searchParams = useSearchParams();
     const isReviewMode = searchParams.get('review') === 'true';
-    
+
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [attemptedQuestions, setAttemptedQuestions] = useState<Set<string>>(new Set());
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,13 +44,13 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
     });
 
     // ===== MEMOIZED VALUES =====
-    const questions = useMemo(() => 
-        session?.data?.questions || [], 
+    const questions = useMemo(() =>
+        session?.data?.questions || [],
         [session?.data?.questions]
     );
-    
-    const attempts = useMemo(() => 
-        session?.data?.attempts || [], 
+
+    const attempts = useMemo(() =>
+        session?.data?.attempts || [],
         [session?.data?.attempts]
     );
 
@@ -66,7 +69,7 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
         [attempts, currentQuestion?.id]
     );
 
-    const progressPercentage = useMemo(() => 
+    const progressPercentage = useMemo(() =>
         questions.length > 0 ? (attemptedQuestions.size / questions.length) * 100 : 0,
         [attemptedQuestions.size, questions.length]
     );
@@ -139,7 +142,7 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
         setIsSubmitting(true);
 
         const optimisticAttemptId = `temp_${Date.now()}_${currentQuestion.id}`;
-        
+
         const optimisticAttempt = {
             id: optimisticAttemptId,
             questionId: currentQuestion.id,
@@ -149,7 +152,7 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
 
         try {
             setAttemptedQuestions(prev => new Set([...Array.from(prev), currentQuestion.id]));
-            
+
             queryClient.setQueryData(["session", sessionId], (oldData: any) => {
                 if (!oldData?.data) return oldData;
                 return {
@@ -174,7 +177,7 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
                         ...oldData,
                         data: {
                             ...oldData.data,
-                            attempts: oldData.data.attempts.map((attempt: any) => 
+                            attempts: oldData.data.attempts.map((attempt: any) =>
                                 attempt.id === optimisticAttemptId ? response.data : attempt
                             ),
                         },
@@ -187,19 +190,19 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
                         ...oldData,
                         data: {
                             ...oldData.data,
-                            attempts: oldData.data.attempts.filter((attempt: any) => 
+                            attempts: oldData.data.attempts.filter((attempt: any) =>
                                 attempt.id !== optimisticAttemptId
                             ),
                         },
                     };
                 });
-                
+
                 setAttemptedQuestions(prev => {
                     const newSet = new Set(prev);
                     newSet.delete(currentQuestion.id);
                     return newSet;
                 });
-                
+
                 console.error("Failed to submit attempt:", response.message);
             }
         } catch (error) {
@@ -209,19 +212,19 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
                     ...oldData,
                     data: {
                         ...oldData.data,
-                        attempts: oldData.data.attempts.filter((attempt: any) => 
+                        attempts: oldData.data.attempts.filter((attempt: any) =>
                             attempt.id !== optimisticAttemptId
                         ),
                     },
                 };
             });
-            
+
             setAttemptedQuestions(prev => {
                 const newSet = new Set(prev);
                 newSet.delete(currentQuestion.id);
                 return newSet;
             });
-            
+
             console.error("Error submitting attempt:", error);
         } finally {
             setIsSubmitting(false);
@@ -259,8 +262,8 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
             {/* Progress Bar */}
             <div className="flex items-center gap-3">
                 <div className="w-20 sm:w-28 md:w-36">
-                    <Progress 
-                        value={progressPercentage} 
+                    <Progress
+                        value={progressPercentage}
                         className="h-1.5 bg-gray-100"
                         indicatorColor="bg-primary-500"
                     />
@@ -293,7 +296,7 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
             >
                 <ArrowLeft className="h-4 w-4" />
             </button>
-            
+
             <button
                 onClick={handleNextQuestion}
                 disabled={!canGoNext || isSubmitting}
@@ -305,18 +308,18 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
     );
 
     const renderTopNavigation = () => (
-        <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className={cn("sticky bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm  border-gray-100", mobileMenuOpen && "hidden lg:block")}>
+            <div className="max-w-8xl mx-auto px-4 sm:px-6">
                 <div className="flex items-center justify-between h-14">
                     {/* Left Side - Progress and Controls */}
                     <div className="flex-1 min-w-0">
                         {renderProgressSection()}
                     </div>
-
                     {/* Right Side - Navigation Buttons */}
                     <div className="flex-shrink-0">
                         {renderNavigationButtons()}
                     </div>
+
                 </div>
             </div>
         </div>
@@ -331,7 +334,8 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
                     handleAttempt={handleAttempt}
                     answer={currentQuestionAttempt?.answer || null}
                     attemptId={currentQuestionAttempt?.id || null}
-                    isSolutionShow={(session?.data?.isCompleted || isReviewMode ) ?? false}
+                    isSolutionShow={(session?.data?.isCompleted || isReviewMode) ?? false}
+                    isUnlocked={session?.data?.isUnlocked}
                 />
             )}
         </>
@@ -352,8 +356,8 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
 
     return (
         <div className="min-h-screen bg-white">
-            {renderTopNavigation()}
             {renderMainContent()}
+            {renderTopNavigation()}
         </div>
     );
 };
