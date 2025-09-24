@@ -1,8 +1,7 @@
 import prisma from "../../lib/prisma";
-import { GradeEnum } from "@repo/db/enums";
+import { GradeEnum, Role, SubscriptionStatus } from "@repo/db/enums";
 import { createDefaultSessionConfig } from "../session/SessionConfig";
 import { PracticeSessionGenerator } from "../session/PracticeSessionGenerator";
-import { RedisCacheService } from "../redisCache.service";
 
 export class PracticeService {
   // ALL USERS PROCESS
@@ -22,6 +21,11 @@ export class PracticeService {
   // BATCH PROCESSING
   public async processUserBatch(batchSize: number, offset: number) {
     const users = await prisma.user.findMany({
+      where: {
+        onboardingCompleted: true,
+        isActive: true,
+        role: Role.USER,
+      },
       select: {
         id: true,
       },
@@ -35,40 +39,30 @@ export class PracticeService {
 
   // GENERATE SESSION FOR USER
   public async generateSessionForUser(userId: string) {
-    // Try to get cached user performance first
-    let cachedPerformance =
-      await RedisCacheService.getCachedUserPerformance(userId);
-
-    let user;
-    if (cachedPerformance) {
-      user = cachedPerformance;
-    } else {
-      user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          grade: true,
-          questionsPerDay: true,
-          currentStudyTopic: true,
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        id: true,
+        grade: true,
+        questionsPerDay: true,
+        examRegistrations: {
+          select: {
+            examCode: true,
+          },
         },
-      });
-
-      if (!user) {
-        throw new Error(`User with ID ${userId} not found`);
-      }
-
-      // Cache the user performance data
-      await RedisCacheService.cacheUserPerformance(userId, user);
-    }
-
-    const examReg = await prisma.examUser.findFirst({
-      where: { userId },
-      select: { exam: { select: { code: true } } },
-      orderBy: { registeredAt: "desc" },
+      },
     });
 
+    if (!user) {
+      console.error(`User with ID ${userId} not found`);
+      return;
+    }
+
+    const examReg = user.examRegistrations[0];
     const config = createDefaultSessionConfig(
-      examReg?.exam.code || "DEFAULT",
+      examReg?.examCode || "DEFAULT",
       user.questionsPerDay || 10,
       (user.grade as GradeEnum) || GradeEnum.C
     );

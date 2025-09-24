@@ -25,7 +25,7 @@ export class QuestionSelector {
   async selectCurrentTopicQuestions(
     subject: Subject,
     count: number
-  ): Promise<SelectedQuestion[]> {
+  ): Promise<{ id: string; difficulty: number }[]> {
     try {
       // Try to get cached current topics first
       const cachedTopics = await RedisCacheService.getCachedCurrentTopics(
@@ -66,7 +66,7 @@ export class QuestionSelector {
       const { difficulty: difficultyDistribution, categories } =
         this.getSelectionParameters(count);
 
-      let selectedQuestions: SelectedQuestion[] = [];
+      let selectedQuestions: { id: string; difficulty: number }[] = [];
 
       // First, get all previously attempted questions for this user in these topics
       const previouslyAttemptedQuestions = await this.prisma.attempt.findMany({
@@ -129,8 +129,9 @@ export class QuestionSelector {
             },
           ],
         },
-        include: {
-          options: true,
+        select: {
+          id: true,
+          difficulty: true,
         },
         take: count * 3,
       });
@@ -170,8 +171,9 @@ export class QuestionSelector {
             ],
             isPublished: true,
           },
-          include: {
-            options: true,
+          select: {
+            id: true,
+            difficulty: true,
           },
           take: count - selectedQuestions.length,
         });
@@ -208,7 +210,7 @@ export class QuestionSelector {
   public async selectWeakConceptQuestions(
     subject: Subject,
     count: number
-  ): Promise<SelectedQuestion[]> {
+  ): Promise<{ id: string; difficulty: number }[]> {
     try {
       // Try cache first
       let weakTopics = await RedisCacheService.getCachedWeakConcepts(
@@ -292,7 +294,7 @@ export class QuestionSelector {
         previouslyAttemptedQuestions.map((a) => a.questionId)
       );
 
-      let selectedQuestions: SelectedQuestion[] = [];
+      let selectedQuestions: { id: string; difficulty: number }[] = [];
 
       for (let difficulty = 1; difficulty <= 4; difficulty++) {
         const questionsNeededForThisDifficulty =
@@ -328,8 +330,9 @@ export class QuestionSelector {
             ],
             isPublished: true,
           },
-          include: {
-            options: true,
+          select: {
+            id: true,
+            difficulty: true,
           },
           take: questionsNeededForThisDifficulty * 3,
         });
@@ -360,8 +363,9 @@ export class QuestionSelector {
             ],
             isPublished: true,
           },
-          include: {
-            options: true,
+          select: {
+            id: true,
+            difficulty: true,
           },
           take: count - selectedQuestions.length,
         });
@@ -397,7 +401,7 @@ export class QuestionSelector {
   async selectRevisionQuestions(
     subject: Subject,
     count: number
-  ): Promise<SelectedQuestion[]> {
+  ): Promise<{ id: string; difficulty: number }[]> {
     try {
       const completedTopics = await this.prisma.currentStudyTopic.findMany({
         where: {
@@ -492,7 +496,7 @@ export class QuestionSelector {
         previouslyAttemptedQuestions.map((a) => a.questionId)
       );
 
-      let selectedQuestions: SelectedQuestion[] = [];
+      let selectedQuestions: { id: string; difficulty: number }[] = [];
 
       for (let difficulty = 1; difficulty <= 4; difficulty++) {
         const questionsNeededForThisDifficulty =
@@ -508,7 +512,7 @@ export class QuestionSelector {
             subjectId: subject.id,
             difficulty: difficulty,
             id: {
-              notIn: Array.from(attemptedQuestionIds), // Exclude previously attempted questions
+              notIn: Array.from(attemptedQuestionIds),
             },
             OR: [
               {
@@ -528,8 +532,9 @@ export class QuestionSelector {
             ],
             isPublished: true,
           },
-          include: {
-            options: true,
+          select: {
+            id: true,
+            difficulty: true,
           },
           take: questionsNeededForThisDifficulty * 3,
         });
@@ -560,8 +565,9 @@ export class QuestionSelector {
             ],
             isPublished: true,
           },
-          include: {
-            options: true,
+          select: {
+            id: true,
+            difficulty: true,
           },
           take: count - selectedQuestions.length,
         });

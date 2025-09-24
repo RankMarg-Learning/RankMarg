@@ -8,9 +8,9 @@ export function createDefaultSessionConfig(
 ): SessionConfig {
   const config: SessionConfig = {
     distribution: {
-      currentTopic: 0.4,
+      currentTopic: 0.5,
       weakConcepts: 0.3,
-      revisionTopics: 0.3,
+      revisionTopics: 0.2,
     },
     examCode,
     grade: grade,
@@ -58,14 +58,7 @@ export function getQuestionCategoriesByGrade(
       "CALCULATION",
       "MULTI_STEP",
     ],
-    A_PLUS: [
-      "TRAP",
-      "MULTI_STEP",
-      "OUT_OF_THE_BOX",
-      "TRICKY",
-      "HIGH_WEIGHTAGE",
-      "CALCULATION",
-    ],
+    A_PLUS: ["TRAP", "MULTI_STEP", "OUT_OF_THE_BOX", "TRICKY", "CALCULATION"],
   };
 
   return {

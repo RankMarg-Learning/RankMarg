@@ -39,37 +39,19 @@ export class PracticeSessionGenerator {
       );
       this.userId = userId;
 
-      let cachedConfig = await RedisCacheService.getCachedSessionConfig(
-        examCode,
-        grade
-      );
-      if (!cachedConfig) {
-        await RedisCacheService.cacheSessionConfig(
-          examCode,
-          grade,
-          this.config
-        );
-      }
-
-      const examReg = await this.prisma.examUser.findFirst({
-        where: { userId },
-        select: { examCode: true },
-        orderBy: { registeredAt: "desc" },
+      const examSubjects = await this.prisma.examSubject.findMany({
+        where: { examCode: examCode },
+        select: { subjectId: true },
       });
+      const subjectIds = examSubjects.map((es) => es.subjectId);
 
-      let subjects: Subject[] = [];
-      if (examReg?.examCode) {
-        const examSubjects = await this.prisma.examSubject.findMany({
-          where: { examCode: examReg.examCode },
-          select: { subjectId: true },
-        });
-        const subjectIds = examSubjects.map((es) => es.subjectId);
-        subjects = await this.prisma.subject.findMany({
-          where: { id: { in: subjectIds } },
-        });
-      } else {
-        subjects = await this.prisma.subject.findMany();
+      if (subjectIds.length === 0) {
+        console.error("No subjects found for exam code:", examCode);
+        return;
       }
+      const subjects: Subject[] = await this.prisma.subject.findMany({
+        where: { id: { in: subjectIds } },
+      });
 
       await Promise.all(
         subjects.map((subject) => this.generateSubjectSession(userId, subject))
@@ -85,7 +67,7 @@ export class PracticeSessionGenerator {
     subject: Subject
   ): Promise<void> {
     const totalQuestionsForSubject = this.config.totalQuestions;
-    const questionMap = new Map<string, SelectedQuestion>();
+    const questionMap = new Map<string, { id: string }>();
 
     const distributions = this.calculateDistribution(totalQuestionsForSubject);
 
@@ -167,10 +149,10 @@ export class PracticeSessionGenerator {
   private async fetchAllCategoryQuestions(
     subject: Subject,
     distributions: QuestionDistribution[]
-  ): Promise<Array<{ question: SelectedQuestion; priority: number }>> {
+  ): Promise<Array<{ question: { id: string }; priority: number }>> {
     const questionPromises = distributions.map(
       async ({ source, count, priority }) => {
-        let questions: SelectedQuestion[] = [];
+        let questions: { id: string; difficulty: number }[] = [];
 
         switch (source) {
           case "currentTopic":
@@ -204,10 +186,10 @@ export class PracticeSessionGenerator {
   private async backfillQuestions(
     subject: Subject,
     count: number,
-    existingQuestions: SelectedQuestion[]
-  ): Promise<SelectedQuestion[]> {
+    existingQuestions: { id: string }[]
+  ): Promise<{ id: string; difficulty: number }[]> {
     const existingIds = new Set(existingQuestions.map((q) => q.id));
-    const backfilledQuestions: SelectedQuestion[] = [];
+    const backfilledQuestions: { id: string; difficulty: number }[] = [];
 
     const distributions = this.calculateDistribution(count);
 
@@ -242,11 +224,11 @@ export class PracticeSessionGenerator {
     source: QuestionSource,
     count: number,
     existingIds: Set<string>
-  ): Promise<SelectedQuestion[]> {
+  ): Promise<{ id: string; difficulty: number }[]> {
     if (count <= 0) return [];
 
     try {
-      let questions: SelectedQuestion[] = [];
+      let questions: { id: string; difficulty: number }[] = [];
       const fetchFactor = 2;
       switch (source) {
         case "currentTopic":
@@ -317,7 +299,7 @@ export class PracticeSessionGenerator {
 
   private async createPracticeSession(
     userId: string,
-    questions: SelectedQuestion[],
+    questions: { id: string }[],
     subjectId: string
   ): Promise<any> {
     try {
@@ -329,7 +311,7 @@ export class PracticeSessionGenerator {
           subjectId,
           duration: questions.length * 90,
           questions: {
-            create: questions.map((question) => ({
+            create: questions.map((question: { id: string }) => ({
               questionId: question.id,
             })),
           },
