@@ -1,4 +1,4 @@
-import { Subject, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { QCategory, GradeEnum } from "@repo/db/enums";
 import { getDifficultyDistributionByGrade } from "./SessionConfig";
 import { SelectedQuestion, SessionConfig } from "../../types/session.api.types";

@@ -57,6 +57,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   alt="RankMarg Logo"
                   width={100}
                   height={24}
+                  unoptimized
                   className="object-contain ml-0 md:ml-4"
                 />
               </Link>
