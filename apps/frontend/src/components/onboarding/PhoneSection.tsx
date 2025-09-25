@@ -82,7 +82,7 @@ const PhoneSection: React.FC = () => {
       }
       return true;
     } catch (error) {
-      setError('Failed to validate phone number. Please try again.');
+      setError(error.response?.data?.message || 'Failed to validate phone number. Please try again.');
       return false;
     }
   };

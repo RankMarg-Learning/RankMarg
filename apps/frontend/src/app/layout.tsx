@@ -5,6 +5,7 @@ import "./globals.css";
 import GoogleAnalytics from "@/lib/GoogleAnalytics";
 import QueryProvider from "@/context/QueryContext";
 import Script from "next/script";
+import ClientContextProvider from "@/context/ClientContextProvider";
 
 
 const inter = Inter({ subsets: ["latin"] })
@@ -70,9 +71,11 @@ export default function RootLayout({
           className={`${inter.className}  antialiased default-scroll`}
         >
           <Script id="razorpay-checkout-js" src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload"/>
+          <ClientContextProvider>
           <QueryProvider>
               {children}
           </QueryProvider>
+          </ClientContextProvider>
         </body>
       </html>
   );

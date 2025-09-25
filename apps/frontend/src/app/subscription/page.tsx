@@ -189,34 +189,34 @@ const SubscriptionContent = () => {
     <div className="min-h-screen bg-gray-50 bg-gradient-to-br from-primary-50 to-secondary-50">
       {/* Header */}
       <div className="backdrop-blur-sm bg-white/80">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center">
           <button
             onClick={() => router.back()}
             className="flex items-center text-primary-600 hover:text-primary-700 transition-colors font-medium text-sm"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Pricing
+            Back 
           </button>
           <div className="flex-1 text-center">
-            <h1 className="text-base font-semibold text-gray-900">Complete Your Subscription</h1>
+            <h1 className="text-sm sm:text-base font-semibold text-gray-900">Complete Your Subscription</h1>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-12 ">
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-4">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 ">
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-6">
           
           {/* Plan Selection */}
           <div className="lg:col-span-6 space-y-6">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900 mb-6">Choose Your Duration</h2>
+            <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200">
+              <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-4 sm:mb-6">Choose Your Duration</h2>
               
               <div className="space-y-4">
                 {plans.map((plan) => (
                   <button
                     key={plan.days}
                     onClick={() => setSelectedDuration(plan.days)}
-                    className={`w-full p-4 rounded-xl border-2 transition-all duration-300 text-left ${
+                    className={`w-full p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 text-left ${
                       selectedDuration === plan.days
                         ? "border-primary-400 bg-primary-50 shadow-lg"
                         : "border-gray-200 hover:border-gray-300 bg-white"
@@ -224,13 +224,13 @@ const SubscriptionContent = () => {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <div className="font-semibold text-gray-900 text-base">{plan.label}</div>
-                        <div className="text-gray-600 text-sm">{plan.days} days access</div>
+                        <div className="font-semibold text-gray-900 text-sm sm:text-base">{plan.label}</div>
+                        <div className="text-gray-600 text-xs sm:text-sm">{plan.days} days access</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-primary-600">₹{plan.current.toLocaleString()}</div>
-                        <div className="text-gray-400 line-through text-sm">₹{plan.original.toLocaleString()}</div>
-                        <div className="text-secondary-600 font-medium text-sm">
+                        <div className="text-base sm:text-lg font-bold text-primary-600">₹{plan.current.toLocaleString()}</div>
+                        <div className="text-gray-400 line-through text-xs sm:text-sm">₹{plan.original.toLocaleString()}</div>
+                        <div className="text-secondary-600 font-medium text-xs sm:text-sm">
                           Save ₹{(plan.original - plan.current).toLocaleString()}
                         </div>
                       </div>
@@ -241,12 +241,12 @@ const SubscriptionContent = () => {
             </div>
 
             {/* Coupon Section */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200">
               <button
                 onClick={() => setShowCouponInput(!showCouponInput)}
                 className="flex items-center justify-between w-full text-gray-900 font-semibold hover:text-primary-600 transition-colors"
               >
-                <span className="text-lg">Have a coupon code?</span>
+                <span className="text-base sm:text-lg">Have a coupon code?</span>
                 <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${showCouponInput ? "rotate-180" : ""}`} />
               </button>
 
@@ -254,17 +254,17 @@ const SubscriptionContent = () => {
                 <div className="mt-6 space-y-4">
                   {!couponApplied ? (
                     <>
-                      <div className="flex space-x-3">
+                      <div className="flex flex-col sm:flex-row sm:space-x-3 space-y-3 sm:space-y-0">
                         <input
                           type="text"
                           value={coupon}
                           onChange={(e) => setCoupon(e.target.value.toUpperCase())}
                           placeholder="Enter coupon code"
-                          className="flex-1 bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
+                          className="flex-1 bg-gray-50 border border-gray-300 rounded-xl px-4 py-2.5 sm:py-3 text-gray-900 placeholder-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
                         />
                         <button
                           onClick={applyCoupon}
-                          className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-primary-600 hover:to-primary-700 transition-all"
+                          className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl font-semibold hover:from-primary-600 hover:to-primary-700 transition-all"
                         >
                           Apply
                         </button>
@@ -303,31 +303,31 @@ const SubscriptionContent = () => {
 
           {/* Order Summary */}
           <div className="lg:col-span-4">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 sticky top-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-6">Order Summary</h3>
+            <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 md:sticky md:top-6">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4 sm:mb-6">Order Summary</h3>
               
               {selectedPlan && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600 text-sm">Plan:</span>
-                    <span className="font-semibold text-gray-900 text-sm">{selectedPlan.label}</span>
+                    <span className="text-gray-600 text-xs sm:text-sm">Plan:</span>
+                    <span className="font-semibold text-gray-900 text-xs sm:text-sm">{selectedPlan.label}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600 text-sm">Duration:</span>
-                    <span className="text-gray-900 text-sm">{selectedPlan.days} days</span>
+                    <span className="text-gray-600 text-xs sm:text-sm">Duration:</span>
+                    <span className="text-gray-900 text-xs sm:text-sm">{selectedPlan.days} days</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600 text-sm">Original Price:</span>
-                    <span className="text-gray-400 line-through text-sm">₹{selectedPlan.original.toLocaleString()}</span>
+                    <span className="text-gray-600 text-xs sm:text-sm">Original Price:</span>
+                    <span className="text-gray-400 line-through text-xs sm:text-sm">₹{selectedPlan.original.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600 text-sm">Discounted Price:</span>
-                    <span className="text-gray-900 font-semibold text-sm">₹{selectedPlan.current.toLocaleString()}</span>
+                    <span className="text-gray-600 text-xs sm:text-sm">Discounted Price:</span>
+                    <span className="text-gray-900 font-semibold text-xs sm:text-sm">₹{selectedPlan.current.toLocaleString()}</span>
                   </div>
                   {couponApplied && (
                     <div className="flex justify-between items-center">
-                      <span className="text-green-600 text-sm">Coupon Discount:</span>
-                      <span className="text-green-600 font-semibold text-sm">
+                      <span className="text-green-600 text-xs sm:text-sm">Coupon Discount:</span>
+                      <span className="text-green-600 font-semibold text-xs sm:text-sm">
                         -₹{Math.round(selectedPlan.current * discount / 100).toLocaleString()}
                       </span>
                     </div>
@@ -337,14 +337,14 @@ const SubscriptionContent = () => {
               
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <div className="flex justify-between items-center mb-6">
-                  <span className="text-lg font-bold text-gray-900">Total:</span>
-                  <span className="text-lg font-bold text-primary-600">
+                  <span className="text-base sm:text-lg font-bold text-gray-900">Total:</span>
+                  <span className="text-base sm:text-lg font-bold text-primary-600">
                     ₹{Math.round(finalPrice).toLocaleString()}
                   </span>
                 </div>
                 
                 <button 
-                  className={`w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold py-4 rounded-xl text-lg hover:from-primary-600 hover:to-primary-700 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center ${paying ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  className={`w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold py-3 sm:py-4 rounded-xl text-base sm:text-lg hover:from-primary-600 hover:to-primary-700 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center ${paying ? 'opacity-60 cursor-not-allowed' : ''}`}
                   onClick={handlePayment}
                   disabled={paying}
                 >
@@ -352,7 +352,7 @@ const SubscriptionContent = () => {
                   {paying ? 'Processing...' : `Pay ₹${Math.round(finalPrice).toLocaleString()}`}
                 </button>
                 
-                <div className="flex items-center justify-center mt-4 text-gray-500 text-sm">
+                <div className="flex items-center justify-center mt-4 text-gray-500 text-xs sm:text-sm">
                   <Shield className="w-6 h-6 mr-1" />
                   Secure payment with 256-bit SSL encryption
                 </div>

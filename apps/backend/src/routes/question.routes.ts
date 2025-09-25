@@ -10,5 +10,6 @@ router.post("/", authenticate, questionController.createQuestion);
 router.get("/:slug", authenticate, questionController.getQuestionById);
 router.put("/:slug", authenticate, questionController.updateQuestionById);
 router.delete("/:slug", authenticate, questionController.deleteQuestionById);
+router.post("/:slug/report", authenticate, questionController.reportQuestion);
 
 export default router;

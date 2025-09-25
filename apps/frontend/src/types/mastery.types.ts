@@ -17,8 +17,9 @@ export interface StudyStreak {
 
 export interface MasteryOverviewProps {
     conceptsMastered: ConceptsMastered;
-    overallMastery: OverallMastery;
+    overallMastery: number;
     studyStreak: StudyStreak;
+    improvement: number;
 }
 
 

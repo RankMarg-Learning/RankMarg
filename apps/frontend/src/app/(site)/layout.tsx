@@ -1,22 +1,23 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, {  useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import { usePathname } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
+import { useUserData } from '@/context/ClientContextProvider';
 
 const Layout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { mobileMenuOpen, setMobileMenuOpen } = useUserData();
   const location = usePathname();
 
   // Close mobile menu when route changes
-  useEffect(() => {
+  useEffect(() => { 
     setMobileMenuOpen(false);
   }, [location]);
 

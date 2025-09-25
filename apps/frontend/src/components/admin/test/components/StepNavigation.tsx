@@ -3,7 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, ArrowRight, Save, Pencil, CheckIcon, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Save, CheckIcon, AlertTriangle } from 'lucide-react';
 import { FormStep } from '@/types/typeAdmin';
 import { useTestBuilder } from '../../../../context/TestBuilderContext';
 import { cn } from '@/lib/utils';
@@ -139,38 +139,25 @@ const StepNavigation: React.FC<StepNavigationProps> = ({ onSave, onCancel }) => 
           )}
 
           {state.currentStep === FormStep.REVIEW ? (
-            <div className="flex gap-2">
-              <Button 
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onSave()}
-                disabled={state.loading}
-                className="flex items-center gap-1"
-              >
-                <Pencil className="h-3 w-3" />
-                Draft
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => onSave()}
-                disabled={state.loading || !isValid}
-                className="flex items-center gap-1"
-              >
-                {state.loading ? (
-                  <>
-                    <div className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-3 w-3" />
-                    {state.isEditing ? "Update" : "Create"}
-                  </>
-                )}
-              </Button>
-            </div>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => onSave()}
+              disabled={state.loading || !isValid}
+              className="flex items-center gap-1"
+            >
+              {state.loading ? (
+                <>
+                  <div className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-3 w-3" />
+                  {state.isEditing ? "Update" : "Create"}
+                </>
+              )}
+            </Button>
           ) : (
             <Button
               size="sm"

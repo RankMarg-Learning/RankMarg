@@ -13,6 +13,12 @@ export const queryKeys = {
     byExam: (examCode?: string) => ['subjects', examCode] as const,
   },
 
+  // Exam related queries
+  exams: {
+    all: ['exams'] as const,
+    byId: (id: string) => ['exams', id] as const,
+  },
+
   // Topic related queries
   topics: {
     all: ['topics'] as const,

@@ -1,5 +1,6 @@
 'use client'
 
+import ErrorCTA from '@/components/error'
 import Loading from '@/components/Loading'
 import RecentTestResults from '@/components/test/RecentTestResults'
 import { getTestResults } from '@/services/test.service'
@@ -16,9 +17,9 @@ const TestResultPage = () => {
     error,
   } = useInfiniteQuery({
     queryKey: ['tests', 'results'],
-    queryFn: ({ pageParam = 1 }) => getTestResults(pageParam),
+    queryFn: ({ pageParam = 20 }) => getTestResults(pageParam),
     getNextPageParam: (lastPage) => lastPage?.nextPage ?? null,
-    initialPageParam: 1,
+    initialPageParam: 20,
   });
 
   const observerRef = useRef<HTMLDivElement | null>(null);
@@ -43,7 +44,7 @@ const TestResultPage = () => {
   }, [hasNextPage, fetchNextPage]);
 
   if (isLoading) return <Loading />;
-  if (error) return <div>Error loading results.</div>;
+  if (error) return <ErrorCTA message='Error loading results.' />
 
   const results = data?.pages.flatMap((page) => page.data) ?? [];
 

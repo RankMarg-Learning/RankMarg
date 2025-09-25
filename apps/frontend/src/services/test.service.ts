@@ -72,9 +72,8 @@ export const deleteTest = async (testId: string) => {
 
 
 export const getTestResults = async (resultsLimit: number) => {
-  const version =  '/v.1.0';
   try {
-    const response = await api.get(`${version}/tests/results?limit=${resultsLimit}`);
+    const response = await api.get(`/test/ai/results?limit=${resultsLimit}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching test results:", error);

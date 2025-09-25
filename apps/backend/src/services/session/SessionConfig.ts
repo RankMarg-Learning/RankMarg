@@ -2,19 +2,28 @@ import { SessionConfig } from "../../types/session.api.types";
 import { GradeEnum, QCategory } from "@repo/db/enums";
 
 export function createDefaultSessionConfig(
+  userId: string,
+  isPaidUser: boolean,
   examCode: string,
   totalQuestions: number,
-  grade: GradeEnum
+  grade: GradeEnum,
+  nDays: number = 28
 ): SessionConfig {
   const config: SessionConfig = {
-    distribution: {
-      currentTopic: 0.4,
-      weakConcepts: 0.3,
-      revisionTopics: 0.3,
-    },
+    userId: userId,
+    isPaidUser: isPaidUser,
     examCode,
     grade: grade,
     totalQuestions: totalQuestions,
+    attempts: {
+      nDays: nDays,
+      questionIds: [],
+    },
+    distribution: {
+      currentTopic: 0.5,
+      weakConcepts: 0.3,
+      revisionTopics: 0.2,
+    },
     questionCategoriesDistribution: getQuestionCategoriesByGrade(grade),
     difficultyDistribution: getDifficultyDistributionByGrade(
       grade,
@@ -58,14 +67,7 @@ export function getQuestionCategoriesByGrade(
       "CALCULATION",
       "MULTI_STEP",
     ],
-    A_PLUS: [
-      "TRAP",
-      "MULTI_STEP",
-      "OUT_OF_THE_BOX",
-      "TRICKY",
-      "HIGH_WEIGHTAGE",
-      "CALCULATION",
-    ],
+    A_PLUS: ["TRAP", "MULTI_STEP", "OUT_OF_THE_BOX", "TRICKY", "CALCULATION"],
   };
 
   return {

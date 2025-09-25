@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { AlertCircle, RefreshCw, TrendingUp, Calendar, BookOpen, BarChart3 } from 'lucide-react'
+import { TrendingUp, Calendar, BookOpen, BarChart3 } from 'lucide-react'
 import RecommendedTest from './RecommendedTest'
 import ScheduledTests from './ScheduledTests'
 import AvailableTests from './AvailableTests'
@@ -9,9 +9,10 @@ import RecentTestResults from './RecentTestResults'
 import { useTestDashboardData } from '@/hooks/useTestDashboardData'
 import { useRouter } from 'next/navigation'
 import TestDashboardSkeleton from '../skeleton/test.dashboard.skeleton'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import BannerUpgrade from '../upgrade/bannerUpgrade'
+import ErrorCTA from '../error'
 
 interface DashboardStats {
   totalTests: number
@@ -23,7 +24,6 @@ interface DashboardStats {
 const TestDashboard = () => {
   const router = useRouter()
   const [activeFilter, setActiveFilter] = useState('FULL_LENGTH')
-  const [retryCount, setRetryCount] = useState(0)
 
   const {
     available,
@@ -32,20 +32,18 @@ const TestDashboard = () => {
     schedule,
     isLoading,
     isError,
-    refetch
   } = useTestDashboardData({
     availableLimit: 6,
     availableType: activeFilter,
     resultsLimit: 5
   })
 
-  // Calculate dashboard statistics
   const dashboardStats: DashboardStats = useMemo(() => {
     const totalTests = available?.data?.length || 0
     const completedTests = results?.data?.length || 0
     const upcomingTests = schedule?.data?.length || 0
-    
-    const averageScore = results?.data?.length > 0 
+
+    const averageScore = results?.data?.length > 0
       ? results.data.reduce((sum: number, result: any) => sum + (result.score / result.test.totalMarks * 100), 0) / results.data.length
       : 0
 
@@ -65,14 +63,7 @@ const TestDashboard = () => {
     setActiveFilter(filter)
   }
 
-  const handleRetry = async () => {
-    setRetryCount(prev => prev + 1)
-    try {
-      await refetch()
-    } catch (error) {
-      console.error('Failed to retry:', error)
-    }
-  }
+
 
   // Enhanced loading state
   if (isLoading) {
@@ -84,77 +75,16 @@ const TestDashboard = () => {
   }
 
   // Enhanced error state
-  if (isError) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="p-3 bg-red-100 rounded-full">
-                <AlertCircle className="h-8 w-8 text-red-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Unable to Load Dashboard
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  We're having trouble loading your test dashboard. This might be a temporary issue.
-                </p>
-              </div>
-              <Button 
-                onClick={handleRetry}
-                className="w-full"
-                disabled={retryCount >= 3}
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Try Again {retryCount > 0 && `(${retryCount}/3)`}
-              </Button>
-              {retryCount >= 3 && (
-                <p className="text-xs text-gray-500">
-                  If the problem persists, please contact support.
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
+  if (isError) return <ErrorCTA message={'Something went wrong while loading your test dashboard.'} />
 
   // Data validation
   const hasValidData = available?.success && recommended?.success && results?.success && schedule?.success
 
-  if (!hasValidData) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="p-3 bg-yellow-100 rounded-full">
-                <AlertCircle className="h-8 w-8 text-yellow-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Data Loading Issue
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Some dashboard data couldn't be loaded properly. Please try refreshing the page.
-                </p>
-              </div>
-              <Button onClick={handleRetry} className="w-full">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh Dashboard
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
+  if (!hasValidData) return <ErrorCTA message={'Something went wrong while loading your test dashboard.'} />
 
   return (
     <div className="min-h-screen ">
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-8">
+      <main className="max-w-7xl mx-auto   space-y-8">
         {/* Dashboard Header */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -162,8 +92,8 @@ const TestDashboard = () => {
               <h1 className="text-2xl font-bold text-gray-900">Test Dashboard</h1>
               <p className="text-gray-600 mt-1 text-sm">Track your progress and discover new tests</p>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-sm">
+            <div className="md:flex items-center gap-2 hidden">
+              <Badge variant="outline" className="text-xs ">
                 <TrendingUp className="h-3 w-3 mr-1" />
                 {dashboardStats.averageScore}% Avg Score
               </Badge>
@@ -264,7 +194,7 @@ const TestDashboard = () => {
             />
           ) : (
             <Card className="bg-gray-50 border-0 shadow-sm">
-              <CardContent className="p-8 text-center">
+              <CardContent className="p-4 text-center">
                 <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-base font-medium text-gray-900 mb-2">No Scheduled Tests</h3>
                 <p className="text-gray-600 text-sm">You don't have any upcoming tests scheduled. Check out available tests below!</p>
@@ -277,10 +207,16 @@ const TestDashboard = () => {
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="h-1 w-8 bg-blue-500 rounded-full"></div>
-            <h2 className="text-lg font-semibold text-gray-900">Available Tests</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Available Tests (Limit: {available?.data?.userTestCount}/{available?.data?.monthlyLimit})</h2>
           </div>
+
+          {available?.data && available.data.isLimitExceeded && (
+              <BannerUpgrade title="Unlock Unlimited Tests" description="Upgrade to Premium to access all tests" reference ="test_dashboard" />
+            )}
+
           <AvailableTests
-            tests={available?.data || []}
+            tests={available?.data?.tests || []}
+            isLimitExceeded={available?.data?.isLimitExceeded}
             onStartTest={handleStartTest}
             onFilterChange={handleFilterChange}
             activeFilter={activeFilter}

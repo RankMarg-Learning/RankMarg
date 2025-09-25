@@ -1,5 +1,4 @@
 import { PrismaClient, Subject, Question } from "@prisma/client";
-import { GradeEnum } from "@repo/db/enums";
 import { QuestionSelector } from "./QuestionSelector";
 import { RedisCacheService } from "../redisCache.service";
 import { SelectedQuestion, SessionConfig } from "../../types/session.api.types";
@@ -18,61 +17,35 @@ interface QuestionDistribution {
 
 export class PracticeSessionGenerator {
   private questionSelector!: QuestionSelector;
-  public userId!: string;
 
   constructor(
     private readonly prisma: PrismaClient,
     private readonly config: SessionConfig
   ) {}
 
-  async generate(
-    userId: string,
-    examCode: string,
-    grade: GradeEnum
-  ): Promise<void> {
+  async generate(): Promise<void> {
     try {
-      this.questionSelector = new QuestionSelector(
-        this.prisma,
-        userId,
-        grade,
-        this.config
-      );
-      this.userId = userId;
+      this.questionSelector = new QuestionSelector(this.prisma, this.config);
 
-      let cachedConfig = await RedisCacheService.getCachedSessionConfig(
-        examCode,
-        grade
-      );
-      if (!cachedConfig) {
-        await RedisCacheService.cacheSessionConfig(
-          examCode,
-          grade,
-          this.config
-        );
-      }
-
-      const examReg = await this.prisma.examUser.findFirst({
-        where: { userId },
-        select: { examCode: true },
-        orderBy: { registeredAt: "desc" },
+      const examSubjects = await this.prisma.examSubject.findMany({
+        where: { examCode: this.config.examCode },
+        select: { subjectId: true },
       });
+      const subjectIds = examSubjects.map((es) => es.subjectId);
 
-      let subjects: Subject[] = [];
-      if (examReg?.examCode) {
-        const examSubjects = await this.prisma.examSubject.findMany({
-          where: { examCode: examReg.examCode },
-          select: { subjectId: true },
-        });
-        const subjectIds = examSubjects.map((es) => es.subjectId);
-        subjects = await this.prisma.subject.findMany({
-          where: { id: { in: subjectIds } },
-        });
-      } else {
-        subjects = await this.prisma.subject.findMany();
+      if (subjectIds.length === 0) {
+        console.error("No subjects found for exam code:", this.config.examCode);
+        return;
       }
 
       await Promise.all(
-        subjects.map((subject) => this.generateSubjectSession(userId, subject))
+        subjectIds.map((subjectId) => {
+          if (this.config.isPaidUser) {
+            this.generateSubjectSessionAdaptive(subjectId);
+          } else {
+            this.generateSubjectSession(subjectId);
+          }
+        })
       );
     } catch (error) {
       console.error("Error generating practice session:", error);
@@ -80,59 +53,60 @@ export class PracticeSessionGenerator {
     }
   }
 
-  private async generateSubjectSession(
-    userId: string,
-    subject: Subject
-  ): Promise<void> {
-    const totalQuestionsForSubject = this.config.totalQuestions;
-    const questionMap = new Map<string, SelectedQuestion>();
+  private async generateSubjectSession(subjectId: string): Promise<void> {
+    try {
+      const totalQuestionsForSubject = this.config.totalQuestions;
+      const questionMap = new Map<string, { id: string }>();
 
-    const distributions = this.calculateDistribution(totalQuestionsForSubject);
-
-    const questionsWithPriority = await this.fetchAllCategoryQuestions(
-      subject,
-      distributions
-    );
-
-    questionsWithPriority.sort((a, b) => a.priority - b.priority);
-    for (const { question } of questionsWithPriority) {
-      if (!questionMap.has(question.id)) {
-        questionMap.set(question.id, question);
-      }
-    }
-
-    const uniqueQuestions = Array.from(questionMap.values());
-    const shortfall = totalQuestionsForSubject - uniqueQuestions.length;
-
-    if (shortfall > 0) {
-      const additionalQuestions = await this.backfillQuestions(
-        subject,
-        shortfall,
-        uniqueQuestions
+      const questions = await this.questionSelector.selectCurrentTopicQuestions(
+        subjectId,
+        totalQuestionsForSubject
       );
-      for (const question of additionalQuestions) {
+
+      for (const question of questions) {
         if (!questionMap.has(question.id)) {
           questionMap.set(question.id, question);
         }
       }
+      const finalQuestions = Array.from(questionMap.values());
+      const shuffledQuestions = this.shuffleArray(finalQuestions);
+      await this.createPracticeSession(shuffledQuestions, subjectId);
+    } catch (error) {
+      console.error("Error generating practice session:", error);
+      throw error;
     }
-    const finalQuestions = Array.from(questionMap.values());
+  }
 
-    const shuffledQuestions = this.shuffleArray(finalQuestions);
-    const session = await this.createPracticeSession(
-      userId,
-      shuffledQuestions,
-      subject.id
-    );
+  private async generateSubjectSessionAdaptive(
+    subjectId: string
+  ): Promise<void> {
+    try {
+      const totalQuestionsForSubject = this.config.totalQuestions;
+      const questionMap = new Map<string, { id: string }>();
 
-    // Cache the practice session
-    if (session) {
-      await RedisCacheService.cachePracticeSession(userId, session.id, {
-        questions: shuffledQuestions,
-        subjectId: subject.id,
-        totalQuestions: shuffledQuestions.length,
-        createdAt: session.createdAt,
-      });
+      const distributions = this.calculateDistribution(
+        totalQuestionsForSubject
+      );
+
+      const questionsWithPriority = await this.fetchAllCategoryQuestions(
+        subjectId,
+        distributions
+      );
+
+      questionsWithPriority.sort((a, b) => a.priority - b.priority);
+      for (const { question } of questionsWithPriority) {
+        if (!questionMap.has(question.id)) {
+          questionMap.set(question.id, question);
+        }
+      }
+
+      const finalQuestions = Array.from(questionMap.values());
+
+      const shuffledQuestions = this.shuffleArray(finalQuestions);
+      await this.createPracticeSession(shuffledQuestions, subjectId);
+    } catch (error) {
+      console.error("Error generating practice session:", error);
+      throw error;
     }
   }
 
@@ -165,29 +139,29 @@ export class PracticeSessionGenerator {
   }
 
   private async fetchAllCategoryQuestions(
-    subject: Subject,
+    subjectId: string,
     distributions: QuestionDistribution[]
-  ): Promise<Array<{ question: SelectedQuestion; priority: number }>> {
+  ): Promise<Array<{ question: { id: string }; priority: number }>> {
     const questionPromises = distributions.map(
       async ({ source, count, priority }) => {
-        let questions: SelectedQuestion[] = [];
+        let questions: { id: string; difficulty: number }[] = [];
 
         switch (source) {
           case "currentTopic":
             questions = await this.questionSelector.selectCurrentTopicQuestions(
-              subject,
+              subjectId,
               count
             );
             break;
           case "weakConcepts":
             questions = await this.questionSelector.selectWeakConceptQuestions(
-              subject,
+              subjectId,
               count
             );
             break;
           case "revisionTopics":
             questions = await this.questionSelector.selectRevisionQuestions(
-              subject,
+              subjectId,
               count
             );
             break;
@@ -202,17 +176,17 @@ export class PracticeSessionGenerator {
   }
 
   private async backfillQuestions(
-    subject: Subject,
+    subjectId: string,
     count: number,
-    existingQuestions: SelectedQuestion[]
-  ): Promise<SelectedQuestion[]> {
+    existingQuestions: { id: string }[]
+  ): Promise<{ id: string; difficulty: number }[]> {
     const existingIds = new Set(existingQuestions.map((q) => q.id));
-    const backfilledQuestions: SelectedQuestion[] = [];
+    const backfilledQuestions: { id: string; difficulty: number }[] = [];
 
     const distributions = this.calculateDistribution(count);
 
     const additionalQuestionsPromises = distributions.map(({ source, count }) =>
-      this.getAdditionalQuestions(subject, source, count, existingIds)
+      this.getAdditionalQuestions(subjectId, source, count, existingIds)
     );
 
     const additionalQuestionsArrays = await Promise.all(
@@ -227,7 +201,7 @@ export class PracticeSessionGenerator {
     const stillNeeded = count - backfilledQuestions.length;
     if (stillNeeded > 0) {
       const generalBackfill = await this.getGeneralBackfillQuestions(
-        subject,
+        subjectId,
         stillNeeded,
         existingIds
       );
@@ -238,41 +212,34 @@ export class PracticeSessionGenerator {
   }
 
   private async getAdditionalQuestions(
-    subject: Subject,
+    subjectId: string,
     source: QuestionSource,
     count: number,
     existingIds: Set<string>
-  ): Promise<SelectedQuestion[]> {
+  ): Promise<{ id: string; difficulty: number }[]> {
     if (count <= 0) return [];
 
     try {
-      let questions: SelectedQuestion[] = [];
-      const fetchFactor = 2;
+      let questions: { id: string; difficulty: number }[] = [];
       switch (source) {
         case "currentTopic":
           questions = await this.questionSelector.selectCurrentTopicQuestions(
-            subject,
-            count * fetchFactor
+            subjectId,
+            count
           );
           break;
         case "weakConcepts":
           questions = await this.questionSelector.selectWeakConceptQuestions(
-            subject,
-            count * fetchFactor
+            subjectId,
+            count
           );
           break;
         case "revisionTopics":
           questions = await this.questionSelector.selectRevisionQuestions(
-            subject,
-            count * fetchFactor
+            subjectId,
+            count
           );
           break;
-        // case "pyq":
-        //   questions = await this.questionSelector.selectPYQs(
-        //     subject,
-        //     count * fetchFactor
-        //   );
-        //   break;
       }
 
       return questions.filter((q) => !existingIds.has(q.id)).slice(0, count);
@@ -283,14 +250,14 @@ export class PracticeSessionGenerator {
   }
 
   private async getGeneralBackfillQuestions(
-    subject: Subject,
+    subjectId: string,
     count: number,
     existingIds: Set<string>
   ): Promise<Question[]> {
     try {
       return await this.prisma.question.findMany({
         where: {
-          subjectId: subject.id,
+          subjectId: subjectId,
           id: {
             notIn: Array.from(existingIds),
           },
@@ -298,7 +265,7 @@ export class PracticeSessionGenerator {
           topic: {
             currentStudyTopic: {
               some: {
-                userId: this.userId,
+                userId: this.config.userId,
                 OR: [{ isCurrent: true }, { isCompleted: true }],
               },
             },
@@ -316,20 +283,19 @@ export class PracticeSessionGenerator {
   }
 
   private async createPracticeSession(
-    userId: string,
-    questions: SelectedQuestion[],
+    questions: { id: string }[],
     subjectId: string
   ): Promise<any> {
     try {
       const session = await this.prisma.practiceSession.create({
         data: {
-          userId,
+          userId: this.config.userId,
           questionsSolved: 0,
           correctAnswers: 0,
           subjectId,
           duration: questions.length * 90,
           questions: {
-            create: questions.map((question) => ({
+            create: questions.map((question: { id: string }) => ({
               questionId: question.id,
             })),
           },

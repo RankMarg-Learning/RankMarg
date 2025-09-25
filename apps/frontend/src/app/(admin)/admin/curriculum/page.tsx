@@ -102,11 +102,11 @@ const Curriculum = () => {
   );
 
   const filteredExams = useMemo(() =>
-    exams.data.filter(exam =>
+    exams.filter(exam =>
       exam.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
       (filters.category === "" || exam.category === filters.category) &&
       (filters.status === "" || (filters.status === "active" ? exam.isActive : !exam.isActive))
-    ), [exams.data, searchTerm, filters.category, filters.status]
+    ), [exams, searchTerm, filters.category, filters.status]
   );
 
   // Statistics
@@ -114,10 +114,10 @@ const Curriculum = () => {
     totalSubjects: subjects?.length || 0,
     totalTopics: topics?.length || 0,
     totalSubtopics: subtopics?.length || 0,
-    totalExams: exams.data.length || 0,
-    activeExams: exams.data.filter(e => e.isActive).length || 0,
-    totalSubjectsInExams: exams.data.reduce((acc, exam) => acc + (exam.examSubjects?.length || 0), 0),
-  }), [subjects?.length, topics?.length, subtopics?.length, exams.data]);
+    totalExams: exams.length || 0,
+    activeExams: exams.filter(e => e.isActive).length || 0,
+    totalSubjectsInExams: exams.reduce((acc, exam) => acc + (exam.examSubjects?.length || 0), 0),
+  }), [subjects?.length, topics?.length, subtopics?.length, exams]);
 
   // Handlers
   const handleAddSubject = useCallback(() => {
@@ -339,17 +339,17 @@ const Curriculum = () => {
 
   const handleSaveExam = useCallback((exam: Omit<Exam, 'createdAt' | 'updatedAt'>) => {
     if (selectedExam) {
-      updateExam(selectedExam.code, exam);
+      updateExam.mutate({ id: selectedExam.code, exam });
       setExamDialogOpen(false);
     } else {
-      saveExam(exam);
+      saveExam.mutate(exam);
       setExamDialogOpen(false);
     }
   }, [selectedExam, updateExam, saveExam]);
 
   const handleSaveExamSubject = useCallback((examSubject: Omit<ExamSubject, 'examCode'>) => {
     if (selectedExam) {
-      addSubjectToExam(selectedExam.code, examSubject.subjectId, examSubject.weightage);
+      addSubjectToExam.mutate({ examId: selectedExam.code, subjectId: examSubject.subjectId, weightage: examSubject.weightage });
       setExamSubjectDialogOpen(false);
     }
   }, [selectedExam, addSubjectToExam]);
@@ -368,7 +368,7 @@ const Curriculum = () => {
         removeSubTopic.mutate(itemToDelete.id);
         break;
       case 'exam':
-        removeExam(itemToDelete.id);
+        removeExam.mutate(itemToDelete.id);
         break;
     }
 
@@ -1094,7 +1094,7 @@ const Curriculum = () => {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => removeSubjectFromExam(exam.code, examSubject.subjectId)}
+                                      onClick={() => removeSubjectFromExam.mutate({ examId: exam.code, subjectId: examSubject.subjectId })}
                                       className="text-red-600 hover:text-red-700"
                                     >
                                       <Trash2 className="w-4 h-4" />

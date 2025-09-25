@@ -6,6 +6,7 @@ import {
 import prisma from "@/lib/prisma";
 import { AuthenticatedRequest } from "@/middleware/auth.middleware";
 import { ResponseUtil } from "@/utils/response.util";
+import { SubscriptionStatus } from "@repo/db/enums";
 import { NextFunction, Response } from "express";
 
 const MASTERY_THRESHOLDS = {
@@ -140,6 +141,17 @@ export class MasteryController {
     try {
       const userId = req.user.id;
       const examCode = req.user.examCode;
+      const plan = req.user.plan;
+      if (
+        plan.status === SubscriptionStatus.EXPIRED ||
+        plan.endAt < new Date()
+      ) {
+        ResponseUtil.error(
+          res,
+          "Your subscription has expired. Please upgrade to access Mastery Dashboard.",
+          403
+        );
+      }
       if (!examCode) {
         ResponseUtil.error(res, "Exam code is required", 400);
       }
@@ -180,6 +192,17 @@ export class MasteryController {
       const examCode = req.user.examCode;
       if (!examCode) {
         ResponseUtil.error(res, "Exam code is required", 400);
+      }
+      const plan = req.user.plan;
+      if (
+        plan.status === SubscriptionStatus.EXPIRED ||
+        plan.endAt < new Date()
+      ) {
+        ResponseUtil.error(
+          res,
+          "Your subscription has expired. Please upgrade to access Subject Mastery.",
+          403
+        );
       }
       const improvementAreasCountParam = req.query
         .improvementAreasCount as string;

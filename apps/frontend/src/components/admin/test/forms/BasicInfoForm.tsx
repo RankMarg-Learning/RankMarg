@@ -31,12 +31,12 @@ const BasicInfoForm: React.FC = () => {
   ];
 
   const examCodeOptions = React.useMemo(() => {
-    if (isExamsLoading || !exams?.data) return [];
-    return exams.data.map(exam => ({
+    if (isExamsLoading || !exams) return [];
+    return exams.map(exam => ({
       value: exam.code,
       label: exam.name || exam.code,
     }));
-  }, [exams?.data, isExamsLoading]);
+  }, [exams, isExamsLoading]);
 
   const handleFieldChange = React.useCallback((field: string, value: any) => {
     setBasicInfo({ [field]: value });

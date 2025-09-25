@@ -4,6 +4,7 @@ import prisma from "@repo/db";
 import { NextFunction, Response, Request } from "express";
 import { z } from "zod";
 import bcrypt from "bcrypt";
+import ServerConfig from "@/config/server.config";
 
 const userSchema = z.object({
   fullname: z.string().min(1, "Full name is required"),
@@ -24,6 +25,26 @@ export class userController {
     next: NextFunction
   ) => {
     try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer")) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized - Missing or invalid Authorization header",
+          status: 401,
+          data: null,
+        });
+        return;
+      }
+      const apiKey = authHeader.split(" ")[1];
+      if (apiKey !== ServerConfig.adminAPIKey) {
+        res.status(403).json({
+          success: false,
+          message: "Invalid API key",
+          status: 403,
+          data: null,
+        });
+        return;
+      }
       const user = await prisma.user.findMany();
       ResponseUtil.success(res, user, "Users fetched successfully", 200);
     } catch (error) {

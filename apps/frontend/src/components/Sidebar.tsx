@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useUser } from '@/hooks/useUser';
+import { useUserData } from '@/context/ClientContextProvider';
 
 interface NavItem {
   icon: React.ElementType;
@@ -31,7 +31,7 @@ interface SidebarProps {
 export function Sidebar({ className }: SidebarProps)   {
   const [collapsed, setCollapsed] = useState(false);
   const location = usePathname();
-  const { user } = useUser();
+  const { user } = useUserData();
 
   const navItems: NavItem[] = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
@@ -77,13 +77,12 @@ export function Sidebar({ className }: SidebarProps)   {
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  location === item.href
+                  location.startsWith(item.href)
                     ? "bg-gradient-to-tr from-primary-600 to-primary-500 text-white"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 )}
               >
                 <item.icon size={18} />
-                {/* On desktop: show label when not collapsed, on mobile: always show */}
                 <span className={cn(
                   "lg:block",
                   collapsed && "lg:hidden"
@@ -98,7 +97,7 @@ export function Sidebar({ className }: SidebarProps)   {
 
       {/* Upgrade Card at the bottom */}
       {user && user.plan?.status !== 'ACTIVE' && !collapsed && (
-        <div className="absolute bottom-4 left-0 w-full flex sm:hidden justify-center px-1">
+        <div className="absolute bottom-4 left-0 w-full flex  justify-center px-1">
           <div className="bg-primary-50 border border-primary-200 rounded-xl shadow-sm p-4 flex flex-col items-center w-full max-w-[220px]">
             <div className="flex flex-col items-center mb-2">
             

@@ -13,6 +13,7 @@ const QuestionSet = () => {
     <main >
       {/* <RandomQuestion  /> */}
       <Questionset 
+        isPublished={true}
       />
     </main>
   )

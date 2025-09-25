@@ -5,6 +5,8 @@ import { NextFunction, Response, Request } from "express";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import ServerConfig from "@/config/server.config";
+import { AuthUtil } from "@/utils/auth.util";
+import { SubscriptionStatus } from "@repo/db/enums";
 
 export class paymentController {
   createOrder = async (
@@ -137,6 +139,16 @@ export class paymentController {
       if (!subscription) {
         ResponseUtil.error(res, "Subscription not found", 404);
       }
+
+      AuthUtil.updateTokenCookie(req, res, (payload) => ({
+        ...payload,
+        plan: {
+          id: subscription.plan.id,
+          status: SubscriptionStatus.ACTIVE,
+          endAt: subscription.currentPeriodEnd,
+        },
+      }));
+
       const payload = {
         expiry: subscription.currentPeriodEnd.toLocaleDateString("en-IN"),
         planId: subscription.plan.id,

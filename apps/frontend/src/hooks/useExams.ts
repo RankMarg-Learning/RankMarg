@@ -1,213 +1,85 @@
-import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  getExams,
+  addExam,
+  updateExam,
+  deleteExam,
+  addSubjectToExam,
+  removeSubjectFromExam,
+} from '../services/exam.service';
+import { queryKeys } from '@/lib/queryKeys';
+import { getQueryConfig } from '@/lib/queryConfig';
+import { useQueryError } from './useQueryError';
 import { Exam } from "@/types/typeAdmin";
-import { toast } from "@/hooks/use-toast";
-import api from "@/utils/api";
 
-interface UseExamsReturn {
-  exams: { data: Exam[]; loading: boolean; error: string | null };
-  saveExam: (exam: Omit<Exam, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  updateExam: (id: string, exam: Partial<Exam>) => Promise<void>;
-  removeExam: (id: string) => Promise<void>;
-  addSubjectToExam: (examId: string, subjectId: string, weightage: number) => Promise<void>;
-  removeSubjectFromExam: (examId: string, subjectId: string) => Promise<void>;
-  isLoading: boolean;
-}
+export const useExams = () => {
+  const queryClient = useQueryClient();
+  const { handleMutationError } = useQueryError();
 
-export const useExams = (): UseExamsReturn => {
-  const [exams, setExams] = useState<{ data: Exam[]; loading: boolean; error: string | null }>({
-    data: [],
-    loading: true,
-    error: null,
+  const { data: response, isLoading, error } = useQuery({
+    queryKey: queryKeys.exams.all,
+    queryFn: getExams,
+    enabled: true,
+    ...getQueryConfig('STATIC'),
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const exams = response?.data || [];
 
-  const fetchExams = async () => {
-    try {
-      setExams(prev => ({ ...prev, loading: true }));
-      const response = await api.get('/exams');
-      const result =  response.data;
-      if (result.success) {
-        setExams({ data: result.data, loading: false, error: null });
-      } else {
-        setExams({ data: [], loading: false, error: result.message });
-      }
-    } catch (error) {
-      setExams({ data: [], loading: false, error: 'Failed to fetch exams' });
-    }
-  };
+  const saveExam = useMutation({
+    mutationFn: async (data: Omit<Exam, 'createdAt' | 'updatedAt'>) => {
+      return addExam(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.exams.all });
+    },
+    onError: (error) => handleMutationError(error, 'saveExam'),
+  });
 
-  useEffect(() => {
-    fetchExams();
-  }, []);
+  const updateExamMutation = useMutation({
+    mutationFn: async ({ id, exam }: { id: string; exam: Partial<Exam> }) => {
+      return updateExam(id, exam);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.exams.all });
+    },
+    onError: (error) => handleMutationError(error, 'updateExam'),
+  });
 
-  const saveExam = async (exam: Omit<Exam, 'id' | 'createdAt' | 'updatedAt'>) => {
-    setIsLoading(true);
-    try {
-      const response = await api.post('/exams', exam);
-      
-      const result = await response.data;
-      
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: "Exam created successfully",
-        });
-        await fetchExams();
-      } else {
-        toast({
-          title: "Error",
-          description: result.message || "Failed to create exam",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create exam",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const removeExam = useMutation({
+    mutationFn: deleteExam,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.exams.all });
+    },
+    onError: (error) => handleMutationError(error, 'removeExam'),
+  });
 
-  const updateExam = async (id: string, exam: Partial<Exam>) => {
-    setIsLoading(true);
-    try {
-      const response = await api.put(`/exams/${id}`, exam);
-      
-      const result = await response.data;
-      
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: "Exam updated successfully",
-        });
-        await fetchExams();
-      } else {
-        toast({
-          title: "Error",
-          description: result.message || "Failed to update exam",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update exam",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const addSubjectToExamMutation = useMutation({
+    mutationFn: async ({ examId, subjectId, weightage }: { examId: string; subjectId: string; weightage: number }) => {
+      return addSubjectToExam(examId, subjectId, weightage);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.exams.all });
+    },
+    onError: (error) => handleMutationError(error, 'addSubjectToExam'),
+  });
 
-  const removeExam = async (id: string) => {
-    setIsLoading(true);
-    try {
-      const response = await api.delete(`/exams/${id}`);
-      
-      const result = await response.data;
-      
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: "Exam deleted successfully",
-        });
-        await fetchExams();
-      } else {
-        toast({
-          title: "Error",
-          description: result.message || "Failed to delete exam",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete exam",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const removeSubjectFromExamMutation = useMutation({
+    mutationFn: async ({ examId, subjectId }: { examId: string; subjectId: string }) => {
+      return removeSubjectFromExam(examId, subjectId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.exams.all });
+    },
+    onError: (error) => handleMutationError(error, 'removeSubjectFromExam'),
+  });
 
-  const addSubjectToExam = async (examId: string, subjectId: string, weightage: number) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`/api/exams/${examId}/subjects`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subjectId, weightage }),
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: "Subject added to exam successfully",
-        });
-        await fetchExams();
-      } else {
-        toast({
-          title: "Error",
-          description: result.message || "Failed to add subject to exam",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add subject to exam",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const removeSubjectFromExam = async (examId: string, subjectId: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`/api/exams/${examId}/subjects?subjectId=${subjectId}`, {
-        method: 'DELETE',
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: "Subject removed from exam successfully",
-        });
-        await fetchExams();
-      } else {
-        toast({
-          title: "Error",
-          description: result.message || "Failed to remove subject from exam",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to remove subject from exam",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return {
-    exams,
-    saveExam,
-    updateExam,
-    removeExam,
-    addSubjectToExam,
-    removeSubjectFromExam,
-    isLoading,
+  return { 
+    exams, 
+    isLoading, 
+    error, 
+    saveExam, 
+    updateExam: updateExamMutation, 
+    removeExam, 
+    addSubjectToExam: addSubjectToExamMutation, 
+    removeSubjectFromExam: removeSubjectFromExamMutation 
   };
 };
