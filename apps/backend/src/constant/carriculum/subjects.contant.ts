@@ -1,0 +1,18 @@
+export const subjects = [
+  {
+    id: "70821584-88d7-4205-9f32-4dd5ecde20b9",
+    name: "Biology",
+  },
+  {
+    id: "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
+    name: "Chemistry",
+  },
+  {
+    id: "c47c9c14-2dd7-42fc-823d-d3f550a0e471",
+    name: "Mathematics",
+  },
+  {
+    id: "fdee61f5-0236-44d2-b614-a1da45659ca6",
+    name: "Physics",
+  },
+];

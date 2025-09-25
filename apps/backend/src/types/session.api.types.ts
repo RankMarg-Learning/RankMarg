@@ -7,16 +7,21 @@ export interface TopicSelectionPreferences {
   weakTopicStrategy: "lowest_mastery" | "lowest_strength" | "mixed";
   revisionTopicStrategy: "due_first" | "oldest_completed" | "mixed";
 }
-
 export interface SessionConfig {
+  userId: string;
+  isPaidUser: boolean;
+  examCode: string;
+  grade: GradeEnum;
+  totalQuestions: number;
+  attempts: {
+    nDays: number;
+    questionIds: string[];
+  };
   distribution: {
     currentTopic: number;
     weakConcepts: number;
     revisionTopics: number;
   };
-  examCode: string;
-  totalQuestions: number;
-  grade: GradeEnum;
   questionCategoriesDistribution: Record<string, QCategory[]>;
 
   difficultyDistribution: {

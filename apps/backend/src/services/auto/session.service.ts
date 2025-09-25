@@ -52,6 +52,12 @@ export class PracticeService {
             examCode: true,
           },
         },
+        subscription: {
+          select: {
+            status: true,
+            currentPeriodEnd: true,
+          },
+        },
       },
     });
 
@@ -61,15 +67,27 @@ export class PracticeService {
     }
 
     const examReg = user.examRegistrations[0];
+
+    const isPaid =
+      user.subscription?.status === SubscriptionStatus.ACTIVE &&
+      user.subscription.currentPeriodEnd > new Date();
+    const isTrial =
+      user.subscription?.status === SubscriptionStatus.TRIAL &&
+      user.subscription.currentPeriodEnd > new Date();
+    const isPaidUser = isPaid || isTrial;
+
     const config = createDefaultSessionConfig(
+      user.id,
+      isPaidUser,
       examReg?.examCode || "DEFAULT",
-      user.questionsPerDay || 10,
-      (user.grade as GradeEnum) || GradeEnum.C
+      isPaidUser ? user.questionsPerDay || 10 : 5,
+      (user.grade as GradeEnum) || GradeEnum.C,
+      isPaidUser ? 40 : 28
     );
 
     await this.markSessionAsCompleted(userId);
     const sessionGenerator = new PracticeSessionGenerator(prisma, config);
-    await sessionGenerator.generate(userId, config.examCode, config.grade);
+    await sessionGenerator.generate();
   }
 
   public async markSessionAsCompleted(userId: string) {

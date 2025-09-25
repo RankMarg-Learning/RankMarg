@@ -9,28 +9,26 @@ export class QuestionSelector {
   private userId: string;
   private grade: GradeEnum;
   private prisma: PrismaClient;
+  private attempts: { nDays: number; questionIds: string[] };
 
-  constructor(
-    prisma: PrismaClient,
-    userId: string,
-    grade: GradeEnum,
-    config: SessionConfig
-  ) {
+  constructor(prisma: PrismaClient, config: SessionConfig) {
     this.prisma = prisma;
-    this.userId = userId;
-    this.grade = grade;
+    this.userId = config.userId;
+    this.grade = config.grade;
+    this.attempts = config.attempts;
     this.config = config;
+    this.getAttemptedQuestionIds();
   }
 
   async selectCurrentTopicQuestions(
-    subject: Subject,
+    subjectId: string,
     count: number
   ): Promise<{ id: string; difficulty: number }[]> {
     try {
       // Try to get cached current topics first
       const cachedTopics = await RedisCacheService.getCachedCurrentTopics(
         this.userId,
-        subject.id
+        subjectId
       );
 
       let currentTopics;
@@ -40,19 +38,18 @@ export class QuestionSelector {
         currentTopics = await this.prisma.currentStudyTopic.findMany({
           where: {
             userId: this.userId,
-            subjectId: subject.id,
+            subjectId: subjectId,
             isCurrent: true,
             isCompleted: false,
           },
-          include: {
-            topic: true,
+          select: {
+            topicId: true,
           },
         });
 
-        // Cache the current topics
         await RedisCacheService.cacheCurrentTopics(
           this.userId,
-          subject.id,
+          subjectId,
           currentTopics
         );
       }
@@ -68,32 +65,15 @@ export class QuestionSelector {
 
       let selectedQuestions: { id: string; difficulty: number }[] = [];
 
-      // First, get all previously attempted questions for this user in these topics
-      const previouslyAttemptedQuestions = await this.prisma.attempt.findMany({
-        where: {
-          userId: this.userId,
-          question: {
-            topicId: { in: topicIds },
-            subjectId: subject.id,
-          },
-        },
-        select: {
-          questionId: true,
-        },
-        distinct: ["questionId"],
-      });
-
-      const attemptedQuestionIds = new Set(
-        previouslyAttemptedQuestions.map((a) => a.questionId)
-      );
+      const attemptedQuestionIds = this.attempts.questionIds;
 
       const questions = await this.prisma.question.findMany({
         where: {
           topicId: { in: topicIds },
-          subjectId: subject.id,
+          subjectId: subjectId,
           isPublished: true,
           id: {
-            notIn: Array.from(attemptedQuestionIds), // Exclude previously attempted questions
+            notIn: Array.from(attemptedQuestionIds),
           },
           OR: [
             {
@@ -159,7 +139,7 @@ export class QuestionSelector {
             topicId: {
               in: topicIds,
             },
-            subjectId: subject.id,
+            subjectId: subjectId,
             id: {
               notIn: Array.from(
                 new Set([...selectedIds, ...attemptedQuestionIds])
@@ -191,7 +171,7 @@ export class QuestionSelector {
 
         const fallbackQuestions = await this.getFallbackQuestions(
           topicIds,
-          subject.id,
+          subjectId,
           remainingCount,
           categories,
           selectedIds
@@ -208,14 +188,14 @@ export class QuestionSelector {
   }
 
   public async selectWeakConceptQuestions(
-    subject: Subject,
+    subjectId: string,
     count: number
   ): Promise<{ id: string; difficulty: number }[]> {
     try {
       // Try cache first
       let weakTopics = await RedisCacheService.getCachedWeakConcepts(
         this.userId,
-        subject.id
+        subjectId
       );
 
       if (!weakTopics) {
@@ -223,7 +203,7 @@ export class QuestionSelector {
           where: {
             userId: this.userId,
             topic: {
-              subjectId: subject.id,
+              subjectId: subjectId,
             },
             OR: [{ masteryLevel: { lte: 40 } }, { strengthIndex: { lte: 50 } }],
           },
@@ -236,7 +216,7 @@ export class QuestionSelector {
 
         await RedisCacheService.cacheWeakConcepts(
           this.userId,
-          subject.id,
+          subjectId,
           weakTopics.map((t) => ({
             topicId: t.topicId,
             masteryLevel: t.masteryLevel,
@@ -276,24 +256,6 @@ export class QuestionSelector {
       const { difficulty: difficultyDistribution, categories } =
         this.getSelectionParameters(count);
 
-      const previouslyAttemptedQuestions = await this.prisma.attempt.findMany({
-        where: {
-          userId: this.userId,
-          question: {
-            topicId: { in: topicIds },
-            subjectId: subject.id,
-          },
-        },
-        select: {
-          questionId: true,
-        },
-        distinct: ["questionId"],
-      });
-
-      const attemptedQuestionIds = new Set(
-        previouslyAttemptedQuestions.map((a) => a.questionId)
-      );
-
       let selectedQuestions: { id: string; difficulty: number }[] = [];
 
       for (let difficulty = 1; difficulty <= 4; difficulty++) {
@@ -307,10 +269,10 @@ export class QuestionSelector {
             topicId: {
               in: topicIds,
             },
-            subjectId: subject.id,
+            subjectId: subjectId,
             difficulty: difficulty,
             id: {
-              notIn: Array.from(attemptedQuestionIds), // Exclude previously attempted questions
+              notIn: Array.from(this.attempts.questionIds),
             },
             OR: [
               {
@@ -351,10 +313,10 @@ export class QuestionSelector {
             topicId: {
               in: topicIds,
             },
-            subjectId: subject.id,
+            subjectId: subjectId,
             id: {
               notIn: Array.from(
-                new Set([...selectedIds, ...attemptedQuestionIds])
+                new Set([...selectedIds, ...this.attempts.questionIds])
               ),
             },
             OR: [
@@ -382,7 +344,7 @@ export class QuestionSelector {
 
         const fallbackQuestions = await this.getFallbackQuestions(
           topicIds,
-          subject.id,
+          subjectId,
           remainingCount,
           categories,
           selectedIds
@@ -399,14 +361,14 @@ export class QuestionSelector {
   }
 
   async selectRevisionQuestions(
-    subject: Subject,
+    subjectId: string,
     count: number
   ): Promise<{ id: string; difficulty: number }[]> {
     try {
       const completedTopics = await this.prisma.currentStudyTopic.findMany({
         where: {
           userId: this.userId,
-          subjectId: subject.id,
+          subjectId: subjectId,
           isCompleted: true,
         },
         include: {
@@ -419,10 +381,7 @@ export class QuestionSelector {
       }
 
       let cachedRevisionTopics =
-        await RedisCacheService.getCachedRevisionTopics(
-          this.userId,
-          subject.id
-        );
+        await RedisCacheService.getCachedRevisionTopics(this.userId, subjectId);
 
       let topicIds: string[];
       if (cachedRevisionTopics && cachedRevisionTopics.length > 0) {
@@ -455,7 +414,7 @@ export class QuestionSelector {
 
         await RedisCacheService.cacheRevisionTopics(
           this.userId,
-          subject.id,
+          subjectId,
           topicIds
         );
       }
@@ -478,24 +437,6 @@ export class QuestionSelector {
       const { difficulty: difficultyDistribution, categories } =
         this.getSelectionParameters(count);
 
-      const previouslyAttemptedQuestions = await this.prisma.attempt.findMany({
-        where: {
-          userId: this.userId,
-          question: {
-            topicId: { in: topicIds },
-            subjectId: subject.id,
-          },
-        },
-        select: {
-          questionId: true,
-        },
-        distinct: ["questionId"],
-      });
-
-      const attemptedQuestionIds = new Set(
-        previouslyAttemptedQuestions.map((a) => a.questionId)
-      );
-
       let selectedQuestions: { id: string; difficulty: number }[] = [];
 
       for (let difficulty = 1; difficulty <= 4; difficulty++) {
@@ -509,10 +450,10 @@ export class QuestionSelector {
             topicId: {
               in: topicIds,
             },
-            subjectId: subject.id,
+            subjectId: subjectId,
             difficulty: difficulty,
             id: {
-              notIn: Array.from(attemptedQuestionIds),
+              notIn: Array.from(this.attempts.questionIds),
             },
             OR: [
               {
@@ -553,10 +494,10 @@ export class QuestionSelector {
             topicId: {
               in: topicIds,
             },
-            subjectId: subject.id,
+            subjectId: subjectId,
             id: {
               notIn: Array.from(
-                new Set([...selectedIds, ...attemptedQuestionIds])
+                new Set([...selectedIds, ...this.attempts.questionIds])
               ),
             },
             OR: [
@@ -584,7 +525,7 @@ export class QuestionSelector {
 
         const fallbackQuestions = await this.getFallbackQuestions(
           topicIds,
-          subject.id,
+          subjectId,
           remainingCount,
           categories,
           selectedIds
@@ -600,38 +541,6 @@ export class QuestionSelector {
     }
   }
 
-  // private async filterRecentlyAttemptedQuestions(
-  //   questions: SelectedQuestion[]
-  // ): Promise<SelectedQuestion[]> {
-  //   try {
-  //     if (questions.length === 0) {
-  //       return [];
-  //     }
-
-  //     const allAttemptedQuestions = await this.prisma.attempt.findMany({
-  //       where: {
-  //         userId: this.userId,
-  //         questionId: {
-  //           in: questions.map((q) => q.id),
-  //         },
-  //       },
-  //       select: {
-  //         questionId: true,
-  //       },
-  //       distinct: ["questionId"],
-  //     });
-
-  //     const attemptedQuestionIds = new Set(
-  //       allAttemptedQuestions.map((a) => a.questionId)
-  //     );
-
-  //     return questions.filter((q) => !attemptedQuestionIds.has(q.id));
-  //   } catch (error) {
-  //     console.error("Error filtering recently attempted questions:", error);
-  //     return questions;
-  //   }
-  // }
-
   private async getFallbackQuestions(
     topicIds: string[],
     subjectId: string,
@@ -646,7 +555,9 @@ export class QuestionSelector {
           subjectId: subjectId,
           isPublished: true,
           id: {
-            notIn: Array.from(excludeIds),
+            notIn: Array.from(
+              new Set([...excludeIds, ...this.attempts.questionIds])
+            ),
           },
           OR: [
             { category: { some: { category: { in: categories } } } },
@@ -698,5 +609,32 @@ export class QuestionSelector {
       .grade as QCategory[];
 
     return { difficulty, categories };
+  }
+
+  public async getAttemptedQuestionIds(): Promise<void> {
+    try {
+      const { nDays, questionIds } = this.attempts;
+      const startDate = new Date(
+        new Date().setDate(new Date().getDate() - nDays)
+      );
+      const endDate = new Date();
+      const attemptedQuestionIds = await this.prisma.attempt.findMany({
+        where: {
+          userId: this.userId,
+          solvedAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+          questionId: {
+            in: questionIds,
+          },
+        },
+        distinct: ["questionId"],
+      });
+      this.attempts.questionIds = attemptedQuestionIds.map((a) => a.questionId);
+    } catch (error) {
+      console.error("Error getting attempted question ids:", error);
+      this.attempts.questionIds = [];
+    }
   }
 }
