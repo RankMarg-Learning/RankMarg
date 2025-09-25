@@ -65,7 +65,6 @@ app.use(`${ServerConfig.api.routes.session}`, sessionRoutes);
 app.use(`${ServerConfig.api.routes.mastery}`, mastery);
 app.use(`${ServerConfig.api.routes.performance}`, performance);
 app.use(`${ServerConfig.api.routes.reviews}`, reviews);
-app.use(`${ServerConfig.api.prefix}/cron`, cronRoutes);
 
 // Redis and cache management routes
 app.use("/health/redis", redisRoutes);

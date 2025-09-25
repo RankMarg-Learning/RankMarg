@@ -10,5 +10,6 @@ const activity = new activityController();
 router.get("/profile", authenticate, user.getUserProfile);
 router.get("/activity", authenticate, activity.getActivities);
 router.put("/profile/edit", authenticate, user.updateUserProfile);
+router.post("/all", user.getUsers);
 
 export default router;
