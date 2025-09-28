@@ -1,93 +1,126 @@
 import { createClient, RedisClientType } from "redis";
-import { logger } from "./logger";
+import { Logger } from "./logger";
 import { ServerConfig } from "../config/server.config";
+
+const logger = new Logger("RedisService");
 
 class RedisService {
   private client: RedisClientType;
   private isConnected: boolean = false;
 
   constructor() {
-    const redisUrl = ServerConfig.redis.url || ServerConfig.redis.upstashUrl;
+    try {
+      const redisUrl = ServerConfig.redis.url || ServerConfig.redis.upstashUrl;
 
-    if (!redisUrl) {
-      logger.error(
-        "Redis URL not found. Please set REDIS_URL or UPSTASH_REDIS_REST_URL environment variable"
-      );
-      throw new Error("Redis URL not configured");
-    }
+      if (!redisUrl) {
+        logger.error(
+          "Redis URL not found. Please set REDIS_URL or UPSTASH_REDIS_REST_URL environment variable"
+        );
+        throw new Error("Redis URL not configured");
+      }
 
-    const isUpstash =
-      redisUrl.includes("upstash.io") || !!ServerConfig.redis.upstashToken;
+      const isUpstash =
+        redisUrl.includes("upstash.io") || !!ServerConfig.redis.upstashToken;
 
-    this.client = createClient({
-      url: redisUrl,
-      socket: {
-        reconnectStrategy: (retries: number) => {
-          if (retries > 10) {
-            logger.error("Redis max reconnection attempts reached");
-            return new Error("Redis max reconnection attempts reached");
-          }
-          return Math.min(Math.pow(2, retries) * 1000, 5000);
+      this.client = createClient({
+        url: redisUrl,
+        socket: {
+          reconnectStrategy: (retries: number) => {
+            if (retries > 10) {
+              logger.error("Redis max reconnection attempts reached");
+              return new Error("Redis max reconnection attempts reached");
+            }
+            return Math.min(Math.pow(2, retries) * 1000, 5000);
+          },
+          ...(isUpstash && {
+            tls: true,
+            keepAlive: 30000,
+            connectTimeout: 10000,
+          }),
         },
         ...(isUpstash && {
-          tls: true,
-          keepAlive: 30000,
-          connectTimeout: 10000,
+          pingInterval: 30000,
+          retryDelayOnFailover: 100,
+          maxRetriesPerRequest: 3,
         }),
-      },
-      ...(isUpstash && {
-        pingInterval: 30000,
-        retryDelayOnFailover: 100,
-        maxRetriesPerRequest: 3,
-      }),
-    });
+      });
 
-    this.setupEventListeners();
+      this.setupEventListeners();
+    } catch (error: any) {
+      logger.error(
+        "Failed to initialize Redis client:",
+        error?.message || error || "Unknown initialization error"
+      );
+      throw error;
+    }
   }
 
   private setupEventListeners(): void {
-    this.client.on("connect", () => {
-      logger.info("Redis client connected");
-      this.isConnected = true;
-    });
+    try {
+      this.client.on("connect", () => {
+        logger.info("Redis client connected");
+        this.isConnected = true;
+      });
 
-    this.client.on("ready", () => {
-      logger.info("Redis client ready");
-    });
+      this.client.on("ready", () => {
+        logger.info("Redis client ready");
+      });
 
-    this.client.on("error", (err: Error) => {
-      logger.error("Redis client error:", err);
-      this.isConnected = false;
-    });
+      this.client.on("error", (err: any) => {
+        logger.error(
+          "Redis client error:",
+          err?.message || err || "Unknown Redis error"
+        );
+        this.isConnected = false;
+      });
 
-    this.client.on("end", () => {
-      logger.info("Redis client disconnected");
-      this.isConnected = false;
-    });
+      this.client.on("end", () => {
+        logger.info("Redis client disconnected");
+        this.isConnected = false;
+      });
 
-    this.client.on("reconnecting", () => {
-      logger.info("Redis client reconnecting...");
-    });
+      this.client.on("reconnecting", () => {
+        logger.info("Redis client reconnecting...");
+      });
 
-    this.client.on("connect", () => {
-      logger.info("Connected to Upstash Redis");
-    });
+      // Remove duplicate connect event listener
+      // this.client.on("connect", () => {
+      //   logger.info("Connected to Upstash Redis");
+      // });
+    } catch (error: any) {
+      logger.error(
+        "Failed to setup Redis event listeners:",
+        error?.message || error || "Unknown error"
+      );
+    }
   }
 
   async connect(): Promise<void> {
+    this.ensureClientInitialized();
     if (!this.isConnected) {
       try {
         await this.client.connect();
-      } catch (error) {
-        logger.error("Failed to connect to Redis:", error);
+      } catch (error: any) {
+        logger.error(
+          "Failed to connect to Redis:",
+          error?.message || error || "Unknown connection error"
+        );
         throw error;
       }
     }
   }
 
   async disconnect(): Promise<void> {
-    if (this.isConnected) {
-      await this.client.quit();
+    if (this.isConnected && this.client) {
+      try {
+        await this.client.quit();
+        this.isConnected = false;
+      } catch (error: any) {
+        logger.error(
+          "Error disconnecting from Redis:",
+          error?.message || error || "Unknown disconnect error"
+        );
+      }
     }
   }
 
@@ -273,7 +306,13 @@ class RedisService {
   }
 
   isClientConnected(): boolean {
-    return this.isConnected;
+    return this.isConnected && this.client && !this.client.isOpen === false;
+  }
+
+  private ensureClientInitialized(): void {
+    if (!this.client) {
+      throw new Error("Redis client not initialized");
+    }
   }
 
   async getUpstashStats(): Promise<{

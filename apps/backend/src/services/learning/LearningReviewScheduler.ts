@@ -1,1 +1,1 @@
-export { ReviewScheduleService } from "@/services/auto/reviewSchedule.service";
+export { ReviewScheduleService } from "@/jobs/services/reviewSchedule.service";

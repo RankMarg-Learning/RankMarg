@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import path from "path";
 
 try {
-  // dotenv.config({ path: path.resolve(__dirname, "../../../../../.env") });
+  // dotenv.config({ path: path.resolve(__dirname, "../../../../../.env") }); //npm run start test
   dotenv.config({ path: path.resolve(__dirname, "../../../../.env") });
 } catch (error) {
   console.log("No .env file found, using system environment variables");
@@ -46,7 +46,7 @@ export const ServerConfig = {
   adminAPIKey: process.env.ADMIN_API_KEY,
   cron: {
     daily: {
-      resetStreak: "0 0 * * *",
+      streak: "0 0 * * *",
       updatePerformance: "0 0 * * *",
       createSuggestion: "0 0 * * *",
     },

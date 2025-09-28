@@ -9,11 +9,10 @@ import passport from "passport";
 import expressSession from "express-session";
 import cookieParser from "cookie-parser";
 import configurePassport from "./config/passport.config";
-import sessionRoutes from "./routes/session";
-import mastery from "./routes/mastery";
-import performance from "./routes/performance";
-import reviews from "./routes/reviews";
-import cronRoutes from "./routes/cron.routes";
+import sessionRoutes from "./routes/jobs/session";
+import mastery from "./routes/jobs/mastery";
+import performance from "./routes/jobs/performance";
+import reviews from "./routes/jobs/reviews";
 import redisRoutes from "./routes/redis.routes";
 import { ServerConfig } from "./config/server.config";
 import { cronManager } from "./config/cron.config";
@@ -92,6 +91,7 @@ app.use(`${ServerConfig.api.prefix}/exams`, routes.exam);
 app.use(`${ServerConfig.api.prefix}/plans`, routes.plan);
 app.use(`${ServerConfig.api.prefix}/promocodes`, routes.promoCode);
 app.use(`${ServerConfig.api.prefix}/bulk-upload`, routes.bulkUpload);
+app.use(`${ServerConfig.api.prefix}/user-activity`, routes.userActivity);
 
 // Authentication routes
 app.use(`${ServerConfig.api.prefix}/auth`, routes.auth);

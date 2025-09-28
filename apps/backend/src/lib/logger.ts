@@ -1,20 +1,34 @@
-import winston from "winston";
+export class Logger {
+  private readonly context: string;
 
-const logFormat = winston.format.combine(
-  winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-  winston.format.printf(({ timestamp, level, message }) => {
-    return `${timestamp} [${level.toUpperCase()}]: ${message}`;
-  })
-);
+  constructor(context: string) {
+    this.context = context;
+  }
 
-const logger = winston.createLogger({
-  level: "info",
-  format: logFormat,
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: "logs/app.log" }),
-    new winston.transports.File({ filename: "logs/error.log", level: "error" }),
-  ],
-});
+  private formatMessage(
+    level: string,
+    message: string,
+    ...args: any[]
+  ): string {
+    const timestamp = new Date().toISOString();
+    return `[${timestamp}] [${level}] [${this.context}] ${message}`;
+  }
 
-export { logger };
+  info(message: string, ...args: any[]): void {
+    console.log(this.formatMessage("INFO", message), ...args);
+  }
+
+  warn(message: string, ...args: any[]): void {
+    console.warn(this.formatMessage("WARN", message), ...args);
+  }
+
+  error(message: string, ...args: any[]): void {
+    console.error(this.formatMessage("ERROR", message), ...args);
+  }
+
+  debug(message: string, ...args: any[]): void {
+    if (process.env.NODE_ENV === "development") {
+      console.debug(this.formatMessage("DEBUG", message), ...args);
+    }
+  }
+}

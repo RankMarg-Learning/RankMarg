@@ -74,24 +74,19 @@ export class AttemptsController {
       };
       const createdAttempt = await prisma.$transaction(
         async (tx: Prisma.TransactionClient) => {
-          // Create attempt
           const newAttempt = await tx.attempt.create({
             data: attemptData,
             select: { id: true, questionId: true, answer: true },
           });
 
-          // Batch all updates in parallel where possible
           const promises: Promise<any>[] = [];
 
-          // Update practice session stats if needed
           if (attemptType === AttemptType.SESSION) {
             promises.push(updatePracticeSessionStats(tx, id, isCorrect));
           }
 
-          // Update user performance (no daily first-attempt dependency)
           promises.push(updateUserPerformanceOptimized(tx, userId, isCorrect));
 
-          // Update metrics efficiently
           promises.push(updateUserMetricsOptimized(tx, userId, isCorrect));
 
           await Promise.all(promises);
@@ -206,7 +201,6 @@ async function updatePracticeSessionStats(
   });
 }
 
-// Highly optimized user metrics update
 async function updateUserMetricsOptimized(
   tx: Prisma.TransactionClient,
   userId: string,
@@ -251,13 +245,11 @@ async function updateUserMetricsOptimized(
   );
 }
 
-// Optimized user performance update with single query
 async function updateUserPerformanceOptimized(
   tx: Prisma.TransactionClient,
   userId: string,
   isCorrect: boolean
 ): Promise<void> {
-  // Single atomic upsert with calculated accuracy
   const result = await tx.userPerformance.upsert({
     where: { userId },
     update: {
@@ -278,7 +270,6 @@ async function updateUserPerformanceOptimized(
     },
   });
 
-  // Calculate and update accuracy in a single query if this is an update
   if (result.totalAttempts > 1) {
     const newAccuracy = (result.correctAttempts / result.totalAttempts) * 100;
     await tx.userPerformance.update({

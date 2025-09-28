@@ -53,11 +53,10 @@ export function Header({ onMenuClick }: HeaderProps) {
             <div>
               <Link href="/" className="flex items-center gap-2">
                 <Image
-                  src="/logo.png"
+                  src="https://utfs.io/f/DbhgrrAIqRoKxS7q7dwj2eQpG3tSwkDuqa6AKMTcLIFsWXfn"
                   alt="RankMarg Logo"
                   width={100}
                   height={24}
-                  unoptimized
                   className="object-contain ml-0 md:ml-4"
                 />
               </Link>

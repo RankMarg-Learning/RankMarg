@@ -165,7 +165,6 @@ export class RedisCacheService {
     concepts: Array<{
       topicId: string;
       masteryLevel: number;
-      strengthIndex: number;
       lastAssessed?: number;
     }>
   ): Promise<boolean> {
