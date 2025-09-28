@@ -53,7 +53,7 @@ export class LearningProgressService {
 
   public async processOneUser(userId: string, examCode: string): Promise<void> {
     // 1) Update mastery and metrics
-    await this.masteryService.processOneUser(userId, examCode);
+    await this.masteryService.processOneUserPublic({ userId, examCode });
 
     // 2) Update review schedules based on latest mastery
     await this.reviewService.updateSchedulesForUser(userId);

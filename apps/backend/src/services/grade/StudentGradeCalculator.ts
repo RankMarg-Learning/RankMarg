@@ -1,6 +1,7 @@
 import prisma from "../../lib/prisma";
 import { GradeEnum } from "@repo/db/enums";
-import { UserConfig } from "../attempt.config";
+import { AttemptsConfig } from "../attempt.config";
+// import { UserConfig } from "../attempt.config";
 
 export class StudentGradeCalculator {
   async calculateGrade(userId: string): Promise<GradeEnum> {
@@ -19,14 +20,13 @@ export class StudentGradeCalculator {
       if (!user) {
         return GradeEnum.C;
       }
-      const userConfig = new UserConfig({
+      const userConfig = new AttemptsConfig({
         userId: user.id,
         examCode: user.examRegistrations[0].examCode || "",
         grade: null,
-        nDays_Data: 7,
         isPaidUser: false,
       });
-      const data = userConfig.getUserData();
+      const data = userConfig.getAttemptsData();
     } catch (error) {
       console.error("Error calculating student grade:", error);
       return GradeEnum.C;
