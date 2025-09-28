@@ -2,13 +2,13 @@ import React from 'react'
 
 const MistakeRecent = () => {
   return (
-    <div className="bg-white rounded-xl border border-neutral-200/30 p-6 mb-6" id="el-apnx8tx6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4" id="el-flnvrvy0">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2 md:mb-0" id="el-z3yfj62i">Mistake Table</h3>
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4" id="el-apnx8tx6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-3" id="el-flnvrvy0">
+            <h3 className="text-base font-semibold text-gray-800 mb-2 md:mb-0" id="el-z3yfj62i">Recent Mistakes</h3>
             
             {/* <!-- Filter Controls --> */}
-            <div className="flex flex-wrap gap-2" id="el-cukzbvgl">
-                <select id="subjectFilter" className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none ">
+            <div className="flex flex-wrap gap-1.5" id="el-cukzbvgl">
+                <select id="subjectFilter" className="px-2 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-md focus:outline-none">
                     <option value="all" id="el-15245er6">All Subjects</option>
                     <option value="physics" id="el-0levroil">Physics</option>
                     <option value="chemistry" id="el-ghwqmnez">Chemistry</option>
@@ -16,7 +16,7 @@ const MistakeRecent = () => {
                     <option value="biology" id="el-hoh2jacn">Biology</option>
                 </select>
                 
-                <select id="typeFilter" className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none ">
+                <select id="typeFilter" className="px-2 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-md focus:outline-none">
                     <option value="all" id="el-j88dvant">All Types</option>
                     <option value="concept" id="el-2u7rap1p">Concept not clear</option>
                     <option value="calculation" id="el-ofw77dx1">Calculation mistake</option>
@@ -25,37 +25,37 @@ const MistakeRecent = () => {
                     <option value="silly" id="el-ywwl2slg">Silly error</option>
                 </select>
                 
-                <select id="dateFilter" className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none ">
+                <select id="dateFilter" className="px-2 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-md focus:outline-none">
                     <option value="all" id="el-rf07ypju">All Time</option>
                     <option value="today" id="el-6m3zvcak">Today</option>
                     <option value="week" id="el-hmp3v98w">This Week</option>
                     <option value="month" id="el-s83vlegt">This Month</option>
                 </select>
                 
-                <button id="applyFilters" className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition">Apply</button>
+                <button id="applyFilters" className="px-3 py-1.5 bg-red-600 text-white text-xs rounded-md hover:bg-red-700 transition">Apply</button>
             </div>
         </div>
         
         <div className="overflow-x-auto" id="el-7ac1ytfw">
             <table className="min-w-full" id="el-29fg0ebq">
                 <thead id="el-ydayyzoe">
-                    <tr className="border-b border-neutral-200/30" id="el-gdw4z55w">
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500" id="el-ggiiabpl">Question</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500" id="el-6441z82p">Subject</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500" id="el-1pn969im">Topic</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500" id="el-e19l7ro4">Mistake Type</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500" id="el-rs9jg5tm">Date</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500" id="el-kffl8ve9">Actions</th>
+                    <tr className="border-b border-gray-200" id="el-gdw4z55w">
+                        <th className="text-left py-2 px-3 font-medium text-xs text-gray-500" id="el-ggiiabpl">Question</th>
+                        <th className="text-left py-2 px-3 font-medium text-xs text-gray-500" id="el-6441z82p">Subject</th>
+                        <th className="text-left py-2 px-3 font-medium text-xs text-gray-500" id="el-1pn969im">Topic</th>
+                        <th className="text-left py-2 px-3 font-medium text-xs text-gray-500" id="el-e19l7ro4">Type</th>
+                        <th className="text-left py-2 px-3 font-medium text-xs text-gray-500" id="el-rs9jg5tm">Date</th>
+                        <th className="text-left py-2 px-3 font-medium text-xs text-gray-500" id="el-kffl8ve9">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="el-rlr9il4l">
-                    <tr className="border-b border-neutral-200/20" id="el-2f7nc148">
-                        <td className="py-3 px-4 text-sm" id="el-dn7550yp">A ball is thrown vertically upward with a velocity of 20 m/s...</td>
-                        <td className="py-3 px-4 text-sm" id="el-5ij1nvzl">Physics</td>
-                        <td className="py-3 px-4 text-sm" id="el-ejzrynyn">Mechanics</td>
-                        <td className="py-3 px-4 text-sm" id="el-aj6d27o2"><span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs" id="el-cfyypc1y">Concept not clear</span></td>
-                        <td className="py-3 px-4 text-sm text-gray-500" id="el-95o7cu8v">Today</td>
-                        <td className="py-3 px-4 text-sm" id="el-1487mjvd">
+                    <tr className="border-b border-gray-100" id="el-2f7nc148">
+                        <td className="py-2 px-3 text-xs" id="el-dn7550yp">A ball is thrown vertically upward with a velocity of 20 m/s...</td>
+                        <td className="py-2 px-3 text-xs" id="el-5ij1nvzl">Physics</td>
+                        <td className="py-2 px-3 text-xs" id="el-ejzrynyn">Mechanics</td>
+                        <td className="py-2 px-3 text-xs" id="el-aj6d27o2"><span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded-full text-xs" id="el-cfyypc1y">Concept</span></td>
+                        <td className="py-2 px-3 text-xs text-gray-500" id="el-95o7cu8v">Today</td>
+                        <td className="py-2 px-3 text-xs" id="el-1487mjvd">
                             <button className="text-blue-600 hover:underline mr-2" id="openMistakeDetailModalBtn1">View</button>
                             <button className="text-red-600 hover:underline" id="el-x6otg2sx">Retry</button>
                         </td>

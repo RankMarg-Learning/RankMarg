@@ -1,11 +1,10 @@
 "use client"
-import { BrainCircuit, Flame, ListTodo, RotateCcw, Target, BookOpen } from "lucide-react";
+import { BrainCircuit, Flame, ListTodo, Target, BookOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useIsMobile } from "@/hooks/use-mobile";
 import CurrentTopicCard from "./CurrentTopicCard";
 import { SmartStudyHubProps, SubjectGroup } from "@/types/dashboard.types";
 import { useMemo, useState } from "react";
@@ -271,54 +270,8 @@ const RevisionSubtopicsDialog = ({ isOpen, onClose, groupedData }) => {
   );
 };
 
-const SmartRecommendation = ({ recommendation, isMobile }) => (
-  <div className="relative bg-gradient-to-r from-primary-100 to-primary-200 md:col-span-2 p-4 md:p-6 flex flex-col justify-center rounded-lg overflow-hidden">
-    <div className="absolute inset-0 bg-white/40 backdrop-blur-sm z-10 flex items-center justify-center">
-      <div className="text-center">
-        <h3 className="text-xl font-semibold text-primary-900">Coming Soon</h3>
-        <p className="text-sm text-muted-foreground">Smart Recommendation will be available soon</p>
-      </div>
-    </div>
-    <div className="pointer-events-none opacity-50">
-      <div className="text-center md:text-left">
-        <h3 className="font-medium text-primary-900 mb-2">Smart Recommendation</h3>
-        <div className="bg-white rounded-lg p-3 shadow-sm border border-primary-200 mb-3">
-          <Badge className="bg-primary-100 text-primary-800 border-none mb-2">
-            {getRecommendationType(recommendation.type)}
-          </Badge>
-          <p className="font-medium mb-1">
-            {recommendation.subject}: {recommendation.topic}
-          </p>
-          <p className="text-sm text-muted-foreground mb-2">
-            Reason: {recommendation.reason}
-          </p>
-          <p className="text-xs flex items-center justify-center md:justify-start gap-1">
-            <RotateCcw className="h-3 w-3" />
-            <span>Recommended time: {recommendation.timeRecommended} min</span>
-          </p>
-        </div>
-        <Button
-          size={isMobile ? "sm" : "default"}
-          className="w-full bg-primary-500 hover:bg-primary-600"
-        >
-          Start Smart Session
-        </Button>
-      </div>
-    </div>
-  </div>
-);
-
-const getRecommendationType = (type) => {
-  const types = {
-    focus: "Focus Session",
-    review: "Review Needed",
-    practice: "Practice Session"
-  };
-  return types[type] || "Study Session";
-};
 
 export function SmartStudyHub({ dashboardData, currentStudies }: SmartStudyHubProps) {
-  const isMobile = useIsMobile();
   const [revisionSubtopicsDialogOpen, setRevisionSubtopicsDialogOpen] = useState(false);
 
   const userStats = useMemo(() => ({
@@ -341,20 +294,13 @@ export function SmartStudyHub({ dashboardData, currentStudies }: SmartStudyHubPr
     return revisionSubtopics?.grouped || [];
   }, [revisionSubtopics]);
 
-  const studyRecommendation = useMemo(() => ({
-    type: "focus",
-    subject: "Physics",
-    topic: "Kinematics",
-    reason: "Test in 3 days",
-    timeRecommended: 30
-  }), []);
 
   return (
     <Card className="border-0 bg-gradient-to-r from-primary-50 to-primary-100 shadow-md animate-fade-in overflow-hidden">
       <CardContent className="p-0">
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
+        <div className="grid grid-cols-1 gap-2">
           {/* Main section */}
-          <div className="p-4 md:p-6 md:col-span-5 space-y-4">
+          <div className="p-4 md:p-6 space-y-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg md:text-xl font-semibold text-primary-900 flex items-center gap-2">
@@ -383,7 +329,7 @@ export function SmartStudyHub({ dashboardData, currentStudies }: SmartStudyHubPr
                 </Badge>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <TodaysProgressCard 
                 percentComplete={todaysProgress.percentComplete}
                 minutesStudied={todaysProgress.minutesStudied}
@@ -396,10 +342,6 @@ export function SmartStudyHub({ dashboardData, currentStudies }: SmartStudyHubPr
               <CurrentTopicCard currentStudies={currentStudies} />
             </div>
           </div>
-          <SmartRecommendation 
-            recommendation={studyRecommendation}
-            isMobile={isMobile}
-          />
         </div>
       </CardContent>
       <RevisionSubtopicsDialog 
