@@ -17,7 +17,6 @@ export class QuestionSelector {
     this.grade = config.grade;
     this.attempts = config.attempts;
     this.config = config;
-    this.getAttemptedQuestionIds();
   }
 
   async selectCurrentTopicQuestions(
@@ -193,25 +192,28 @@ export class QuestionSelector {
   ): Promise<{ id: string; difficulty: number }[]> {
     try {
       // Try cache first
-      let weakTopics = await RedisCacheService.getCachedWeakConcepts(
+      let weakTopics = [];
+
+      weakTopics = await RedisCacheService.getCachedWeakConcepts(
         this.userId,
         subjectId
       );
 
-      if (!weakTopics) {
+      if (!weakTopics || weakTopics.length === 0) {
         weakTopics = await this.prisma.topicMastery.findMany({
           where: {
             userId: this.userId,
             topic: {
               subjectId: subjectId,
             },
-            OR: [{ masteryLevel: { lte: 40 } }, { strengthIndex: { lte: 50 } }],
+            OR: [{ masteryLevel: { lte: 40 } }],
           },
-          include: {
-            topic: true,
+          select: {
+            topicId: true,
+            masteryLevel: true,
           },
-          orderBy: [{ masteryLevel: "asc" }, { strengthIndex: "asc" }],
-          take: 10,
+          orderBy: [{ masteryLevel: "asc" }],
+          take: 1,
         });
 
         await RedisCacheService.cacheWeakConcepts(
@@ -220,7 +222,6 @@ export class QuestionSelector {
           weakTopics.map((t) => ({
             topicId: t.topicId,
             masteryLevel: t.masteryLevel,
-            strengthIndex: t.strengthIndex,
           }))
         );
       }
@@ -230,29 +231,7 @@ export class QuestionSelector {
       }
 
       let topicIds = weakTopics.map((wt) => wt.topicId);
-      if (this.config.preferences?.singleTopicPerWeakConcepts) {
-        const strategy = this.config.preferences.weakTopicStrategy || "mixed";
-        const pick = (() => {
-          if (strategy === "lowest_mastery") {
-            return weakTopics
-              .slice()
-              .sort((a, b) => a.masteryLevel - b.masteryLevel)[0];
-          }
-          if (strategy === "lowest_strength") {
-            return weakTopics
-              .slice()
-              .sort((a, b) => a.strengthIndex - b.strengthIndex)[0];
-          }
-          const due = undefined;
-          return (
-            due ||
-            weakTopics
-              .slice()
-              .sort((a, b) => a.masteryLevel - b.masteryLevel)[0]
-          );
-        })();
-        topicIds = pick ? [pick.topicId] : topicIds.slice(0, 1);
-      }
+
       const { difficulty: difficultyDistribution, categories } =
         this.getSelectionParameters(count);
 
@@ -371,8 +350,8 @@ export class QuestionSelector {
           subjectId: subjectId,
           isCompleted: true,
         },
-        include: {
-          topic: true,
+        select: {
+          topicId: true,
         },
       });
 
@@ -393,23 +372,23 @@ export class QuestionSelector {
             topicId: {
               in: completedTopics.map((ct) => ct.topicId),
             },
+            nextReviewAt: {
+              lte: new Date(),
+            },
           },
+          select: {
+            topicId: true,
+          },
+          orderBy: {
+            nextReviewAt: "asc",
+          },
+          take: 1,
         });
 
-        const dueNow = reviewSchedules
-          .filter((rs) => rs.nextReviewAt <= new Date())
-          .map((rs) => rs.topicId);
-        const notDue = reviewSchedules
-          .filter((rs) => rs.nextReviewAt > new Date())
-          .map((rs) => rs.topicId);
+        topicIds = reviewSchedules.map((rs) => rs.topicId);
 
-        topicIds = [...dueNow, ...notDue];
-
-        if (topicIds.length < 5) {
-          const otherTopicIds = completedTopics
-            .filter((ct) => !topicIds.includes(ct.topicId))
-            .map((ct) => ct.topicId);
-          topicIds = [...topicIds, ...otherTopicIds];
+        if (topicIds.length === 0) {
+          return [];
         }
 
         await RedisCacheService.cacheRevisionTopics(
@@ -417,21 +396,6 @@ export class QuestionSelector {
           subjectId,
           topicIds
         );
-      }
-
-      if (this.config.preferences?.singleTopicPerRevision && topicIds.length) {
-        const strategy =
-          this.config.preferences.revisionTopicStrategy || "due_first";
-        if (strategy === "due_first") {
-          topicIds = [topicIds[0]];
-        } else if (strategy === "oldest_completed") {
-          const earliest = completedTopics
-            .slice()
-            .sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime())[0];
-          topicIds = earliest ? [earliest.topicId] : [topicIds[0]];
-        } else {
-          topicIds = [topicIds[0]];
-        }
       }
 
       const { difficulty: difficultyDistribution, categories } =
@@ -613,7 +577,7 @@ export class QuestionSelector {
 
   public async getAttemptedQuestionIds(): Promise<void> {
     try {
-      const { nDays, questionIds } = this.attempts;
+      const { nDays } = this.attempts;
       const startDate = new Date(
         new Date().setDate(new Date().getDate() - nDays)
       );
@@ -624,9 +588,6 @@ export class QuestionSelector {
           solvedAt: {
             gte: startDate,
             lte: endDate,
-          },
-          questionId: {
-            in: questionIds,
           },
         },
         distinct: ["questionId"],

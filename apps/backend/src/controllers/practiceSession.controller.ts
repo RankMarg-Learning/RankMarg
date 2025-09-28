@@ -437,8 +437,10 @@ export class PracticeSessionController {
       const userId = req.user.id;
       const { sessionId } = req.params;
       const plan = req.user.plan;
-
-      const isUnlocked = plan?.endAt && plan?.endAt > new Date();
+      const isUnlocked =
+        new Date(plan?.endAt) > new Date() &&
+        (plan.status === SubscriptionStatus.ACTIVE ||
+          plan.status === SubscriptionStatus.TRIAL);
 
       const practiceSession = await prisma.practiceSession.findUnique({
         where: {

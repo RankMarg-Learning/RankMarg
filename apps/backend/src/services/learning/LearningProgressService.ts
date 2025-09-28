@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
-import { MasteryService } from "@/services/auto/mastery.service";
-import { ReviewScheduleService } from "@/services/auto/reviewSchedule.service";
+import { MasteryService } from "@/jobs/services/mastery.service";
+import { ReviewScheduleService } from "@/jobs/services/reviewSchedule.service";
 
 export class LearningProgressService {
   private masteryService: MasteryService;

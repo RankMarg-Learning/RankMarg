@@ -1,12 +1,14 @@
 import cron, { ScheduledTask } from "node-cron";
 import { ServerConfig } from "./server.config";
-import { updatePerformanceJob } from "../jobs/updatePerformance.job";
-import { resetStreakJob } from "../jobs/resetStreak.job";
-import { updateReviewJob } from "../jobs/review.update.job";
-import { updateMasteryJob } from "../jobs/mastery.update.job";
-import { updateLearningProgressJob } from "../jobs/learning.update.job";
-import { createSessionJob } from "../jobs/session.create.job";
-import { createSuggestion } from "../jobs/suggest.create.job";
+import { updatePerformanceJob } from "../jobs/tasks/updatePerformance.job";
+import { streakJob } from "../jobs/tasks/streak.job";
+import { updateReviewJob } from "../jobs/tasks/review.update.job";
+import { updateMasteryJob } from "../jobs/tasks/mastery.update.job";
+import { createSessionJob } from "../jobs/tasks/session.create.job";
+import { createSuggestion } from "../jobs/tasks/suggest.create.job";
+import { updateUserActivityJob } from "../jobs/tasks/userActivity.job";
+import { subscriptionExpiredJob } from "../jobs/tasks/userActivity.job";
+import { updateGradeJob } from "@/jobs/tasks/grade.job";
 
 export interface CronJob {
   name: string;
@@ -20,23 +22,26 @@ export class CronManager {
   private jobs: Map<string, ScheduledTask> = new Map();
   private jobConfigs: CronJob[] = [
     {
-      name: "resetStreak",
-      schedule: ServerConfig.cron.daily.resetStreak,
-      job: resetStreakJob,
+      //Tested
+      name: "streak",
+      schedule: ServerConfig.cron.daily.streak,
+      job: streakJob, // Every day at midnight
       enabled: true,
       description: "Reset user streaks daily at midnight",
     },
     {
+      //Tested
       name: "updatePerformance",
       schedule: ServerConfig.cron.daily.updatePerformance,
-      job: updatePerformanceJob,
+      job: updatePerformanceJob, // Every day at midnight
       enabled: true,
       description: "Update user performance metrics daily at midnight",
     },
     {
+      //Tested
       name: "createSuggestion",
       schedule: ServerConfig.cron.daily.createSuggestion,
-      job: createSuggestion,
+      job: createSuggestion, // Every day at midnight
       enabled: true,
       description: "Create study suggestions daily at midnight",
     },
@@ -50,23 +55,39 @@ export class CronManager {
     {
       name: "updateMastery",
       schedule: ServerConfig.cron.weekly.updateMastery,
-      job: updateMasteryJob,
+      job: updateMasteryJob, // Every Sunday at midnight
       enabled: true,
       description: "Update mastery levels weekly on Sunday at midnight",
     },
     {
-      name: "updateLearningProgress",
-      schedule: ServerConfig.cron.weekly.updateLearningProgress,
-      job: updateLearningProgressJob,
-      enabled: true,
-      description: "Update learning progress weekly on Sunday at 1 AM",
-    },
-    {
       name: "createSession",
       schedule: ServerConfig.cron.frequent.createSession,
-      job: createSessionJob,
+      job: createSessionJob, // Every day at 12:00 AM
       enabled: true,
       description: "Create practice sessions every 3 minutes",
+    },
+    {
+      //Tested
+      name: "updateGrade",
+      schedule: "0 2 * * 0", // Every 14 day at 2 AM
+      job: updateGradeJob,
+      enabled: true,
+      description: "Update user grades every 14 days at midnight",
+    },
+    {
+      name: "updateUserActivity",
+      schedule: "0 3 * * *", // Daily at 3 AM
+      job: updateUserActivityJob,
+      enabled: false,
+      description: "Update user activity status daily at 3 AM",
+    },
+    {
+      name: "subscriptionExpired",
+      schedule: "0 23 * * *", // Daily at 11:50 PM
+      job: subscriptionExpiredJob,
+      enabled: true,
+      description:
+        "Check if the subscription is expired and mark the user as inactive daily at 11:50 PM",
     },
   ];
 

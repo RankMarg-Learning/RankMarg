@@ -46,7 +46,7 @@ export const ServerConfig = {
   adminAPIKey: process.env.ADMIN_API_KEY,
   cron: {
     daily: {
-      resetStreak: "0 0 * * *",
+      streak: "0 0 * * *",
       updatePerformance: "0 0 * * *",
       createSuggestion: "0 0 * * *",
     },

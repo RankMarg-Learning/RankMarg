@@ -144,7 +144,7 @@ export class MasteryController {
       const plan = req.user.plan;
       if (
         plan.status === SubscriptionStatus.EXPIRED ||
-        plan.endAt < new Date()
+        new Date(plan.endAt) < new Date()
       ) {
         ResponseUtil.error(
           res,
@@ -196,7 +196,7 @@ export class MasteryController {
       const plan = req.user.plan;
       if (
         plan.status === SubscriptionStatus.EXPIRED ||
-        plan.endAt < new Date()
+        new Date(plan.endAt) < new Date()
       ) {
         ResponseUtil.error(
           res,
