@@ -5,6 +5,7 @@ import { useUser } from "@/hooks/useUser";
 
 interface ClientContextProps {
     user: any;
+    isPaidUser: boolean;
     isLoading: boolean;
     isError: boolean;
     mutate: () => void;
@@ -27,10 +28,14 @@ const ClientContextProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-
+    const isPaidUser = useMemo(() => {
+        return (user?.plan?.status === 'ACTIVE' || user?.plan?.status === 'TRIAL') && user?.plan?.endAt && new Date(user?.plan?.endAt) > new Date();
+    }, [user]);
+    
     const value = useMemo(
         () => ({
             user,
+            isPaidUser,
             isLoading,
             isError,
             mutate,
