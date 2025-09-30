@@ -1,66 +1,11 @@
 "use client"
 import React from 'react';
-import {
-  Target,
-  Brain,
-  FileText,
-  BarChart2,
-  LayoutDashboard,
-  CircleX,
-  Check,
-  X,
-  Sparkles
-} from "lucide-react";
+import { Check, X, Sparkles } from "lucide-react";
 import { useRouter } from 'next/navigation';
 
 const SaasPricing = () => {
 
   const router = useRouter();
-
-   const features = [
-    {
-      name: "Dashboard",
-      desc: "View your performance, daily tasks, and system suggestions at a glance.",
-      free: true,
-      rank: true,
-      icon: <LayoutDashboard className="w-4 h-4" />
-    },
-    {
-      name: "Smart Practice",
-      desc: "Get AI-powered daily practice based on your performance, mastery, and topic progress.",
-      free: "Limited",
-      rank: "Unlimited",
-      icon: <Target className="w-4 h-4" />
-    },
-    {
-      name: "Mock Tests",
-      desc: "Attempt NEET/JEE full-length tests with detailed analysis, rank, and percentile.",
-      free: "Limited",
-      rank: "Unlimited",
-      icon: <FileText className="w-4 h-4" />
-    },
-    {
-      name: "Mastery Tracking",
-      desc: "Track concept-level mastery using Bayesian algorithms and weekly performance updates.",
-      free: false,
-      rank: true,
-      icon: <Brain className="w-4 h-4" />
-    },
-    {
-      name: "Mistakes Tracker",
-      desc: "Automatically record incorrect attempts and revise weak areas with smart feedback.",
-      free: false,
-      rank: true,
-      icon: <CircleX className="w-4 h-4" />
-    },
-    {
-      name: "Analytics",
-      desc: "View in-depth reports including topic-wise accuracy, speed, and consistency trends.",
-      free: false,
-      rank: true,
-      icon: <BarChart2 className="w-4 h-4" />
-    }
-  ];
 
   const trustIndicators = [
     {
@@ -83,53 +28,20 @@ const SaasPricing = () => {
     }
   ];
 
-  const FeatureRow = ({ feature, index }: { feature: any, index: number }) => (
-    <div
-      className={`flex items-start px-4 md:px-6 py-4 border-b last:border-b-0 ${
-        index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-      }`}
-    >
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center mb-2">
-          <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-            {feature.icon}
-          </div>
-          <h3 className="font-medium text-gray-900 text-sm leading-tight">{feature.name}</h3>
-        </div>
-        <p className="text-xs text-gray-600 ml-9 leading-relaxed">{feature.desc}</p>
-      </div>
-      <div className="w-20 md:w-24 flex items-center justify-center flex-shrink-0">
-        {feature.free === true ? (
-          <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
-            <Check className="w-3 h-3 text-green-600" />
-          </div>
-        ) : feature.free === false ? (
-          <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
-            <X className="w-3 h-3 text-gray-400" />
-          </div>
-        ) : (
-          <span className="text-xs font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded-full">
-            {feature.free}
-          </span>
-        )}
-      </div>
-      <div className="w-24 md:w-32 flex items-center justify-center flex-shrink-0">
-        {feature.rank === true ? (
-          <div className="w-5 h-5 bg-primary-100 rounded-full flex items-center justify-center">
-            <Check className="w-3 h-3 text-primary-600" />
-          </div>
-        ) : feature.rank === false ? (
-          <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
-            <X className="w-3 h-3 text-gray-400" />
-          </div>
-        ) : (
-          <span className="text-xs font-medium text-primary-700 bg-primary-100 px-2 py-1 rounded-full">
-            {feature.rank}
-          </span>
-        )}
-      </div>
-    </div>
-  );
+  const detailedComparison = [
+    { feature: "Common Mistake Student Do Section", free: false, paid: true },
+    { feature: "Strategy Section", free: false, paid: true },
+    { feature: "Step By step Solution", free: true, paid: true },
+    { feature: "Adaptive Question Sets", free: false, paid: true },
+    { feature: "Practice Session", free: "5 Q/Session", paid: "Adaptive" },
+    { feature: "Analytics", free: "Limited", paid: "Full" },
+    { feature: "Mock Test", free: "2/Month", paid: "Unlimited" },
+    { feature: "Mistake Tracker", free: true, paid: true },
+    { feature: "Mastery", free: false, paid: true },
+    { feature: "Section Wise", free: "Limited", paid: "Unlimited" },
+  ];
+
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-primary-50">
@@ -149,31 +61,106 @@ const SaasPricing = () => {
           </p>
         </header>
 
-        {/* Feature Comparison Card */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        {/* Detailed Comparison (replaces old Feature Comparison) */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
           <div className="bg-gradient-to-r from-primary-600 to-primary-600 text-white px-4 md:px-6 py-4">
-            <h2 className="text-lg md:text-xl font-bold mb-2">Feature Comparison</h2>
-            <p className="text-purple-100 text-sm">See what's included in each plan</p>
+            <h2 className="text-lg md:text-xl font-bold">Feature Comparison</h2>
+            <p className="text-purple-100 text-sm">Free vs Paid at a glance</p>
           </div>
-          
-          <div className="flex items-center px-4 md:px-6 py-4 border-b bg-gray-50">
-            <div className="flex-1" />
-            <div className="w-20 md:w-24 text-center">
-              <span className="text-sm font-bold text-gray-500">FREE</span>
-            </div>
-            <div className="w-24 md:w-32 text-center">
-              <span className="bg-gradient-to-br from-primary-400 to-primary-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                RANK
-              </span>
+
+          {/* Desktop/tablet table */}
+          <div className="hidden md:block">
+            <div className="w-full overflow-x-auto">
+              <table className="min-w-full table-fixed">
+                <thead>
+                  <tr className="bg-gray-50 border-b">
+                    <th className="text-left text-sm font-semibold text-gray-700 px-6 py-3 w-2/4">Feature</th>
+                    <th className="text-center text-sm font-semibold text-gray-700 px-6 py-3 w-1/4">Free</th>
+                    <th className="text-center text-sm font-semibold text-gray-700 px-6 py-3 w-1/4">Paid</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detailedComparison.map((row) => (
+                    <tr key={row.feature} className="border-b last:border-b-0">
+                      <td className="px-6 py-4 align-top">
+                        <div className="text-sm font-medium text-gray-900 leading-snug">{row.feature}</div>
+                      </td>
+                      <td className="px-6 py-4 text-center align-top">
+                        {row.free === true ? (
+                          <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                            <Check className="w-4 h-4 text-green-600" />
+                          </div>
+                        ) : row.free === false ? (
+                          <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                            <X className="w-4 h-4 text-gray-400" />
+                          </div>
+                        ) : (
+                          <span className="inline-block text-xs font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded-full">
+                            {row.free}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center align-top">
+                        {row.paid === true ? (
+                          <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center mx-auto">
+                            <Check className="w-4 h-4 text-primary-600" />
+                          </div>
+                        ) : row.paid === false ? (
+                          <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                            <X className="w-4 h-4 text-gray-400" />
+                          </div>
+                        ) : (
+                          <span className="inline-block text-xs font-bold text-primary-700 bg-primary-100 px-2 py-1 rounded-full">
+                            {row.paid}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-          
-          <div >
-            {features.map((feature, index) => (
-              <FeatureRow key={feature.name} feature={feature} index={index} />
+
+          {/* Mobile stacked list */}
+          <div className="md:hidden divide-y">
+            {detailedComparison.map((row) => (
+              <div key={row.feature} className="px-4 py-4">
+                <div className="text-sm font-semibold text-gray-900 mb-2">{row.feature}</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-gray-50 rounded-lg p-2 border">
+                      <div className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">Free</div>
+                      {row.free === true ? (
+                        <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                          <Check className="w-3 h-3 text-green-600" />
+                        </div>
+                      ) : row.free === false ? (
+                        <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                          <X className="w-3 h-3 text-gray-400" />
+                        </div>
+                      ) : (
+                        <div className="text-xs font-medium text-gray-800">{row.free}</div>
+                      )}
+                    </div>
+                    <div className="bg-primary-50 rounded-lg p-2 border border-primary-100">
+                      <div className="text-[11px] uppercase tracking-wide text-primary-700 mb-1">Paid</div>
+                      {row.paid === true ? (
+                        <div className="w-5 h-5 bg-primary-100 rounded-full flex items-center justify-center">
+                          <Check className="w-3 h-3 text-primary-600" />
+                        </div>
+                      ) : row.paid === false ? (
+                        <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                          <X className="w-3 h-3 text-gray-400" />
+                        </div>
+                      ) : (
+                        <div className="text-xs font-semibold text-primary-800">{row.paid}</div>
+                      )}
+                    </div>
+                  </div>
+              </div>
             ))}
           </div>
-          
+
           <div className="p-4 md:p-6 bg-gradient-to-r from-primary-100 to-primary-50 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="text-center sm:text-left">
               <div className="text-sm text-gray-600 mb-1">Starting from</div>
@@ -189,6 +176,8 @@ const SaasPricing = () => {
             </button>
           </div>
         </div>
+
+        
 
         {/* Trust Indicators */}
         <div className="mt-8 md:mt-12 hidden">
