@@ -14,6 +14,7 @@ import { ErrorCode } from "@/types/common";
 import { Role } from "@repo/db/enums";
 import { createTrialSubscription } from "@/utils/subscription.util";
 import { AuthenticatedRequest } from "@/middleware/auth.middleware";
+import { sendPasswordResetEmail } from "@/lib/email";
 
 export const authController = {
   /**
@@ -401,6 +402,124 @@ export const authController = {
           "Cache-Control": "private, max-age=90, stale-while-revalidate=60",
         }
       );
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Forgot password
+   */
+  forgotPassword: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email } = req.body as { email?: string };
+      if (!email || email.trim() === "") {
+        ResponseUtil.error(
+          res,
+          "Email is required",
+          400,
+          ErrorCode.VALIDATION_ERROR
+        );
+        return;
+      }
+
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user) {
+        // Do not disclose user existence
+        ResponseUtil.success(
+          res,
+          null,
+          "If the email exists, a reset link has been sent"
+        );
+        return;
+      }
+
+      const jwt = await import("jsonwebtoken");
+      const token = jwt.sign(
+        { email, purpose: "password-reset" },
+        ServerConfig.security.jwtSecret as string,
+        { expiresIn: "1h" }
+      );
+
+      const frontendBase = ServerConfig.cors.origin || "http://localhost:3000";
+      const resetUrl = `${frontendBase}/reset-password?token=${token}`;
+
+      await sendPasswordResetEmail(email, resetUrl);
+
+      ResponseUtil.success(
+        res,
+        null,
+        "If the email exists, a reset link has been sent"
+      );
+      return;
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Reset password
+   */
+  resetPassword: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { token, password } = req.body as {
+        token?: string;
+        password?: string;
+      };
+
+      if (!token || !password) {
+        ResponseUtil.error(
+          res,
+          "Token and password are required",
+          400,
+          ErrorCode.VALIDATION_ERROR
+        );
+        return;
+      }
+
+      const jwt = await import("jsonwebtoken");
+      let decoded: any;
+      try {
+        decoded = jwt.verify(token, ServerConfig.security.jwtSecret as string);
+      } catch (err: any) {
+        ResponseUtil.error(
+          res,
+          "Invalid or expired reset link",
+          401,
+          ErrorCode.UNAUTHORIZED
+        );
+        return;
+      }
+
+      if (!decoded || decoded.purpose !== "password-reset" || !decoded.email) {
+        ResponseUtil.error(
+          res,
+          "Invalid reset token",
+          401,
+          ErrorCode.UNAUTHORIZED
+        );
+        return;
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { email: decoded.email },
+      });
+      if (!user) {
+        ResponseUtil.error(res, "User not found", 404, ErrorCode.NOT_FOUND);
+        return;
+      }
+
+      const hashedPassword = await bcrypt.hash(
+        password,
+        ServerConfig.security.bcryptRounds
+      );
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashedPassword },
+      });
+
+      ResponseUtil.success(res, null, "Password reset successfully");
+      return;
     } catch (error) {
       next(error);
     }

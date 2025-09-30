@@ -12,6 +12,8 @@ export const ServerConfig = {
   port: process.env.PORT || 3001,
   nodeEnv: process.env.NODE_ENV || "development",
   cookieDomain: process.env.COOKIE_DOMAIN || undefined,
+  resendApiKey: process.env.RESEND_API_KEY,
+  emailAddress: process.env.EMAIL_ADDRESS,
 
   database: {
     url: process.env.DATABASE_URL,
