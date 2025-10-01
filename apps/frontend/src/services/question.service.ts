@@ -109,3 +109,63 @@ export const reportQuestion = async (
     };
   }
 };
+
+export const getReportQuestions = async (filter: {
+  page?: number;
+  limit?: number;
+  type?: string;
+  search?: string;
+}) => {
+  try {
+    const response = await api.get('/question/reports/all', { params: filter });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching report questions:", error);
+    return {
+      success: false,
+      message: "Error fetching report questions",
+    };
+  }
+};
+
+export const getReportsByQuestionSlug = async (slug: string, filter: {
+  page?: number;
+  limit?: number;
+}) => {
+  try {
+    const response = await api.get(`/question/reports/slug/${slug}`, { params: filter });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching reports by question slug:", error);
+    return {
+      success: false,
+      message: "Error fetching reports by question slug",
+    };
+  }
+};
+
+export const getReportQuestionById = async (id: string) => {
+  try {
+    const response = await api.get(`/question/reports/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching report question:", error);
+    return {
+      success: false,
+      message: "Error fetching report question",
+    };
+  }
+};
+
+export const deleteReportQuestion = async (id: string) => {
+  try {
+    const response = await api.delete(`/question/reports/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting report question:", error);
+    return {
+      success: false,
+      message: "Error deleting report question",
+    };
+  }
+};

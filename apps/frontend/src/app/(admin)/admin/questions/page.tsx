@@ -22,9 +22,22 @@ import {
   MoreHorizontal,
   Plus,
   Trash,
-  AlertCircle
+  AlertCircle,
+  Eye,
+  Search,
+  Filter,
+  X,
+  MessageSquare
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { deleteQuestion, getQuestionByFilter } from "@/services/question.service";
@@ -45,10 +58,21 @@ function QuestionsContent() {
   );
   const limit = 25;
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; question: any } | null>(null);
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [publishFilter, setPublishFilter] = useState(searchParams.get("published") || "all");
+  const [reportFilter, setReportFilter] = useState(searchParams.get("reports") || "all");
 
   const { data: questions, refetch ,isLoading } = useQuery({
-    queryKey: ["questions", currentPage],
-    queryFn: () => getQuestionByFilter({ page: currentPage, limit })
+    queryKey: ["questions", currentPage, searchQuery, publishFilter, reportFilter],
+    queryFn: () => getQuestionByFilter({ 
+      page: currentPage, 
+      limit,
+      search: searchQuery || undefined,
+      isPublished: publishFilter === "all" ? undefined : publishFilter === "published",
+      reports: reportFilter === "all" ? undefined : reportFilter
+    })
   });
   
   const updatePageInUrl = (newPage: number) => {
@@ -60,6 +84,59 @@ function QuestionsContent() {
     }
     const next = params.toString();
     router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  };
+
+  const updateFiltersInUrl = (search: string, published: string, reports: string) => {
+    const params = new URLSearchParams(searchParams);
+    
+    if (search.trim()) {
+      params.set("search", search.trim());
+    } else {
+      params.delete("search");
+    }
+    
+    if (published !== "all") {
+      params.set("published", published);
+    } else {
+      params.delete("published");
+    }
+    
+    if (reports !== "all") {
+      params.set("reports", reports);
+    } else {
+      params.delete("reports");
+    }
+    
+    params.delete("page");
+    
+    const next = params.toString();
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+    updateFiltersInUrl(value, publishFilter, reportFilter);
+  };
+
+  const handlePublishFilterChange = (value: string) => {
+    setPublishFilter(value);
+    setCurrentPage(1);
+    updateFiltersInUrl(searchQuery, value, reportFilter);
+  };
+
+  const handleReportFilterChange = (value: string) => {
+    setReportFilter(value);
+    setCurrentPage(1);
+    updateFiltersInUrl(searchQuery, publishFilter, value);
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setPublishFilter("all");
+    setReportFilter("all");
+    setCurrentPage(1);
+    router.replace(pathname, { scroll: false });
   };
 
   const goToPage = (updater: (prev: number) => number) => {
@@ -77,8 +154,23 @@ function QuestionsContent() {
     if (normalized !== currentPage) {
       setCurrentPage(normalized);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  useEffect(() => {
+    const searchFromUrl = searchParams.get("search") || "";
+    const publishedFromUrl = searchParams.get("published") || "all";
+    const reportsFromUrl = searchParams.get("reports") || "all";
+    
+    if (searchFromUrl !== searchQuery) {
+      setSearchQuery(searchFromUrl);
+    }
+    if (publishedFromUrl !== publishFilter) {
+      setPublishFilter(publishedFromUrl);
+    }
+    if (reportsFromUrl !== reportFilter) {
+      setReportFilter(reportsFromUrl);
+    }
+  }, [searchParams, searchQuery, publishFilter, reportFilter]);
   
   
 
@@ -150,7 +242,6 @@ function QuestionsContent() {
           <p className="text-gray-500">Manage all your exam questions</p>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-
           <Link href="/admin/questions/add">
             <Button
               variant="outline"
@@ -161,6 +252,106 @@ function QuestionsContent() {
             </Button>
           </Link>
         </div>
+      </div>
+
+      {/* Filter Section */}
+      <div className="mb-6 bg-white p-4 rounded-lg border">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 flex-1">
+            {/* Search Input */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search questions by title or content..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            {/* Published Filter */}
+            <div className="flex items-center space-x-2">
+              <Filter className="h-4 w-4 text-gray-400" />
+              <Select value={publishFilter} onValueChange={handlePublishFilterChange}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Questions</SelectItem>
+                  <SelectItem value="published">Published Only</SelectItem>
+                  <SelectItem value="unpublished">Unpublished Only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Reports Filter */}
+            <div className="flex items-center space-x-2">
+              <MessageSquare className="h-4 w-4 text-gray-400" />
+              <Select value={reportFilter} onValueChange={handleReportFilterChange}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by reports" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Questions</SelectItem>
+                  <SelectItem value="reported">Reported Questions</SelectItem>
+                  <SelectItem value="not-reported">Not Reported</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          {/* Clear Filters Button */}
+          {(searchQuery || publishFilter !== "all" || reportFilter !== "all") && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearFilters}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+            >
+              <X className="h-4 w-4" />
+              Clear Filters
+            </Button>
+          )}
+        </div>
+        
+        {/* Active Filters Display */}
+        {(searchQuery || publishFilter !== "all" || reportFilter !== "all") && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {searchQuery && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                Search: "{searchQuery}"
+                <button
+                  onClick={() => handleSearchChange("")}
+                  className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {publishFilter !== "all" && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                Status: {publishFilter === "published" ? "Published" : "Unpublished"}
+                <button
+                  onClick={() => handlePublishFilterChange("all")}
+                  className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {reportFilter !== "all" && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                Reports: {reportFilter === "reported" ? "Reported" : "Not Reported"}
+                <button
+                  onClick={() => handleReportFilterChange("all")}
+                  className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-md border overflow-hidden">
@@ -175,6 +366,7 @@ function QuestionsContent() {
                 <TableHead>Subject</TableHead>
                 <TableHead className="text-center">Topic</TableHead>
                 <TableHead className="text-center">Published</TableHead>
+                <TableHead className="text-center">Reports</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -188,8 +380,7 @@ function QuestionsContent() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ) : questions?.data?.questions
-                .length === 0 ? (
+              ) : questions?.data?.questions?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center py-10">
                     <div className="flex flex-col items-center justify-center text-gray-500">
@@ -232,6 +423,15 @@ function QuestionsContent() {
                           <Badge variant="outline">No</Badge>
                         )}
                       </TableCell>
+                      <TableCell className="text-center">
+                        {question.reportCount > 0 ? (
+                          <Badge className="bg-red-500 text-white">
+                            {question.reportCount}
+                          </Badge>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -241,11 +441,25 @@ function QuestionsContent() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            {question.reportCount > 0 && (
+                              <DropdownMenuItem
+                                className="flex items-center gap-2"
+                                onClick={() => router.push(`/admin/questions/${question.slug}/reports`)}
+                              >
+                                <MessageSquare className="h-4 w-4" /> View Reports ({question.reportCount})
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                               className="flex items-center gap-2"
                               onClick={() => router.push(`/admin/questions/${question.slug}/edit?page=${currentPage}`)}
                             >
                               <Edit className="h-4 w-4" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="flex items-center gap-2"
+                              onClick={() => window.open(`/question/${question.slug}?solution=true`, '_blank')}
+                            >
+                              <Eye className="h-4 w-4" /> Preview
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="flex items-center gap-2 text-red-600"
@@ -267,7 +481,12 @@ function QuestionsContent() {
         </div>
         <div className="flex items-center justify-between px-4 py-3 border-t">
           <div className="text-sm text-gray-500">
-            Showing <span className="font-medium">{(currentPage - 1) * limit + 1}</span> to <span className="font-medium">{(currentPage - 1) * limit + (questions?.data?.questions?.length || 0)}</span> of <span className="font-medium">{questions?.data?.totalPages * limit || 0}</span> results
+            Showing <span className="font-medium">{(currentPage - 1) * limit + 1}</span> to <span className="font-medium">{(currentPage - 1) * limit + (questions?.data?.questions?.length || 0)}</span> of <span className="font-medium">{questions?.data?.totalCount || 0}</span> results
+            {(searchQuery || publishFilter !== "all" || reportFilter !== "all") && (
+              <span className="ml-2 text-xs text-gray-400">
+                (filtered)
+              </span>
+            )}
           </div>
           <div className="flex space-x-2">
             <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => goToPage(prev => prev - 1)}>
@@ -297,6 +516,15 @@ function QuestionsContent() {
             }}
           >
             <Edit className="h-4 w-4" /> Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            className="flex items-center gap-2"
+            onClick={() => {
+              window.open(`/question/${contextMenu.question.slug}?solution=true`, '_blank');
+              setContextMenu(null);
+            }}
+          >
+            <Eye className="h-4 w-4" /> Preview 
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
