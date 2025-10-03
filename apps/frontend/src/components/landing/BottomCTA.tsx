@@ -1,8 +1,18 @@
+"use client"
 import React from 'react'
 import { Button } from '../ui/button'
 import Link from "next/link"
+import { trackSubscriptionEvent } from '@/lib/GoogleAnalytics'
 
 const BottomCTA = () => {
+    const handleCTAClick = () => {
+        trackSubscriptionEvent('bottom_cta_click', {
+            cta_text: 'Start Free Now',
+            location: 'bottom_cta_section',
+            subscription_flow_step: 'bottom_signup_initiation'
+        });
+    };
+
     return (
         <div className="bg-primary-900 text-white py-12 px-4 sm:px-6 lg:px-8" id="el-vihl5b65">
             <div className="text-center max-w-4xl mx-auto" id="el-mpucvz3w">
@@ -25,8 +35,9 @@ const BottomCTA = () => {
                         <Button
                             className="bg-white text-primary-900 hover:bg-primary-100 font-semibold px-8 py-6 text-base rounded-xl shadow-md transition-all duration-300 hover:scale-105"
                             id="el-taz3sgbx"
+                            onClick={handleCTAClick}
                         >
-                            Start Free Trial Now
+                            Start Free Now
                         </Button>
                     </Link>
                 </div>

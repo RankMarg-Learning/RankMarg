@@ -1,239 +1,226 @@
 "use client"
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Sparkles, Target, TrendingUp, RotateCcw } from 'lucide-react';
-import AnimatedDashboard from './AnimatedDashboard';
+import { Sparkles, Lightbulb, CheckCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
-import { X } from 'lucide-react';
+import { trackSubscriptionEvent } from '@/lib/GoogleAnalytics';
+
+const FloatingBadge = ({ text, color }: { text: string; color: string }) => (
+    <div className={`px-4 py-2 rounded-full text-sm font-medium shadow-md ring-1 ring-black/5 ${color}`}>
+        {text}
+    </div>
+);
 
 const HeroSection = () => {
-    const [open, setOpen] = useState(false);
-    const videoRef = React.useRef<HTMLVideoElement>(null);
-    const [showReplay, setShowReplay] = useState(false);
-    const handleReplay = () => {
-        if (videoRef.current) {
-            videoRef.current.currentTime = 0;
-            videoRef.current.play();
-            setShowReplay(false);
-        }
+    const handleCTAClick = () => {
+        trackSubscriptionEvent('hero_cta_click', {
+            cta_text: 'Start Free Practice',
+            location: 'hero_section',
+            subscription_flow_step: 'hero_signup_initiation'
+        });
     };
-    const handleEnded = () => {
-        setShowReplay(true);
-    };
-    const handlePlay = () => {
-        setShowReplay(false);
-    };
+
     return (
+        <section className="relative overflow-hidden bg-primary-50">
+            {/* subtle grid background (kept minimal for an academic look) */}
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#eef2f7_1px,transparent_1px)] [background-size:16px_16px]" />
 
-        <div className="relative max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-3 pb-24">
+            <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24 text-center">
+                <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur text-gray-800 px-4 py-2 rounded-full text-sm font-medium ring-1 ring-gray-200">
+                    <Sparkles className="w-4 h-4" />
+                    India's Best Practice Platform
+                </div>
 
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-                {/* Left Content */}
-                <div className="space-y-8 animate-fade-in-up">
-                    <div className="space-y-4">
-                        <div className="inline-flex items-center gap-2 bg-primary-900 text-primary px-4 py-2 rounded-full text-sm font-medium">
-                            <Sparkles className="w-4 h-4" />
-                            India's Best Practice Platform
-                        </div>
+                <h1 className="mt-6 font-Manrope text-[32px] leading-[1.15] sm:text-5xl md:text-6xl font-extrabold text-gray-900">
+                    Personalized Practice for
+                    <br className="hidden sm:block" />
+                    <span className="inline-block mt-2">NEET & JEE Success</span>
+                </h1>
 
-                        <h1 className="font-Manrope text-3xl md:text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight text-gray-700" id="el-211pmw0l">
-                                Crack NEET/JEE with
-                                <span className="text-primary mx-2" id="el-wg0u954k">AI-Personalized</span>
-                                Daily Practice
-                            </h1>
+                <p className="mt-4 mx-auto max-w-[680px] text-gray-600 text-[14px] sm:text-base md:text-lg">
+                    RankMarg builds daily practice tailored to you: adaptive sessions by weak/current/revision topics,
+                    smart hints (no answers), step-by-step solutions, mistake tracking, mastery analytics and curriculum management.
+                </p>
 
-                        <p className="font-Inter text-sm md:text-base lg:text-lg text-gray-500 leading-relaxed max-w-lg">
-                            Personalized practice sessions, intelligent mistake analysis, and
-                            adaptive learning that boosts your rank by identifying exactly what you need to study.
-                        </p>
-                    </div>
-
-                    {/* Features */}
-                    <div className="grid sm:grid-cols-2 grid-cols-2 gap-4">
-                        <div className="flex items-center gap-3 p-4 bg-primary/20 rounded-lg backdrop-blur-sm">
-                            <Target className="w-4 h-4 text-brand-blue" />
-                            <div>
-                                <div className="font-semibold text-sm text-gray-800">Smart Practice</div>
-                                <div className="text-xs text-gray-600">AI-curated questions</div>
-                            </div>
-                        </div>
-
-
-                        <div className="flex items-center gap-3 p-4 bg-primary/20 rounded-lg backdrop-blur-sm">
-                            <Sparkles className="w-4 h-4 text-brand-purple" />
-                            <div>
-                                <div className="font-semibold text-sm text-gray-800">Mistake Fixer</div>
-                                <div className="text-xs text-gray-600">Learn from errors</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* CTA Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-4">
-                    <Link href={'/dashboard'} >
-                                <Button 
-                                size='lg'
-                                className="w-full  border-2 border-primary  px-10  py-6 rounded-xl transition-all duration-300 ">
-                                    Start Free Trial
-                                </Button>
-                            </Link>
-
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            className="border-2 border-primary text-primary hover:bg-primary hover:text-gray-800 px-10  py-6 rounded-xl transition-all duration-300"
-                            onClick={() => setOpen(true)}
-                        >
-                            <Play className={`w-5 h-5 mr-2 transition-transform duration-300 scale-110`} />
-                            Watch Demo
+                <div className="mt-8 flex items-center justify-center">
+                    <Link href="/sign-up">
+                        <Button size="lg" className="bg-primary-500 hover:bg-primary-600 text-white px-6 md:px-8 py-6 rounded-full" onClick={handleCTAClick}>
+                            Start Free Practice
                         </Button>
-                        {open && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-                                <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl md:max-w-3xl p-0 overflow-hidden">
-                                    <button
-                                        className="absolute top-4 right-4 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow-md transition-all"
-                                        aria-label="Close"
-                                        onClick={() => setOpen(false)}
-                                    >
-                                        <X className="w-6 h-6 text-gray-700 hover:text-primary transition" />
-                                    </button>
-                                    <div className="relative w-full rounded-2xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
-                                        <video
-                                            ref={videoRef}
-                                            src="/demo.webm"
-                                            controls
-                                            className="absolute top-0 left-0 w-full h-full object-cover bg-black"
-                                            poster="/hero_pic1.jpg"
-                                            onEnded={handleEnded}
-                                            onPlay={handlePlay}
-                                        >
-                                            Sorry, your browser doesn't support embedded videos. 
-                                            <a href="/demo.webm" className="text-primary underline">Download the demo video</a> instead.
-                                        </video>
-                                        {showReplay && (
-                                            <div className="absolute inset-0 flex items-center justify-center z-20">
-                                                <button
-                                                    onClick={handleReplay}
-                                                    className="bg-black/60 rounded-full p-4 hover:bg-black/80 transition flex items-center justify-center"
-                                                    aria-label="Replay"
-                                                >
-                                                    <RotateCcw className="w-16 h-16 text-white drop-shadow-lg" />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
+                    </Link>
+                </div>
+
+                {/* floating badges */}
+                <div className="hidden md:block">
+                    <div className="absolute left-8 top-40">
+                        <FloatingBadge text="Smart Hints" color="bg-lime-200" />
+                    </div>
+                    <div className="absolute right-8 top-44">
+                        <FloatingBadge text="Adaptive Practice" color="bg-orange-200" />
+                    </div>
+                    <div className="absolute left-12 top-60">
+                        <FloatingBadge text="Strategies" color="bg-purple-200" />
+                    </div>
+                    <div className="absolute right-12 top-64">
+                        <FloatingBadge text="Step Solutions" color="bg-blue-200" />
+                    </div>
+                    <div className="absolute left-16 top-80">
+                        <FloatingBadge text="Mock Tests" color="bg-teal-200" />
+                    </div>
+                    <div className="absolute right-16 top-80">
+                        <FloatingBadge text="Mastery System" color="bg-pink-200" />
+                    </div>
+                </div>
+
+
+                {/* stacked visualization cards (education focused) */}
+                <div className="mt-16 flex justify-center">
+                    <div className="relative">
+                        {/* background fanned cards to fill whitespace */}
+                        <div className="absolute -right-36 -top-3 -rotate-6 w-80 h-20 bg-white/90 rounded-2xl ring-1 ring-gray-200 shadow-2xl p-4"/>
+                        <div className="absolute -left-36 top-4 rotate-6 w-80 h-36 bg-white/90 rounded-2xl ring-1 ring-gray-200 shadow-2xl p-4"/>
+                        <div className="absolute  -right-36 top-4 rotate-6 w-80  bg-white/90 rounded-2xl ring-1 ring-gray-200 shadow-2xl p-4" >
+                            <div className="text-sm text-gray-500">Today's Analytics</div>
+                            <div className="mt-2 grid grid-cols-3 gap-3 text-center">
+                                <div>
+                                    <div className="text-2xl font-bold text-gray-900">30</div>
+                                    <div className="text-[11px] text-gray-500">Questions</div>
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-green-600">24</div>
+                                    <div className="text-[11px] text-gray-500">Correct</div>
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-blue-600">1</div>
+                                    <div className="text-[11px] text-gray-500">Tests</div>
                                 </div>
                             </div>
-                        )}
-                    </div>
-
-                    {/* Social Proof */}
-                    <div className=" items-center gap-6 text-sm text-gray-600 hidden">
-                        <div className="flex items-center gap-2">
-                            <div className="flex -space-x-2">
-                                {[1, 2, 3, 4].map(i => (
-                                    <div key={i} className="w-8 h-8 bg-gradient-to-br from-brand-blue to-brand-purple rounded-full border-2 border-white"></div>
-                                ))}
+                            <div className="mt-3">
+                                <div className="flex items-center justify-between text-[11px] text-gray-600">
+                                    <span>Easy</span><span>•</span>
+                                </div>
+                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <div className="h-full bg-green-500 w-3/4" />
+                                </div>
+                                <div className="mt-2 flex items-center justify-between text-[11px] text-gray-600">
+                                    <span>Medium</span><span>•</span>
+                                </div>
+                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <div className="h-full bg-yellow-500 w-2/3" />
+                                </div>
+                                <div className="mt-2 flex items-center justify-between text-[11px] text-gray-600">
+                                    <span>Hard</span><span>•</span>
+                                </div>
+                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <div className="h-full bg-red-500 w-1/3" />
+                                </div>
                             </div>
-                            <span>50,000+ students</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                            <TrendingUp className="w-4 h-4 text-green-500" />
-                            <span>Average +247 rank boost</span>
+                        <div className="absolute md:-left-36 -left-20 top-10  rotate-[-12deg] w-80  bg-white/90 rounded-2xl ring-1 ring-gray-200 shadow-2xl p-4 border border-red-200" >
+                            <div className="flex items-center gap-2 mb-2">
+                                <AlertTriangle className="h-4 w-4 text-red-600" />
+                                <h4 className="font-semibold text-red-900 text-sm">Common Mistakes to Avoid</h4>
+                            </div>
+                            <div className="prose prose-sm max-w-none overflow-x-auto">
+                                Mistake: "Wavelength stays the same"
+                                <br />
+                                Fix: Wavelength changes with medium because speed changes while frequency is constant
+                            </div>
+                        </div>
+
+                        {/* Card A: How Hints Work */}
+                        <div className="absolute md:-left-28 -left-20 -top-8 rotate-[8deg] bg-white w-80  rounded-lg border border-yellow-200 p-3 shadow-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Lightbulb className="h-4 w-4 text-yellow-600" />
+                                <h3 className="font-semibold text-yellow-900 text-sm">Hint</h3>
+                            </div>
+                            <div className="prose prose-sm max-w-none overflow-x-auto">
+                                <p>Wavelength changes with medium because speed changes while frequency is constant</p>
+                            </div>
+                        </div>
+
+                        {/* Card B: Today's Practice (Analytics) */}
+                        <div className="relative z-10 ">
+                                <div className="bg-gradient-to-br from-slate-50 to-slate-100  flex items-center justify-center  md:min-w-[420px] min-w-[100px] rounded-2xl shadow-xl ring-1 ring-gray-200">
+                                    <div>
+                                        <div className="bg-white border border-slate-200 rounded-lg shadow-md overflow-hidden">
+                                            <div className="p-4">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <h3 className="font-medium text-slate-800">Personalized Session</h3>
+                                                    <span className="px-2 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-md truncate">
+                                                        16/20 Questions
+                                                    </span>
+                                                </div>
+
+                                                <div className="space-y-3 mb-4">
+                                                    <div>
+                                                        <div className="flex justify-between text-xs mb-1 text-slate-600">
+                                                            <span>Progress</span>
+                                                            <span className="font-medium">80%</span>
+                                                        </div>
+                                                        <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                                            <div
+                                                                className="bg-gradient-to-r from-blue-500 to-cyan-500 h-full rounded-full transition-all duration-500"
+                                                                style={{ width: `80%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <div className="text-sm font-medium mb-2 text-slate-700">Key Topics:</div>
+                                                    <div className="flex flex-wrap md:gap-1 gap-0.5">
+                                                        {['Wave', 'Optics', 'Thermodynamics', 'Quantum Mechanics'].map((subtopic, i) => (
+                                                            <span
+                                                                key={i}
+                                                                className="px-2.5 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-md truncate"
+                                                            >
+                                                                {subtopic}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+
+                        {/* Foreground micro grid card */}
+                        <div className="absolute left-1/2 -translate-x-1/2 md:-bottom-16 -bottom-8 z-20 rotate-1">
+                            <div className="bg-white rounded-xl shadow-2xl ring-1 ring-gray-200 p-3 w-[260px]">
+                                <div className="grid grid-cols-12 gap-1">
+                                    {Array.from({ length: 36 }).map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className={`h-2 rounded-sm ${i < 16 ? 'bg-green-500' : i < 24 ? 'bg-orange-500' : 'bg-gray-200'
+                                                }`}
+                                        />
+                                    ))}
+                                </div>
+                                <div className="mt-2 text-[10px] text-gray-500 text-center">Progress grid</div>
+                            </div>
+                        </div>
+
+                        {/* Card C: Mastery (Subject/Topic/Subtopic) */}
+                        <div className="absolute -right-28 -top-10 rotate-[8deg] opacity-95 hidden">
+                            <div className="bg-white rounded-2xl shadow-2xl ring-1 ring-gray-200 p-4 min-w-[240px]">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <CheckCircle className="w-4 h-4 text-indigo-600" />
+                                    <div className="text-sm font-semibold text-gray-900">Mastery</div>
+                                </div>
+                                <div className="space-y-2 text-[12px]">
+                                    <div className="flex items-center justify-between"><span className="text-gray-600">Subject</span><span className="font-medium text-gray-900">78%</span></div>
+                                    <div className="flex items-center justify-between"><span className="text-gray-600">Topic</span><span className="font-medium text-gray-900">64%</span></div>
+                                    <div className="flex items-center justify-between"><span className="text-gray-600">Subtopic</span><span className="font-medium text-gray-900">51%</span></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                {/* Right Content - Animated Dashboard */}
-                <div className="relative">
-                    <AnimatedDashboard />
                 </div>
             </div>
-        </div>
-    )
+        </section>
+    );
 }
 
 export default HeroSection
-
-
-{/* <div className="relative max-w-7xl mx-auto  sm:px-6 lg:px-8 pt-8 pb-24">
-            <div className="px-4 sm:px-6 lg:px-8 relative z-10" id="el-g9k7td0l">
-                <div className="grid lg:grid-cols-2 gap-12 items-center" id="el-p2ljl1vt">
-                    <div className="space-y-8" id="el-6uonrwgd">
-                        <div className="space-y-6" id="el-g1sqrt6t">
-                            <h1 className="font-Manrope text-3xl md:text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight text-gray-700" id="el-211pmw0l">
-                                Crack NEET/JEE with
-                                <span className="text-primary mx-2" id="el-wg0u954k">AI-Personalized</span>
-                                Daily Practice
-                            </h1>
-
-                            <p className="font-Inter text-sm md:text-base lg:text-lg text-gray-500 leading-relaxed max-w-lg" id="el-zps5vpv5">
-                                India's only platform that adapts to your strengths, weaknesses, and daily performance.
-                            </p>
-                        </div>
-
-                        <div
-                            className="flex flex-col md:flex-row gap-4 justify-center md:justify-start items-center md:items-start"
-                        >
-                            <Link href={'/questionset'}>
-                                <Button className="w-full md:w-auto bg-primary-500 hover:bg-primary-400 text-white md:text-lg text-xl px-10 md:px-6 py-6 ">
-                                    Start Free Trial
-                                </Button>
-                            </Link>
-                            <Link href={"/tests"}>
-                                <Button
-                                    variant="outline"
-                                    className="w-full md:w-auto text-primary-800  border-primary-800 hover:bg-primary-500 hover:text-white hover:border-primary-500 md:text-lg text-xl px-12 md:px-6 py-6"
-                                >
-                                    Watch Demo
-                                </Button>
-                            </Link>
-                        </div>
-
-
-                        <div className="flex flex-wrap items-center gap-8 pt-8 border-t border-gray-700">
-                            <div className="text-center">
-                                <div className="font-Manrope text-xl md:text-2xl font-bold text-primary-700">10K+</div>
-                                <div className="font-Inter text-sm text-gray-500">Questions Available</div>
-                            </div>
-                            <div className="text-center">
-                                <div className="font-Manrope text-xl md:text-2xl font-bold text-primary-700">92%</div>
-                                <div className="font-Inter text-sm text-gray-500">Accuracy Improved</div>
-                            </div>
-                            <div className="text-center">
-                                <div className="font-Manrope text-xl md:text-2xl font-bold text-primary-700">4.9/5</div>
-                                <div className="font-Inter text-sm text-gray-500">User Rating</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="relative" id="el-0fij0nkx">
-                        <div className="grid grid-cols-2 gap-4" id="el-dripoesi">
-                            <div className="col-span-2 relative" id="el-4hd25zlm">
-                                <Image src="/hero_pic1.jpg" alt="Student learning with AI-powered platform" width={1080} height={720} className="w-full h-80 object-cover rounded-2xl shadow-md active-edit-image" loading="eager" id="el-edcpnciq" />
-                                <div className="absolute -bottom-4 -left-4 bg-white/10 backdrop-blur-lg text-neutral-900 p-4 rounded-xl border border-gray-300/40 shadow-xl" id="el-223flm9c">
-                                    <div className="font-Manrope text-sm font-semibold text-primary" id="el-f8ymmxox">Today's Progress</div>
-                                    <div className="font-Inter text-xs text-gray-800 mt-1" id="el-h00nmhtk">Physics: 85% • Chemistry: 92%</div>
-                                    <div className="w-full bg-gray-200/40 rounded-full h-2 mt-2" id="el-u3cxq7ub">
-                                        <div className="bg-primary h-2 rounded-full w-3/4" id="el-m7xkq2ke"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="el-0916gm03">
-                                <Image src="/hero_pic2.jpg" width={900} height={800} alt="Student studying with personalized content" className="w-full h-40 object-cover rounded-xl shadow-md " loading="eager" id="el-dbn2utk2" />
-                            </div>
-
-                            <div className="bg-yellow-200/40 backdrop-blur-2xl p-4 rounded-xl shadow-sm border border-primary-400" id="el-a6hs4ruy">
-                                <div className="font-Manrope text-base font-bold text-primary-800" id="el-4dz3wtcc">Rank Boost</div>
-                                <div className="font-Inter text-sm text-primary-700 mt-1" id="el-tivv4hdm">Average 15% improvement in 60 days</div>
-                                <div className="flex items-center mt-2" id="el-9bt86biv">
-                                    <TrendingUp className="text-primary-700 w-4 h-4" id="el-3q4j0x9k" />
-                                    <div className="font-Manrope text-sm text-primary-700 ml-2" id="el-nq60d0ju">Trending Up</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> */}

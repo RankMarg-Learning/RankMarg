@@ -1,82 +1,150 @@
+"use client"
 import {
-  CalendarCheck,
-  BrainCog,
-  TrendingUp,
-  GaugeCircle,
-  Repeat,
-  LineChart,
-  Sparkles,
+  Target,
+  Lightbulb,
+  BookOpen,
+  AlertCircle,
+  FileText,
   Award,
+  ClipboardCheck,
+  TrendingUp,
+  BarChart3,
+  Calendar,
+  Zap,
 } from "lucide-react";
 
 const features = [
   {
-    icon: CalendarCheck,
-    title: "Daily Personalized Practice",
-    description: "Get dynamic question sets daily based on strengths, weaknesses, and syllabus alignment.",
+    icon: Target,
+    title: "Adaptive Practice Sessions",
+    description: "Personalized question sets based on your weak topics, current syllabus, and revision needs across Physics, Chemistry, Mathematics, and Biology.",
+    color: "from-blue-500 to-blue-600",
+    bgColor: "bg-blue-50",
+    iconColor: "text-blue-600",
   },
   {
-    icon: BrainCog,
-    title: "Smart Mistake Tracker",
-    description: "AI highlights key mistakes and gives focused revision prompts to strengthen concepts.",
+    icon: Lightbulb,
+    title: "Smart Hints Without Answers",
+    description: "Get strategic hints that guide your thinking process without revealing the solution. Build problem-solving skills naturally.",
+    color: "from-yellow-500 to-yellow-600",
+    bgColor: "bg-yellow-50",
+    iconColor: "text-yellow-600",
   },
   {
-    icon: TrendingUp,
-    title: "Rank & Score Boost Engine",
-    description: "Advanced logic focuses on high-weightage questions to boost scores and rank.",
+    icon: BookOpen,
+    title: "Question Solving Strategies",
+    description: "Learn proven strategies for each question type. Master the art of approaching problems efficiently and systematically.",
+    color: "from-purple-500 to-purple-600",
+    bgColor: "bg-purple-50",
+    iconColor: "text-purple-600",
   },
   {
-    icon: GaugeCircle,
-    title: "Mastery Tracking (Subtopic-Level)",
-    description: "See your mastery progress for every concept down to the subtopic.",
+    icon: AlertCircle,
+    title: "Common Mistakes to Avoid",
+    description: "Understand typical errors students make and how to prevent them. Learn from others' mistakes before making your own.",
+    color: "from-red-500 to-red-600",
+    bgColor: "bg-red-50",
+    iconColor: "text-red-600",
   },
   {
-    icon: Repeat,
-    title: "Spaced Revision Algorithm",
-    description: "Key concepts are repeated intelligently for long-term retention and exam readiness.",
-  },
-  {
-    icon: LineChart,
-    title: "Progress Analytics Dashboard",
-    description: "Visual insights into performance, accuracy, speed, and subject coverage.",
-  },
-  {
-    icon: Sparkles,
-    title: "Goal-Oriented Suggestions",
-    description: "Timely tips help you revise, prepare, and stay on track for exam success.",
+    icon: FileText,
+    title: "Step-by-Step Solutions",
+    description: "Comprehensive solutions with tricks, exceptions, edge cases, and detailed explanations for complete understanding.",
+    color: "from-green-500 to-green-600",
+    bgColor: "bg-green-50",
+    iconColor: "text-green-600",
   },
   {
     icon: Award,
-    title: "Proven Student Outcomes",
-    description: "Thousands of students improved scores and cracked exams with Rankmarg.",
+    title: "Mastery System",
+    description: "Track your mastery percentage at subject, topic, and subtopic levels. Know exactly where you stand in your preparation.",
+    color: "from-indigo-500 to-indigo-600",
+    bgColor: "bg-indigo-50",
+    iconColor: "text-indigo-600",
   },
+  {
+    icon: ClipboardCheck,
+    title: "Comprehensive Mock Tests",
+    description: "Full-length, subject-wise, and topic-wise mock tests that simulate real NEET/JEE exam conditions.",
+    color: "from-pink-500 to-pink-600",
+    bgColor: "bg-pink-50",
+    iconColor: "text-pink-600",
+  },
+  {
+    icon: TrendingUp,
+    title: "Mistake Tracker System",
+    description: "Automatically categorize and track every type of mistake you make. Get detailed insights into your error patterns.",
+    color: "from-orange-500 to-orange-600",
+    bgColor: "bg-orange-50",
+    iconColor: "text-orange-600",
+  },
+  {
+    icon: BarChart3,
+    title: " Analytics Dashboard",
+    description: "Visualize your performance with heatmaps, weekly comparisons, accuracy trends, and motivational progress tracking.",
+    color: "from-cyan-500 to-cyan-600",
+    bgColor: "bg-cyan-50",
+    iconColor: "text-cyan-600",
+  },
+  {
+    icon: Calendar,
+    title: "Curriculum Management",
+    description: "Smart tracking of completed, current, and pending topics. Stay organized with your entire NEET/JEE syllabus.",
+    color: "from-teal-500 to-teal-600",
+    bgColor: "bg-teal-50",
+    iconColor: "text-teal-600",
+  }
 ];
 
 export default function FeatureSection() {
   return (
-    <section >
-      <div className="py-16 px-6 md:px-12 max-w-7xl mx-auto">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">
-          Why RankMarg Works
-        </h2>
-        <p className="text-gray-700  mt-2">
-          Built for serious JEE/NEET aspirants who want results, not just resources.
-        </p>
-      </div>
-      <div className="grid grid-cols-2  lg:grid-cols-4 gap-8">
-        {features.map((feature, index) => (
-          <div key={index} className="p-6 rounded-xl shadow-sm bg-primary-100/40  text-center  transition-shadow duration-200 border border-yellow-400">
-            <feature.icon className="w-8 h-8 text-gray-800 mx-auto mb-4" />
-            <h3 className="font-semibold text-lg text-gray-800 dark:text-white">
-              {feature.title}
-            </h3>
-            <p className="text-sm text-gray-700  mt-2">
-              {feature.description}
-            </p>
+    <section className="py-20 px-4 bg-gradient-to-b from-white to-primary-50" id="features">
+      <div className="max-w-7xl mx-auto">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 bg-primary-100 px-4 py-2 rounded-full mb-4">
+            <Zap className="w-4 h-4 text-primary-700" />
+            <span className="text-sm font-semibold text-primary-700">Complete Learning Ecosystem</span>
           </div>
-        ))}
-      </div>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+            10 Powerful Features to Ace
+            <span className="block text-primary-700">NEET & JEE</span>
+          </h2>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            Everything you need to transform your preparation from average to exceptional. 
+            Built by experts, trusted by toppers.
+          </p>
+        </div>
+
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {features.map((feature, index) => (
+            <div 
+              key={index} 
+              className={`group relative overflow-hidden rounded-2xl ${feature.bgColor} p-6 border-2 border-transparent hover:${feature.bgColor} transition-all duration-300 hover:shadow-md hover:-translate-y-1`}
+            >
+              {/* Gradient overlay on hover */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
+              
+              <div className="relative">
+                {/* Icon */}
+                <div className={`w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className={`w-6 h-6 ${feature.iconColor}`} />
+                </div>
+
+                {/* Content */}
+                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-gray-800">
+                  {feature.title}
+                </h3>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {feature.description}
+                </p>
+
+                
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -10,7 +10,6 @@ import { PracticeSession } from '@/types/dashboard.types';
 import { useRouter } from 'next/navigation';
 import { timeFormator } from '@/utils/timeFormatter';
 
-// Extracted to a separate component for better reusability and cleaner code
 const DynamicSubjectIcon = ({ subject }: { subject: string }) => {
   const Icon = SubjectIcons[subject.toLowerCase() as keyof typeof SubjectIcons] || SubjectIcons.default;
   return (
@@ -23,7 +22,6 @@ const DynamicSubjectIcon = ({ subject }: { subject: string }) => {
   );
 };
 
-// Extracted to a separate component for maintainability
 const SubjectPracticeCard = ({ 
   practice, 
   onSessionStart 
@@ -34,7 +32,7 @@ const SubjectPracticeCard = ({
   const router = useRouter();
   
   const handleStart = useCallback(() => {
-    onSessionStart(); // Signal to parent that session is starting
+    onSessionStart(); 
     router.push(`/ai-session/${practice.id}`);
   }, [practice.id, router, onSessionStart]);
 

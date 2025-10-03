@@ -1,157 +1,203 @@
+"use client"
 import React from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Check } from 'lucide-react'
-import Link from 'next/link'
-
-const plans = [
-  {
-    title: 'Starter',
-    price: 'Free',
-    originalPrice: null,
-    subtitle: '/forever',
-    features: [
-      'Basic practice questions',
-      'Basic progress tracking',
-      'Community support',
-    ],
-    button: 'Get Started',
-    highlight: false,
-    comingSoon: false,
-  },
-  {
-    title: 'Rank Booster',
-    price: '₹1999',
-    originalPrice: '₹2999',
-    subtitle: '/year',
-    features: [
-      'Unlimited AI-powered practice',
-      'Advanced mistake tracking',
-      'Personalized daily suggestions',
-      'Detailed mastery analytics',
-      'Topic-wise prioritization',
-      'Priority support',
-    ],
-    button: 'Start Free Trial',
-    highlight: true,
-    comingSoon: false,
-  },
-  {
-    title: 'Pro',
-    price: '₹4999',
-    originalPrice: null,
-    subtitle: '/year',
-    features: [
-      'Everything in Rank Booster',
-      'AI Mentor Intelligence',
-      '1-on-1 doubt sessions',
-      'Mock test analysis',
-      'Exam strategy guidance',
-    ],
-    button: 'Notify Me',
-    highlight: false,
-    comingSoon: true,
-  },
-];
-
-const PlanCard = ({ plan }) => {
-  return (
-    <Card className={`relative transition-all duration-300 hover:shadow-lg flex flex-col  h-full ${plan.highlight ? 'border-2 border-primary-500 shadow-lg' : ''
-      }`}>
-      {/* Badges */}
-      {plan.highlight && (
-        <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-primary-100 text-primary-700 hover:bg-primary-100">
-          Most Popular
-        </Badge>
-      )}
-
-      {plan.comingSoon && (
-        <Badge
-          variant="secondary"
-          className="absolute -top-2 left-1/2 transform -translate-x-1/2"
-        >
-          Coming Soon
-        </Badge>
-      )}
-
-      <CardHeader className="text-center pb-4">
-        <h3 className="text-xl font-bold text-gray-900 mb-4">{plan.title}</h3>
-
-        {/* Price Section */}
-        <div className="flex items-baseline justify-center mb-2">
-          <span className="text-3xl font-bold text-gray-900">
-            {plan.price}
-          </span>
-          <span className="text-gray-500 ml-1 text-sm">{plan.subtitle}</span>
-        </div>
-
-        {/* Original Price */}
-        {plan.originalPrice && (
-          <div className="text-sm text-gray-500">
-            <span className="line-through">{plan.originalPrice}</span>
-          </div>
-        )}
-      </CardHeader>
-
-      <CardContent className="flex-1 pb-8 mx-5">
-        {/* Features */}
-        <ul className="space-y-3">
-          {plan.features.map((feature, i) => (
-            <li key={i} className="flex items-start space-x-3">
-              <div className="w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center mt-0.5 flex-shrink-0">
-                <Check className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm text-gray-700 leading-relaxed">
-                {feature}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </CardContent>
-
-      <CardFooter className="pt-0 mt-auto">
-        <Link href={'/sign-up'} className='w-full'>
-          <Button
-            className={`w-full ${plan.highlight
-                ? 'bg-primary-600 hover:bg-primary-700'
-                : plan.comingSoon
-                  ? 'bg-gray-300 text-gray-500 hover:bg-gray-300'
-                  : 'bg-primary-100 hover:bg-primary-200 text-gray-700'
-              }`}
-            disabled={plan.comingSoon}
-          >
-            {plan.button}
-          </Button>
-        </Link>
-      </CardFooter>
-    </Card>
-  );
-};
+import { Check, X, Sparkles } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 const PricingSection = () => {
+
+  const router = useRouter()
+
+  const trustIndicators = [
+    {
+      icon: <Check className="w-5 h-5 text-green-600" />,
+      title: "90-Day Guarantee*",
+      subtitle: "Money-back promise",
+      bgColor: "bg-green-100"
+    },
+    {
+      icon: <span className="text-purple-600 font-bold text-sm">5K+</span>,
+      title: "5,000+ Students",
+      subtitle: "Trusted nationwide",
+      bgColor: "bg-purple-100"
+    },
+    {
+      icon: <span className="text-indigo-600 font-bold text-lg">⚡</span>,
+      title: "Instant Access",
+      subtitle: "Start immediately",
+      bgColor: "bg-indigo-100"
+    }
+  ]
+
+  const detailedComparison = [
+    { feature: "Common Mistake Student Do Section", free: false, paid: true },
+    { feature: "Strategy Section", free: false, paid: true },
+    { feature: "Step By step Solution", free: true, paid: true },
+    { feature: "Adaptive Question Sets", free: false, paid: true },
+    { feature: "Practice Session", free: "5 Q/Session", paid: "Adaptive" },
+    { feature: "Analytics", free: "Limited", paid: "Full" },
+    { feature: "Mock Test", free: "2/Month", paid: "Unlimited" },
+    { feature: "Mistake Tracker", free: true, paid: true },
+    { feature: "Mastery", free: false, paid: true },
+    { feature: "Section Wise", free: "Limited", paid: "Unlimited" }
+  ]
+
   return (
-    <section className="py-16  min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-primary-50">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Pricing
+        <header className="text-center mb-12 md:mb-16">
+          <div className="inline-flex items-center bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200 mb-4">
+            <Sparkles className="w-3 h-3 text-primary-600 mr-2" />
+            <span className="text-xs font-medium text-gray-700">Premium Plans</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary-900 via-primary-800 to-primary-900 bg-clip-text text-transparent mb-4">
+            Choose Your Plan
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Choose the perfect plan to accelerate your NEET/JEE preparation journey
+          <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            Unlock the full potential of your NEET/JEE preparation with our comprehensive solution. 
+            Compare features and choose the plan that fits your needs.
           </p>
+        </header>
+
+        {/* Detailed Comparison (replaces old Feature Comparison) */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+          <div className="bg-gradient-to-r from-primary-600 to-primary-600 text-white px-4 md:px-6 py-4">
+            <h2 className="text-lg md:text-xl font-bold">Feature Comparison</h2>
+            <p className="text-purple-100 text-sm">Free vs Paid at a glance</p>
+          </div>
+
+          {/* Desktop/tablet table */}
+          <div className="hidden md:block">
+            <div className="w-full overflow-x-auto">
+              <table className="min-w-full table-auto">
+                <thead>
+                  <tr className="bg-gray-50 border-b">
+                    <th className="text-left text-sm font-semibold text-gray-700 px-6 py-3">Feature</th>
+                    <th className="text-center text-sm font-semibold text-gray-700 px-6 py-3">Free</th>
+                    <th className="text-center text-sm font-semibold text-gray-700 px-6 py-3">Paid</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detailedComparison.map((row) => (
+                    <tr key={row.feature} className="border-b last:border-b-0">
+                      <td className="px-6 py-4 align-top">
+                        <div className="text-sm font-medium text-gray-900 leading-snug">{row.feature}</div>
+                      </td>
+                      <td className="px-6 py-4 text-center align-top">
+                        {row.free === true ? (
+                          <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                            <Check className="w-4 h-4 text-green-600" />
+                          </div>
+                        ) : row.free === false ? (
+                          <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                            <X className="w-4 h-4 text-gray-400" />
+                          </div>
+                        ) : (
+                          <span className="inline-block text-xs font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded-full">
+                            {row.free}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center align-top">
+                        {row.paid === true ? (
+                          <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center mx-auto">
+                            <Check className="w-4 h-4 text-primary-600" />
+                          </div>
+                        ) : row.paid === false ? (
+                          <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                            <X className="w-4 h-4 text-gray-400" />
+                          </div>
+                        ) : (
+                          <span className="inline-block text-xs font-bold text-primary-700 bg-primary-100 px-2 py-1 rounded-full">
+                            {row.paid}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile stacked list */}
+          <div className="md:hidden divide-y">
+            {detailedComparison.map((row) => (
+              <div key={row.feature} className="px-4 py-4">
+                <div className="text-sm font-semibold text-gray-900 mb-2">{row.feature}</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-gray-50 rounded-lg p-2 border">
+                      <div className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">Free</div>
+                      {row.free === true ? (
+                        <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                          <Check className="w-3 h-3 text-green-600" />
+                        </div>
+                      ) : row.free === false ? (
+                        <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                          <X className="w-3 h-3 text-gray-400" />
+                        </div>
+                      ) : (
+                        <div className="text-xs font-medium text-gray-800">{row.free}</div>
+                      )}
+                    </div>
+                    <div className="bg-primary-50 rounded-lg p-2 border border-primary-100">
+                      <div className="text-[11px] uppercase tracking-wide text-primary-700 mb-1">Paid</div>
+                      {row.paid === true ? (
+                        <div className="w-5 h-5 bg-primary-100 rounded-full flex items-center justify-center">
+                          <Check className="w-3 h-3 text-primary-600" />
+                        </div>
+                      ) : row.paid === false ? (
+                        <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                          <X className="w-3 h-3 text-gray-400" />
+                        </div>
+                      ) : (
+                        <div className="text-xs font-semibold text-primary-800">{row.paid}</div>
+                      )}
+                    </div>
+                  </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="p-4 md:p-6 bg-gradient-to-r from-primary-100 to-primary-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="text-center sm:text-left">
+              <div className="text-sm text-gray-600 mb-1">Starting from</div>
+              <div className="text-2xl font-bold text-gray-900">
+                ₹2,499<span className="text-sm font-normal text-gray-500">/year</span>
+              </div>
+            </div>
+            <button
+              className="w-full sm:w-auto bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold px-6 md:px-8 py-3 rounded-xl shadow-lg text-base md:text-lg hover:scale-105 transition-transform duration-200"
+              onClick={() => router.push('/subscription?plan=rank')}
+            >
+              Enroll Now
+            </button>
+          </div>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan, i) => (
-            <PlanCard key={i} plan={plan} />
-          ))}
+        {/* Trust Indicators */}
+        <div className="mt-8 md:mt-12 hidden">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {trustIndicators.map((indicator, index) => (
+                <div key={index} className="flex items-center justify-center">
+                  <div className={`w-10 h-10 ${indicator.bgColor} rounded-full flex items-center justify-center mr-3 flex-shrink-0`}>
+                    {indicator.icon}
+                  </div>
+                  <div className="text-left">
+                    <div className="font-bold text-gray-900 text-sm">{indicator.title}</div>
+                    <div className="text-xs text-gray-600">{indicator.subtitle}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
+
       </div>
-    </section>
-  );
-};
 
-export default PricingSection;
+    </div>
+  )
+}
+
+export default PricingSection

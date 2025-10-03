@@ -13,16 +13,11 @@ import { useRouter } from 'next/navigation';
 
 const TodaySession = ({ sessions }: { sessions: PracticeSession[] }) => {
 
-
-    const handleContinuePractice = (sessionId) => {
-        console.log(`Continuing practice session with ID: ${sessionId}`);
-    };
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {sessions?.map((session) => (
                 <OngoingSessionCard
                     session={session}
-                    onContinue={() => handleContinuePractice(session.id)}
                     isPremiumLocked={false}
                 />
             ))}
@@ -34,11 +29,10 @@ export default TodaySession
 
 interface OngoingSessionProps {
     session: PracticeSession
-    onContinue: () => void;
     isPremiumLocked: boolean;
 }
 
-function OngoingSessionCard({ session, onContinue, isPremiumLocked }: OngoingSessionProps) {
+function OngoingSessionCard({ session, isPremiumLocked }: OngoingSessionProps) {
     const router = useRouter();
     const handleStart = () => {
         router.push(`/ai-session/${session.id}`);

@@ -53,7 +53,6 @@ const aboutContent = {
     heading: "Our Story",
     description: "Born from the frustration of endless practice without direction, RankMarg was created by educators and technologists who understood that practice without intelligence is just repetition. We believe every student deserves personalized guidance that adapts to their unique learning journey.",
     highlights: [
-      "Founded by IIT alumni and education experts",
       "Powered by advanced AI and machine learning",
       "Trusted by thousands of students across India",
       "Continuously evolving based on student feedback"
