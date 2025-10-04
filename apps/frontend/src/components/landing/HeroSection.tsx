@@ -50,25 +50,38 @@ const HeroSection = () => {
                     </Link>
                 </div>
 
-                {/* floating badges */}
-                <div className="hidden md:block">
-                    <div className="absolute left-8 top-40">
+                {/* floating badges - responsive */}
+                <div className="block">
+                    {/* Mobile: Show badges in a grid layout */}
+                    <div className="md:hidden mt-8 grid grid-cols-2 gap-3 max-w-sm mx-auto">
                         <FloatingBadge text="Smart Hints" color="bg-lime-200" />
-                    </div>
-                    <div className="absolute right-8 top-44">
                         <FloatingBadge text="Adaptive Practice" color="bg-orange-200" />
-                    </div>
-                    <div className="absolute left-12 top-60">
                         <FloatingBadge text="Strategies" color="bg-purple-200" />
-                    </div>
-                    <div className="absolute right-12 top-64">
                         <FloatingBadge text="Step Solutions" color="bg-blue-200" />
-                    </div>
-                    <div className="absolute left-16 top-80">
                         <FloatingBadge text="Mock Tests" color="bg-teal-200" />
-                    </div>
-                    <div className="absolute right-16 top-80">
                         <FloatingBadge text="Mastery System" color="bg-pink-200" />
+                    </div>
+                    
+                    {/* Desktop: Show badges as floating elements */}
+                    <div className="hidden md:block">
+                        <div className="absolute left-8 top-40">
+                            <FloatingBadge text="Smart Hints" color="bg-lime-200" />
+                        </div>
+                        <div className="absolute right-8 top-44">
+                            <FloatingBadge text="Adaptive Practice" color="bg-orange-200" />
+                        </div>
+                        <div className="absolute left-12 top-60">
+                            <FloatingBadge text="Strategies" color="bg-purple-200" />
+                        </div>
+                        <div className="absolute right-12 top-64">
+                            <FloatingBadge text="Step Solutions" color="bg-blue-200" />
+                        </div>
+                        <div className="absolute left-16 top-80">
+                            <FloatingBadge text="Mock Tests" color="bg-teal-200" />
+                        </div>
+                        <div className="absolute right-16 top-80">
+                            <FloatingBadge text="Mastery System" color="bg-pink-200" />
+                        </div>
                     </div>
                 </div>
 
@@ -128,79 +141,79 @@ const HeroSection = () => {
                             </div>
                         </div>
 
-                        {/* Card A: How Hints Work */}
-                        <div className="absolute md:-left-28 -left-20 -top-8 rotate-[8deg] bg-white w-80  rounded-lg border border-yellow-200 p-3 shadow-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Lightbulb className="h-4 w-4 text-yellow-600" />
-                                <h3 className="font-semibold text-yellow-900 text-sm">Hint</h3>
+                            {/* Card A: How Hints Work */}
+                            <div className="absolute md:-left-28 -left-20 -top-8 rotate-[8deg] bg-white w-80  rounded-lg border border-yellow-200 p-3 shadow-lg">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Lightbulb className="h-4 w-4 text-yellow-600" />
+                                    <h3 className="font-semibold text-yellow-900 text-sm">Hint</h3>
+                                </div>
+                                <div className="prose prose-sm max-w-none overflow-x-auto">
+                                    <p>Wavelength changes with medium because speed changes while frequency is constant</p>
+                                </div>
                             </div>
-                            <div className="prose prose-sm max-w-none overflow-x-auto">
-                                <p>Wavelength changes with medium because speed changes while frequency is constant</p>
-                            </div>
-                        </div>
 
-                        {/* Card B: Today's Practice (Analytics) */}
-                        <div className="relative z-10 ">
-                                <div className="bg-gradient-to-br from-slate-50 to-slate-100  flex items-center justify-center  md:min-w-[420px] min-w-[100px] rounded-2xl shadow-xl ring-1 ring-gray-200">
-                                    <div>
-                                        <div className="bg-white border border-slate-200 rounded-lg shadow-md overflow-hidden">
-                                            <div className="p-4">
-                                                <div className="flex justify-between items-start mb-3">
-                                                    <h3 className="font-medium text-slate-800">Personalized Session</h3>
-                                                    <span className="px-2 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-md truncate">
-                                                        16/20 Questions
-                                                    </span>
-                                                </div>
+                            {/* Card B: Today's Practice (Analytics) */}
+                            <div className="relative z-10 ">
+                                    <div className="bg-gradient-to-br from-slate-50 to-slate-100  flex items-center justify-center  md:min-w-[420px] min-w-[100px] rounded-2xl shadow-xl ring-1 ring-gray-200">
+                                        <div>
+                                            <div className="bg-white border border-slate-200 rounded-lg shadow-md overflow-hidden">
+                                                <div className="p-4">
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <h3 className="font-medium text-slate-800">Personalized Session</h3>
+                                                        <span className="px-2 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-md truncate">
+                                                            16/20 Questions
+                                                        </span>
+                                                    </div>
 
-                                                <div className="space-y-3 mb-4">
-                                                    <div>
-                                                        <div className="flex justify-between text-xs mb-1 text-slate-600">
-                                                            <span>Progress</span>
-                                                            <span className="font-medium">80%</span>
-                                                        </div>
-                                                        <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                                                            <div
-                                                                className="bg-gradient-to-r from-blue-500 to-cyan-500 h-full rounded-full transition-all duration-500"
-                                                                style={{ width: `80%` }}
-                                                            />
+                                                    <div className="space-y-3 mb-4">
+                                                        <div>
+                                                            <div className="flex justify-between text-xs mb-1 text-slate-600">
+                                                                <span>Progress</span>
+                                                                <span className="font-medium">80%</span>
+                                                            </div>
+                                                            <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                                                <div
+                                                                    className="bg-gradient-to-r from-blue-500 to-cyan-500 h-full rounded-full transition-all duration-500"
+                                                                    style={{ width: `80%` }}
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
 
-                                                <div>
-                                                    <div className="text-sm font-medium mb-2 text-slate-700">Key Topics:</div>
-                                                    <div className="flex flex-wrap md:gap-1 gap-0.5">
-                                                        {['Wave', 'Optics', 'Thermodynamics', 'Quantum Mechanics'].map((subtopic, i) => (
-                                                            <span
-                                                                key={i}
-                                                                className="px-2.5 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-md truncate"
-                                                            >
-                                                                {subtopic}
-                                                            </span>
-                                                        ))}
+                                                    <div>
+                                                        <div className="text-sm font-medium mb-2 text-slate-700">Key Topics:</div>
+                                                        <div className="flex flex-wrap md:gap-1 gap-0.5">
+                                                            {['Wave', 'Optics', 'Thermodynamics', 'Quantum Mechanics'].map((subtopic, i) => (
+                                                                <span
+                                                                    key={i}
+                                                                    className="px-2.5 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-md truncate"
+                                                                >
+                                                                    {subtopic}
+                                                                </span>
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                        </div>
-
-                        {/* Foreground micro grid card */}
-                        <div className="absolute left-1/2 -translate-x-1/2 md:-bottom-16 -bottom-8 z-20 rotate-1">
-                            <div className="bg-white rounded-xl shadow-2xl ring-1 ring-gray-200 p-3 w-[260px]">
-                                <div className="grid grid-cols-12 gap-1">
-                                    {Array.from({ length: 36 }).map((_, i) => (
-                                        <div
-                                            key={i}
-                                            className={`h-2 rounded-sm ${i < 16 ? 'bg-green-500' : i < 24 ? 'bg-orange-500' : 'bg-gray-200'
-                                                }`}
-                                        />
-                                    ))}
-                                </div>
-                                <div className="mt-2 text-[10px] text-gray-500 text-center">Progress grid</div>
                             </div>
-                        </div>
+
+                            {/* Foreground micro grid card */}
+                            <div className="absolute left-1/2 -translate-x-1/2 md:-bottom-16 -bottom-8 z-20 rotate-1">
+                                <div className="bg-white rounded-xl shadow-2xl ring-1 ring-gray-200 p-3 w-[260px]">
+                                    <div className="grid grid-cols-12 gap-1">
+                                        {Array.from({ length: 36 }).map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className={`h-2 rounded-sm ${i < 16 ? 'bg-green-500' : i < 24 ? 'bg-orange-500' : 'bg-gray-200'
+                                                    }`}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="mt-2 text-[10px] text-gray-500 text-center">Progress grid</div>
+                                </div>
+                            </div>
 
                         {/* Card C: Mastery (Subject/Topic/Subtopic) */}
                         <div className="absolute -right-28 -top-10 rotate-[8deg] opacity-95 hidden">

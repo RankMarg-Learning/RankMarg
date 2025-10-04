@@ -1,5 +1,4 @@
-"use client"
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Play,
   BookOpen,
@@ -7,8 +6,6 @@ import {
   TrendingUp,
   CheckCircle,
   ArrowRight,
-  Clock,
-  Award,
   FileText,
   Brain,
   Star,
@@ -18,25 +15,9 @@ import {
 } from 'lucide-react';
 
 const GetStartedPage = () => {
-  const [selectedExam, setSelectedExam] = useState('JEE');
+  
 
-  const examData = {
-    JEE: {
-      title: "JEE Main & Advanced",
-      subjects: ["Physics", "Chemistry", "Mathematics"],
-      duration: "2 Years",
-      color: "from-primary-500 to-primary-600",
-      description: "Master engineering entrance with comprehensive practice"
-    },
-    NEET: {
-      title: "NEET UG",
-      subjects: ["Physics", "Chemistry", "Biology"],
-      duration: "2 Years",
-      color: "from-green-500 to-green-600",
-      description: "Excel in medical entrance with targeted preparation"
-    }
-  };
-
+  
   const steps = [
     {
       number: "01",
@@ -100,14 +81,10 @@ const GetStartedPage = () => {
   ];
 
   const quickStats = [
-    { label: "Questions Available", value: "10,000+", icon: CheckCircle },
-    { label: "Subjects Covered", value: "6", icon: BookOpen },
-    { label: "Topics", value: "200+", icon: Target },
-    { label: "New Platform", value: "2025", icon: Award }
+    { label: "Questions Available", value: "5,000+", icon: CheckCircle },
   ];
 
   const StepCard = ({ step, index }) => {
-    const IconComponent = step.icon;
     return (
       <div className="group relative">
         <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 h-full">
@@ -117,7 +94,6 @@ const GetStartedPage = () => {
             </div>
             <div className="flex-1">
               <div className="flex items-center mb-3">
-                <IconComponent className="w-5 h-5 text-gray-700 mr-2" />
                 <h3 className="text-lg font-bold text-gray-900">{step.title}</h3>
               </div>
               <p className="text-sm text-gray-600 mb-3">{step.description}</p>
@@ -132,11 +108,7 @@ const GetStartedPage = () => {
             </div>
           </div>
         </div>
-        {index < steps.length - 1 && (
-          <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
-            <ArrowRight className="w-8 h-8 text-gray-300" />
-          </div>
-        )}
+        
       </div>
     );
   };
@@ -164,10 +136,10 @@ const GetStartedPage = () => {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-3xl mb-6">
               <Play className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
+            <h1 className="text-2xl md:text-3xl font-bold mb-4">
               Start Your Success Journey
             </h1>
-            <p className="text-lg text-primary-100 mb-6 max-w-3xl mx-auto">
+            <p className=" text-primary-100 mb-6 max-w-3xl mx-auto">
               Begin your JEE & NEET preparation with RankMarg's personalized practice sessions. 
               Follow our step-by-step guide to improve your performance.
             </p>
@@ -189,58 +161,14 @@ const GetStartedPage = () => {
         </div>
       </div>
 
-      {/* Exam Selection */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">Choose Your Exam</h2>
-          <p className="text-lg text-gray-600">Select the exam you're preparing for to get started</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
-          {Object.entries(examData).map(([key, exam]) => (
-            <div 
-              key={key}
-              className={`cursor-pointer transition-all duration-300 ${
-                selectedExam === key 
-                  ? 'ring-4 ring-primary-200 shadow-xl' 
-                  : 'hover:shadow-lg'
-              }`}
-              onClick={() => setSelectedExam(key)}
-            >
-              <div className="bg-white rounded-2xl p-8 border border-gray-100">
-                <div className={`inline-flex p-3 rounded-xl mb-4 bg-gradient-to-r ${exam.color} text-white`}>
-                  <Target className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{exam.title}</h3>
-                <p className="text-sm text-gray-600 mb-3">{exam.description}</p>
-                <div className="space-y-2">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Subjects: {exam.subjects.join(', ')}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Clock className="w-4 h-4 mr-2" />
-                    Duration: {exam.duration}
-                  </div>
-                </div>
-                {selectedExam === key && (
-                  <div className="mt-4 flex items-center text-primary-600 font-medium">
-                    <CheckCircle className="w-5 h-5 mr-2" />
-                    Selected
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+     
 
       {/* Steps */}
       <div className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-10">
             <h2 className="text-2xl font-bold text-gray-900 mb-3">4 Simple Steps to Success</h2>
-            <p className="text-lg text-gray-600">Follow our methodology to improve your performance</p>
+            <p className=" text-gray-600">Follow our methodology to improve your performance</p>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -274,13 +202,13 @@ const GetStartedPage = () => {
             <Star className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-3">Ready to Begin?</h2>
-          <p className="text-lg text-primary-100 mb-6">
+          <p className=" text-primary-100 mb-6">
             Join the new generation of students preparing with RankMarg's personalized approach
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-white text-primary-600 px-8 py-4 rounded-xl font-semibold hover:bg-primary-50 transition-colors duration-200 flex items-center justify-center">
-              <Play className="w-5 h-5 mr-2" />
-              Start Free Trial
+              <Play className="w-4 h-4 mr-2" />
+              Start Free Practice
             </button>
             <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-primary-600 transition-colors duration-200 flex items-center justify-center">
               <BookOpen className="w-5 h-5 mr-2" />
