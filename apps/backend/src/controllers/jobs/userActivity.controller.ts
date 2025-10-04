@@ -116,7 +116,10 @@ export class UserActivityController {
 
   public resetStreak = async (req: Request, res: Response) => {
     try {
-      const { from, to } = getDayWindow();
+      const { from, to } =
+        req.body?.from && req.body?.to
+          ? { from: new Date(req.body.from), to: new Date(req.body.to) }
+          : getDayWindow();
 
       if (from >= to) {
         console.error("Invalid date range: from >= to");
