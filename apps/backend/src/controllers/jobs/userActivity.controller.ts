@@ -117,7 +117,6 @@ export class UserActivityController {
   public resetStreak = async (req: Request, res: Response) => {
     try {
       const { from, to } = getDayWindow();
-      console.log("Streak Management - Date range:", { from, to });
 
       if (from >= to) {
         console.error("Invalid date range: from >= to");
@@ -132,7 +131,7 @@ export class UserActivityController {
             SELECT DISTINCT "userId" 
             FROM "Attempt" 
             WHERE "solvedAt" >= ${from} 
-              AND "solvedAt" <= ${to}
+              AND "solvedAt" < ${to}
               AND "userId" IS NOT NULL
           )
         `,
@@ -143,16 +142,12 @@ export class UserActivityController {
             SELECT DISTINCT "userId" 
             FROM "Attempt" 
             WHERE "solvedAt" >= ${from} 
-              AND "solvedAt" <= ${to}
+              AND "solvedAt" < ${to}
               AND "userId" IS NOT NULL
           )
           AND "streak" > 0
         `,
       ]);
-
-      console.log(
-        `Streak Management completed: ${incrementResult} streaks incremented, ${resetResult} streaks reset`
-      );
 
       ResponseUtil.success(
         res,

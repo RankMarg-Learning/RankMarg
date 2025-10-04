@@ -12,4 +12,16 @@ router.put("/:slug", authenticate, questionController.updateQuestionById);
 router.delete("/:slug", authenticate, questionController.deleteQuestionById);
 router.post("/:slug/report", authenticate, questionController.reportQuestion);
 
+router.get(
+  "/reports/slug/:slug",
+  authenticate,
+  questionController.getReportsByQuestionSlug
+);
+
+router.delete(
+  "/reports/:id",
+  authenticate,
+  questionController.deleteReportQuestion
+);
+
 export default router;

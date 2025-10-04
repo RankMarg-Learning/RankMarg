@@ -6,28 +6,28 @@ import { ArrowLeft, SunMedium } from 'lucide-react'
 
 export default function NotFound() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 overflow-hidden">
+    <div className="flex items-center justify-center min-h-screen yellow-gradient overflow-hidden">
       <div className="text-center text-yellow-900 px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-9xl font-extrabold tracking-widest mb-4">404</h1>
+          <h1 className="text-5xl font-extrabold tracking-widest mb-4">404</h1>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <h2 className="text-4xl font-semibold mb-4">Oops! Page Not Found</h2>
+          <h2 className="text-2xl font-semibold mb-4">Oops! Page Not Found</h2>
         </motion.div>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <p className="text-lg mb-8">The page you're looking for doesn't exist or has been moved.</p>
+          <p className="text-base mb-8">The page you're looking for doesn't exist or has been moved.</p>
         </motion.div>
         <motion.div
           whileHover={{ scale: 1.05 }}
@@ -35,7 +35,7 @@ export default function NotFound() {
         >
           <Link 
             href="/" 
-            className="inline-flex items-center px-6 py-3 bg-yellow-900 text-yellow-100 rounded-full font-semibold hover:bg-yellow-800 transition-colors duration-300"
+            className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-full font-semibold hover:bg-primary/80 transition-colors duration-300"
           >
             <ArrowLeft className="mr-2" size={20} />
             Return Home

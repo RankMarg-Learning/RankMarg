@@ -1,3 +1,4 @@
+
 "use client"
 import React, {  useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -49,7 +50,7 @@ const Layout = ({
         />
 
         {/* Main content */}
-        <main className="flex-1 container py-4 px-3 md:py-6 md:px-6">
+        <main className="flex-1 container py-4 px-2 md:py-6 md:px-6">
           {children}
           <Toaster />
         </main>

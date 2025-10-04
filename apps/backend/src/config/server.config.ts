@@ -12,6 +12,8 @@ export const ServerConfig = {
   port: process.env.PORT || 3001,
   nodeEnv: process.env.NODE_ENV || "development",
   cookieDomain: process.env.COOKIE_DOMAIN || undefined,
+  resendApiKey: process.env.RESEND_API_KEY,
+  emailAddress: process.env.EMAIL_ADDRESS,
 
   database: {
     url: process.env.DATABASE_URL,
@@ -46,7 +48,7 @@ export const ServerConfig = {
   adminAPIKey: process.env.ADMIN_API_KEY,
   cron: {
     daily: {
-      streak: "0 0 * * *",
+      streak: "10 0 * * *",
       updatePerformance: "0 0 * * *",
       createSuggestion: "0 0 * * *",
     },

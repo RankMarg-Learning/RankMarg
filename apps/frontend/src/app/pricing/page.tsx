@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import React from 'react'
 
 export const metadata: Metadata = {
-  title: "RankMarg Pricing | Affordable JEE & NEET Personalized Practice Plans",
+  title: "Pricing | RankMarg",
   description:
     "Choose the best plan to boost your JEE/NEET preparation with RankMarg. Get AI-powered personalized practice, dynamic tests, mastery tracking, and progress insights—all at an affordable price.",
   keywords: [
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     "Personalized Practice Plans",
   ],
   openGraph: {
-    title: "RankMarg Pricing | Affordable JEE & NEET Personalized Practice Plans",
+    title: "Pricing | RankMarg",
     description:
       "Explore RankMarg’s subscription plans for JEE & NEET. Access adaptive practice, daily smart questions, test analytics, and mastery tracking at the best price.",
     url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/pricing`,

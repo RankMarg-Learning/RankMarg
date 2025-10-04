@@ -319,7 +319,7 @@ const QuestionUI = ({
               <Lightbulb className="h-4 w-4 text-yellow-600" />
               <h3 className="font-semibold text-yellow-900 text-sm">Hint</h3>
             </div>
-            <div className="prose prose-sm max-w-none">
+            <div className="prose prose-sm max-w-none overflow-x-auto">
               {question?.hint ? (
                 <MarkdownRenderer content={question?.hint} className='text-sm' />
               ) : (
@@ -338,7 +338,7 @@ const QuestionUI = ({
         <Motion animation="fade-in" className="w-full p-2 ">
           <Accordion type="single" collapsible defaultValue="solution" >
             <AccordionItem value="solution" >
-              <div className="mt-3 p-3 bg-purple-50 rounded-lg border-purple-100">
+              <div className="mt-3 p-2 md:p-3 bg-purple-50 rounded-lg border-purple-100">
                 <AccordionTrigger className="w-full text-left p-0 hover:no-underline">
                   <div className="flex items-start gap-2">
                     <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 mt-0.5" />
@@ -360,7 +360,7 @@ const QuestionUI = ({
                                   <Lightbulb className="h-4 w-4 text-blue-600" />
                                   <h4 className="font-semibold text-blue-900 text-sm">Solving Strategy</h4>
                                 </div>
-                                <div className="prose prose-sm max-w-none">
+                                <div className="prose prose-sm max-w-none overflow-x-auto">
                                   <MarkdownRenderer content={question.strategy} className="text-sm" />
                                 </div>
                               </div>
@@ -372,7 +372,7 @@ const QuestionUI = ({
                                   <AlertTriangle className="h-4 w-4 text-red-600" />
                                   <h4 className="font-semibold text-red-900 text-sm">Common Mistakes to Avoid</h4>
                                 </div>
-                                <div className="prose prose-sm max-w-none">
+                                <div className="prose prose-sm max-w-none overflow-x-auto">
                                   <MarkdownRenderer content={question.commonMistake} className="text-sm" />
                                 </div>
                               </div>
@@ -403,7 +403,7 @@ const QuestionUI = ({
                           <BookOpen className="h-4 w-4 text-purple-600" />
                           <h4 className="font-semibold text-purple-900 text-sm">Step-by-Step Analysis</h4>
                         </div>
-                        <div className="prose prose-sm max-w-none">
+                        <div className="prose prose-sm max-w-none overflow-x-auto">
                           <MarkdownRenderer content={question.solution} className="text-sm" />
                         </div>
                       </div>

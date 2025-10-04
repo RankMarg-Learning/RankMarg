@@ -1,22 +1,16 @@
-import { addDays, setHours, setMinutes, setSeconds } from "date-fns";
+import { startOfDay, subDays } from "date-fns";
 
 export function getDayWindow(): { from: Date; to: Date } {
   const IST_OFFSET_MS: number = 5.5 * 60 * 60 * 1000;
 
-  const now: Date = new Date();
-  const istNow: Date = new Date(now.getTime() + IST_OFFSET_MS);
+  const nowUtc: Date = new Date();
+  const nowIst: Date = new Date(nowUtc.getTime() + IST_OFFSET_MS);
 
-  let ist1150PM: Date = setSeconds(setMinutes(setHours(istNow, 23), 50), 0);
+  const startOfTodayIst: Date = startOfDay(nowIst);
+  const startOfPrevDayIst: Date = subDays(startOfTodayIst, 1);
 
-  if (
-    istNow.getHours() < 23 ||
-    (istNow.getHours() === 23 && istNow.getMinutes() < 50)
-  ) {
-    ist1150PM = addDays(ist1150PM, -1);
-  }
-
-  const from: Date = new Date(ist1150PM.getTime() - IST_OFFSET_MS);
-  const to: Date = new Date(from.getTime() + 24 * 60 * 60 * 1000);
+  const from: Date = new Date(startOfPrevDayIst.getTime() - IST_OFFSET_MS);
+  const to: Date = new Date(startOfTodayIst.getTime() - IST_OFFSET_MS);
 
   return { from, to };
 }

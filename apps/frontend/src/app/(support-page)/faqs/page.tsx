@@ -48,12 +48,12 @@ const List = [
 const FAQs = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-50 to-primary-100">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Frequently Asked Questions</h2>
-            <Accordion type="single" collapsible className="space-y-4">
+          <div className="max-w-3xl mx-auto md:px-8 px-4 py-6">
+            <h2 className="text-2xl font-bold text-center mb-12 text-primary-700">Frequently Asked Questions</h2>
+            <Accordion type="single" collapsible className="space-y-4 ">
               {List.map((faq, index) => (
                 <AccordionItem key={index} value={`item-${index}`}>
-                  <AccordionTrigger className="text-gray-800 hover:text-gray-600 hover:no-underline">{faq.question}</AccordionTrigger>
+                  <AccordionTrigger className="text-gray-800 hover:text-gray-600 hover:no-underline text-sm font-medium">{faq.question}</AccordionTrigger>
                   <AccordionContent className="text-gray-800">{faq.answer}</AccordionContent>
                 </AccordionItem>
               ))}

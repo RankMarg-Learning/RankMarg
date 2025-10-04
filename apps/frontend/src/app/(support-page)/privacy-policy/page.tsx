@@ -21,11 +21,11 @@ const PrivacyPolicy = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-50 to-primary-100">
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-6 py-5">
-        <div className=" rounded-lg shadow-sm   p-8">
+      <div className="max-w-4xl mx-auto md:px-6 px-4 py-5">
+        <div className=" rounded-lg shadow-sm   md:p-8 p-2">
           {/* Policy Header */}
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-primary-800 to-primary-800 bg-clip-text text-transparent mb-6">Privacy Policy</h2>
+            <h2 className="text-2xl font-bold text-primary-700 mb-6">Privacy Policy</h2>
           </div>
 
           {/* Introduction */}

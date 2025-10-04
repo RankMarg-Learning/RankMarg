@@ -61,4 +61,7 @@ router.get("/profile", authenticate, authController.getProfile);
  */
 router.post("/sign-out", authController.signOut);
 
+router.post("/forgot-password", authController.forgotPassword);
+router.post("/reset-password", authController.resetPassword);
+
 export default router;

@@ -130,10 +130,8 @@ const HelpSupportPage = () => {
         {/* Header */}
         <div className={`text-center py-16 px-4 transition-all duration-1000 opacity-100 translate-y-0`}>
           <div className="max-w-4xl mx-auto">
-            <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-3xl mb-5 shadow-2xl">
-              <HelpCircle className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-primary-800 to-primary-800 bg-clip-text text-transparent mb-6">
+            
+            <h1 className="text-2xl font-bold text-primary-700 mb-6">
               Help & Support
             </h1>
             <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto">
@@ -216,7 +214,7 @@ const HelpSupportPage = () => {
 
             {/* Support Scope */}
             <div className={`lg:col-span-12 transition-all duration-700 delay-400 opacity-100 translate-y-0`}>
-              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-md border border-white/20">
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl md:p-8 p-4 shadow-md border border-white/20">
                 <div className="text-center mb-8">
                   <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-md p-2 mb-4">
                     <Wrench className="w-8 h-8 text-white" />

@@ -20,6 +20,7 @@ interface WhereClauseProps {
   OR?: Array<Prisma.QuestionWhereInput>;
   pyqYear?: string;
   isPublished?: boolean;
+  slug?: { in: string[] };
 }
 
 interface Question {
@@ -83,6 +84,7 @@ export class QuestionController {
         type,
         search,
         isPublished,
+        reports,
         page = 1,
         limit = 25,
       } = req.query;
@@ -117,7 +119,33 @@ export class QuestionController {
       if (isPublished) {
         whereClause.isPublished = isPublished === "true";
       }
-      const [questions, total] = await Promise.all([
+
+      let reportFilteredSlugs: string[] | null = null;
+      if (reports === "reported") {
+        const reportedSlugs = await prisma.reportQuestion.findMany({
+          select: { slug: true },
+          distinct: ["slug"],
+        });
+        reportFilteredSlugs = reportedSlugs.map((r) => r.slug).filter(Boolean);
+        if (reportFilteredSlugs.length === 0) {
+          const payload = {
+            questions: [],
+            currentPage: 1,
+            totalPages: 0,
+            totalCount: 0,
+          };
+          ResponseUtil.success(
+            res,
+            payload,
+            "Questions fetched successfully",
+            200
+          );
+          return;
+        }
+        whereClause.slug = { in: reportFilteredSlugs };
+      }
+
+      const [questions] = await Promise.all([
         prisma.question.findMany({
           where: whereClause,
           select: {
@@ -129,7 +157,6 @@ export class QuestionController {
             content: true,
             difficulty: true,
             isPublished: true,
-
             pyqYear: true,
             createdBy: true,
             createdAt: true,
@@ -148,18 +175,45 @@ export class QuestionController {
             },
           },
           orderBy: { createdAt: "desc" },
-          skip: skip as number,
-          take: l as number,
         }),
-        prisma.question.count({ where: whereClause }),
       ]);
 
-      const currentPage = Math.ceil(total / l);
-      const totalPages = Math.ceil(total / l);
+      const questionSlugs = questions.map((q) => q.slug);
+      const reportCounts = await prisma.reportQuestion.groupBy({
+        by: ["slug"],
+        where: {
+          slug: { in: questionSlugs },
+        },
+        _count: {
+          slug: true,
+        },
+      });
+
+      const reportCountMap = new Map(
+        reportCounts.map((rc) => [rc.slug, rc._count.slug])
+      );
+
+      let questionsWithReportCount = questions.map((question) => ({
+        ...question,
+        reportCount: reportCountMap.get(question.slug) || 0,
+      }));
+
+      if (reports === "not-reported") {
+        questionsWithReportCount = questionsWithReportCount.filter(
+          (q) => q.reportCount === 0
+        );
+      }
+
+      const totalFiltered = questionsWithReportCount.length;
+      const paginatedQuestions = questionsWithReportCount.slice(skip, skip + l);
+
+      const currentPage = Number(page);
+      const totalPages = Math.ceil(totalFiltered / l);
       const payload = {
-        questions,
+        questions: paginatedQuestions,
         currentPage,
         totalPages,
+        totalCount: totalFiltered,
       };
       ResponseUtil.success(res, payload, "Questions fetched successfully", 200);
     } catch (error) {
@@ -329,6 +383,74 @@ export class QuestionController {
       });
 
       ResponseUtil.success(res, created, "Report submitted", 201);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getReportsByQuestionSlug = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { slug } = req.params;
+      const { page = 1, limit = 25 } = req.query;
+
+      const l = Number(limit) || 25;
+      const skip = (Number(page) - 1) * l;
+
+      const [reports, total] = await Promise.all([
+        prisma.reportQuestion.findMany({
+          where: { slug },
+          select: {
+            id: true,
+            type: true,
+            feedback: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+          skip: skip as number,
+          take: l as number,
+        }),
+        prisma.reportQuestion.count({ where: { slug } }),
+      ]);
+
+      const currentPage = Number(page);
+      const totalPages = Math.ceil(total / l);
+
+      const payload = {
+        reports,
+        currentPage,
+        totalPages,
+        total,
+        slug,
+      };
+
+      ResponseUtil.success(
+        res,
+        payload,
+        "Question reports fetched successfully",
+        200
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteReportQuestion = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { id } = req.params;
+
+      await prisma.reportQuestion.delete({
+        where: { id },
+      });
+
+      ResponseUtil.success(res, null, "Report deleted successfully", 200);
     } catch (error) {
       next(error);
     }

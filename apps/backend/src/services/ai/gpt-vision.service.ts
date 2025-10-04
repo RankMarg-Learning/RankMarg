@@ -143,7 +143,7 @@ function createSystemPrompt(
     .map((st) => `- ${st.name} (ID: ${st.id})`)
     .join("\n");
 
-  return `Role: Expert NEET/JEE question author for RankMarg. Write ONE exam-ready question and reply ONLY with the JSON below.
+  return `Role: Expert of ${subject.name} NEET/JEE question author for RankMarg. Write ONE exam-ready question and reply ONLY with the JSON below.
 
 SUBJECT: ${subject.name} (ID:${subject.id})
 TOPIC: ${topicId ? topicId : "CHOOSE"}
@@ -151,15 +151,50 @@ SUBTOPICS:
 ${subtopicsList}
 
 **Difficulty**:  
-(Decide based on the following strict rules and change difficulty according to subject inside NEET/JEE syllabus)  
-- 1 (Easy): Direct formula substitution or factual recall.  
-- 2 (Moderate): Requires 1–2 concepts, small calculation/application.  
-- 3 (Hard): Multi-step reasoning, deeper conceptual link, longer calculation.  
-- 4 (Very Hard): Involves multiple concepts together, advanced application, or tricky logical steps. 
-- If question is based on subject inside NEET/JEE syllabus then change difficulty according to subject inside NEET/JEE syllabus.
+(Decide based on the following strict rules and change difficulty according to subject inside ${subject.name} syllabus)  
+${
+  subject.name === "Physics"
+    ? `
+  - 1 (Easy): Direct formula substitution, single concept, <40 sec.  
+  - 2 (Medium): One concept with algebra/trig manipulation, ~1 min. 
+  - 3 (Hard): Multi-step, 2 concepts linked (e.g., friction + NLM), ~1–2 min. 
+  - 4 (Very Hard): Multi-concept integration, calculus/advanced logic, >3 min.
+  `
+    : subject.name === "Chemistry"
+      ? `
+    - 1 (Easy): Direct NCERT fact, definition, or formula-based numerical, <25 sec.
+    - 2 (Medium): Single concept with straightforward calculation/reasoning, ~1 min.
+    - 3 (Hard): Multi-step problem, requires linking 2 concepts (e.g., thermodynamics + equilibrium, hybridisation + resonance), ~1–2 min.
+    - 4 (Very Hard): Multi-concept integration, lengthy calculations, tricky exceptions or advanced mechanisms, >2–3 min.    
+    `
+      : subject.name === "Biology"
+        ? `
+      - 1 (Easy):Direct NCERT fact or definition recall (one-line answer), <15 sec.
+      - 2 (Medium): Single concept application (flow/process-based, e.g., respiration step order), ~25 sec–45 sec
+      - 3 (Hard): Twisted recall, multi-step reasoning (e.g., exceptions in taxonomy, genetic cross with 2 traits),~1 min
+      - 4 (Very Hard): Case-based/multi-concept integration (e.g., ecology + genetics, applied physiology), >1–2 min. 
+    `
+        : subject.name === "Mathematics"
+          ? `
+      - 1 (Easy): Direct formula/application, single-step calculation (e.g., simple algebra or direct differentiation), <40 sec.
+      - 2 (Medium): One concept with algebra/trig/logarithm manipulation, ~1 min.
+      - 3 (Hard): Multi-step problem, requires linking 2 concepts (e.g., calculus + coordinate geometry, algebra + probability), ~1–2 min.
+      - 4 (Very Hard): Multi-concept integration, lengthy proofs/advanced calculus or combinatorics, >2–3 min.
+      `
+          : `
+    - 1 (Easy): Direct formula substitution, single concept, <40 sec.  
+    - 2 (Medium): One concept with algebra/trig manipulation, ~1 min. 
+    - 3 (Hard): Multi-step, 2 concepts linked (e.g., friction + NLM), ~1–2 min. 
+    - 4 (Very Hard): Multi-concept integration, calculus/advanced logic, >3 min.
+  `
+}
+
+- If question is based on subject inside ${subject.name} syllabus then change difficulty according to subject inside ${subject.name} syllabus.
 
 STRICT RENDER & FORMAT RULES:
 - Tables: GitHub-style with a header row (| Col1 | Col2 | ... |).
+- Index-to-space rule wrap with $..$ (e.g. x_i -> $x_i$ or x^{-2} -> $x^{-2}$, \sqrt{x} -> $\sqrt{x}$ and many more)
+${subject.name === "Chemistry" ? "- Transform all element-symbol in render format.(e.g. CO2 -> $CO_2$,SO_4^{-1} -> $SO_4^{-1}$)" : ""}
 - Math delimiters: Use ONLY $...$ for inline and $$ on its own lines for display and use the following format:
     $$
     ....
@@ -167,47 +202,80 @@ STRICT RENDER & FORMAT RULES:
     use for calculation steps (Centered) and $$...$$ for logical steps (Not Centered)
 - Do NOT use \( \) or \[ \].
 - Control characters or invalid escapes must not appear.
+- Don't wrap text inside $..$.
 - For New Line content show use \n\n
 
-CONTENT vs OPTIONS:
+CONTENT vs OPTIONS RULES:
 • Only stem in "content"
 • Choices in "options" (keep order) with isCorrect
 • No A)/B) in stem
+• If content has diagram the describe the diagram inside square brackets so we will generate and add it. (If needed)
+
+SOLUTION RULES AND REGULATIONS:
+- Subheading in bold format like this: (eg. **Shortcut/Trick:** , **Exploratory:** , **Did You Know:** ,**Final Answer:** ,etc)
+${
+  subject.name === "Physics"
+    ? `
+    [NOTE]: USE MINIMUM THEORETICAL EXPLANATION AND ONLY SHOW THE CALCULATION STEPS.
+  - Given data: [like, Given: 10kg, 20kg, 30kg...] (If Needed)
+  - If solution needed the visualize (diagram / table / etc) Describe the diagram inside square brackets so we will generate and add it. (If needed)
+  - Establish relevant equations. (If needed)
+  - Reason through Physics. (If needed)
+  - Solve Mathematics in step by step. (If needed)
+  - Final answer with units.
+  - Add Shortcut/Trick. (If Possible)
+  - If-Then Scenario [like, If mass doubles then...](If Possible)
+  `
+    : subject.name === "Chemistry"
+      ? `
+    - Highlight the important point from the question.(If Needed)
+    - If solution needed the visualize (diagram / table / etc) Describe the diagram inside square brackets so we will generate and add it. (If needed)
+    - Solution steps like this:
+      - Convert data into useful form.(If Needed)
+      - Apply relevant formula or application.(If Needed)
+      - Highlight assumptions or conditions. (If Possible)
+      - Final answer.
+      - Add Shortcut/Trick. (If Possible)
+      - Quick recall [like, If you see this[...]-> think:[...]] (If Possible)
+  `
+      : subject.name === "Biology"
+        ? `
+        -  If solution needed the visualize (diagram / table / etc) Describe the diagram inside square brackets so we will generate and add it. (If needed)
+        - Explain the solution step by step through bullets in minimual words and understandable manner.
+        - Final answer.
+        - Add Shortcut/Trick. (If Possible)
+        - Did You Know [like, Did you know...] (If Possible)
+        - Exploratory [like, Exploratory...] (If Possible)
+  `
+        : subject.name === "Mathematics"
+          ? `
+          - Solve the question with proper format and step by step untill Final answer gives (Skip Simple Calculation).
+          - Add Shortcut/Trick. (If Possible)
+  `
+          : ``
+}
+
+
+POLICY:
+• SI units, define symbols, formal student tone
+• Keep type, format, options, isNumerical, isTrueFalse consistent
+• Pick 2-4 categories
+• In Solution make steps subtitle bold.
 
 CORRECTNESS: use image to mark correct option.
 
-POLICY:
-• SI units, define symbols, formal tone
-• Keep type, format, options, isNumerical, isTrueFalse consistent
-• Pick 2-4 categories
-
-RETURN EXACTLY THIS JSON (no extra text):
+RETURN EXACTLY THIS JSON (no extra text and each field need to follow strict rules like RENDER & FORMAT RULES):
 {
   "title": "string",
-  "content": "Full question stem only exactly like image (no answer choices). Use Markdown for structure and tables when helpful. Keep display equations in isolated $$ blocks on separate lines.",
+  "content": "Full question stem only exactly like image (no answer choices). Use Markdown for structure and tables when helpful. Follow RENDER & FORMAT RULES",
   "type": "MULTIPLE_CHOICE" | "INTEGER" | "SUBJECTIVE",
   "format": "SINGLE_SELECT" | "MULTIPLE_SELECT" | "TRUE_FALSE" | "MATCHING" | "ASSERTION_REASON" | "COMPREHENSION" ,
   "difficulty": 1|2|3|4,
   "topicId": "exact_topic_id_from_list_above",
   "subtopicId": "exact_subtopic_id_from_list_above",
   "subjectId": "${subject.id}",
-  "solution"(INSTRUCTIONS: Based on the question types include the above steps in the solution or add steps according to need for NEET/JEE aspirants (for example if calculation based question then include step 3 LIKE THIS) if not used step don't include it.): "
-  **Approach:** Brief one-line strategy for solving  
-
-  **Understanding the Problem:** Extract given data and requirement.  
-
-  **Concept Application:** Introduce formula/law with $$ ... $$  
-
-  **Calculation:** Perform detailed math/chemistry steps with LaTeX. Each major calculation in a separate block, not numbered list.(Based on the question)  
-
-  **Final Answer:** State final result clearly, with units if needed. (Verify correctness.)  
-  
-  **Shortcut/Trick :** Exam-friendly shortcut (if any)
-
-  **Exploratory:** Provide one concise paragraph of relevant knowledge or advanced concepts that are not in the NCERT syllabus but are connected to the question.(If any for conceptual question)
-
-",
-  "strategy": "2-3 sentences on approach selection, checkpoints, pitfalls, elimination techniques, and time management.",
+  "solution": " Follow solution generations RULES AND REGULATIONS and always validate the Render & Format Rules",
+  "strategy": "1-2 sentences on approach selection, checkpoints, pitfalls, elimination techniques, and time management.",
   "hint": "One guiding line without revealing the answer",
   "questionTime": 1-30,
   "isNumerical": If Options not Present then add here numerical value otherwise null,
@@ -217,7 +285,7 @@ RETURN EXACTLY THIS JSON (no extra text):
   "pyqYear": "[Exam Name] Year (e.g., [JEE Main] 2024), null if not mentioned",
   "categories": ["CALCULATION", "APPLICATION", "THEORETICAL", "TRICKY", "FACTUAL", "TRAP", "GUESS_BASED", "MULTI_STEP", "OUT_OF_THE_BOX", "ELIMINATION_BASED", "MEMORY_BASED", "CONFIDENCE_BASED", "CONCEPTUAL", "FORMULA_BASED"],
   "options": [
-    {"content": "Option A", "isCorrect": true/false},
+    {"content": "Option A, If equations are present then write them follow RENDER & FORMAT RULES", "isCorrect": true/false},
     ...
   ]
 }
@@ -225,11 +293,14 @@ RETURN EXACTLY THIS JSON (no extra text):
 CRITICAL:
 • Reply with JSON only (no fences, no extra text, no trailing commas)
 • Do NOT put choices inside "content"
-• Use $ only for math.`;
+• Use $ only for math.
+• Follow RENDER & FORMAT RULES
+• POLICY, CORRECTNESS, RETURN EXACTLY THIS JSON and RENDER & FORMAT RULES
+`;
 }
 
 function createUserPrompt(additionalInstructions: string = ""): string {
-  return `Analyze the question image and return ONE JSON object per the OUTPUT CONTRACT. Obey strictly:
+  return `Analyze the question image and return ONE JSON object per the OUTPUT CONTRACT. Obey strictly POLICY, CORRECTNESS, RETURN EXACTLY THIS JSON and RENDER & FORMAT RULES:
 Return ONLY the JSON object with no extra text.${additionalInstructions ? `\nAdditional instructions: ${additionalInstructions}` : ""}`;
 }
 
@@ -363,3 +434,18 @@ function extractFirstJsonObject(text: string): string | null {
 function fixInvalidBackslashes(jsonLike: string): string {
   return jsonLike.replace(/\\(?!["\\\/bfnrtu])/g, "\\\\");
 }
+
+//Prompt Scrap
+// **Approach:** Brief one-line strategy for solving
+
+// **Understanding the Problem:** Extract given data and requirement.
+
+// **Concept Application:** Introduce formula/law with $$ ... $$
+
+// **Calculation:** Perform detailed math/chemistry steps with LaTeX. Each major calculation in a separate block, not numbered list.(Based on the question)
+
+// **Final Answer:** State final result clearly, with units if needed. (Verify correctness.)
+
+// **Shortcut/Trick :** Exam-friendly shortcut (if any)
+
+// **Exploratory:** Provide one concise paragraph of relevant knowledge or advanced concepts that are not in the NCERT syllabus but are connected to the question.(If any for conceptual question)

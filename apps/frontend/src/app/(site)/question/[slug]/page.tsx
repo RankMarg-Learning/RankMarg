@@ -7,11 +7,17 @@ import { getQuestionBySlug } from '@/services/question.service';
 import { addAttempt } from '@/services';
 import { queryKeys } from '@/lib/queryKeys';
 import { getQueryConfig } from '@/lib/queryConfig';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 
 
 const QuestionPage = ({ params }: { params: { slug: string } }) => {
-  
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    setIsSolutionShow(searchParams.get('solution') === 'true' );
+  }, []);
+  const [isSolutionShow, setIsSolutionShow] = useState(false);
 
   const { slug } = params;
   const { data: question, isLoading } = useQuery({
@@ -49,7 +55,7 @@ const QuestionPage = ({ params }: { params: { slug: string } }) => {
         ) : (
           <QuestionUI question={question.data}
             handleAttempt={handleAttempt}
-            // isSolutionShow={isSolutionShow}
+            isSolutionShow={isSolutionShow}
           />
         )
       }

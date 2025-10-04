@@ -28,8 +28,8 @@ const ForgotPassoword = () => {
       };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-    <Card className="w-[350px]">
+    <div className="flex items-center justify-center min-h-screen yellow-gradient">
+    <Card className="w-[350px] shadow-lg">
       <CardHeader>
         <CardTitle>Forgot Password</CardTitle>
         <CardDescription>Enter your email to reset your password</CardDescription>

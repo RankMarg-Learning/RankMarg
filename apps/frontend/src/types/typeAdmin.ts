@@ -250,6 +250,7 @@ export interface QuestionFilter {
   type?: QuestionType;
   search?: string | null;
   isPublished?: boolean;
+  reports?: string | null;
   examCode?: string | null;
   skip: number;
   limit: number;

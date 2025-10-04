@@ -32,7 +32,7 @@ export function useMistakeDashboard() {
 
     return {
         distribution: distribution.data,
-        insight: insight.data?.insights || [],
+        insight: insight?.data || [],
         overview: overview.data,
         isLoading: queries.some(q => q.isLoading),
         isError: queries.some(q => q.isError),
