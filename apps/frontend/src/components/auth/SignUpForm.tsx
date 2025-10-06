@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import api from "@/utils/api";
+import { click_login_cta, signup_completed } from "@/utils/analytics";
 
 const signUpSchema = z.object({
   fullname: z.string().min(1, "Full name is required"),
@@ -77,6 +78,7 @@ const SignUpForm = () => {
       if (response.data.success) {
         setMsg("Account created successfully. Redirecting to sign-in page...");
         setMsgType("success");
+        signup_completed('email');
         setTimeout(() => {
           router.push("/sign-in");
         }, 1500);
@@ -186,6 +188,7 @@ const SignUpForm = () => {
       const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
       
       window.location.href = `${backendUrl}/api/auth/google`;
+      signup_completed('google');
     } catch (error) {
       console.error("Google sign up failed:", error);
       setMsg("Failed to initiate Google sign up. Please try again.");
@@ -378,6 +381,7 @@ const SignUpForm = () => {
               Already have an account?{" "}
               <Link
                 href="/sign-in"
+                onClick={()=>click_login_cta('Sign in','signup_page_cta')}
                 className="underline text-primary-600 hover:text-primary-800"
               >
                 Sign in

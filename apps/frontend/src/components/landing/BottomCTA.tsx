@@ -2,15 +2,11 @@
 import React from 'react'
 import { Button } from '../ui/button'
 import Link from "next/link"
-import { trackSubscriptionEvent } from '@/lib/GoogleAnalytics'
+import { click_signup_cta } from '@/utils/analytics'
 
 const BottomCTA = () => {
     const handleCTAClick = () => {
-        trackSubscriptionEvent('bottom_cta_click', {
-            cta_text: 'Start Free Now',
-            location: 'bottom_cta_section',
-            subscription_flow_step: 'bottom_signup_initiation'
-        });
+        click_signup_cta('Start Free Now', 'bottom_cta_section');
     };
 
     return (

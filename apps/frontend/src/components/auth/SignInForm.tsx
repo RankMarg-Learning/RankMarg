@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import api from "@/utils/api";
+import { click_signup_cta, signin_completed } from "@/utils/analytics";
 
 const signInSchema = z.object({
   username: z
@@ -48,8 +49,8 @@ const SignInForm = () => {
   const handleGoogleLogin = () => {
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
-      
       window.location.href = `${backendUrl}/api/auth/google`;
+      signin_completed('google');
     } catch (error) {
       console.error("Google login failed:", error);
       setMsg("Failed to initiate Google login. Please try again.");
@@ -65,6 +66,7 @@ const SignInForm = () => {
       const response = await api.post("/auth/sign-in", data);
       
       if (response.data.success && response.data.data) {
+        signin_completed('email');
         setMsg("Welcome back! Redirecting...");
         setMsgType("success");
         
@@ -243,7 +245,7 @@ const SignInForm = () => {
 
             <div className="mt-4 text-center text-sm">
               New to our platform?{" "}
-              <Link href="/sign-up" className="text-yellow-600 hover:text-yellow-800 underline ">
+              <Link href="/sign-up" onClick={()=>click_signup_cta('Create an account','signin_page_cta')} className="text-yellow-600 hover:text-yellow-800 underline ">
                 Create an account
               </Link>
             </div>

@@ -170,7 +170,7 @@ const SaasPricing = () => {
             </div>
             <button
               className="w-full sm:w-auto bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold px-6 md:px-8 py-3 rounded-xl shadow-lg text-base md:text-lg hover:scale-105 transition-transform duration-200"
-              onClick={() => router.push('/subscription?plan=rank')}
+              onClick={() => router.push('/subscription?plan=rank&ref=pricing_page')}
             >
               Enroll Now
             </button>
