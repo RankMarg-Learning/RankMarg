@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import useOnboardingStore, { OnboardingStep } from '@/store/onboardingStore';
 import { useToast } from '@/hooks/use-toast';
 import Motion from '../ui/motion';
+import { onboarding_progress } from '@/utils/analytics';
 
 interface OnboardingLayoutProps {
   children: React.ReactNode;
@@ -41,9 +42,11 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
         const result = await onNext();
         if (result === true) {
           nextStep();
+          onboarding_progress(currentStep);
         }
       } else {
         nextStep();
+        onboarding_progress(currentStep);
       }
     } catch (error) {
       console.error(error);

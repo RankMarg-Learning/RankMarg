@@ -14,7 +14,7 @@ import TestimonialsSection from "@/components/landing/TestimonialsSection"
 import JourneyToSuccess from "@/components/landing/JourneyToSuccess"
 import Link from "next/link"
 import { useEffect, useRef } from "react"
-import { trackSubscriptionEvent } from "@/lib/GoogleAnalytics"
+import { click_login_cta, click_signup_cta, gtagEvent, view_homepage } from "@/utils/analytics"
 
 
 export default function Home() {
@@ -23,15 +23,10 @@ export default function Home() {
   const testimonialsRef = useRef<HTMLDivElement>(null);
   const faqRef = useRef<HTMLDivElement>(null);
 
-  // Track landing page view
   useEffect(() => {
-    trackSubscriptionEvent('landing_page_view', {
-      page_type: 'landing',
-      subscription_flow_step: 'landing_page'
-    });
+    view_homepage();
   }, []);
 
-  // Track section views
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -39,7 +34,7 @@ export default function Home() {
           if (entry.isIntersecting) {
             const sectionName = entry.target.getAttribute('data-section');
             if (sectionName) {
-              trackSubscriptionEvent('section_view', {
+              gtagEvent('landing_page_section_view', {
                 section_name: sectionName,
                 subscription_flow_step: 'section_engagement'
               });
@@ -62,17 +57,11 @@ export default function Home() {
 
   // Track navigation clicks
   const handleLoginClick = () => {
-    trackSubscriptionEvent('login_click', {
-      source: 'navigation',
-      subscription_flow_step: 'login_initiation'
-    });
+    click_login_cta('Login', 'navigation');
   };
 
   const handleSignUpClick = () => {
-    trackSubscriptionEvent('signup_click', {
-      source: 'navigation',
-      subscription_flow_step: 'signup_initiation'
-    });
+    click_signup_cta('Get Started', 'navigation');
   };
 
   return (

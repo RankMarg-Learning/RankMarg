@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Lightbulb, CheckCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
-import { trackSubscriptionEvent } from '@/lib/GoogleAnalytics';
+import { click_signup_cta } from '@/utils/analytics';
 
 const FloatingBadge = ({ text, color }: { text: string; color: string }) => (
     <div className={`px-4 py-2 rounded-full text-sm font-medium shadow-md ring-1 ring-black/5 ${color}`}>
@@ -13,11 +13,7 @@ const FloatingBadge = ({ text, color }: { text: string; color: string }) => (
 
 const HeroSection = () => {
     const handleCTAClick = () => {
-        trackSubscriptionEvent('hero_cta_click', {
-            cta_text: 'Start Free Practice',
-            location: 'hero_section',
-            subscription_flow_step: 'hero_signup_initiation'
-        });
+        click_signup_cta('Start Free Practice', 'hero_section');
     };
 
     return (

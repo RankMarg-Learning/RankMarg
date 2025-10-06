@@ -23,6 +23,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import api from '@/utils/api';
+import { onboarding_progress } from '@/utils/analytics';
 
 const DashboardPreview = () => {
   const router = useRouter();
@@ -99,7 +100,7 @@ const DashboardPreview = () => {
       await progressPromise;
       
       if(onboardingResponse.data.success) {
-        
+        onboarding_progress('finalize', true);
         setCurrentProcess('Complete! Redirecting...');
         await new Promise(resolve => setTimeout(resolve, 800));
         
@@ -108,7 +109,7 @@ const DashboardPreview = () => {
     } catch (error) {
       console.error("Error during onboarding:", error);
       setIsProcessing(false);
-      
+      onboarding_progress('finalize', false);
       const errorMessage = error.message === 'Failed to create session after retry' 
         ? "We're having trouble setting up your session. Please try again in a few moments."
         : "Something went wrong during the setup process. Please try again.";

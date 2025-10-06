@@ -4,6 +4,7 @@ import { Check, ChevronDown, CreditCard, Shield, ArrowLeft } from "lucide-react"
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from "@/utils/api";
 import { plans } from "@/constant/pricing.constant";
+import { subscription_progress, subscription_purchased } from '@/utils/analytics';
 
 declare global {
   interface Window {
@@ -14,7 +15,8 @@ declare global {
 const SubscriptionContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const planType = searchParams.get('plan');
+  const ref_page = searchParams.get('ref');
+  const plan_type = searchParams.get('plan');
   
   const [selectedDuration, setSelectedDuration] = useState(365);
   const [coupon, setCoupon] = useState("");
@@ -25,27 +27,11 @@ const SubscriptionContent = () => {
   const [paying, setPaying] = useState(false);
 
   useEffect(() => {
-    // Track subscription page view
     if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'page_view', {
-        page_title: 'Subscription Page',
-        page_location: window.location.href,
-        plan_type: planType
-      });
+      subscription_progress(ref_page || "Unknown", 'subscription_page_view', plan_type || "Unknown", false);
     }
-  }, [planType]);
+  }, []);
 
-  // If it's free plan, redirect to onboarding
-  useEffect(() => {
-    if (planType === 'free') {
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'free_plan_selected', {
-          plan_type: 'free'
-        });
-      }
-      router.push('/onboarding');
-    }
-  }, [planType, router]);
 
   const selectedPlan = plans.find((p) => p.days === selectedDuration);
   const finalPrice = couponApplied && selectedPlan ? selectedPlan.current - (selectedPlan.current * discount / 100) : selectedPlan?.current || 0;
@@ -68,14 +54,7 @@ const SubscriptionContent = () => {
       setCouponApplied(true);
       setCouponError("");
       
-      // Track coupon applied
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'coupon_applied', {
-          coupon_code: coupon,
-          discount_percent: couponRes.data.data.discount,
-          plan_type: planType
-        });
-      }
+      subscription_progress(ref_page || "Unknown", 'coupon_applied', plan_type || "Unknown", true);
     } catch (error: any) {
       console.error("Error applying coupon:", error.response?.data?.message);
       setCouponError(error.response?.data?.message || "Failed to apply coupon");
@@ -87,15 +66,7 @@ const SubscriptionContent = () => {
     
     setPaying(true);
     
-    // Track payment initiation
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'begin_checkout', {
-        plan_type: planType,
-        plan_duration: selectedPlan.days,
-        amount: finalPrice,
-        currency: 'INR'
-      });
-    }
+      subscription_progress(ref_page || "Unknown", 'payment_initiated', plan_type || "Unknown", true);
     
     try {
       const response = await api.post('/payment/create-order', {
@@ -119,16 +90,7 @@ const SubscriptionContent = () => {
         name: 'RANK BOOSTER PLAN',
         description: `Subscription for ${selectedPlan.label} plan`,
         handler: async function (response: any) {
-          // Track successful payment
-          if (typeof window !== 'undefined' && window.gtag) {
-            window.gtag('event', 'purchase', {
-              transaction_id: response.razorpay_payment_id,
-              value: finalPrice,
-              currency: 'INR',
-              plan_type: planType,
-              plan_duration: selectedPlan.days
-            });
-          }
+          subscription_progress(ref_page || "Unknown", 'payment_verified', plan_type || "Unknown", true);
           
           const verifyResponse = await api.post(
             '/payment/verify',
@@ -150,6 +112,7 @@ const SubscriptionContent = () => {
 
           if (verifyResponse.data.success) {
             router.push(`/payment?status=success&planId=${verifyResponse.data.data.planId}&expiry=${verifyResponse.data.data.expiry}&planName=${verifyResponse.data.data.planName}`);
+            subscription_purchased(selectedPlan.plandId, finalPrice, 'INR', 'Razorpay');
           } else {
             router.push('/payment?status=failed');
           }
@@ -162,13 +125,7 @@ const SubscriptionContent = () => {
         modal: {
           ondismiss: function() {
             setPaying(false);
-            // Track payment abandonment
-            if (typeof window !== 'undefined' && window.gtag) {
-              window.gtag('event', 'payment_abandoned', {
-                plan_type: planType,
-                amount: finalPrice
-              });
-            }
+            subscription_progress(ref_page || "Unknown", 'payment_abandoned', plan_type || "Unknown", true);
           }
         }
       };
@@ -181,8 +138,8 @@ const SubscriptionContent = () => {
     }
   };
 
-  if (planType === 'free') {
-    return null; // Will redirect
+  if (plan_type === 'free') {
+    return null;
   }
 
   return (
