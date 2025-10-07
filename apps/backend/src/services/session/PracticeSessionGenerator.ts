@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { QuestionSelector } from "./QuestionSelector";
 import { SessionConfig } from "@/types/session.api.types";
+import { getSubjectDistributionAdaptive } from "./SessionConfig";
 
 type QuestionSource =
   | "currentTopic"
@@ -35,6 +36,15 @@ export class PracticeSessionGenerator {
       if (subjectIds.length === 0) {
         console.error("No subjects found for exam code:", this.config.examCode);
         return;
+      }
+
+      if (this.config.isPaidUser) {
+        const subjectDistribution = await getSubjectDistributionAdaptive(
+          this.config.userId,
+          this.config.examCode,
+          this.config.grade
+        );
+        this.config.subjectDistribution = subjectDistribution;
       }
 
       await Promise.all(
@@ -80,7 +90,10 @@ export class PracticeSessionGenerator {
     subjectId: string
   ): Promise<void> {
     try {
-      const totalQuestionsForSubject = this.config.totalQuestions;
+      const totalQuestionsForSubject =
+        this.config.subjectDistribution[subjectId] ||
+        this.config.totalQuestions;
+
       const questionMap = new Map<string, { id: string }>();
 
       const distributions = this.calculateDistribution(

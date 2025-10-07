@@ -1,5 +1,8 @@
+import { prisma } from "@/lib/prisma";
 import { SessionConfig } from "../../types/session.api.types";
 import { GradeEnum, QCategory } from "@repo/db/enums";
+import { exam } from "@/constant/examJson";
+import { Constraints } from "@/types/exam.type";
 
 export function createDefaultSessionConfig(
   userId: string,
@@ -25,6 +28,7 @@ export function createDefaultSessionConfig(
       revisionTopics: 0.2,
     },
     questionCategoriesDistribution: getQuestionCategoriesByGrade(grade),
+    subjectDistribution: {},
     difficultyDistribution: getDifficultyDistributionByGrade(
       grade,
       totalQuestions
@@ -104,25 +108,126 @@ export function getDifficultyDistributionByGrade(
   return { difficulty: base };
 }
 
-export function getSubjectDistribution(
+export async function getSubjectDistributionAdaptive(
+  userId: string,
   examCode: string,
-  totalQuestions: number
-): Record<string, number> {
-  let distribution: Record<string, number> = {};
+  grade: GradeEnum
+): Promise<Record<string, number>> {
+  const questionCount = await getAdaptiveQuestionCount(
+    userId,
+    15,
+    examCode,
+    grade
+  );
+  const examData = exam[examCode];
 
-  if (examCode === "JEE") {
-    distribution = {
-      Physics: Math.floor(totalQuestions * 0.33),
-      Chemistry: Math.floor(totalQuestions * 0.33),
-      Mathematics: Math.floor(totalQuestions * 0.34),
-    };
-  } else if (examCode === "NEET") {
-    distribution = {
-      Physics: Math.floor(totalQuestions * 0.25),
-      Chemistry: Math.floor(totalQuestions * 0.25),
-      Biology: Math.floor(totalQuestions * 0.5),
-    };
+  const constraints = examData.constraints as Constraints;
+  const minSubjectQuestions = constraints.min_subject_questions;
+  const maxSubjectQuestions = constraints.max_subject_questions;
+
+  const subjectDistribution: Record<string, number> = examData.subjects.reduce(
+    (acc, subject) => {
+      acc[subject.id] = Math.floor(
+        (subject.share_percentage / 100) * questionCount
+      );
+      if (acc[subject.id] < minSubjectQuestions) {
+        acc[subject.id] = minSubjectQuestions;
+      }
+      if (acc[subject.id] > maxSubjectQuestions) {
+        acc[subject.id] = maxSubjectQuestions;
+      }
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+  return subjectDistribution;
+}
+
+export async function getAdaptiveQuestionCount(
+  userId: string,
+  defaultQuestions: number = 15,
+  examCode: string,
+  grade: GradeEnum
+): Promise<number> {
+  const examData = exam[examCode];
+  const constraints = examData.constraints;
+
+  const fourDaysAgo = new Date();
+  fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
+
+  const recentAttempts = await prisma.attempt.findMany({
+    where: {
+      userId: userId,
+      solvedAt: {
+        gte: fourDaysAgo,
+      },
+    },
+    select: {
+      status: true,
+      solvedAt: true,
+    },
+  });
+
+  if (recentAttempts.length === 0) {
+    return defaultQuestions;
   }
 
-  return distribution;
+  const totalAttempts = recentAttempts.length;
+  const correctAttempts = recentAttempts.filter(
+    (attempt) => attempt.status === "CORRECT"
+  ).length;
+  const accuracy = totalAttempts > 0 ? correctAttempts / totalAttempts : 0;
+
+  const daysActive = Math.max(
+    1,
+    Math.ceil((Date.now() - fourDaysAgo.getTime()) / (1000 * 60 * 60 * 24))
+  );
+  const avgAttemptsPerDay = totalAttempts / daysActive;
+
+  const gradeThresholds = {
+    D: { minAccuracy: 0.4, minAttemptsPerDay: 3, maxIncrease: 0.3 },
+    C: { minAccuracy: 0.5, minAttemptsPerDay: 4, maxIncrease: 0.4 },
+    B: { minAccuracy: 0.6, minAttemptsPerDay: 5, maxIncrease: 0.5 },
+    A: { minAccuracy: 0.7, minAttemptsPerDay: 6, maxIncrease: 0.6 },
+    A_PLUS: { minAccuracy: 0.8, minAttemptsPerDay: 7, maxIncrease: 0.7 },
+  };
+
+  const thresholds =
+    gradeThresholds[grade as keyof typeof gradeThresholds] || gradeThresholds.C;
+
+  let adaptiveMultiplier = 1.0;
+
+  const meetsAccuracyThreshold = accuracy >= thresholds.minAccuracy;
+  const meetsAttemptsThreshold =
+    avgAttemptsPerDay >= thresholds.minAttemptsPerDay;
+
+  if (meetsAccuracyThreshold && meetsAttemptsThreshold) {
+    const accuracyBonus = Math.min(
+      (accuracy - thresholds.minAccuracy) / (1 - thresholds.minAccuracy),
+      1
+    );
+    const attemptsBonus = Math.min(
+      (avgAttemptsPerDay - thresholds.minAttemptsPerDay) /
+        (thresholds.minAttemptsPerDay * 0.5),
+      1
+    );
+
+    const combinedBonus = (accuracyBonus + attemptsBonus) / 2;
+    adaptiveMultiplier = 1 + combinedBonus * thresholds.maxIncrease;
+  } else if (accuracy < thresholds.minAccuracy * 0.7) {
+    adaptiveMultiplier = 0.8;
+  }
+
+  const adaptiveQuestions = Math.round(defaultQuestions * adaptiveMultiplier);
+
+  const minQuestions = Math.max(
+    constraints.min_questions,
+    Math.floor(defaultQuestions * 0.5)
+  );
+  const maxQuestions = Math.min(
+    constraints.max_questions,
+    Math.floor(defaultQuestions * 2)
+  );
+
+  return Math.max(minQuestions, Math.min(maxQuestions, adaptiveQuestions));
 }

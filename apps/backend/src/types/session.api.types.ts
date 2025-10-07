@@ -23,7 +23,7 @@ export interface SessionConfig {
     revisionTopics: number;
   };
   questionCategoriesDistribution: Record<string, QCategory[]>;
-
+  subjectDistribution: Record<string, number>;
   difficultyDistribution: {
     difficulty: number[];
   };

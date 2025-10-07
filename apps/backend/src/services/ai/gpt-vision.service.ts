@@ -192,9 +192,11 @@ ${
 - If question is based on subject inside ${subject.name} syllabus then change difficulty according to subject inside ${subject.name} syllabus.
 
 STRICT RENDER & FORMAT RULES:
+- My Render System is based on react-markdown with 'remark-math' and 'rehype-katex'.
 - Tables: GitHub-style with a header row (| Col1 | Col2 | ... |).
 - Index-to-space rule wrap with $..$ (e.g. x_i -> $x_i$ or x^{-2} -> $x^{-2}$, \sqrt{x} -> $\sqrt{x}$ and many more)
 ${subject.name === "Chemistry" ? "- Transform all element-symbol in render format.(e.g. CO2 -> $CO_2$,SO_4^{-1} -> $SO_4^{-1}$)" : ""}
+${subject.name === "Mathematics" ? "- For difficult symbol use unicode format like $\\not\\subset$ -> $⊄$ and many more" : ""} 
 - Math delimiters: Use ONLY $...$ for inline and $$ on its own lines for display and use the following format:
     $$
     ....

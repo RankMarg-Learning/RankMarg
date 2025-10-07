@@ -18,6 +18,11 @@ export class UserActivityController {
       const inactiveUsers = await prisma.user.findMany({
         where: {
           isActive: true,
+          subscription: {
+            status: {
+              not: SubscriptionStatus.ACTIVE,
+            },
+          },
           attempts: {
             none: {
               solvedAt: {
