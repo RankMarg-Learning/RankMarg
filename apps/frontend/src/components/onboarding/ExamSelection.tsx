@@ -14,6 +14,8 @@ const ExamSelection: React.FC = () => {
 		setExamCode(selectedExamCode);
 	};
 
+	const activeExams = (exams || []).filter((exam) => exam.isActive);
+
 	return (
 		<OnboardingLayout
 			title="Select Your Exam"
@@ -27,7 +29,7 @@ const ExamSelection: React.FC = () => {
 							<Skeleton key={i} className="h-[64px] w-full rounded-xl" />
 						))}
 					</div>
-				) : (exams || []).map((exam, index) => (
+				) : activeExams.map((exam, index) => (
 					<Motion
 						key={exam.code}
 						animation="scale-in"
