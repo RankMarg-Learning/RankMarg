@@ -80,19 +80,7 @@ export default function HeaderTrialBadge({ endDate, status, isLoading, onUpgrade
         </div>
       )  : null}
 
-      {/* Conversion-Focused Upgrade Button for Trial Users */}
-      {!isLoading && isTrial && onUpgrade && (
-        <button
-          onClick={onUpgrade}
-          className="ml-2 inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105 active:scale-95"
-          aria-label="Upgrade to premium now"
-          title="Upgrade now to unlock all features"
-        >
-          <Crown size={10} />
-          <span className="hidden xs:inline">Upgrade</span>
-          <span className="xs:hidden">↑</span>
-        </button>
-      )}
+      
     </div>
   );
 }

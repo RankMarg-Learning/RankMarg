@@ -1,5 +1,6 @@
 "use client"
 import { useState, useMemo, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,12 +15,13 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+// import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Subject, Topic, Subtopic, Exam, ExamSubject } from "@/types/typeAdmin";
 
 import {
   Pencil, Trash2, Plus, MoreVertical, BookText,
   BookOpen, List, Zap, Calendar, Users, Search,
-  Download, Clock, RefreshCw
+  Download, Clock, RefreshCw, ChevronRight, Home
 } from "lucide-react";
 import SubjectForm from "@/components/admin/curriculum/SubjectForm";
 import SubtopicForm from "@/components/admin/curriculum/SubtopicForm";
@@ -43,13 +45,20 @@ interface FilterState {
 }
 
 const Curriculum = () => {
-  const [activeTab, setActiveTab] = useState("subjects");
-  const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // URL-based state management
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || "subjects");
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || "");
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | undefined>(searchParams.get('subject') || undefined);
+  const [selectedTopicId, setSelectedTopicId] = useState<string | undefined>(searchParams.get('topic') || undefined);
+  
   const [filters, setFilters] = useState<FilterState>({
-    stream: "",
-    category: "",
-    status: "",
-    dateRange: ""
+    stream: searchParams.get('stream') || "",
+    category: searchParams.get('category') || "",
+    status: searchParams.get('status') || "",
+    dateRange: searchParams.get('dateRange') || ""
   });
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [bulkAction, setBulkAction] = useState<string>("");
@@ -67,8 +76,6 @@ const Curriculum = () => {
   const [selectedTopic, setSelectedTopic] = useState<Topic | undefined>();
   const [selectedSubtopic, setSelectedSubtopic] = useState<Subtopic | undefined>();
   const [selectedExam, setSelectedExam] = useState<Exam | undefined>();
-  const [selectedSubjectForTopics, setSelectedSubjectForTopics] = useState<string | undefined>(undefined);
-  const [selectedTopicForSubtopics, setSelectedTopicForSubtopics] = useState<string | undefined>(undefined);
 
   // Delete confirmation
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -80,8 +87,8 @@ const Curriculum = () => {
 
   // Hooks - Initialize with proper default values
   const { saveSubject, isLoading: isLoadingSubjects, removeSubject, subjects } = useSubjects()
-  const { removeTopic, saveTopic, isLoading: isLoadingTopics, topics } = useTopics(selectedSubjectForTopics)
-  const { removeSubTopic, isLoading: isLoadingSubtopics, saveSubTopic, subtopics } = useSubtopics(selectedTopicForSubtopics)
+  const { removeTopic, saveTopic, isLoading: isLoadingTopics, topics } = useTopics(selectedSubjectId)
+  const { removeSubTopic, isLoading: isLoadingSubtopics, saveSubTopic, subtopics } = useSubtopics(selectedTopicId)
   const { exams, saveExam, updateExam, removeExam, addSubjectToExam, removeSubjectFromExam, isLoading: isLoadingExams } = useExams()
 
   const filteredSubjects = useMemo(() =>
@@ -108,6 +115,84 @@ const Curriculum = () => {
       (filters.status === "" || (filters.status === "active" ? exam.isActive : !exam.isActive))
     ), [exams, searchTerm, filters.category, filters.status]
   );
+
+  // URL parameter management
+  const updateURL = useCallback((params: Record<string, string | undefined>) => {
+    const current = new URLSearchParams(searchParams.toString());
+    
+    Object.entries(params).forEach(([key, value]) => {
+      if (value && value !== '') {
+        current.set(key, value);
+      } else {
+        current.delete(key);
+      }
+    });
+    
+    const newURL = `${window.location.pathname}?${current.toString()}`;
+    router.push(newURL, { scroll: false });
+  }, [router, searchParams]);
+
+  // Navigation handlers
+  const handleSubjectSelect = useCallback((subjectId: string | undefined) => {
+    setSelectedSubjectId(subjectId);
+    setSelectedTopicId(undefined); // Reset topic when subject changes
+    setActiveTab("topics");
+    updateURL({ 
+      subject: subjectId, 
+      topic: undefined, 
+      tab: "topics" 
+    });
+  }, [updateURL]);
+
+  const handleTopicSelect = useCallback((topicId: string | undefined) => {
+    setSelectedTopicId(topicId);
+    setActiveTab("subtopics");
+    updateURL({ 
+      topic: topicId, 
+      tab: "subtopics" 
+    });
+  }, [updateURL]);
+
+  const handleTabChange = useCallback((tab: string) => {
+    setActiveTab(tab);
+    updateURL({ tab });
+  }, [updateURL]);
+
+  const handleSearchChange = useCallback((search: string) => {
+    setSearchTerm(search);
+    updateURL({ search: search || undefined });
+  }, [updateURL]);
+
+  // Breadcrumb data
+  const breadcrumbData = useMemo(() => {
+    const items = [
+      { label: "Curriculum", href: "/admin/curriculum", icon: Home }
+    ];
+
+    if (selectedSubjectId && subjects) {
+      const subject = subjects.find(s => s.id === selectedSubjectId);
+      if (subject) {
+        items.push({
+          label: subject.name,
+          href: `/admin/curriculum?tab=topics&subject=${selectedSubjectId}`,
+          icon: BookText
+        });
+      }
+    }
+
+    if (selectedTopicId && topics) {
+      const topic = topics.find(t => t.id === selectedTopicId);
+      if (topic) {
+        items.push({
+          label: topic.name,
+          href: `/admin/curriculum?tab=subtopics&subject=${selectedSubjectId}&topic=${selectedTopicId}`,
+          icon: BookOpen
+        });
+      }
+    }
+
+    return items;
+  }, [selectedSubjectId, selectedTopicId, subjects, topics]);
 
   // Statistics
   const stats = useMemo(() => ({
@@ -141,7 +226,6 @@ const Curriculum = () => {
 
   const handleAddTopic = useCallback((subjectId?: string) => {
     setSelectedTopic(undefined);
-    setSelectedSubjectForTopics(subjectId);
     setTopicDialogOpen(true);
   }, []);
 
@@ -161,7 +245,6 @@ const Curriculum = () => {
 
   const handleAddSubtopic = useCallback((topicId?: string) => {
     setSelectedSubtopic(undefined);
-    setSelectedTopicForSubtopics(topicId);
     setSubtopicDialogOpen(true);
   }, []);
 
@@ -263,7 +346,7 @@ const Curriculum = () => {
         id: selectedTopic.id,
         name: topic.name,
         slug: topic.slug,
-        subjectId: topic.subjectId,
+        subjectId: topic.subjectId || selectedSubjectId,
         weightage: topic.weightage || 0,
         orderIndex: topic.orderIndex,
         estimatedMinutes: topic.estimatedMinutes,
@@ -281,7 +364,7 @@ const Curriculum = () => {
       saveTopic.mutate({
         name: topic.name,
         slug: topic.slug,
-        subjectId: topic.subjectId,
+        subjectId: topic.subjectId || selectedSubjectId,
         weightage: topic.weightage || 0,
         orderIndex: topic.orderIndex,
         estimatedMinutes: topic.estimatedMinutes,
@@ -296,7 +379,7 @@ const Curriculum = () => {
           }
         })
     }
-  }, [selectedTopic, saveTopic]);
+  }, [selectedTopic, selectedSubjectId, saveTopic]);
 
   const handleSaveSubtopic = useCallback((subtopic: Omit<Subtopic, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (selectedSubtopic) {
@@ -304,7 +387,7 @@ const Curriculum = () => {
         id: selectedSubtopic.id,
         name: subtopic.name,
         slug: subtopic.slug,
-        topicId: subtopic.topicId,
+        topicId: subtopic.topicId || selectedTopicId,
         orderIndex: subtopic.orderIndex,
         estimatedMinutes: subtopic.estimatedMinutes,
       },
@@ -321,7 +404,7 @@ const Curriculum = () => {
       saveSubTopic.mutate({
         name: subtopic.name,
         slug: subtopic.slug,
-        topicId: subtopic.topicId,
+        topicId: subtopic.topicId || selectedTopicId,
         orderIndex: subtopic.orderIndex,
         estimatedMinutes: subtopic.estimatedMinutes,
       },
@@ -335,7 +418,7 @@ const Curriculum = () => {
           }
         })
     }
-  }, [selectedSubtopic, saveSubTopic]);
+  }, [selectedSubtopic, selectedTopicId, saveSubTopic]);
 
   const handleSaveExam = useCallback((exam: Omit<Exam, 'createdAt' | 'updatedAt'>) => {
     if (selectedExam) {
@@ -414,7 +497,7 @@ const Curriculum = () => {
 
 
 
-  // Reset filters
+  // Reset filters and navigation
   const resetFilters = useCallback(() => {
     setFilters({
       stream: "",
@@ -423,10 +506,46 @@ const Curriculum = () => {
       dateRange: ""
     });
     setSearchTerm("");
-  }, []);
+    setSelectedSubjectId(undefined);
+    setSelectedTopicId(undefined);
+    setActiveTab("subjects");
+    updateURL({ 
+      search: undefined, 
+      stream: undefined, 
+      category: undefined, 
+      status: undefined, 
+      dateRange: undefined,
+      subject: undefined,
+      topic: undefined,
+      tab: "subjects"
+    });
+  }, [updateURL]);
 
   return (
     <div className="container mx-auto p-3 space-y-3">
+      {/* Breadcrumb Navigation */}
+      <nav className="flex items-center space-x-2 text-sm text-muted-foreground">
+        {breadcrumbData.map((item, index) => (
+          <div key={index} className="flex items-center">
+            {index > 0 && <ChevronRight className="w-4 h-4 mx-2" />}
+            {index === breadcrumbData.length - 1 ? (
+              <span className="flex items-center gap-2 font-medium text-foreground">
+                <item.icon className="w-4 h-4" />
+                {item.label}
+              </span>
+            ) : (
+              <a 
+                href={item.href}
+                className="flex items-center gap-2 hover:text-primary transition-colors"
+              >
+                <item.icon className="w-4 h-4" />
+                {item.label}
+              </a>
+            )}
+          </div>
+        ))}
+      </nav>
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -515,7 +634,7 @@ const Curriculum = () => {
 
 
       {/* Main Content Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4 bg-gray-100 p-1 rounded-lg shadow-sm">
           <TabsTrigger
             value="subjects"
@@ -557,7 +676,7 @@ const Curriculum = () => {
                   <Input
                     placeholder="Search subjects, topics, subtopics, or exams..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => handleSearchChange(e.target.value)}
                     className="pl-10"
                   />
                 </div>
@@ -621,10 +740,17 @@ const Curriculum = () => {
                       </TableRow>
                     ) : (
                       filteredSubjects?.map((subject) => (
-                        <TableRow key={subject.id} className="hover:bg-gray-50 transition-colors duration-150">
+                        <TableRow 
+                          key={subject.id} 
+                          className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                          onClick={() => handleSubjectSelect(subject.id)}
+                        >
                           <TableCell>
                             <div>
-                              <div className="font-medium">{subject.name}</div>
+                              <div className="font-medium flex items-center gap-2">
+                                {subject.name}
+                                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                              </div>
                               {subject.shortName && (
                                 <Badge variant="secondary" className="mt-1">
                                   {subject.shortName}
@@ -639,20 +765,41 @@ const Curriculum = () => {
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="hover:bg-gray-200">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="hover:bg-gray-200"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   <MoreVertical className="w-4 h-4" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent>
-                                <DropdownMenuItem onClick={() => handleEditSubject(subject)}>
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSubjectSelect(subject.id);
+                                }}>
+                                  <BookOpen className="w-4 h-4 mr-2" />
+                                  View Topics
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditSubject(subject);
+                                }}>
                                   <Pencil className="w-4 h-4 mr-2" />
                                   Edit
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleAddTopic(subject.id)}>
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddTopic(subject.id);
+                                }}>
                                   <Plus className="w-4 h-4 mr-2" />
                                   Add Topic
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDeleteSubject(subject)}>
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteSubject(subject);
+                                }}>
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   Delete
                                 </DropdownMenuItem>
@@ -676,12 +823,17 @@ const Curriculum = () => {
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle>Topics</CardTitle>
-                  <CardDescription>Manage topics within subjects</CardDescription>
+                  <CardDescription>
+                    {selectedSubjectId && subjects ? 
+                      `Manage topics within ${subjects.find(s => s.id === selectedSubjectId)?.name}` :
+                      "Manage topics within subjects"
+                    }
+                  </CardDescription>
                 </div>
                 <div className="flex items-center space-x-2">
                   <SearchableSelect
-                    value={selectedSubjectForTopics || "all"}
-                    onValueChange={(value) => setSelectedSubjectForTopics(value === "all" ? undefined : value)}
+                    value={selectedSubjectId || "all"}
+                    onValueChange={(value) => handleSubjectSelect(value === "all" ? undefined : value)}
                     disabled={isLoadingSubjects}
                     placeholder="All Subjects"
                     options={[
@@ -731,7 +883,7 @@ const Curriculum = () => {
                                 No topics match "{searchTerm}"
                               </p>
                             )}
-                            {selectedSubjectForTopics && (
+                            {selectedSubjectId && (
                               <p className="text-sm text-muted-foreground">
                                 No topics for selected subject
                               </p>
@@ -745,12 +897,19 @@ const Curriculum = () => {
                       </TableRow>
                     ) : (
                       filteredTopics?.map((topic) => (
-                        <TableRow key={topic.id} className="hover:bg-gray-50 transition-colors duration-150">
+                        <TableRow 
+                          key={topic.id} 
+                          className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                          onClick={() => handleTopicSelect(topic.id)}
+                        >
                           <TableCell>
                             <Badge variant="outline">{topic.orderIndex}</Badge>
                           </TableCell>
                           <TableCell>
-                              <div className="font-medium">{topic.name}</div>
+                              <div className="font-medium flex items-center gap-2">
+                                {topic.name}
+                                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                              </div>
                           </TableCell>
                           <TableCell>
                             <Badge variant="secondary">
@@ -784,20 +943,40 @@ const Curriculum = () => {
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   <MoreVertical className="w-4 h-4" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent>
-                                <DropdownMenuItem onClick={() => handleEditTopic(topic)}>
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleTopicSelect(topic.id);
+                                }}>
+                                  <List className="w-4 h-4 mr-2" />
+                                  View Subtopics
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditTopic(topic);
+                                }}>
                                   <Pencil className="w-4 h-4 mr-2" />
                                   Edit
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleAddSubtopic(topic.id)}>
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddSubtopic(topic.id);
+                                }}>
                                   <Plus className="w-4 h-4 mr-2" />
                                   Add Subtopic
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDeleteTopic(topic)}>
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteTopic(topic);
+                                }}>
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   Delete
                                 </DropdownMenuItem>
@@ -821,12 +1000,17 @@ const Curriculum = () => {
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle>Subtopics</CardTitle>
-                  <CardDescription>Manage subtopics within topics</CardDescription>
+                  <CardDescription>
+                    {selectedTopicId && topics ? 
+                      `Manage subtopics within ${topics.find(t => t.id === selectedTopicId)?.name}` :
+                      "Manage subtopics within topics"
+                    }
+                  </CardDescription>
                 </div>
                 <div className="flex items-center space-x-2">
                   <SearchableSelect
-                    value={selectedTopicForSubtopics || "all"}
-                    onValueChange={(value) => setSelectedTopicForSubtopics(value === "all" ? undefined : value)}
+                    value={selectedTopicId || "all"}
+                    onValueChange={(value) => handleTopicSelect(value === "all" ? undefined : value)}
                     disabled={isLoadingTopics}
                     placeholder="All Topics"
                     options={[
@@ -876,7 +1060,7 @@ const Curriculum = () => {
                                 No subtopics match "{searchTerm}"
                               </p>
                             )}
-                            {selectedTopicForSubtopics && (
+                            {selectedTopicId && (
                               <p className="text-sm text-muted-foreground">
                                 No subtopics for selected topic
                               </p>
@@ -1167,7 +1351,7 @@ const Curriculum = () => {
           <TopicForm
             initialTopic={selectedTopic}
             subjects={subjects || []}
-            selectedSubjectId={selectedSubjectForTopics}
+            selectedSubjectId={selectedSubjectId}
             onSave={handleSaveTopic}
             onCancel={() => setTopicDialogOpen(false)}
           />
@@ -1184,7 +1368,7 @@ const Curriculum = () => {
           <SubtopicForm
             initialSubtopic={selectedSubtopic}
             topics={topics || []}
-            selectedTopicId={selectedTopicForSubtopics}
+            selectedTopicId={selectedTopicId}
             onSave={handleSaveSubtopic}
             onCancel={() => setSubtopicDialogOpen(false)}
           />

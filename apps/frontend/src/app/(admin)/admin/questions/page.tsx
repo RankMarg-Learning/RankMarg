@@ -451,7 +451,7 @@ function QuestionsContent() {
                             )}
                             <DropdownMenuItem
                               className="flex items-center gap-2"
-                              onClick={() => router.push(`/admin/questions/${question.slug}/edit?page=${currentPage}`)}
+                              onClick={() => router.push(`/admin/questions/${question.slug}/edit?page=${currentPage}&published=${publishFilter}&reports=${reportFilter}`)}
                             >
                               <Edit className="h-4 w-4" /> Edit
                             </DropdownMenuItem>
@@ -511,7 +511,7 @@ function QuestionsContent() {
           <DropdownMenuItem 
             className="flex items-center gap-2"
             onClick={() => {
-              router.push(`/admin/questions/${contextMenu.question.slug}/edit?page=${currentPage}`);
+              router.push(`/admin/questions/${contextMenu.question.slug}/edit?page=${currentPage}&published=${publishFilter}&reports=${reportFilter}`);
               setContextMenu(null);
             }}
           >

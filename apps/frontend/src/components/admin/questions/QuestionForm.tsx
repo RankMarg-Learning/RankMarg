@@ -109,6 +109,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
   const [localSolution, setLocalSolution] = useState("");
   const [optionRefs, setOptionRefs] = useState<{ [key: number]: React.RefObject<HTMLTextAreaElement> }>({});
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isMac, setIsMac] = useState(false);
 
   // Function to replace LaTeX delimiters
   const replaceLatexDelimiters = () => {
@@ -621,6 +622,87 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
     }
   }, [initialQuestion?.content]);
 
+  // Detect platform for keyboard shortcut display
+  useEffect(() => {
+    setIsMac(navigator.platform.toLowerCase().includes('mac'));
+  }, []);
+
+  // Keyboard shortcut handler for Ctrl+Shift+S (Save & Publish) and Ctrl+Shift+P (Preview)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Check if Ctrl+Shift+S (Windows/Linux) or Cmd+Shift+S (Mac) is pressed - Save & Publish
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        
+        // Trigger save with publish
+        handleSaveWithPublish();
+      }
+      
+      // Check if Ctrl+Shift+P (Windows/Linux) or Cmd+Shift+P (Mac) is pressed - Preview
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'p') {
+        event.preventDefault();
+        
+        // Open preview dialog
+        setIsPreviewOpen(true);
+      }
+    };
+
+    // Add event listener
+    document.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup function
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // Save with publish function
+  const handleSaveWithPublish = async () => {
+    try {
+      // First validate the form
+      const isValid = await trigger();
+      
+      if (!isValid) {
+        toast({
+          title: "Please fix validation errors before saving",
+          variant: "default",
+          duration: 3000,
+          className: "bg-red-500 text-white",
+        });
+        return;
+      }
+
+      // Get form data
+      const formData = getValues();
+      
+      // Set isPublished to true
+      const dataWithPublish = {
+        ...formData,
+        isPublished: true
+      };
+
+      // Show loading toast
+      toast({
+        title: "Saving and publishing question...",
+        variant: "default",
+        duration: 2000,
+        className: "bg-blue-500 text-white",
+      });
+
+      // Call the save function
+      onSave(dataWithPublish);
+
+    } catch (error) {
+      console.error('Error saving with publish:', error);
+      toast({
+        title: "Error saving question",
+        variant: "default",
+        duration: 3000,
+        className: "bg-red-500 text-white",
+      });
+    }
+  };
+
   return (
     <Card className="w-full ">
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -634,14 +716,15 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                   : "Fill in the details to create a new question"}
               </CardDescription>
             </div>
-            <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-              <DialogTrigger asChild>
-                <Button type="button" variant="outline" className="flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
-                  Preview
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-2">
+              <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+                <DialogTrigger asChild>
+                  <Button type="button" variant="outline" className="flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    Preview
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Question Preview</DialogTitle>
                   <DialogDescription>
@@ -810,8 +893,22 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                     </div>
                   )}
                 </div>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
+              <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded border">
+                <div className="flex items-center gap-1">
+                  <kbd className="text-xs">
+                    {isMac ? '⌘' : 'Ctrl'}
+                  </kbd> + <kbd className="text-xs">1</kbd> Save & Publish
+                </div>
+                <div className="w-px h-3 bg-gray-300"></div>
+                <div className="flex items-center gap-1">
+                  <kbd className="text-xs">
+                    {isMac ? '⌘' : 'Ctrl'}
+                  </kbd> + <kbd className="text-xs">2</kbd> Preview
+                </div>
+              </div>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
