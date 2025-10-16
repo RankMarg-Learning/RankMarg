@@ -1,5 +1,4 @@
 import { SubscriptionStatus } from "@repo/db/enums";
-import { Crown } from "lucide-react";
 import React from "react";
 
 type Props = {
