@@ -1,5 +1,5 @@
 "use client"
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -44,7 +44,23 @@ interface FilterState {
   dateRange: string;
 }
 
-const Curriculum = () => {
+// Loading component for Suspense fallback
+const CurriculumLoading = () => (
+  <div className="container mx-auto p-3 space-y-3">
+    <div className="animate-pulse">
+      <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="h-24 bg-gray-200 rounded"></div>
+        ))}
+      </div>
+      <div className="h-96 bg-gray-200 rounded"></div>
+    </div>
+  </div>
+);
+
+// Main curriculum component that uses search params
+const CurriculumContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -1467,6 +1483,15 @@ const Curriculum = () => {
         </DialogContent>
       </Dialog>
     </div>
+  );
+};
+
+// Main component with Suspense boundary
+const Curriculum = () => {
+  return (
+    <Suspense fallback={<CurriculumLoading />}>
+      <CurriculumContent />
+    </Suspense>
   );
 };
 
