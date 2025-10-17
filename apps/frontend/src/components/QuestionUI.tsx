@@ -354,7 +354,7 @@ const QuestionUI = ({
                         isUnlocked ? (
                           <>
                             {/* Solving Strategy */}
-                            {question?.strategy && (
+                            {question?.strategy && question?.strategy?.length > 10 && (
                               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                   <Lightbulb className="h-4 w-4 text-blue-600" />
@@ -366,7 +366,7 @@ const QuestionUI = ({
                               </div>
                             )}
                             {/* Common Mistakes */}
-                            {question?.commonMistake && (
+                            {question?.commonMistake && question?.commonMistake?.length > 10 && (
                               <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-200 p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                   <AlertTriangle className="h-4 w-4 text-red-600" />

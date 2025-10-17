@@ -248,7 +248,19 @@ export class QuestionController {
         isPublished,
         options,
       }: Question = req.body;
+      
+      // Validate required fields
+      if (!title || !content || !solution || !type || !difficulty || !subjectId || !topicId || !subtopicId) {
+        return ResponseUtil.error(res, "Missing required fields", 400);
+      }
+
+      // Validate category array
+      if (!category || !Array.isArray(category) || category.length === 0) {
+        return ResponseUtil.error(res, "At least one category is required", 400);
+      }
+
       const userID = req.user.id;
+      
       const question = await prisma.question.create({
         data: {
           slug,
@@ -258,7 +270,7 @@ export class QuestionController {
           format,
           difficulty,
           subjectId,
-          topicId,
+          topicId, 
           subtopicId,
           category: {
             create: category.map((category: QCategory) => ({ category })),
@@ -274,7 +286,7 @@ export class QuestionController {
           isPublished,
           createdBy: userID,
           options: {
-            create: options.map((option: Option) => ({
+            create: (options || []).map((option: Option) => ({
               content: option.content,
               isCorrect: option.isCorrect,
             })),
@@ -283,6 +295,7 @@ export class QuestionController {
       });
       ResponseUtil.success(res, question, "Question created successfully", 200);
     } catch (error) {
+      console.error("Error creating question:", error);
       next(error);
     }
   };
@@ -321,30 +334,64 @@ export class QuestionController {
     try {
       const { slug } = req.params;
       const body = req.body;
+      
+      // Validate required fields
+      if (!body.title || !body.content || !body.solution) {
+        return ResponseUtil.error(res, "Missing required fields: title, content, or solution", 400);
+      }
+
+      // Prepare update data with only valid fields
+      const updateData: any = {
+        title: body.title,
+        content: body.content,
+        type: body.type,
+        format: body.format,
+        difficulty: body.difficulty,
+        subjectId: body.subjectId,
+        topicId: body.topicId,
+        subtopicId: body.subtopicId,
+        pyqYear: body.pyqYear || null,
+        book: body.book || null,
+        hint: body.hint || null,
+        solution: body.solution,
+        strategy: body.strategy || null,
+        commonMistake: body.commonMistake || null,
+        questionTime: body.questionTime,
+        isNumerical: body.isNumerical,
+        isPublished: body.isPublished,
+      };
+
+      // Handle options update if provided
+      if (body.options && Array.isArray(body.options)) {
+        updateData.options = {
+          deleteMany: {},
+          create: body.options.map((option: any) => ({
+            content: option.content,
+            isCorrect: option.isCorrect,
+          })),
+        };
+      }
+
+      // Handle category update if provided
+      if (body.category && Array.isArray(body.category)) {
+        updateData.category = {
+          deleteMany: {},
+          create: body.category.map((category: QCategory) => ({
+            category: category,
+          })),
+        };
+      }
+
       await prisma.question.update({
         where: {
           slug,
         },
-        data: {
-          ...body,
-
-          options: {
-            deleteMany: {},
-            create: body.options?.map((option) => ({
-              content: option.content,
-              isCorrect: option.isCorrect,
-            })),
-          },
-          category: {
-            deleteMany: {},
-            create: body.category.map((category: QCategory) => ({
-              category: category,
-            })),
-          },
-        },
+        data: updateData,
       });
-      ResponseUtil.success(res, null, "Ok", 200);
+      
+      ResponseUtil.success(res, null, "Question updated successfully", 200);
     } catch (error) {
+      console.error("Error updating question:", error);
       next(error);
     }
   };

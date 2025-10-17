@@ -50,17 +50,21 @@ export const getQuestionBySlug = async (slug: string) => {
 export const addQuestions = async (question: Partial<Question>) => {
   try {
     const response = await api.post('/question', question);
-  return response.data;
-    
-  } catch (error) {
+    return response.data;
+  } catch (error: any) {
     console.error("Error adding question:", error);
+    
+    // Extract error message from response
+    const errorMessage = error.response?.data?.message || 
+                        error.response?.data?.error || 
+                        error.message || 
+                        "Error adding question";
+    
     return {
       success: false,
-      message: "Error adding question",
+      message: errorMessage,
     }
-    
   }
-  
 };
 
 export const updateQuestion = async (slug: string, question: Partial<Question>) => {
@@ -69,15 +73,20 @@ export const updateQuestion = async (slug: string, question: Partial<Question>) 
   try {
     const response = await api.put(`/question/${slug}`, question);
     return response.data;
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    console.error("Update question error:", error);
+    
+    // Extract error message from response
+    const errorMessage = error.response?.data?.message || 
+                        error.response?.data?.error || 
+                        error.message || 
+                        "Error updating question";
+    
     return {
       success: false,
-      message: "Error updating question",
+      message: errorMessage,
     }
-
   }
-  
 };
 
 export const deleteQuestion = async (slug: string) => {
