@@ -9,6 +9,7 @@ import { createSuggestion } from "../jobs/tasks/suggest.create.job";
 import { updateUserActivityJob } from "../jobs/tasks/userActivity.job";
 import { subscriptionExpiredJob } from "../jobs/tasks/userActivity.job";
 import { updateGradeJob } from "@/jobs/tasks/grade.job";
+import { updatePromocodeJob } from "@/jobs/tasks/promocode.job";
 
 export interface CronJob {
   name: string;
@@ -89,6 +90,13 @@ export class CronManager {
       description:
         "Check if the subscription is expired and mark the user as inactive daily at 11:50 PM",
     },
+    {
+      name: "updatePromocode",
+      schedule: "0 0 * * 0", // weekly on sunday at midnight
+      job: updatePromocodeJob,
+      enabled: true,
+      description: "Update promo code usage count weekly on Sunday at midnight",
+    }
   ];
 
   public initialize(): void {
