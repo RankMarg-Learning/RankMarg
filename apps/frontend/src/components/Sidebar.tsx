@@ -8,7 +8,7 @@ import {
   X, 
   ChevronLeft,
   ChevronRight,
-  ArrowUpNarrowWide,
+  ClipboardList,
   UserPen,
   ExternalLink
 } from 'lucide-react';
@@ -40,7 +40,7 @@ export function Sidebar({ className }: SidebarProps)   {
     { icon: GraduationCap, label: 'Mastery', href: '/mastery' },
     { icon: X, label: 'Mistakes Tracker', href: '/mistakes-tracker' },
     { icon: PieChart, label: 'Analytics', href: '/analytics' },
-    { icon: ArrowUpNarrowWide, label: 'Leaderboard', href: '/leaderboard' },
+    { icon: ClipboardList, label: 'My Curriculum', href: '/my-curriculum' },
     { icon: UserPen, label: 'Profile', href: `/u/${user?.username}` },
   ];
 

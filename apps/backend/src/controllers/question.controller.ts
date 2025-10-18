@@ -140,7 +140,7 @@ export class QuestionController {
             "Questions fetched successfully",
             200
           );
-          return;
+          
         }
         whereClause.slug = { in: reportFilteredSlugs };
       }
@@ -251,12 +251,12 @@ export class QuestionController {
       
       // Validate required fields
       if (!title || !content || !solution || !type || !difficulty || !subjectId || !topicId || !subtopicId) {
-        return ResponseUtil.error(res, "Missing required fields", 400);
+         ResponseUtil.error(res, "Missing required fields", 400);
       }
 
       // Validate category array
       if (!category || !Array.isArray(category) || category.length === 0) {
-        return ResponseUtil.error(res, "At least one category is required", 400);
+         ResponseUtil.error(res, "At least one category is required", 400);
       }
 
       const userID = req.user.id;
@@ -337,7 +337,7 @@ export class QuestionController {
       
       // Validate required fields
       if (!body.title || !body.content || !body.solution) {
-        return ResponseUtil.error(res, "Missing required fields: title, content, or solution", 400);
+         ResponseUtil.error(res, "Missing required fields: title, content, or solution", 400);
       }
 
       // Prepare update data with only valid fields

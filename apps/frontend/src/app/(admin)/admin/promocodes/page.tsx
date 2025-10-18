@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { Plus, Edit, Trash2, Copy, Search, Filter, MoreHorizontal, Calendar, Percent, Users } from "lucide-react"
+import { Plus, Edit, Trash2, Copy, Search, Filter, MoreHorizontal, Calendar, Percent, Users, ExternalLink } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -286,6 +286,15 @@ const PromoCodesPage = () => {
     })
   }
 
+  const copyPartnerUrl = (promoCodeId: string) => {
+    const partnerUrl = `${window.location.origin}/partner-program/${promoCodeId}`
+    navigator.clipboard.writeText(partnerUrl)
+    toast({
+      title: "Copied!",
+      description: "Partner program URL copied to clipboard"
+    })
+  }
+
   const isExpired = (validUntil: string) => {
     return new Date(validUntil) < new Date()
   }
@@ -526,8 +535,17 @@ const PromoCodesPage = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => copyToClipboard(promoCode.code)}
+                            title="Copy promocode"
                           >
                             <Copy className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyPartnerUrl(promoCode.id)}
+                            title="Copy partner program URL"
+                          >
+                            <ExternalLink className="h-3 w-3" />
                           </Button>
                         </div>
                       </TableCell>
@@ -584,6 +602,12 @@ const PromoCodesPage = () => {
                             <DropdownMenuItem onClick={() => openEditDialog(promoCode)}>
                               <Edit className="mr-2 h-4 w-4" />
                               Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => window.open(`/partner-program/${promoCode.id}`, '_blank')}
+                            >
+                              <ExternalLink className="mr-2 h-4 w-4" />
+                              View Partner Dashboard
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleToggleStatus(promoCode.id)}>
                               {promoCode.isActive ? "Deactivate" : "Activate"}

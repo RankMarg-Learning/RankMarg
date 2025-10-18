@@ -4,6 +4,7 @@ import { AttemptType } from "@repo/db/enums";
 
 export * from "./session.service";
 export * from "./user.service";
+export * from "./setting.service";
 
 // Add Attempt API
 export const addAttempt = async ({
