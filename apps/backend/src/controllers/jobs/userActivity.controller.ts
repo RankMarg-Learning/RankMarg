@@ -133,8 +133,8 @@ export class UserActivityController {
           WHERE "userId" IN (
             SELECT DISTINCT "userId" 
             FROM "Attempt" 
-            WHERE "solvedAt" >= ${from} 
-              AND "solvedAt" < ${to}
+            WHERE "solvedAt" >= now() - INTERVAL '1 day'
+              AND "solvedAt" < now()
               AND "userId" IS NOT NULL
           )
         `,
@@ -144,8 +144,8 @@ export class UserActivityController {
           WHERE "userId" NOT IN (
             SELECT DISTINCT "userId" 
             FROM "Attempt" 
-            WHERE "solvedAt" >= ${from} 
-              AND "solvedAt" < ${to}
+            WHERE "solvedAt" >= now() - INTERVAL '1 day'
+              AND "solvedAt" < now()
               AND "userId" IS NOT NULL
           )
           AND "streak" > 0
