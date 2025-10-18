@@ -22,6 +22,7 @@ import planRoutes from "./subscription/plan.routes";
 import promoCodeRoutes from "./subscription/promoCode.routes";
 import bulkUploadRoutes from "./bulkUpload.routes";
 import userActivityRoutes from "./userActivity.routes";
+import settingRoutes from "./setting.routes";
 // Add new routes here
 export const routes = {
   auth: authRoutes,
@@ -48,4 +49,5 @@ export const routes = {
   promoCode: promoCodeRoutes,
   bulkUpload: bulkUploadRoutes,
   userActivity: userActivityRoutes,
+  setting: settingRoutes,
 };
