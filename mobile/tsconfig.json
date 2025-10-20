@@ -5,6 +5,12 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@repo/db": [
+        "../packages/db/src"
+      ],
+      "@repo/db/enums": [
+        "../packages/db/src/enums"
       ]
     }
   },

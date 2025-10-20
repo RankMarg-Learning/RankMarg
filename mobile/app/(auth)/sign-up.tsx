@@ -7,9 +7,12 @@ import {
   Platform,
   TextInput,
   Text,
+  ActivityIndicator,
 } from "react-native";
-import { router } from "expo-router";
+import { Link, router } from "expo-router";
 import tw from "@/utils/tailwind";
+import Svg, { Path } from "react-native-svg";
+import { useSignUp } from "@/hooks/useAuth";
 
 export default function SignUpScreen() {
   const [formData, setFormData] = useState({
@@ -20,11 +23,13 @@ export default function SignUpScreen() {
     confirmPassword: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error">("error");
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(true);
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+
+  // TanStack Query mutation
+  const signUpMutation = useSignUp();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -115,27 +120,39 @@ export default function SignUpScreen() {
       return;
     }
 
-    setLoading(true);
     setMessage("");
 
-    try {
-      // TODO: Implement actual API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+    const signUpData = {
+      fullname: formData.fullname,
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+    };
 
-      setMessage(
-        "Account created successfully. Redirecting to sign-in page..."
-      );
-      setMessageType("success");
+    signUpMutation.mutate(signUpData, {
+      onSuccess: (data) => {
+        if (data.success) {
+          setMessage(
+            "Account created successfully! Welcome to RankMarg!"
+          );
+          setMessageType("success");
 
-      setTimeout(() => {
-        router.push("/(auth)/sign-in");
-      }, 1500);
-    } catch {
-      setMessage("Account creation failed. Please try again.");
-      setMessageType("error");
-    } finally {
-      setLoading(false);
-    }
+          setTimeout(() => {
+            // Redirect to onboarding after successful signup (new users)
+            router.replace("/onboarding");
+          }, 1500);
+        } else {
+          setMessage(data.message || "Account creation failed. Please try again.");
+          setMessageType("error");
+        }
+      },
+      onError: (error: any) => {
+        console.error("Sign up failed:", error);
+        setMessage("Account creation failed. Please try again.");
+        setMessageType("error");
+      },
+    });
   };
 
   const handleGoogleSignUp = () => {
@@ -147,7 +164,7 @@ export default function SignUpScreen() {
     return (
       isUsernameAvailable &&
       !isCheckingUsername &&
-      !loading &&
+      !signUpMutation.isPending &&
       formData.username.trim() !== ""
     );
   };
@@ -186,7 +203,7 @@ export default function SignUpScreen() {
 
           <View style={tw`flex-1 items-center justify-center px-6`}>
             <View style={tw`w-full max-w-sm`}>
-              <View style={tw`bg-white rounded-lg shadow-lg p-6`}>
+              <View style={tw`bg-card-light rounded-lg shadow-sm p-6`}>
                 {/* Header */}
                 <View style={tw`mb-6`}>
                   <Text style={tw`text-xl font-bold text-center mb-2`}>
@@ -342,18 +359,27 @@ export default function SignUpScreen() {
                   {/* Create Account Button */}
                   <TouchableOpacity
                     onPress={handleSignUp}
-                    disabled={!canSubmit() || loading}
+                    disabled={!canSubmit() || signUpMutation.isPending}
                     style={tw`bg-amber-500 rounded-lg py-3 px-4 mb-4 ${
-                      !canSubmit() || loading ? "opacity-50" : ""
+                      !canSubmit() || signUpMutation.isPending ? "opacity-50" : ""
                     }`}
                   >
-                    <Text
-                      style={tw`text-white text-center font-semibold text-base`}
-                    >
-                      {loading
-                        ? "Creating your account..."
-                        : "Create an account"}
-                    </Text>
+                    <View style={tw`flex-row items-center justify-center`}>
+                      {signUpMutation.isPending && (
+                        <ActivityIndicator
+                          size="small"
+                          color="white"
+                          style={tw`mr-2`}
+                        />
+                      )}
+                      <Text
+                        style={tw`text-white text-center font-semibold text-base`}
+                      >
+                        {signUpMutation.isPending
+                          ? "Creating your account..."
+                          : "Create an account"}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
 
                   {/* Divider */}
@@ -376,24 +402,24 @@ export default function SignUpScreen() {
                     style={tw`border border-gray-300 rounded-lg py-3 px-4 bg-white mb-6`}
                   >
                     <View style={tw`flex-row items-center justify-center`}>
-                      <svg style={tw`mr-2 h-4 w-4`} viewBox="0 0 24 24">
-                        <path
+                    <Svg style={tw`mr-2 h-4 w-4`} width={24} height={24} viewBox="0 0 24 24">
+                        <Path
                           d="M12.0001 4.67676C13.0358 4.67676 14.0783 5.01379 14.9571 5.65121L18.1868 2.45786C16.1994 0.851428 14.0215 0 12.0001 0C8.19786 0 4.80133 1.8833 2.80084 4.70755L6.0246 7.92534C7.07276 5.95617 9.39311 4.67676 12.0001 4.67676Z"
                           fill="#EA4335"
                         />
-                        <path
+                        <Path
                           d="M23.49 12.2744C23.49 11.4608 23.4177 10.6473 23.2732 9.86816H12V14.4972H18.47C18.1894 16.0691 17.3213 17.4077 16.0739 18.308L19.1955 21.4396C21.3577 19.3149 23.49 16.2083 23.49 12.2744Z"
                           fill="#4285F4"
                         />
-                        <path
+                        <Path
                           d="M5.95 14.3044C5.68 13.6107 5.53 12.8695 5.53 12.1008C5.53 11.3321 5.68 10.5908 5.95 9.89721L2.72621 6.67943C1.85843 8.29984 1.35181 10.1476 1.35181 12.1008C1.35181 14.054 1.85843 15.9017 2.72621 17.5222L5.95 14.3044Z"
                           fill="#FBBC05"
                         />
-                        <path
+                        <Path
                           d="M12.0001 24.0001C14.0215 24.0001 15.855 23.359 17.3051 22.2692L14.1835 19.1376C13.3138 19.6606 12.24 20.0001 12.0001 20.0001C9.39311 20.0001 7.07276 18.7207 6.0246 16.7515L2.80084 19.9693C4.80133 22.7936 8.19786 24.0001 12.0001 24.0001Z"
                           fill="#34A853"
                         />
-                      </svg>
+                      </Svg>
                       <Text style={tw`text-gray-700 font-semibold text-base`}>
                         Sign up with Google
                       </Text>
@@ -405,11 +431,10 @@ export default function SignUpScreen() {
                 <View style={tw`text-center`}>
                   <Text style={tw`text-sm text-gray-600`}>
                     Already have an account?{" "}
-                    <TouchableOpacity
-                      onPress={() => router.push("/(auth)/sign-in")}
-                    >
-                      <Text style={tw`text-amber-600 underline`}>Sign in</Text>
-                    </TouchableOpacity>
+                    <Link
+                      href="/(auth)/sign-in" style={tw`text-primary-400 hover:text-primary-600 underline `}>
+                      Sign in
+                    </Link>
                   </Text>
                 </View>
               </View>

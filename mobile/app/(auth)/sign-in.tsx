@@ -9,8 +9,10 @@ import {
   Text,
   ActivityIndicator,
 } from "react-native";
-import { router } from "expo-router";
+import Svg, { Path } from 'react-native-svg';
+import { Link, router } from "expo-router";
 import tw from "@/utils/tailwind";
+import { useSignIn } from "@/hooks/useAuth";
 // Using simple text icons instead of lucide-react-native to avoid SVG dependency
 
 export default function SignInScreen() {
@@ -19,7 +21,6 @@ export default function SignInScreen() {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<
     "success" | "error" | "warning"
@@ -28,6 +29,9 @@ export default function SignInScreen() {
     username?: string;
     password?: string;
   }>({});
+
+  // TanStack Query mutation
+  const signInMutation = useSignIn();
 
   const validateForm = () => {
     const newErrors: { username?: string; password?: string } = {};
@@ -62,69 +66,46 @@ export default function SignInScreen() {
       return;
     }
 
-    setLoading(true);
     setMessage("");
 
-    try {
-      // TODO: Replace with actual API call
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:3001"}/api/auth/sign-in`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
+    signInMutation.mutate(formData, {
+      onSuccess: (data) => {
+        if (data.success && data.data) {
+          setMessage("Welcome back! Redirecting...");
+          setMessageType("success");
+
+          // Redirect based on user role and status
+          setTimeout(() => {
+            if (data.data.isNewUser) {
+              // Redirect to onboarding for new users
+              router.replace("/onboarding" as any);
+            } else {
+              // All authenticated users go to dashboard
+              router.replace("/dashboard" as any);
+            }
+          }, 500);
+        } else {
+          setMessage(data.message || "Login failed. Please try again.");
+          setMessageType("error");
         }
-      );
+      },
+      onError: (error: any) => {
+        console.error("Login failed:", error);
 
-      const data = await response.json();
-
-      if (response.ok && data.success && data.data) {
-        setMessage("Welcome back! Redirecting...");
-        setMessageType("success");
-
-        // TODO: Implement proper routing based on user role
-        // if (user.isNewUser) {
-        //   router.replace("/onboarding" as any);
-        // } else {
-        //   switch (user.role) {
-        //     case 'ADMIN':
-        //       router.replace("/admin" as any);
-        //       break;
-        //     case 'INSTRUCTOR':
-        //       router.replace("/instructor" as any);
-        //       break;
-        //     default:
-        //       router.replace("/dashboard" as any);
-        //   }
-        // }
-
-        setTimeout(() => {
-          router.replace("/" as any);
-        }, 500);
-      } else {
-        setMessage(data.message || "Login failed. Please try again.");
+        if (error.response?.status === 401) {
+          setMessage(
+            "Invalid username or password. Please check your credentials and try again."
+          );
+        } else if (error.response?.status >= 500) {
+          setMessage("Server error. Please try again later.");
+        } else {
+          setMessage(
+            "An unexpected error occurred. Please check your connection and try again."
+          );
+        }
         setMessageType("error");
-      }
-    } catch (error: any) {
-      console.error("Login failed:", error);
-
-      if (error.message?.includes("UNAUTHORIZED")) {
-        setMessage(
-          "Invalid username or password. Please check your credentials and try again."
-        );
-      } else if (error.message?.includes("500")) {
-        setMessage("Server error. Please try again later.");
-      } else {
-        setMessage(
-          "An unexpected error occurred. Please check your connection and try again."
-        );
-      }
-      setMessageType("error");
-    } finally {
-      setLoading(false);
-    }
+      },
+    });
   };
 
   const handleGoogleSignIn = () => {
@@ -163,7 +144,7 @@ export default function SignInScreen() {
         >
           <View style={tw`flex-1 items-center justify-center px-6`}>
             <View style={tw`w-full max-w-sm`}>
-              <View style={tw`bg-white rounded-lg shadow-lg p-6`}>
+              <View style={tw`bg-card-light rounded-lg shadow-sm p-6`}>
                 {/* Header */}
                 <View style={tw`mb-6`}>
                   <Text style={tw`text-2xl font-bold text-center mb-2`}>
@@ -185,9 +166,8 @@ export default function SignInScreen() {
                       Email or Username
                     </Text>
                     <TextInput
-                      style={tw`border rounded-lg px-4 py-3 bg-white text-gray-900 ${
-                        errors.username ? "border-red-300" : "border-gray-300"
-                      }`}
+                      style={tw`border rounded-lg px-4 py-3 bg-white text-gray-900 ${errors.username ? "border-red-300" : "border-gray-300"
+                        }`}
                       placeholder="Your email or username"
                       placeholderTextColor="#9CA3AF"
                       value={formData.username}
@@ -216,16 +196,15 @@ export default function SignInScreen() {
                       <TouchableOpacity
                         onPress={() => router.push("/(auth)/forgot-password")}
                       >
-                        <Text style={tw`text-sm text-amber-600 underline`}>
+                        <Text style={tw`text-sm text-primary-400 hover:text-primary-600 underline`}>
                           Forgot your password?
                         </Text>
                       </TouchableOpacity>
                     </View>
                     <View style={tw`relative`}>
                       <TextInput
-                        style={tw`border rounded-lg px-4 py-3 bg-white text-gray-900 pr-12 ${
-                          errors.password ? "border-red-300" : "border-gray-300"
-                        }`}
+                        style={tw`border rounded-lg px-4 py-3 bg-white text-gray-900 pr-12 ${errors.password ? "border-red-300" : "border-gray-300"
+                          }`}
                         placeholder="Your password"
                         placeholderTextColor="#9CA3AF"
                         value={formData.password}
@@ -262,13 +241,12 @@ export default function SignInScreen() {
                   {/* Sign In Button */}
                   <TouchableOpacity
                     onPress={handleSignIn}
-                    disabled={loading}
-                    style={tw`bg-amber-500 rounded-lg py-3 px-4 mb-4 ${
-                      loading ? "opacity-50" : ""
-                    }`}
+                    disabled={signInMutation.isPending}
+                    style={tw`bg-primary-400 rounded-lg py-3 px-4 mb-4 ${signInMutation.isPending ? "opacity-50" : ""
+                      }`}
                   >
                     <View style={tw`flex-row items-center justify-center`}>
-                      {loading && (
+                      {signInMutation.isPending && (
                         <ActivityIndicator
                           size="small"
                           color="white"
@@ -278,7 +256,7 @@ export default function SignInScreen() {
                       <Text
                         style={tw`text-white text-center font-semibold text-base`}
                       >
-                        {loading ? "Signing In..." : "Login"}
+                        {signInMutation.isPending ? "Signing In..." : "Login"}
                       </Text>
                     </View>
                   </TouchableOpacity>
@@ -286,7 +264,7 @@ export default function SignInScreen() {
                   {/* Divider */}
                   <View style={tw`relative mb-6`}>
                     <View style={tw`absolute inset-0 flex items-center`}>
-                      <View style={tw`flex-1 h-px bg-gray-200`} />
+                      <View style={tw`flex-1 h-px bg-border-light`} />
                     </View>
                     <View
                       style={tw`relative flex justify-center text-xs uppercase`}
@@ -303,24 +281,24 @@ export default function SignInScreen() {
                     style={tw`border border-gray-300 rounded-lg py-3 px-4 bg-white mb-6`}
                   >
                     <View style={tw`flex-row items-center justify-center`}>
-                      <svg style={tw`mr-2 h-4 w-4`} viewBox="0 0 24 24">
-                        <path
+                      <Svg style={tw`mr-2 h-4 w-4`} width={24} height={24} viewBox="0 0 24 24">
+                        <Path
                           d="M12.0001 4.67676C13.0358 4.67676 14.0783 5.01379 14.9571 5.65121L18.1868 2.45786C16.1994 0.851428 14.0215 0 12.0001 0C8.19786 0 4.80133 1.8833 2.80084 4.70755L6.0246 7.92534C7.07276 5.95617 9.39311 4.67676 12.0001 4.67676Z"
                           fill="#EA4335"
                         />
-                        <path
+                        <Path
                           d="M23.49 12.2744C23.49 11.4608 23.4177 10.6473 23.2732 9.86816H12V14.4972H18.47C18.1894 16.0691 17.3213 17.4077 16.0739 18.308L19.1955 21.4396C21.3577 19.3149 23.49 16.2083 23.49 12.2744Z"
                           fill="#4285F4"
                         />
-                        <path
+                        <Path
                           d="M5.95 14.3044C5.68 13.6107 5.53 12.8695 5.53 12.1008C5.53 11.3321 5.68 10.5908 5.95 9.89721L2.72621 6.67943C1.85843 8.29984 1.35181 10.1476 1.35181 12.1008C1.35181 14.054 1.85843 15.9017 2.72621 17.5222L5.95 14.3044Z"
                           fill="#FBBC05"
                         />
-                        <path
+                        <Path
                           d="M12.0001 24.0001C14.0215 24.0001 15.855 23.359 17.3051 22.2692L14.1835 19.1376C13.3138 19.6606 12.24 20.0001 12.0001 20.0001C9.39311 20.0001 7.07276 18.7207 6.0246 16.7515L2.80084 19.9693C4.80133 22.7936 8.19786 24.0001 12.0001 24.0001Z"
                           fill="#34A853"
                         />
-                      </svg>
+                      </Svg>
                       <Text style={tw`text-gray-700 font-semibold text-base`}>
                         Login with Google
                       </Text>
@@ -330,18 +308,15 @@ export default function SignInScreen() {
 
                 {/* Footer */}
                 <View style={tw`text-center`}>
-                  <Text style={tw`text-sm text-gray-600`}>
+                  <Text style={tw`text-sm text-muted-light justify-center`}>
                     New to our platform?{" "}
-                    <TouchableOpacity
-                      onPress={() => router.push("/(auth)/sign-up")}
-                    >
-                      <Text style={tw`text-yellow-600 underline`}>
-                        Create an account
-                      </Text>
-                    </TouchableOpacity>
+                    <Link
+                      href="/(auth)/sign-up" style={tw`text-primary-400 hover:text-primary-600 underline `}>
+                      Create an account
+                    </Link>
                   </Text>
 
-                  <Text style={tw`text-xs text-center text-gray-500 mt-4`}>
+                  <Text style={tw`text-xs text-center text-muted-light mt-4`}>
                     Protected by enterprise-grade security. We respect your
                     privacy.
                   </Text>

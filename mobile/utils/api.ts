@@ -1,15 +1,13 @@
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
-import https from "https";
-import dotenv from "dotenv";
-import path from "path";
+import { API_CONFIG } from "@/src/config/api";
+import { tokenStorage } from "@/src/utils/storage";
 
-dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
-const isProd = process.env.NODE_ENV === "production";
-const baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`;
+// For React Native, we use our API configuration
+const isProd = API_CONFIG.isProduction;
+const baseURL = `${API_CONFIG.baseURL}/api`;
 
-const httpsAgent = new https.Agent({ keepAlive: true });
 
-const MAX_RETRIES = 1;
+const MAX_RETRIES = API_CONFIG.retry.maxRetries;
 function shouldRetry(error: AxiosError) {
   if (!error || !error.config) return false;
   const status = error.response?.status;
@@ -29,22 +27,27 @@ async function retryRequest(originalConfig: AxiosRequestConfig) {
   }
 
   config.__retryCount += 1;
-  const backoff = 200 * Math.pow(2, config.__retryCount);
+  const backoff = API_CONFIG.retry.baseDelay * Math.pow(API_CONFIG.retry.backoffMultiplier, config.__retryCount);
   await new Promise((res) => setTimeout(res, backoff));
   return api.request(config);
 }
 
-const defaultTimeout = isProd ? 30000 : 10000;
+const defaultTimeout = isProd ? API_CONFIG.timeout.production : API_CONFIG.timeout.default;
 const api = axios.create({
   baseURL,
-  httpsAgent,
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
   timeout: defaultTimeout,
 });
 
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    // Add auth token to requests
+    const token = await tokenStorage.getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     if (config.url?.includes("/auth/")) {
       config.params = { ...config.params, _t: Date.now() };
     }

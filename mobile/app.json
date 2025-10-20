@@ -48,7 +48,8 @@
       "router": {},
       "eas": {
         "projectId": "bde3d41a-556e-48ae-a8d3-f39f1c962cd0"
-      }
+      },
+      "apiBaseUrl": "http://localhost:3001"
     }
   }
 }

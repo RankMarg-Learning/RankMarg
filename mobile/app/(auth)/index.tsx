@@ -18,7 +18,7 @@ export default function AuthIndexScreen() {
         </View>
 
         {/* Action Buttons */}
-        <View style={tw`w-full max-w-sm space-y-4`}>
+        <View style={tw`w-full max-w-sm space-y-4 gap-4`}>
           <TouchableOpacity
             onPress={() => router.push("/(auth)/sign-in")}
             style={tw`bg-amber-500 rounded-lg py-4 px-6 shadow-sm`}
