@@ -19,7 +19,8 @@ export interface MiddlewareResult {
 export function useMiddleware(): MiddlewareResult {
   const router = useRouter();
   const pathname = usePathname();
-  const { data: user, isLoading: userLoading, error } = useCurrentUser();
+  const { data: currentUserResponse, isLoading: userLoading, error } = useCurrentUser();
+  const user = currentUserResponse?.data; // normalize to actual user object
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Handle special cases for root and auth pages
@@ -41,7 +42,7 @@ export function useMiddleware(): MiddlewareResult {
     if (isRootOrAuthPage) {
       if (user && !error) {
         // Redirect authenticated users to their default page
-        const redirectUrl = getDefaultRedirectUrl(user);
+        const redirectUrl = getDefaultRedirectUrl(user as any);
         if (pathname !== redirectUrl) {
           setIsRedirecting(true);
           router.replace(redirectUrl as any);
@@ -58,7 +59,7 @@ export function useMiddleware(): MiddlewareResult {
     }
 
     // Check route access using the access control system
-    const accessResult = checkRouteAccess(pathname, user);
+    const accessResult = checkRouteAccess(pathname, user as any);
 
     // If access is denied and we have a redirect destination
     if (!accessResult.hasAccess && accessResult.redirectTo) {
@@ -121,7 +122,8 @@ export function useIsAdminRoute(): boolean {
  */
 export function useHasRole(requiredRole: Role): boolean {
   const { data: user } = useCurrentUser();
-  return user?.role === requiredRole;
+  
+  return user?.data?.role === requiredRole;
 }
 
 /**
@@ -129,7 +131,7 @@ export function useHasRole(requiredRole: Role): boolean {
  */
 export function useHasAnyRole(requiredRoles: Role[]): boolean {
   const { data: user } = useCurrentUser();
-  return user?.role ? requiredRoles.includes(user.role) : false;
+  return user?.data?.role ? requiredRoles.includes(user.data.role) : false;
 }
 
 /**
@@ -137,8 +139,8 @@ export function useHasAnyRole(requiredRoles: Role[]): boolean {
  */
 export function useAccessibleRoutes() {
   const { data: user } = useCurrentUser();
-  if (!user?.role) return [];
-  return RouteUtils.getAccessibleRoutes(user.role);
+  if (!user?.data?.role) return [];
+  return RouteUtils.getAccessibleRoutes(user.data.role);
 }
 
 /**
@@ -146,6 +148,6 @@ export function useAccessibleRoutes() {
  */
 export function useCanAccessRoute(routePath: string): boolean {
   const { data: user } = useCurrentUser();
-  const accessResult = checkRouteAccess(routePath, user);
+  const accessResult = checkRouteAccess(routePath, user as any);
   return accessResult.hasAccess;
 }
