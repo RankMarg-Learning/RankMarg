@@ -2,8 +2,13 @@ import React from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { router } from "expo-router";
 import tw from "@/utils/tailwind";
+import MarkdownRenderer from "@/src/lib/MarkdownRenderer";
+import ReadingDoc from "@/src/components/ReadDoc";
 
 export default function AuthIndexScreen() {
+
+  const content = `Given:  \n- Number of turns $$ N = 1000 $$\n- Radius $$ r = 10 \\, \\text{m} $$\n- Angular speed $$ \\omega = 2 \\, \\text{rad/s} $$\n- Magnetic field $$ B = 2 \\times 10^{-5} \\, \\text{T} $$\n- Resistance $$ R = 12.56 \\, \\Omega $$\n\n**Step 1**: Area of the circular coil:  \n$$\nA = \\pi r^2 = \\pi \\times 10^2 = 100\\pi \\, \\text{m}^2\n$$\n\n**Step 2**: Maximum induced emf:  \n$$\n\\varepsilon_{\\text{max}} = N B A \\omega  \n= 1000 \\times (2 \\times 10^{-5}) \\times (100\\pi) \\times 2 = 4\\pi \\, \\text{V}\n$$\n\n**Step 3**: Induced current:  \n$$\nI = \\frac{\\varepsilon_{\\text{max}}}{R} = \\frac{4\\pi}{12.56} \\approx 1 \\, \\text{A}\n$$`
+
   return (
     <View style={tw`flex-1 bg-gradient-to-b from-yellow-100 to-yellow-50`}>
       <View style={tw`flex-1 justify-center items-center px-6`}>
@@ -16,7 +21,7 @@ export default function AuthIndexScreen() {
             Your journey to success starts here
           </Text>
         </View>
-
+    
         {/* Action Buttons */}
         <View style={tw`w-full max-w-sm space-y-4 gap-4`}>
           <TouchableOpacity
@@ -36,6 +41,7 @@ export default function AuthIndexScreen() {
               Create Account
             </Text>
           </TouchableOpacity>
+          <MarkdownRenderer content={content} style={tw`text-center`} />
         </View>
 
         {/* Footer */}

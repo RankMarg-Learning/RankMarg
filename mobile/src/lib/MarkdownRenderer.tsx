@@ -1,339 +1,171 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Linking, Image as RNImage } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import Markdown from 'react-native-markdown-display';
-import MathView from 'react-native-math-view';
+import Katex from 'react-native-katex';
 
 interface MarkdownRendererProps {
   content: string;
   style?: any;
 }
 
-/* -------------------------- fast helpers & constants -------------------------- */
-
-const DEFAULT_IMG = { width: 190, height: 190, loc: 'center' as const };
-const IMG_EXT_RE = /\.(?:jpg|jpeg|png|gif|webp|svg)(?:\?.*)?$/i;
-const HTTP_IMAGE_HINT_RE = /^https?:\/\/.*\bimage\b/i;
-
-// Parse ?w=..&h=..&loc=.. without URL()
-function extractImageProps(url: string | undefined) {
-  if (!url) return DEFAULT_IMG;
-
-  const qIndex = url.indexOf('?');
-  if (qIndex === -1) return DEFAULT_IMG;
-
-  const query = url.substring(qIndex + 1);
-  if (!query) return DEFAULT_IMG;
-
-  let w = DEFAULT_IMG.width;
-  let h = DEFAULT_IMG.height;
-  let loc: 'left' | 'center' | 'right' | 'float-left' | 'float-right' = DEFAULT_IMG.loc;
-
-  const pairs = query.split('&');
-  for (let i = 0; i < pairs.length; i++) {
-    const [k, v] = pairs[i].split('=');
-    if (!v) continue;
-    if (k === 'w') {
-      const n = parseInt(v, 10);
-      if (!Number.isNaN(n) && n > 0 && n < 4096) w = n;
-    } else if (k === 'h') {
-      const n = parseInt(v, 10);
-      if (!Number.isNaN(n) && n > 0 && n < 4096) h = n;
-    } else if (k === 'loc') {
-      if (v === 'left' || v === 'center' || v === 'right' || v === 'float-left' || v === 'float-right') {
-        loc = v;
-      }
-    }
-  }
-  return { width: w, height: h, loc };
-}
-
-export const handleImagePaste = (text: string | undefined) => {
-  if (!text) return null;
-
-  const isImageUrl = IMG_EXT_RE.test(text) || HTTP_IMAGE_HINT_RE.test(text);
-
-  if (!isImageUrl) return null;
-
-  return `![Image](${text})`;
-};
-
-/* -------------------------- Math Processing -------------------------- */
-
-// Extract math expressions and replace with placeholders
-function preprocessMath(content: string) {
-  const mathExpressions: Array<{ type: 'inline' | 'block'; content: string }> = [];
-  let processed = content;
-
-  // Process display math ($$...$$)
-  processed = processed.replace(/\$\$([\s\S]+?)\$\$/g, (match, math) => {
-    const index = mathExpressions.length;
-    mathExpressions.push({ type: 'block', content: math.trim() });
-    return `___MATH_BLOCK_${index}___`;
-  });
-
-  // Process inline math ($...$)
-  processed = processed.replace(/\$([^\$\n]+?)\$/g, (match, math) => {
-    const index = mathExpressions.length;
-    mathExpressions.push({ type: 'inline', content: math.trim() });
-    return `___MATH_INLINE_${index}___`;
-  });
-
-  return { processed, mathExpressions };
-}
-
-// Component to render a single math expression
-const MathRenderer: React.FC<{ content: string; inline?: boolean }> = ({ content, inline = false }) => {
-  return (
-    <View style={inline ? styles.mathInline : styles.mathBlock}>
-      <MathView
-        math={content}
-        style={inline ? styles.mathInlineText : styles.mathBlockText}
-      />
-    </View>
-  );
-};
-
-/* --------------------------------- Styles --------------------------------- */
+/* ------------------------------- KaTeX styling ------------------------------ */
 
 const styles = StyleSheet.create({
-  body: {
-    color: '#374151',
-    fontSize: 14,
-    lineHeight: 22,
-  },
-  heading1: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginTop: 0,
-    marginBottom: 8,
-    lineHeight: 28,
-  },
-  heading2: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginTop: 0,
-    marginBottom: 8,
-    lineHeight: 26,
-  },
-  heading3: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#374151',
-    marginTop: 0,
-    marginBottom: 4,
-    lineHeight: 24,
-  },
-  paragraph: {
-    color: '#374151',
-    marginTop: 8,
-    marginBottom: 8,
-    lineHeight: 22,
-  },
-  strong: {
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  em: {
-    fontStyle: 'italic',
-    color: '#1f2937',
-  },
-  code_inline: {
-    backgroundColor: '#f3f4f6',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    fontSize: 12,
-    fontFamily: 'monospace',
-    color: '#dc2626',
-  },
-  code_block: {
-    backgroundColor: '#1f2937',
-    padding: 16,
-    borderRadius: 8,
-    marginVertical: 16,
-    overflow: 'hidden',
-  },
-  fence: {
-    backgroundColor: '#1f2937',
-    padding: 16,
-    borderRadius: 8,
-    marginVertical: 16,
-    overflow: 'hidden',
-  },
-  link: {
-    color: '#2563eb',
-    textDecorationLine: 'underline',
-  },
-  blockquote: {
-    backgroundColor: '#eff6ff',
-    borderLeftWidth: 2,
-    borderLeftColor: '#3b82f6',
-    paddingLeft: 16,
-    paddingVertical: 8,
-    marginVertical: 12,
-    borderRadius: 4,
-  },
-  bullet_list: {
+  blockMathContainer: {
     marginVertical: 8,
-  },
-  ordered_list: {
-    marginVertical: 8,
-  },
-  list_item: {
-    color: '#374151',
-    marginVertical: 4,
-    lineHeight: 22,
-  },
-  hr: {
-    backgroundColor: '#d1d5db',
-    height: 1,
-    marginVertical: 4,
-  },
-  table: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 4,
-    marginVertical: 12,
-  },
-  thead: {
-    backgroundColor: '#f9fafb',
-  },
-  tbody: {},
-  th: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    padding: 6,
-    backgroundColor: '#f3f4f6',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  tr: {
-    borderBottomWidth: 1,
-    borderColor: '#f3f4f6',
-  },
-  td: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    padding: 6,
-    fontSize: 14,
-  },
-  image: {
-    marginVertical: 12,
-    height: 64,
-    resizeMode: 'contain',
-  },
-  mathBlock: {
-    marginVertical: 16,
-    alignItems: 'center',
-  },
-  mathBlockText: {
-    fontSize: 16,
-    color: '#111827',
-  },
-  mathInline: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  mathInlineText: {
-    fontSize: 14,
-    color: '#374151',
   },
 });
+
+const katexInlineStyle = `
+html, body { margin: 0; padding: 0; background: transparent; }
+.katex-display { margin: 0; }
+.katex { font-size: 18px; }
+`;
+
+
+
+/* --------------------------- Helpers: LaTeX -> MD --------------------------- */
+
+function convertLatexToMarkdown(input: string) {
+  let out = input;
+  out = out.replace(/\\section\*\{([^}]+)\}/g, '## $1');
+  out = out.replace(/\\section\{([^}]+)\}/g, '## $1');
+  out = out.replace(/\\textbf\{([^}]+)\}/g, '**$1**');
+  out = out.replace(/\\emph\{([^}]+)\}/g, '*$1*');
+  out = out.replace(/\\textit\{([^}]+)\}/g, '*$1*');
+  // itemize
+  out = out.replace(/\\begin\{itemize\}/g, '');
+  out = out.replace(/\\end\{itemize\}/g, '');
+  out = out.replace(/(^|\n)\s*\\item\s+/g, '$1- ');
+  // enumerate
+  out = out.replace(/\\begin\{enumerate\}/g, '');
+  out = out.replace(/\\end\{enumerate\}/g, '');
+  out = out.replace(/(^|\n)\s*\\item\s+/g, '$11. ');
+  // spacing
+  out = out.replace(/\\vspace\{[^}]+\}/g, '\n\n');
+  out = out.replace(/\\\\(?:\[[^\]]*\])?/g, '\n');
+  // text + misc
+  out = out.replace(/\\text\{([^}]+)\}/g, '$1');
+  out = out.replace(/\\quad/g, '    ');
+  // clean extra blank lines
+  out = out.replace(/\n\s*\n\s*\n/g, '\n\n');
+  return out;
+}
+
+/* ------------------------------- Tokenization ------------------------------- */
+
+type Part =
+  | { type: 'text'; content: string; key: string }
+  | { type: 'math-inline'; content: string; key: string }
+  | { type: 'math-display'; content: string; key: string };
+
+// Extract display math first: $$...$$ or \[ ... \]
+const DISPLAY_MATH_RE = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\])/g;
+// Extract inline math inside text: $...$ or \( ... \)
+const INLINE_MATH_RE = /(\$[^$\n]+\$|\\\([^\)]+\\\))/g;
+
+function stripDelimiters(s: string): string {
+  if (s.startsWith('$$') && s.endsWith('$$')) return s.slice(2, -2);
+  if (s.startsWith('[') && s.endsWith(']')) return s; // not expected
+  if (s.startsWith('\\[') && s.endsWith('\\]')) return s.slice(2, -2);
+  if (s.startsWith('$') && s.endsWith('$')) return s.slice(1, -1);
+  if (s.startsWith('\\(') && s.endsWith('\\)')) return s.slice(2, -2);
+  return s;
+}
+
+function tokenize(content: string): Part[] {
+  const parts: Part[] = [];
+  let lastIndex = 0;
+  const displayMatches = content.matchAll(DISPLAY_MATH_RE);
+
+  for (const m of displayMatches) {
+    const match = m[0];
+    const index = m.index ?? 0;
+    if (index > lastIndex) {
+      const textChunk = content.slice(lastIndex, index);
+      // further split text chunk into inline math
+      parts.push(...tokenizeInline(textChunk, parts.length));
+    }
+    parts.push({ type: 'math-display', content: stripDelimiters(match).trim(), key: `mdis-${parts.length}` });
+    lastIndex = index + match.length;
+  }
+
+  if (lastIndex < content.length) {
+    parts.push(...tokenizeInline(content.slice(lastIndex), parts.length));
+  }
+
+  return parts;
+}
+
+function tokenizeInline(text: string, seed: number): Part[] {
+  const out: Part[] = [];
+  let last = 0;
+  const it = text.matchAll(INLINE_MATH_RE);
+  for (const m of it) {
+    const match = m[0];
+    const idx = m.index ?? 0;
+    if (idx > last) {
+      out.push({ type: 'text', content: text.slice(last, idx), key: `t-${seed}-${out.length}` });
+    }
+    out.push({ type: 'math-inline', content: stripDelimiters(match).trim(), key: `mi-${seed}-${out.length}` });
+    last = idx + match.length;
+  }
+  if (last < text.length) {
+    out.push({ type: 'text', content: text.slice(last), key: `t-${seed}-${out.length}` });
+  }
+  return out;
+}
 
 /* --------------------------------- Component -------------------------------- */
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content, style }) => {
-  // Process content and extract math
-  const { processedContent, mathExpressions } = useMemo(() => {
-    let out = content;
+  const processed = useMemo(() => {
+    let out = content ?? '';
+    // Normalize escaped newlines/backslashes that may come from servers
     if (out.includes('\\n')) out = out.replace(/\\n/g, '\n');
     if (out.includes('\\\\')) out = out.replace(/\\\\/g, '\\');
-    return preprocessMath(out);
+    return out;
   }, [content]);
 
-  // Custom rules for rendering
-  const rules = useMemo(() => ({
-    image: (node: any, children: any, parent: any, styles: any) => {
-      const { src, alt } = node.attributes;
-      const { width, height, loc } = extractImageProps(src);
-      
-      const okSrc = src && (src.startsWith('/') || src.startsWith('http')) 
-        ? src 
-        : 'https://via.placeholder.com/190';
-
-      const alignStyle = 
-        loc === 'left' ? { alignSelf: 'flex-start' } :
-        loc === 'right' ? { alignSelf: 'flex-end' } :
-        { alignSelf: 'center' };
-
-      return (
-        <View key={node.key} style={[{ marginVertical: 12 }, alignStyle]}>
-          <RNImage
-            source={{ uri: okSrc }}
-            style={{
-              width: width,
-              height: height,
-              resizeMode: 'contain',
-            }}
-            alt={alt || 'Image'}
-          />
-        </View>
-      );
-    },
-    link: (node: any, children: any, parent: any, styles: any) => {
-      return (
-        <Text
-          key={node.key}
-          style={styles.link}
-          onPress={() => {
-            if (node.attributes.href) {
-              Linking.openURL(node.attributes.href);
-            }
-          }}
-        >
-          {children}
-        </Text>
-      );
-    },
-    text: (node: any, children: any, parent: any, styles: any) => {
-      const text = node.content;
-      
-      // Check for math placeholders
-      const blockMatch = text.match(/___MATH_BLOCK_(\d+)___/);
-      if (blockMatch) {
-        const index = parseInt(blockMatch[1], 10);
-        const mathExpr = mathExpressions[index];
-        return <MathRenderer key={node.key} content={mathExpr.content} inline={false} />;
-      }
-
-      const inlineMatch = text.match(/___MATH_INLINE_(\d+)___/);
-      if (inlineMatch) {
-        const index = parseInt(inlineMatch[1], 10);
-        const mathExpr = mathExpressions[index];
-        return <MathRenderer key={node.key} content={mathExpr.content} inline={true} />;
-      }
-
-      return (
-        <Text key={node.key} style={styles.body}>
-          {text}
-        </Text>
-      );
-    },
-  }), [mathExpressions]);
+  const parts = useMemo(() => tokenize(processed), [processed]);
 
   return (
     <View style={style}>
-      <Markdown
-        style={styles}
-        rules={rules}
-      >
-        {processedContent}
-      </Markdown>
+      {parts.map((part) => {
+        if (part.type === 'math-display') {
+          return (
+            <View key={part.key} style={styles.blockMathContainer}>
+              <Katex
+                expression={part.content}
+                displayMode={true}
+                throwOnError={false}
+                inlineStyle={katexInlineStyle}
+              />
+            </View>
+          );
+        }
+
+        if (part.type === 'math-inline') {
+          return (
+            <Katex
+              key={part.key}
+              expression={part.content}
+              displayMode={false}
+              throwOnError={false}
+              inlineStyle={katexInlineStyle}
+            />
+          );
+        }
+
+        const md = convertLatexToMarkdown(part.content);
+        return (
+          <Markdown key={part.key} style={style}>
+            {md}
+          </Markdown>
+        );
+      })}
     </View>
   );
-}, (prev, next) => prev.content === next.content);
+}, (prev, next) => prev.content === next.content && prev.style === next.style);
 
 export default MarkdownRenderer;
