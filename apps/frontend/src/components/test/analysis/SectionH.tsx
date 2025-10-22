@@ -7,7 +7,6 @@ import {
   BarChart3, 
   Target,
   Award,
-  Users,
   Clock,
   Zap
 } from 'lucide-react'

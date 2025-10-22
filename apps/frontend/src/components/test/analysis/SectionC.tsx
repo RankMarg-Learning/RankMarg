@@ -3,6 +3,7 @@ import { Progress } from '@/components/ui/progress'
 import React from 'react'
 import { TimeSpendChart } from './TImeSpendChart'
 import { AnalysisSectionC } from '@/types/typeTest'
+import { SubjectBackgroundColor, SubjectCardColor, SubjectTextColor } from '@/constant/SubjectColorCode'
 
 const SectionC = ({analysis}:{analysis:AnalysisSectionC}) => {
     return (
@@ -11,31 +12,23 @@ const SectionC = ({analysis}:{analysis:AnalysisSectionC}) => {
                 <h2 className="text-xl font-semibold">Time Distribution Analysis</h2>
             </CardHeader>
             <CardContent className='space-y-2'>
-            <Card className="rounded-md shadow-sm ">
-                <CardHeader>
-                    <h3 className="text-xl font-semibold">Subject-wise Time Distribution</h3>
-                </CardHeader>
-                <CardContent>
+            
                     <div className="grid md:grid-cols-3 gap-4">
                         {
                             analysis?.sectionTimings.map((section,index)=>(
                                 <>
-                                <Card key={index} className={`space-y-1 rounded-md shadow-sm p-2 ${section.totalTime ?"":"hidden"}`}>
+                                <Card key={index} className={`space-y-1 rounded-md shadow-none border p-2 ${section.totalTime ?"":"hidden"} ${SubjectCardColor[section.name.toLowerCase() as keyof typeof SubjectCardColor] || SubjectCardColor.default}`}>
                                     <div className="flex justify-between">
-                                        <span className="font-medium text-yellow-600">{section.name}</span>
+                                        <span className={`font-medium ${SubjectTextColor[section.name.toLowerCase() as keyof typeof SubjectTextColor] || SubjectTextColor.default}`}>{section.name}</span>
                                         <span className="text-sm">{(section.totalTime/60).toFixed(1)} minutes</span>
                                     </div>
-                                    <Progress value={(section.totalTime/60)/section.maxTime*100 || 0} className="h-2 bg-gray-100" indicatorColor="bg-yellow-300" />
-                                    <div className="text-sm text-muted-foreground">Spent {(section.totalTime/60).toFixed(1)}/{section.maxTime} min</div>
+                                    <Progress value={(section.totalTime/60)/section.maxTime*100 || 0} className="h-2 bg-gray-100" indicatorColor={`${SubjectBackgroundColor[section.name.toLowerCase() as keyof typeof SubjectBackgroundColor] || SubjectBackgroundColor.default}`} />
+                                    <div className={`text-sm ${SubjectTextColor[section.name.toLowerCase() as keyof typeof SubjectTextColor] || SubjectTextColor.default}`}>Spent {(section.totalTime/60).toFixed(1)}/{section.maxTime} min</div>
                                 </Card>
                                 </>
                             ))
                         }
-                        
-
                     </div>
-                </CardContent>
-            </Card>
             <TimeSpendChart data={analysis?.questionTimings} />
             </CardContent>
         </Card>

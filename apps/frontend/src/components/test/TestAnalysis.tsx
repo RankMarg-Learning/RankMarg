@@ -13,6 +13,7 @@ import api from "@/utils/api"
 import SectionG from "./analysis/SectionG"
 import SectionH from "./analysis/SectionH"
 import { ExamType } from "@repo/db/enums"
+import ErrorCTA from "../error"
 
 export default function TestAnalysisPage({testId}:{testId:string}) {
 
@@ -30,14 +31,7 @@ export default function TestAnalysisPage({testId}:{testId:string}) {
     
     if(isError) {
         return (
-            <div className="container mx-auto p-6">
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                        {error?.message || "Error loading test analysis. Please try again."}
-                    </AlertDescription>
-                </Alert>
-            </div>
+           <ErrorCTA message={error?.message || "Error loading test analysis. Please try again."} />
         )
     }
 
@@ -55,7 +49,7 @@ export default function TestAnalysisPage({testId}:{testId:string}) {
     }
 
     return (
-        <div className="container mx-auto p-6 space-y-8">
+        <div className="container mx-auto p-2 space-y-4">
             
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -88,7 +82,7 @@ export default function TestAnalysisPage({testId}:{testId:string}) {
                 {/* Sidebar with Recommendations and Comparative Analysis */}
                 <div className="space-y-8">
                     {/* Section G: Improvement Recommendations */}
-                    <SectionG analysis={testAnalysis.sectionG}/>
+                    <SectionG analysis={testAnalysis.sectionG} examCode={testAnalysis.metadata?.examCode}/>
                     
                     {/* Section H: Comparative Analysis */}
                     <SectionH analysis={testAnalysis.sectionH}/>

@@ -5,15 +5,15 @@ import {
   Lightbulb, 
   Target, 
   Calendar, 
-  BookOpen, 
   TrendingUp,
   AlertTriangle,
   CheckCircle2,
   Clock,
   Users,
-  Award
 } from 'lucide-react'
 import React from 'react'
+import groupLink from '@/constant/groupLink'
+import Link from 'next/link'
 
 interface SectionGAnalysis {
   recommendations: Array<{
@@ -31,7 +31,7 @@ interface SectionGAnalysis {
   nextSteps: string[];
 }
 
-const SectionG = ({ analysis }: { analysis: SectionGAnalysis }) => {
+const SectionG = ({ analysis, examCode }: { analysis: SectionGAnalysis, examCode: string }) => {
   if (!analysis) return null
 
   const getPriorityColor = (priority: string) => {
@@ -60,18 +60,7 @@ const SectionG = ({ analysis }: { analysis: SectionGAnalysis }) => {
     }
   }
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'fundamentals':
-        return <BookOpen className="w-4 h-4 text-blue-600" />
-      case 'practice':
-        return <TrendingUp className="w-4 h-4 text-green-600" />
-      case 'advanced':
-        return <Award className="w-4 h-4 text-purple-600" />
-      default:
-        return <Lightbulb className="w-4 h-4 text-gray-600" />
-    }
-  }
+  
 
   return (
     <div className="space-y-6">
@@ -92,7 +81,6 @@ const SectionG = ({ analysis }: { analysis: SectionGAnalysis }) => {
               <div className="flex items-start gap-3">
                 <div className="flex items-center gap-2">
                   {getPriorityIcon(rec.priority)}
-                  {getTypeIcon(rec.type)}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -178,10 +166,12 @@ const SectionG = ({ analysis }: { analysis: SectionGAnalysis }) => {
           </div>
           
           <div className="mt-4 pt-4 border-t">
+            <Link href={groupLink[examCode as keyof typeof groupLink]} target='_blank'>
             <Button className="w-full" variant="outline">
               <Users className="w-4 h-4 mr-2" />
               Join Study Group
             </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>

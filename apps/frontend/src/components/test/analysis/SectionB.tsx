@@ -3,7 +3,6 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { 
   TrendingUp, 
-  TrendingDown, 
   Target, 
   CheckCircle2,
   XCircle,
