@@ -1,82 +1,202 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { TextGenerateEffect } from '@/components/ui/text-generate-effect'
-import { AnalysisSectionB } from '@/types/typeTest'
+import { Badge } from '@/components/ui/badge'
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Target, 
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Award,
+  AlertTriangle
+} from 'lucide-react'
 import React from 'react'
 
-const SectionB = ({ analysis }: { analysis: AnalysisSectionB }) => {
-    return (
-        <Card className="space-y-6 p-6 rounded-md">
-            <h1 className="text-xl font-bold">Performance Metrics</h1>
+interface SectionBAnalysis {
+  statistics: {
+    totalQuestions: number;
+    correct: number;
+    incorrect: number;
+    unattempted: number;
+    accuracy: string;
+    performanceLevel: string;
+  };
+  difficultyAnalysis: {
+    easy: { total: number; correct: number; incorrect: number; unattempted: number };
+    medium: { total: number; correct: number; incorrect: number; unattempted: number };
+    hard: { total: number; correct: number; incorrect: number; unattempted: number };
+    very_hard: { total: number; correct: number; incorrect: number; unattempted: number };
+  };
+  feedback: string;
+  strengths: string[];
+  weaknesses: string[];
+}
 
-            {/* Question Attempt Analysis */}
-            <section className="md:space-y-3 space-y-2 ">
-                <h2 className="text-lg font-semibold">Question Attempt Analysis</h2>
-                <div className="grid gap-3 md:grid-cols-2">
-                    <Card className="rounded-md">
-                        <CardHeader className="hidden">
-                            <CardTitle className="text-base font-medium">Question Attempt Pattern</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4 md:py-5 py-3">
-                            <div className="flex items-center space-x-4">
-                                <span className="text-sm w-20">Correct</span>
-                                <Progress value={analysis?.statistics?.correct / analysis?.statistics?.totalQuestions * 100} className="flex-1 h-4 bg-gray-100" indicatorColor="bg-yellow-300" />
-                                <span className="text-sm w-16 text-right">{analysis?.statistics?.correct}/{analysis?.statistics?.totalQuestions}</span>
-                            </div>
+const SectionB = ({ analysis }: { analysis: SectionBAnalysis }) => {
+  if (!analysis) return null
 
-                            <div className="flex items-center space-x-4">
-                                <span className="text-sm w-20">Incorrect</span>
-                                <Progress value={analysis?.statistics?.incorrect / analysis?.statistics?.totalQuestions * 100} className="flex-1 h-4 bg-gray-100" indicatorColor="bg-yellow-300" />
-                                <span className="text-sm w-16 text-right">{analysis?.statistics?.incorrect}/{analysis?.statistics?.totalQuestions}</span>
-                            </div>
+  const { statistics, difficultyAnalysis, feedback, strengths, weaknesses } = analysis
 
-                            <div className="flex items-center space-x-4">
-                                <span className="text-sm w-20">Unattempted</span>
-                                <Progress value={analysis?.statistics?.unattempted / analysis?.statistics?.totalQuestions * 100} className="flex-1 h-4 bg-gray-100" indicatorColor="bg-yellow-300" />
-                                <span className="text-sm w-16 text-right">{analysis?.statistics?.unattempted}/{analysis?.statistics?.totalQuestions}</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="rounded-md">
-                        <CardContent className="space-y-4 py-3">
-                            <CardTitle>Question Attempt Analysis - AI</CardTitle>
-                            <div className="space-y-2">
-                                <p className="text-sm text-muted-foreground">
-                                    <TextGenerateEffect words={analysis?.feedback}
-                                    />
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
+  const getPerformanceColor = (level: string) => {
+    switch (level.toLowerCase()) {
+      case 'excellent':
+        return 'text-green-600 bg-green-50 border-green-200'
+      case 'very good':
+        return 'text-blue-600 bg-blue-50 border-blue-200'
+      case 'good':
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200'
+      case 'average':
+        return 'text-orange-600 bg-orange-50 border-orange-200'
+      case 'needs improvement':
+        return 'text-red-600 bg-red-50 border-red-200'
+      default:
+        return 'text-gray-600 bg-gray-50 border-gray-200'
+    }
+  }
 
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'easy':
+        return 'text-green-600 bg-green-50 border-green-200'
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200'
+      case 'hard':
+        return 'text-orange-600 bg-orange-50 border-orange-200'
+      case 'very_hard':
+        return 'text-red-600 bg-red-50 border-red-200'
+      default:
+        return 'text-gray-600 bg-gray-50 border-gray-200'
+    }
+  }
+
+  const getDifficultyIcon = (difficulty: string) => {
+    switch (difficulty) {
+      case 'easy':
+        return <CheckCircle2 className="w-4 h-4 text-green-600" />
+      case 'medium':
+        return <Target className="w-4 h-4 text-yellow-600" />
+      case 'hard':
+        return <AlertTriangle className="w-4 h-4 text-orange-600" />
+      case 'very_hard':
+        return <XCircle className="w-4 h-4 text-red-600" />
+      default:
+        return <Clock className="w-4 h-4 text-gray-600" />
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <TrendingUp className="w-5 h-5" />
+          Performance Metrics
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Overall Statistics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
+            <CheckCircle2 className="w-6 h-6 text-green-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-green-600">{statistics.correct}</div>
+            <div className="text-sm text-green-700">Correct</div>
+          </div>
+          
+          <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg">
+            <XCircle className="w-6 h-6 text-red-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-red-600">{statistics.incorrect}</div>
+            <div className="text-sm text-red-700">Incorrect</div>
+          </div>
+          
+          <div className="text-center p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <Clock className="w-6 h-6 text-gray-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-gray-600">{statistics.unattempted}</div>
+            <div className="text-sm text-gray-700">Unattempted</div>
+          </div>
+          
+          <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <Award className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-blue-600">{statistics.accuracy}%</div>
+            <div className="text-sm text-blue-700">Accuracy</div>
+          </div>
+        </div>
+
+        {/* Performance Level */}
+        <div className={`p-4 border rounded-lg ${getPerformanceColor(statistics.performanceLevel)}`}>
+          <div className="flex items-center gap-2 mb-2">
+            <Award className="w-4 h-4" />
+            <h4 className="font-semibold">Performance Level: {statistics.performanceLevel}</h4>
+          </div>
+          <p className="text-sm">{feedback}</p>
+        </div>
+
+        {/* Difficulty-wise Analysis */}
+        <div className="space-y-4">
+          <h4 className="font-semibold">Difficulty-wise Performance</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {Object.entries(difficultyAnalysis).map(([difficulty, data]) => {
+              const accuracy = data.total > 0 ? (data.correct / data.total) * 100 : 0
+              return (
+                <div key={difficulty} className={`p-4 border rounded-lg ${getDifficultyColor(difficulty)}`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    {getDifficultyIcon(difficulty)}
+                    <h5 className="font-semibold capitalize">{difficulty.replace('_', ' ')}</h5>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="text-2xl font-bold">{accuracy.toFixed(1)}%</div>
+                    <div className="text-sm">
+                      {data.correct}/{data.total} correct
+                    </div>
+                    <Progress value={accuracy} className="h-2" />
+                    <div className="flex justify-between text-xs">
+                      <span>Correct: {data.correct}</span>
+                      <span>Total: {data.total}</span>
+                    </div>
+                  </div>
                 </div>
-            </section>
+              )
+            })}
+          </div>
+        </div>
 
-            {/* Accuracy Analysis */}
-            <div className=" justify-between md:gap-4 gap-2  mt-10 hidden">
-                {/* Easy Questions */}
-                <div className="bg-green-100 p-4 rounded-lg shadow-md text-center flex-1 min-h-[130px]">
-                    <h2 className="md:text-md text-sm font-semibold text-green-600">Easy Questions</h2>
-                    <p className="md:text-2xl text-xl font-bold text-green-600 mt-2">95%</p>
-                    <p className="text-gray-600 mt-1 md:text-sm text-xs">19/20 Correct</p>
-                </div>
-
-                {/* Medium Questions */}
-                <div className="bg-yellow-100 p-4 rounded-lg shadow-md text-center flex-1 min-h-[130px]">
-                    <h2 className="md:text-md text-sm font-semibold text-yellow-600">Medium Questions</h2>
-                    <p className="md:text-2xl text-xl font-bold text-yellow-600 mt-2">75%</p>
-                    <p className="text-gray-600 mt-1 md:text-sm text-xs">15/20 Correct</p>
-                </div>
-
-                {/* Hard Questions */}
-                <div className="bg-red-100 p-4 rounded-lg shadow-md text-center flex-1 min-h-[130px]">
-                    <h2 className="md:text-md text-sm font-semibold text-red-600">Hard Questions</h2>
-                    <p className="md:text-2xl text-xl font-bold text-red-600 mt-2">55%</p>
-                    <p className="text-gray-600 mt-1 md:text-sm text-xs">11/20 Correct</p>
-                </div>
+        {/* Strengths and Weaknesses */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {strengths.length > 0 && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" />
+                Strengths
+              </h4>
+              <div className="space-y-1">
+                {strengths.map((strength, index) => (
+                  <Badge key={index} variant="outline" className="text-green-600 border-green-200 mr-2">
+                    {strength}
+                  </Badge>
+                ))}
+              </div>
             </div>
-        </Card>
-    )
+          )}
+
+          {weaknesses.length > 0 && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <h4 className="font-semibold text-red-800 mb-2 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                Areas for Improvement
+              </h4>
+              <div className="space-y-1">
+                {weaknesses.map((weakness, index) => (
+                  <Badge key={index} variant="outline" className="text-red-600 border-red-200 mr-2">
+                    {weakness}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 export default SectionB

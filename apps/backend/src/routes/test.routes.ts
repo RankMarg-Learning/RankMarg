@@ -26,4 +26,5 @@ router.get(
 );
 router.get("/ai/results", authenticate, testController.getAiTestResults);
 router.get("/ai/scheduled", authenticate, testController.getAiScheduledTests);
+router.get("/:testId/analysis", authenticate, testController.getTestAnalysisById);
 export default router;
