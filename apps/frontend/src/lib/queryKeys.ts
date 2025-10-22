@@ -142,6 +142,15 @@ export const queryKeys = {
   aiPractice: {
     results: () => ['results'] as const,
   },
+
+  // Subscription related queries
+  subscription: {
+    all: ['subscription'] as const,
+    plans: () => ['subscription', 'plans'] as const,
+    plan: (id: string) => ['subscription', 'plan', id] as const,
+    promoCodes: () => ['subscription', 'promocodes'] as const,
+    promoCode: (id: string) => ['subscription', 'promocode', id] as const,
+  },
 } as const;
 
 // Type for query keys

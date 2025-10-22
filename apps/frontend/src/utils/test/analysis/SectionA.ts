@@ -1,4 +1,4 @@
-import { AnalysisSectionA, TestWithIncludes } from "@/types/typeTest";
+import { AnalysisSectionA, SectionAPerformance, TestWithIncludes } from "@/types/typeTest";
 
 
 
@@ -44,7 +44,7 @@ export const SectionA = (test: TestWithIncludes): AnalysisSectionA => {
     totalMarks: test.test.totalMarks,
     timeTaken: test.timing,
     testDuration: test.test.duration,
-    sectionPerformance
+    sectionPerformance: sectionPerformance as SectionAPerformance[]
   };
 };
 

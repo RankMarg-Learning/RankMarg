@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { SubjectBackgroundColor, SubjectCardColor, SubjectTextColor } from '@/constant/SubjectColorCode'
 import { AnalysisSectionA } from '@/types/typeTest'
 import { BarChart3, CheckCircle2, Clock } from 'lucide-react'
 import React from 'react'
@@ -95,7 +96,7 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
 
 
             {/* Subject Performance */}
-            <Card className="rounded-md space-y-3 bg-gray-100">
+            <Card className="border-none space-y-3 ">
                 <CardHeader className="hidden">
                     Section-wise Performance
                 </CardHeader>
@@ -103,12 +104,12 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
                 <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {
                         analysis?.sectionPerformance.map((section,index)=>(
-                            <Card key={index} className="p-3 md:p-4 rounded-sm">
+                            <Card key={index} className={`p-3 md:p-4 rounded-sm shadow-none border ${SubjectCardColor[section.sectionName.toLowerCase() as keyof typeof SubjectCardColor] || SubjectCardColor.default}`}>
                                 <div className="flex justify-between">
-                                    <span>{section.sectionName}</span>
-                                    <span className="text-yellow-600">{section?.participantScore}/{section?.totalMarks}</span>
+                                    <span className={`text-sm font-medium ${SubjectTextColor[section.sectionName.toLowerCase() as keyof typeof SubjectTextColor] || SubjectTextColor.default}`}>{section.sectionName}</span>
+                                    <span className={`text-sm font-medium ${SubjectTextColor[section.sectionName.toLowerCase() as keyof typeof SubjectTextColor] || SubjectTextColor.default}`}>{section?.correctAnswers}/{section?.totalQuestions}</span>
                                 </div>
-                                <Progress value={section?.participantScore/section?.totalMarks*100} className="h-2 bg-gray-100" indicatorColor="bg-yellow-300" />
+                                <Progress value={section?.accuracy} className="h-2 bg-gray-100" indicatorColor={`${SubjectBackgroundColor[section.sectionName.toLowerCase() as keyof typeof SubjectBackgroundColor] || SubjectBackgroundColor.default}`} />
                             </Card>
                         ))
                     }

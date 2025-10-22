@@ -46,6 +46,9 @@ export interface SectionAPerformance {
   sectionName: string;
   participantScore: number;
   totalMarks: number;
+  correctAnswers: number;
+  totalQuestions: number;
+  accuracy: number;
 }
 
 export interface AnalysisSectionA {

@@ -51,7 +51,7 @@ export function TimeSpendChart({data}:{data:SectioncQuestionTiming[]}) {
 
 
   const [activeSubject, setActiveSubject] = React.useState<keyof typeof chartConfig>(
-     Object.keys(data[0])?.find(key => data[0][key] > 0) as keyof typeof chartConfig 
+     data?.[0] ? Object.keys(data[0])?.find(key => data[0][key] > 0) as keyof typeof chartConfig : 'physics'
   );
 
   const total = React.useMemo(

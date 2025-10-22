@@ -12,7 +12,7 @@ const ErrorCTA = ({ message }: { message: string }) => {
         </div>
         <button 
           onClick={() => window.location.reload()} 
-          className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
+          className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors flex items-center gap-2"
         >
             <RefreshCcwIcon className="w-4 h-4 mr-2" />
           Try Again

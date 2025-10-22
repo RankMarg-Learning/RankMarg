@@ -133,8 +133,8 @@ export class UserActivityController {
           WHERE "userId" IN (
             SELECT DISTINCT "userId" 
             FROM "Attempt" 
-            WHERE "solvedAt" >= ${from} 
-              AND "solvedAt" < ${to}
+            WHERE "solvedAt" >= now() - INTERVAL '1 day'
+              AND "solvedAt" < now()
               AND "userId" IS NOT NULL
           )
         `,
@@ -144,8 +144,8 @@ export class UserActivityController {
           WHERE "userId" NOT IN (
             SELECT DISTINCT "userId" 
             FROM "Attempt" 
-            WHERE "solvedAt" >= ${from} 
-              AND "solvedAt" < ${to}
+            WHERE "solvedAt" >= now() - INTERVAL '1 day'
+              AND "solvedAt" < now()
               AND "userId" IS NOT NULL
           )
           AND "streak" > 0
@@ -168,4 +168,38 @@ export class UserActivityController {
       ResponseUtil.error(res, "Internal Server Error", 500);
     }
   };
+
+  public updatePromoCode = async (req: Request, res: Response) => {
+    try {
+      const subscriptions = await prisma.subscription.findMany({
+        where: {
+          status: SubscriptionStatus.ACTIVE,
+        },
+        select: {
+          promoCodeUsed: true,
+        }
+      });
+      const promoCodes = await prisma.promoCode.findMany({
+        where: {
+          isActive: true,
+        },
+        select: {
+          id: true,
+          currentUsageCount: true,
+        }
+      });
+      for (const subscription of subscriptions) {
+        const promoCode = promoCodes.find(promoCode => promoCode.id === subscription.promoCodeUsed);
+        if (promoCode) {
+          await prisma.promoCode.update({
+            where: { id: promoCode.id },
+            data: { currentUsageCount: promoCode.currentUsageCount + 1 },
+          });
+        }
+      }
+    } catch (error) {
+      console.error("[Update Promo Code Error]:", error);
+      ResponseUtil.error(res, "Internal Server Error", 500);
+    }
+  }
 }
