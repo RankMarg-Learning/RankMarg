@@ -6,7 +6,7 @@ import { aiQuestionService, Subject } from "@/services/aiQuestion.service";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BookOpen, ArrowRight, Trophy, Target } from "lucide-react";
+import { BookOpen, ArrowRight,  } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SubjectBackgroundColor, SubjectCardColor, SubjectTextColor } from "@/constant/SubjectColorCode";
 
@@ -15,11 +15,6 @@ export default function AIQuestionsPage() {
     const { toast } = useToast();
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [loading, setLoading] = useState(true);
-    const [userStats, setUserStats] = useState<{
-        userGrade: string;
-        totalAttempted: number;
-        accuracy: number;
-    } | null>(null);
 
     useEffect(() => {
         fetchData();
@@ -48,22 +43,7 @@ export default function AIQuestionsPage() {
         router.push(`/ai-questions/${subjectId}`);
     };
 
-    const getGradeColor = (grade: string) => {
-        switch (grade) {
-            case "A_PLUS":
-                return "text-green-600";
-            case "A":
-                return "text-blue-600";
-            case "B":
-                return "text-yellow-600";
-            case "C":
-                return "text-orange-600";
-            case "D":
-                return "text-red-600";
-            default:
-                return "text-gray-600";
-        }
-    };
+    
 
    
 

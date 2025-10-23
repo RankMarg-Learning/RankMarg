@@ -13,11 +13,9 @@ export interface AIQuestion {
   type: string;
   format: string;
   difficulty: number;
-  questionTime: number;
   hint?: string | null;
   strategy?: string | null;
   commonMistake?: string | null;
-  pyqYear?: string | null;
   options: QuestionOption[];
   topic: {
     name: string;
@@ -26,7 +24,6 @@ export interface AIQuestion {
   subject: {
     name: string;
   } | null;
-  categories: string[];
 }
 
 export interface AIQuestionPagination {
@@ -136,7 +133,56 @@ class AIQuestionService {
     }
   }
 
-  
+  /**
+   * Get AI questions for solving session (excludes already attempted)
+   */
+  async getQuestionsByTopicForSession(
+    topicSlug: string
+  ): Promise<any> {
+    try {
+      const response = await api.get(
+        `${this.BASE_PATH}/topic/${topicSlug}/session`
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching AI questions for session:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get user's recent attempts for a topic
+   */
+  async getRecentAttemptsByTopic(
+    topicSlug: string,
+    limit: number = 10
+  ): Promise<any> {
+    try {
+      const response = await api.get(
+        `${this.BASE_PATH}/topic/${topicSlug}/attempts`,
+        {
+          params: { limit },
+        }
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching recent attempts:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get user stats for AI questions
+   */
+  async getUserStats(): Promise<UserAIStats> {
+    try {
+      const response = await api.get(`${this.BASE_PATH}/stats`);
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      throw error;
+    }
+  }
 }
 
 export const aiQuestionService = new AIQuestionService();

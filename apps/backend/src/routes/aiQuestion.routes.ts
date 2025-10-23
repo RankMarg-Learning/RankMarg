@@ -19,8 +19,12 @@ router.get("/subjects/:subjectId/topics", aiQuestionController.getTopicsBySubjec
 // Get AI questions by topic slug
 router.get("/topic/:topicSlug", aiQuestionController.getAIQuestionsByTopic);
 
-// Get user's AI question statistics
-router.get("/stats", aiQuestionController.getUserAIQuestionStats);
+// Get questions for solving session (unattempted questions)
+router.get("/topic/:topicSlug/session", aiQuestionController.getQuestionsForSession);
+
+// Get user's recent attempts for a topic
+router.get("/topic/:topicSlug/attempts", aiQuestionController.getRecentAttemptsByTopic);
+
 
 export default router;
 

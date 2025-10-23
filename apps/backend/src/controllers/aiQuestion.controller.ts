@@ -3,7 +3,7 @@ import { RedisCacheService } from "@/services/redisCache.service";
 import { ResponseUtil } from "@/utils/response.util";
 import { ApiError, ErrorCode } from "@/types/common";
 import prisma from "@repo/db";
-import { GradeEnum, SubmitStatus } from "@repo/db/enums";
+import { GradeEnum, SubmitStatus, SubscriptionStatus } from "@repo/db/enums";
 import { NextFunction, Response } from "express";
 
 interface AIQuestionFilters {
@@ -14,8 +14,7 @@ interface AIQuestionFilters {
   page: number;
   limit: number;
 }
-
-interface QuestionWithMetadata {
+export interface AIQuestion {
   id: string;
   slug: string;
   title: string;
@@ -23,16 +22,10 @@ interface QuestionWithMetadata {
   type: string;
   format: string;
   difficulty: number;
-  questionTime: number;
   hint?: string | null;
   strategy?: string | null;
   commonMistake?: string | null;
-  pyqYear?: string | null;
-  options: Array<{
-    id: string;
-    content: string;
-    isCorrect: boolean;
-  }>;
+  options: QuestionOption[];
   topic: {
     name: string;
     slug: string | null;
@@ -40,9 +33,36 @@ interface QuestionWithMetadata {
   subject: {
     name: string;
   } | null;
-  category: Array<{
-    category: string;
-  }>;
+}
+export interface QuestionOption {
+  id: string;
+  content: string;
+  isCorrect: boolean;
+}
+export interface AIQuestionPagination {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface AIQuestionMetadata {
+  topicName: string;
+  subjectName: string;
+  userGrade: string;
+  difficultyRange: {
+    min: number;
+    max: number;
+  };
+  questionsAttempted: number;
+}
+
+export interface AIQuestionsResponse {
+  questions: AIQuestion[];
+  pagination: AIQuestionPagination;
+  metadata: AIQuestionMetadata;
 }
 
 export class AIQuestionController {
@@ -78,7 +98,7 @@ export class AIQuestionController {
       );
 
       if (cachedData) {
-        return ResponseUtil.success(
+         ResponseUtil.success(
           res,
           cachedData,
           "AI questions fetched successfully (cached)",
@@ -144,7 +164,7 @@ export class AIQuestionController {
       const totalPages = Math.ceil(totalCount / Number(limit));
 
       const payload = {
-        questions: this.formatQuestionsResponse(questions),
+        questions: questions,
         pagination: {
           currentPage,
           totalPages,
@@ -236,7 +256,7 @@ export class AIQuestionController {
     filters: AIQuestionFilters,
     excludedQuestionIds: string[],
     difficultyRange: { min: number; max: number }
-  ): Promise<QuestionWithMetadata[]> {
+  ): Promise<AIQuestion[]> {
     const { topicSlug, page, limit } = filters;
 
     const skip = (page - 1) * limit;
@@ -263,11 +283,9 @@ export class AIQuestionController {
         type: true,
         format: true,
         difficulty: true,
-        questionTime: true,
         hint: true,
         strategy: true,
         commonMistake: true,
-        pyqYear: true,
         options: {
           select: {
             id: true,
@@ -286,11 +304,7 @@ export class AIQuestionController {
             name: true,
           },
         },
-        category: {
-          select: {
-            category: true,
-          },
-        },
+        
       },
       orderBy: [
         { difficulty: "asc" }, // Start with easier questions within range
@@ -299,7 +313,7 @@ export class AIQuestionController {
       skip,
       take: limit,
     });
-
+    
     return questions;
   }
 
@@ -326,33 +340,7 @@ export class AIQuestionController {
     });
   }
 
-  /**
-   * Format questions response to hide correct answers
-   */
-  private formatQuestionsResponse(questions: QuestionWithMetadata[]) {
-    return questions.map((question) => ({
-      id: question.id,
-      slug: question.slug,
-      title: question.title,
-      content: question.content,
-      type: question.type,
-      format: question.format,
-      difficulty: question.difficulty,
-      questionTime: question.questionTime,
-      hint: question.hint,
-      strategy: question.strategy,
-      commonMistake: question.commonMistake,
-      pyqYear: question.pyqYear,
-      options: question.options.map((opt) => ({
-        id: opt.id,
-        content: opt.content,
-        // Don't send isCorrect to client for security
-      })),
-      topic: question.topic,
-      subject: question.subject,
-      categories: question.category.map((cat) => cat.category),
-    }));
-  }
+ 
 
   /**
    * Get topics with their subject information for the AI questions route
@@ -460,15 +448,238 @@ export class AIQuestionController {
     }
   };
 
+  
   /**
-   * Get user's AI question statistics
+   * Get questions for solving session (returns unattempted questions + last 10 attempted)
    */
-  getUserAIQuestionStats = async (
+  getQuestionsForSession = async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
   ) => {
     try {
+      const { topicSlug } = req.params;
+      
+      if (!req.user) {
+        throw new ApiError(
+          ErrorCode.UNAUTHORIZED,
+          "User not authenticated",
+          401
+        );
+      }
+
+      const isPaid = req.user.plan?.status === SubscriptionStatus.ACTIVE || req.user.plan?.status === SubscriptionStatus.TRIAL;
+      const isTrial = req.user.plan?.status === SubscriptionStatus.TRIAL;
+      if (!isPaid) {
+        throw new ApiError(
+          ErrorCode.UNAUTHORIZED,
+          "Upgrade to premium to access this feature",
+          403
+        );
+      }
+
+      const userId = req.user.id;
+      const userGrade = await this.getUserGrade(userId);
+
+      // Fetch topic details
+      const topic = await prisma.topic.findFirst({
+        where: { slug: topicSlug },
+        include: {
+          subject: {
+            select: { id: true, name: true },
+          },
+        },
+      });
+
+      if (!topic) {
+        throw new ApiError(
+          ErrorCode.NOT_FOUND,
+          "Topic not found",
+          404
+        );
+      }
+
+      // Get difficulty range
+      const difficultyRange = this.getDifficultyRangeForGrade(userGrade);
+
+      // Get user's recent attempts (last 10) with full details
+      const recentAttempts = await prisma.attempt.findMany({
+        where: {
+          userId,
+          question: {
+            topicId: topic.id,
+          },
+        },
+        include: {
+          question: {
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              content: true,
+              type: true,
+              format: true,
+              difficulty: true,
+              hint: true,
+              strategy: true,
+              commonMistake: true,
+              solution: true,
+              isNumerical: true,
+              options: {
+                select: {
+                  id: true,
+                  content: true,
+                  isCorrect: true,
+                },
+              },
+              topic: {
+                select: {
+                  name: true,
+                  slug: true,
+                },
+              },
+              subject: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          solvedAt: "desc",
+        },
+      });
+
+      // Get unique recent attempts (keep only latest attempt per question)
+      const seenQuestions = new Set<string>();
+      const uniqueRecentAttempts = recentAttempts
+        .filter(attempt => {
+          if (seenQuestions.has(attempt.questionId)) {
+            return false;
+          }
+          seenQuestions.add(attempt.questionId);
+          return true;
+        })
+        .slice(0, 10);
+
+      const attemptedQuestionIds = Array.from(seenQuestions);
+
+      // Fetch unattempted questions for the session
+      const unattemptedQuestions = await prisma.question.findMany({
+        where: {
+          topicId: topic.id,
+          isPublished: true,
+          difficulty: {
+            gte: difficultyRange.min,
+            lte: difficultyRange.max,
+          },
+          id: {
+            notIn: attemptedQuestionIds.length > 0 ? attemptedQuestionIds : undefined,
+          },
+        },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          content: true,
+          type: true,
+          format: true,
+          difficulty: true,
+          hint: true,
+          strategy: true,
+          commonMistake: true,
+          solution: true,
+          isNumerical: true,
+          options: {
+            select: {
+              id: true,
+              content: true,
+              isCorrect: true,
+            },
+          },
+          topic: {
+            select: {
+              name: true,
+              slug: true,
+            },
+          },
+          subject: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        orderBy: [
+          { difficulty: "asc" },
+          { createdAt: "desc" },
+        ],
+        take: isTrial ? 20 : 50, // Limit to 2 questions for trial users and 50 for paid users
+      });
+
+      // Combine: recent attempts (in reverse order so oldest comes first) + unattempted questions
+      const attemptedQuestionsWithAttempts = uniqueRecentAttempts
+        .reverse() // Reverse so oldest attempt is first
+        .map(attempt => ({
+          question: attempt.question,
+          attempt: {
+            id: attempt.id,
+            answer: attempt.answer,
+            questionId: attempt.questionId,
+            status: attempt.status,
+            timing: attempt.timing,
+            mistake: attempt.mistake,
+            hintsUsed: attempt.hintsUsed,
+            solvedAt: attempt.solvedAt,
+          }
+        }));
+
+      const unattemptedQuestionsWithoutAttempts = unattemptedQuestions.map(q => ({
+        question: q,
+        attempt: null,
+      }));
+
+      const allQuestions = [
+        ...attemptedQuestionsWithAttempts,
+        ...unattemptedQuestionsWithoutAttempts,
+      ];
+
+      const payload = {
+        questions: allQuestions,
+        metadata: {
+          topicName: topic.name,
+          subjectName: topic.subject?.name,
+          userGrade,
+          difficultyRange,
+          totalQuestions: allQuestions.length,
+          attemptedCount: attemptedQuestionsWithAttempts.length,
+          unattemptedCount: unattemptedQuestionsWithoutAttempts.length,
+        },
+      };
+
+      ResponseUtil.success(
+        res,
+        payload,
+        "Questions for session fetched successfully",
+        200
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Get user's recent attempts for a topic
+   */
+  getRecentAttemptsByTopic = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { topicSlug } = req.params;
+      const { limit = 10 } = req.query;
+      
       if (!req.user) {
         throw new ApiError(
           ErrorCode.UNAUTHORIZED,
@@ -479,40 +690,100 @@ export class AIQuestionController {
 
       const userId = req.user.id;
 
-      const [userGrade, totalAttempted, correctAttempts, subjectWiseStats] =
-        await Promise.all([
-          this.getUserGrade(userId),
-          prisma.attempt.count({
-            where: { userId },
-          }),
-          prisma.attempt.count({
-            where: {
-              userId,
-              status: SubmitStatus.CORRECT,
-            },
-          }),
-          prisma.attempt.groupBy({
-            by: ["questionId"],
-            where: { userId },
-            _count: {
-              questionId: true,
-            },
-          }),
-        ]);
+      // Fetch topic details
+      const topic = await prisma.topic.findFirst({
+        where: { slug: topicSlug },
+        include: {
+          subject: {
+            select: { id: true, name: true },
+          },
+        },
+      });
 
-      const accuracy =
-        totalAttempted > 0 ? (correctAttempts / totalAttempted) * 100 : 0;
+      if (!topic) {
+        throw new ApiError(
+          ErrorCode.NOT_FOUND,
+          "Topic not found",
+          404
+        );
+      }
+
+      // Get recent attempts with question details - Get all first then filter
+      const allAttempts = await prisma.attempt.findMany({
+        where: {
+          userId,
+          question: {
+            topicId: topic.id,
+          },
+        },
+        include: {
+          question: {
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              content: true,
+              type: true,
+              format: true,
+              difficulty: true,
+              questionTime: true,
+              hint: true,
+              strategy: true,
+              commonMistake: true,
+              pyqYear: true,
+              solution: true,
+              isNumerical: true,
+              options: {
+                select: {
+                  id: true,
+                  content: true,
+                  isCorrect: true,
+                },
+              },
+              topic: {
+                select: {
+                  name: true,
+                  slug: true,
+                },
+              },
+              subject: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          solvedAt: "desc",
+        },
+      });
+
+      // Get unique questions by keeping only the latest attempt for each question
+      const seenQuestions = new Set<string>();
+      const attempts = allAttempts
+        .filter(attempt => {
+          if (seenQuestions.has(attempt.questionId)) {
+            return false;
+          }
+          seenQuestions.add(attempt.questionId);
+          return true;
+        })
+        .slice(0, Number(limit));
+
+      const payload = {
+        attempts,
+        metadata: {
+          topicName: topic.name,
+          subjectName: topic.subject?.name,
+          totalAttempts: attempts.length,
+        },
+      };
 
       ResponseUtil.success(
         res,
-        {
-          userGrade,
-          totalAttempted,
-          correctAttempts,
-          accuracy: Math.round(accuracy * 100) / 100,
-          uniqueQuestionsAttempted: subjectWiseStats.length,
-        },
-        "User stats fetched successfully",
+        payload,
+        "Recent attempts fetched successfully",
         200
       );
     } catch (error) {
