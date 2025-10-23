@@ -31,7 +31,7 @@ export default function HeaderTrialBadge({ endDate, status, isLoading, onUpgrade
     <div className="flex items-center">
       {/* Trial badge / skeleton */}
       {isLoading ? (
-        <div className="w-24 sm:w-32 md:w-36 h-5 sm:h-6 rounded-md bg-slate-200 animate-pulse" aria-hidden="true" />
+        null
       ) : !status ? (
         null
       ) : isTrial ? (
