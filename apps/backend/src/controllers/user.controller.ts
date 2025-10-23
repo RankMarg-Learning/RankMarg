@@ -83,9 +83,9 @@ export class userController {
           user: { connect: { id: user.id } },
           status: "TRIAL",
           provider: "NONE",
-          duration: 30,
+          duration: 10,
           amount: 0,
-          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
+          currentPeriodEnd: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days trial
         },
       });
       ResponseUtil.success(res, null, "User created successfully", 201);
