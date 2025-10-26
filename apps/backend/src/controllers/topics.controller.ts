@@ -1,6 +1,7 @@
 import { AuthenticatedRequest } from "@/middleware/auth.middleware";
 import { ResponseUtil } from "@/utils/response.util";
 import prisma from "@repo/db";
+import { Role } from "@repo/db/enums";
 import { NextFunction, Response } from "express";
 
 export class TopicsController {
@@ -17,10 +18,10 @@ export class TopicsController {
           orderIndex: "asc",
         },
       });
-      ResponseUtil.success(res, topics, "Ok", 200, undefined, {
+      ResponseUtil.success(res, topics, "Ok", 200, undefined, req.user.role !== Role.ADMIN ? {
         "Cache-Control": "public, max-age=60, stale-while-revalidate=60",
         Vary: "Authorization",
-      });
+      } : undefined);
     } catch (error) {
       next(error);
     }
