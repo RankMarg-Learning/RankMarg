@@ -5,6 +5,7 @@ import { NextFunction, Response, Request } from "express";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import ServerConfig from "@/config/server.config";
+import { createTrialSubscription } from "@/utils/subscription.util";
 
 const userSchema = z.object({
   fullname: z.string().min(1, "Full name is required"),
@@ -78,14 +79,10 @@ export class userController {
           updatedAt: new Date(),
         },
       });
-      await prisma.subscription.create({
+      prisma.subscription.create({
         data: {
           user: { connect: { id: user.id } },
-          status: "TRIAL",
-          provider: "NONE",
-          duration: 10,
-          amount: 0,
-          currentPeriodEnd: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days trial
+          ...createTrialSubscription(),
         },
       });
       ResponseUtil.success(res, null, "User created successfully", 201);

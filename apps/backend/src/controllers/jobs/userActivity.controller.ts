@@ -185,11 +185,13 @@ export class UserActivityController {
         },
         select: {
           id: true,
+          code: true,
           currentUsageCount: true,
+          maxUsageCount: true,
         }
       });
       for (const subscription of subscriptions) {
-        const promoCode = promoCodes.find(promoCode => promoCode.id === subscription.promoCodeUsed);
+        const promoCode = promoCodes.find(promoCode => promoCode.code === subscription.promoCodeUsed);
         if (promoCode) {
           await prisma.promoCode.update({
             where: { id: promoCode.id },
