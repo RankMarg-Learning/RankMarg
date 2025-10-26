@@ -12,8 +12,10 @@ const EditQuestion = ({ params }: { params: { id: string } }) => {
     const { id } = params;
     const [loading, setLoading] = useState(false);
     const searchParams = useSearchParams();
-    const pageFromUrl = searchParams.get('page');
-    const backTo = pageFromUrl ? `/admin/questions?page=${pageFromUrl}` : '/admin/questions';
+    const queryString = Array.from(searchParams.entries())
+  .map(([key, value]) => `${key}=${value}`)
+  .join('&');
+    const backTo = queryString ? `/admin/questions?${queryString}` : '/admin/questions';
     const router = useRouter();
     const { data: question, isLoading, isError } = useQuery({
         queryKey: ["question", id],
