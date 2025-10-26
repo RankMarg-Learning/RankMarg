@@ -1,5 +1,6 @@
 import { SessionConfig } from "../../types/session.api.types";
 import { GradeEnum, QCategory } from "@repo/db/enums";
+import { exam } from "../../constant/examJson";
 
 export function createDefaultSessionConfig(
   userId: string,
@@ -27,7 +28,9 @@ export function createDefaultSessionConfig(
     questionCategoriesDistribution: getQuestionCategoriesByGrade(grade),
     difficultyDistribution: getDifficultyDistributionByGrade(
       grade,
-      totalQuestions
+      totalQuestions,
+      examCode,
+      undefined
     ),
     preferences: {
       singleTopicPerWeakConcepts: true,
@@ -77,8 +80,51 @@ export function getQuestionCategoriesByGrade(
 
 export function getDifficultyDistributionByGrade(
   grade: GradeEnum,
-  totalQuestions: number
+  totalQuestions: number,
+  examCode: string,
+  subjectId?: string | undefined
 ): { difficulty: number[] } {
+  
+  const examData = exam[examCode as keyof typeof exam];
+  
+  if (examData) {
+    let difficultyDistribution;
+    
+    if (subjectId) {
+      const subject = examData.subjects.find(sub => sub.id === subjectId);
+      if (subject) {
+        difficultyDistribution = subject.difficulty_distribution;
+      }
+    }
+    
+    if (!difficultyDistribution) {
+      difficultyDistribution = examData.global_difficulty_bias;
+    }
+    
+    if (difficultyDistribution) {
+      const percentages = [
+        difficultyDistribution.easy_pct / 100,
+        difficultyDistribution.medium_pct / 100,
+        difficultyDistribution.hard_pct / 100,
+        difficultyDistribution.very_hard_pct / 100,
+      ];
+      
+      const raw = percentages.map((p) => p * totalQuestions);
+      const base = raw.map(Math.floor);
+      const remainder = totalQuestions - base.reduce((sum, val) => sum + val, 0);
+
+      const indicesByFraction = raw
+        .map((val, i) => ({ i, frac: val - base[i] }))
+        .sort((a, b) => b.frac - a.frac);
+
+      for (let i = 0; i < remainder; i++) {
+        base[indicesByFraction[i].i]++;
+      }
+
+      return { difficulty: base };
+    }
+  }
+  
   const percentMap: Record<GradeEnum, number[]> = {
     D: [0.4, 0.35, 0.2, 0.05],
     C: [0.35, 0.35, 0.2, 0.1],
