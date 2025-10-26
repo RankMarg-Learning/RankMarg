@@ -193,7 +193,7 @@ STRICT RENDER & FORMAT RULES:
 - Tables: GitHub-style with a header row (| Col1 | Col2 | ... |).
 - Index-to-space rule wrap with $..$ (e.g. x_i -> $x_i$ or x^{-2} -> $x^{-2}$, \sqrt{x} -> $\sqrt{x}$ and many more)
 ${subject.name === "Chemistry" ? "- Transform all element-symbol in render format.(e.g. CO2 -> $CO_2$,SO_4^{-1} -> $SO_4^{-1}$)" : ""}
-${subject.name === "Mathematics" ? "- Transform difficult latex symbols in unicode format.(e.g. \neq -> ≠ , \notin -> ∉)" : ""}
+${subject.name === "Mathematics" ? "- Transform difficult latex symbols in unicode format.(e.g. Instead of  \neq give direct ≠ , \notin -> ∉)" : ""}
 - Math delimiters: Use ONLY $...$ for inline and $$ on its own lines for display and use the following format:
     $$
     ....
@@ -247,6 +247,7 @@ ${subject.name === "Physics"
   `
           : subject.name === "Mathematics"
             ? `
+            [NOTE]: USE MINIMUM THEORETICAL EXPLANATION AND ONLY SHOW THE CALCULATION STEPS.
           - Solve the question with proper format and step by step untill Final answer gives (Skip Simple Calculation).
           - Add Shortcut/Trick. (If Possible)
   `
