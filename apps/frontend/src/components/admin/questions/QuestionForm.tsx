@@ -414,20 +414,18 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       ctx.drawImage(img, 0, 0);
 
       const originalImage = canvas.toDataURL("image/png", 0.9);
-
-      const response = await api.post("/m/upload-cloudinary", {
-        image: originalImage,
-        folder: "question-images"
-      });
-
-      // Extract the image URL from the response
-      const imageUrl = response.data.data;
-
-      // Generate image name based on question title
+      
       const questionTitle = getValues("title") || "question";
       const imageName = generateImageName(questionTitle);
 
-      // Insert markdown image at cursor position
+      const response = await api.post("/m/upload-s3", {
+        image: originalImage,
+        folder: "question-images",
+        fileName: imageName
+      });
+      
+      const imageUrl = response.data.data;
+
       const markdownImage = `![${imageName}](${imageUrl})`;
       insertImageAtCursor(markdownImage, targetRef, fieldName);
 

@@ -31,10 +31,11 @@ export class SubtopicsController {
         "Subtopics fetched successfully",
         200,
         undefined,
+        req.user.role !== Role.ADMIN ? 
         {
           "Cache-Control": "public, max-age=60, stale-while-revalidate=60",
           Vary: "Authorization",
-        }
+        } : undefined
       );
     } catch (error) {
       next(error);

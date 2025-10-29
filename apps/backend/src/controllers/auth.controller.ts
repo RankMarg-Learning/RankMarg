@@ -351,6 +351,7 @@ export const authController = {
           username: true,
           avatar: true,
           role: true,
+          isActive: true,
           onboardingCompleted: true,
           createdAt: true,
           subscription: {
@@ -388,6 +389,7 @@ export const authController = {
           role: user.role,
           examCode: user.examRegistrations[0]?.exam.code ?? "",
           isNewUser: !user.onboardingCompleted,
+          isActive: user.isActive,
           createdAt: user.createdAt,
           plan: {
             id: user.subscription?.planId ?? null,

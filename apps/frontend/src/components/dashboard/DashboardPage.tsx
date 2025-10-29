@@ -5,9 +5,15 @@ import SmartSubjectSession from './SmartSubjectSession'
 import { QuickNavigation } from './QuickNavigation'
 import { useHome } from '@/hooks/useHome'
 import DashboardSkeleton from '../skeleton/dashboard.skeleton'
+import Link from 'next/link'
+import { Button } from '../ui/button'
+import { Alert, AlertDescription } from '../ui/alert'
+import { AlertCircle } from 'lucide-react'
+import { useUserData } from '@/context/ClientContextProvider'
 
 const DashboardPage = () => {
     const { dashboardBasic, currentStudies, session, isLoading, isError } = useHome()
+    const { user } = useUserData()
 
     if (isLoading) return <DashboardSkeleton/>
     if (isError) {
@@ -19,6 +25,21 @@ const DashboardPage = () => {
     }
     return (
         <div className="flex flex-col space-y-6">
+            {user?.isActive === false && (
+            <Alert variant="destructive" className="border-red-500/50 bg-red-50 dark:bg-red-900/20">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="flex items-center justify-between gap-4">
+                    <span className="text-sm text-red-900 dark:text-red-200">
+                        Account inactive due to 14 days of inactivity. Activate now to continue.
+                    </span>
+                    <Link href="/settings">
+                        <Button variant="outline" size="sm">
+                            Activate Account
+                        </Button>
+                    </Link>
+                </AlertDescription>
+            </Alert>
+            )}
             <SmartStudyHub dashboardData={dashboardBasic}
                 currentStudies={currentStudies} />
             {session?.length > 0 ? (

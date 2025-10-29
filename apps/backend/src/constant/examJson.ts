@@ -14,7 +14,7 @@ export const exam: Exam = {
     },
     subjects: [
       {
-        id: "jee-physics",
+        id: "fdee61f5-0236-44d2-b614-a1da45659ca6",
         name: "Physics",
         share_percentage: 33.3333,
         fixed_questions: 25,
@@ -43,7 +43,7 @@ export const exam: Exam = {
         },
       },
       {
-        id: "jee-chemistry",
+        id: "959f2ce7-b37a-4325-a9d0-d46c2ba3ef59",
         name: "Chemistry",
         share_percentage: 33.3333,
         fixed_questions: 25,
@@ -72,7 +72,7 @@ export const exam: Exam = {
         },
       },
       {
-        id: "jee-mathematics",
+        id: "c47c9c14-2dd7-42fc-823d-d3f550a0e471",
         name: "Mathematics",
         share_percentage: 33.3333,
         fixed_questions: 25,
@@ -196,9 +196,9 @@ export const exam: Exam = {
         fixed_questions: 90,
         avg_time_per_question_in_secs: 40,
         difficulty_distribution: {
-          easy_pct: 45.0,
-          medium_pct: 40.0,
-          hard_pct: 12.0,
+          easy_pct: 60.0,
+          medium_pct: 30.0,
+          hard_pct: 7.0,
           very_hard_pct: 3.0,
         },
         question_type_weights: {

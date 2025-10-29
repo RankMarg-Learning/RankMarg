@@ -57,13 +57,6 @@ export class SettingController {
 
       // Check if user has active subscription
       const hasActiveSubscription = this.checkSubscriptionStatus(req.user);
-      if (!hasActiveSubscription) {
-         ResponseUtil.error(
-          res,
-          "Active subscription required to access settings. Please upgrade your plan.",
-          403
-        );
-      }
 
       const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -80,6 +73,28 @@ export class SettingController {
          ResponseUtil.error(res, "User not found", 404);
       }
 
+      // For non-subscribed users, only return isActive and basic user info
+      if (!hasActiveSubscription) {
+        const settings = {
+          questionsPerDay: 5, // Default value for non-subscribed users
+          isActive: user.isActive,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+          },
+          subscriptionRequired: true,
+        };
+
+         ResponseUtil.success(
+          res,
+          settings,
+          "User settings retrieved successfully (limited access)"
+        );
+        return;
+      }
+
+      // For subscribed users, return all settings
       const settings = {
         questionsPerDay: user.questionsPerDay,
         isActive: user.isActive,
@@ -88,6 +103,7 @@ export class SettingController {
           name: user.name,
           email: user.email,
         },
+        subscriptionRequired: false,
       };
 
        ResponseUtil.success(
@@ -116,12 +132,12 @@ export class SettingController {
          ResponseUtil.error(res, "User not authenticated", 401);
       }
 
-      // Check if user has active subscription
+      // Check if user has active subscription (only required for questionsPerDay)
       const hasActiveSubscription = this.checkSubscriptionStatus(req.user);
-      if (!hasActiveSubscription) {
+      if (questionsPerDay !== undefined && !hasActiveSubscription) {
          ResponseUtil.error(
           res,
-          "Active subscription required to update settings. Please upgrade your plan.",
+          "Active subscription required to update questions per day. Please upgrade your plan.",
           403
         );
       }
@@ -221,12 +237,12 @@ export class SettingController {
          ResponseUtil.error(res, "User not authenticated", 401);
       }
 
-      // Check if user has active subscription
+      // Check if user has active subscription (only required for questionsPerDay)
       const hasActiveSubscription = this.checkSubscriptionStatus(req.user);
-      if (!hasActiveSubscription) {
+      if (settingName === "questionsPerDay" && !hasActiveSubscription) {
          ResponseUtil.error(
           res,
-          "Active subscription required to access settings. Please upgrade your plan.",
+          "Active subscription required to access questions per day setting. Please upgrade your plan.",
           403
         );
       }
@@ -284,12 +300,12 @@ export class SettingController {
          ResponseUtil.error(res, "User not authenticated", 401);
       }
 
-      // Check if user has active subscription
+      // Check if user has active subscription (only required for questionsPerDay)
       const hasActiveSubscription = this.checkSubscriptionStatus(req.user);
-      if (!hasActiveSubscription) {
+      if (settingName === "questionsPerDay" && !hasActiveSubscription) {
          ResponseUtil.error(
           res,
-          "Active subscription required to update settings. Please upgrade your plan.",
+          "Active subscription required to update questions per day. Please upgrade your plan.",
           403
         );
       }

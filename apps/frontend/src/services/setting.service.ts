@@ -9,6 +9,7 @@ export interface UserSettings {
     email: string | null;
   };
   updatedAt?: string;
+  subscriptionRequired?: boolean;
 }
 
 export interface UpdateSettingsData {

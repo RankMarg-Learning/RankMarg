@@ -24,6 +24,7 @@ interface QuestionUIProps {
   answer?: string | null;
   attemptId?: string;
   isUnlocked?: boolean;
+  markAsMistake?: boolean;
 }
 const QuestionUI = ({
   question,
@@ -31,7 +32,8 @@ const QuestionUI = ({
   isSolutionShow = false,
   answer,
   attemptId,
-  isUnlocked = true
+  isUnlocked = true,
+  markAsMistake = false
 }: QuestionUIProps) => {
   const { toast } = useToast();
   const router = useRouter();
@@ -294,7 +296,7 @@ const QuestionUI = ({
 
 
       </div>
-      {(!isCorrect && (attemptId || optimisticAttemptId)) && (
+      {(!isCorrect && (attemptId || optimisticAttemptId) && !markAsMistake) && (
         <div className="flex justify-center">
           <Button
             onClick={() => setShowFeedbackModal(true)}

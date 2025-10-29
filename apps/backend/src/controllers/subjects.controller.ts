@@ -1,6 +1,7 @@
 import { AuthenticatedRequest } from "@/middleware/auth.middleware";
 import { ResponseUtil } from "@/utils/response.util";
 import prisma from "@repo/db";
+import { Role } from "@repo/db/enums";
 import { NextFunction, Response } from "express";
 
 const CACHE_HEADERS = {
@@ -37,7 +38,7 @@ export class SubjectsController {
         "Subjects fetched successfully",
         200,
         undefined,
-        CACHE_HEADERS
+        req.user.role !== Role.ADMIN ? CACHE_HEADERS : undefined
       );
     } catch (error) {
       next(error);

@@ -100,7 +100,7 @@ export class PracticeService extends BaseJobService {
       examReg?.examCode || "DEFAULT",
       isPaidUser ? user.questionsPerDay || 10 : 5,
       (user.grade as GradeEnum) || GradeEnum.C,
-      isPaidUser ? 40 : 28
+      isPaidUser ? 90 : 28
     );
 
     await this.markSessionAsCompleted(userId);

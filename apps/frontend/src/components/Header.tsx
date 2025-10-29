@@ -51,8 +51,9 @@ export function Header({ onMenuClick }: HeaderProps) {
 
             <Link href="/" className="flex items-center">
               <Image
-                src="https://utfs.io/f/DbhgrrAIqRoKxS7q7dwj2eQpG3tSwkDuqa6AKMTcLIFsWXfn"
+                src="https://cdn.rankmarg.in/assets/logo.png"
                 alt="RankMarg Logo"
+                priority
                 width={80}
                 height={22}
                 className="object-contain sm:w-[90px] sm:h-[25px] md:w-[100px] md:h-[28px]"
@@ -101,7 +102,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   >
                     <div className="relative">
                       <Avatar className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9">
-                        <AvatarImage src={user?.image} />
+                        <AvatarImage src={user?.avatar} />
                         <AvatarFallback className="font-semibold text-xs sm:text-sm">
                           {user?.name?.split(" ")
                             .map((n) => n[0])
@@ -129,7 +130,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   <div className="px-3 py-2 border-b border-gray-100">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                        <AvatarImage src={user?.image} />
+                        <AvatarImage src={user?.avatar} />
                         <AvatarFallback className="font-semibold text-sm">
                           {user?.name?.split(" ")
                             .map((n) => n[0])

@@ -171,35 +171,43 @@ export class UserActivityController {
 
   public updatePromoCode = async (req: Request, res: Response) => {
     try {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  
       const subscriptions = await prisma.subscription.findMany({
         where: {
           status: SubscriptionStatus.ACTIVE,
+          updatedAt: {
+            gte: sevenDaysAgo,
+            lt: new Date(),
+          },
+          promoCodeUsed: { not: null },
         },
-        select: {
-          promoCodeUsed: true,
-        }
+        select: { promoCodeUsed: true },
       });
+  
       const promoCodes = await prisma.promoCode.findMany({
-        where: {
-          isActive: true,
-        },
-        select: {
-          id: true,
-          currentUsageCount: true,
-        }
+        where: { isActive: true },
+        select: { id: true, code: true },
       });
+  
+      const promoCodeMap = new Map(promoCodes.map(p => [p.code, p.id]));
+  
       for (const subscription of subscriptions) {
-        const promoCode = promoCodes.find(promoCode => promoCode.id === subscription.promoCodeUsed);
-        if (promoCode) {
+        const promoId = promoCodeMap.get(subscription.promoCodeUsed);
+        if (promoId) {
           await prisma.promoCode.update({
-            where: { id: promoCode.id },
-            data: { currentUsageCount: promoCode.currentUsageCount + 1 },
+            where: { id: promoId },
+            data: { currentUsageCount: { increment: 1 } },
           });
         }
       }
+  
+      ResponseUtil.success(res, "Promo codes updated successfully");
     } catch (error) {
       console.error("[Update Promo Code Error]:", error);
       ResponseUtil.error(res, "Internal Server Error", 500);
     }
-  }
+  };
+  
 }

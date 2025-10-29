@@ -11,6 +11,8 @@ router.post(
   miscController.uploadCloudinary
 );
 
+router.post("/upload-s3", authenticate, miscController.uploadS3);
+
 router.get("/check/coupon", authenticate, miscController.checkCoupon);
 
 router.post("/check/phone", authenticate, miscController.checkPhoneNumber);

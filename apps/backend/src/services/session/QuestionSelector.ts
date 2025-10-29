@@ -60,7 +60,7 @@ export class QuestionSelector {
       const topicIds = currentTopics.map((ct) => ct.topicId);
 
       const { difficulty: difficultyDistribution, categories } =
-        this.getSelectionParameters(count);
+        this.getSelectionParameters(count,subjectId);
 
       let selectedQuestions: { id: string; difficulty: number }[] = [];
 
@@ -233,7 +233,7 @@ export class QuestionSelector {
       let topicIds = weakTopics.map((wt) => wt.topicId);
 
       const { difficulty: difficultyDistribution, categories } =
-        this.getSelectionParameters(count);
+        this.getSelectionParameters(count,subjectId);
 
       let selectedQuestions: { id: string; difficulty: number }[] = [];
 
@@ -399,7 +399,7 @@ export class QuestionSelector {
       }
 
       const { difficulty: difficultyDistribution, categories } =
-        this.getSelectionParameters(count);
+        this.getSelectionParameters(count,subjectId);
 
       let selectedQuestions: { id: string; difficulty: number }[] = [];
 
@@ -564,11 +564,11 @@ export class QuestionSelector {
     }
   }
 
-  private getSelectionParameters(count: number): {
+  private getSelectionParameters(count: number,subjectId:string): {
     difficulty: number[];
     categories: QCategory[];
   } {
-    const { difficulty } = getDifficultyDistributionByGrade(this.grade, count);
+    const { difficulty } = getDifficultyDistributionByGrade(this.grade, count,subjectId,this.config.examCode);
     const categories = this.config.questionCategoriesDistribution
       .grade as QCategory[];
 

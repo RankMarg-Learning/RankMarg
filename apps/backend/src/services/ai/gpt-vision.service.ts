@@ -69,7 +69,7 @@ export async function processImageToQuestion(
       // temperature: 0,
       response_format: { type: "json_object" },
     });
-    console.log("response:", response);
+    
     const content = response.choices[0]?.message?.content;
     if (!content) {
       return {
@@ -99,8 +99,7 @@ export async function processImageToQuestion(
         questionData.topicId = topicId;
 
         if (questionData.subtopicId) {
-          console.log("questionData.subtopicId:", questionData.subtopicId);
-          console.log("subtopics:", subtopics);
+          
           const validSubtopic = subtopics.find(
             (st) => st.id === questionData.subtopicId
           );
@@ -152,42 +151,41 @@ ${subtopicsList}
 
 **Difficulty**:  
 (Decide based on the following strict rules and change difficulty according to subject inside ${subject.name} syllabus)  
-${
-  subject.name === "Physics"
-    ? `
+${subject.name === "Physics"
+      ? `
   - 1 (Easy): Direct formula substitution, single concept, <40 sec.  
   - 2 (Medium): One concept with algebra/trig manipulation, ~1 min. 
   - 3 (Hard): Multi-step, 2 concepts linked (e.g., friction + NLM), ~1–2 min. 
   - 4 (Very Hard): Multi-concept integration, calculus/advanced logic, >3 min.
   `
-    : subject.name === "Chemistry"
-      ? `
+      : subject.name === "Chemistry"
+        ? `
     - 1 (Easy): Direct NCERT fact, definition, or formula-based numerical, <25 sec.
     - 2 (Medium): Single concept with straightforward calculation/reasoning, ~1 min.
     - 3 (Hard): Multi-step problem, requires linking 2 concepts (e.g., thermodynamics + equilibrium, hybridisation + resonance), ~1–2 min.
     - 4 (Very Hard): Multi-concept integration, lengthy calculations, tricky exceptions or advanced mechanisms, >2–3 min.    
     `
-      : subject.name === "Biology"
-        ? `
+        : subject.name === "Biology"
+          ? `
       - 1 (Easy):Direct NCERT fact or definition recall (one-line answer), <15 sec.
       - 2 (Medium): Single concept application (flow/process-based, e.g., respiration step order), ~25 sec–45 sec
       - 3 (Hard): Twisted recall, multi-step reasoning (e.g., exceptions in taxonomy, genetic cross with 2 traits),~1 min
       - 4 (Very Hard): Case-based/multi-concept integration (e.g., ecology + genetics, applied physiology), >1–2 min. 
     `
-        : subject.name === "Mathematics"
-          ? `
+          : subject.name === "Mathematics"
+            ? `
       - 1 (Easy): Direct formula/application, single-step calculation (e.g., simple algebra or direct differentiation), <40 sec.
       - 2 (Medium): One concept with algebra/trig/logarithm manipulation, ~1 min.
       - 3 (Hard): Multi-step problem, requires linking 2 concepts (e.g., calculus + coordinate geometry, algebra + probability), ~1–2 min.
       - 4 (Very Hard): Multi-concept integration, lengthy proofs/advanced calculus or combinatorics, >2–3 min.
       `
-          : `
+            : `
     - 1 (Easy): Direct formula substitution, single concept, <40 sec.  
     - 2 (Medium): One concept with algebra/trig manipulation, ~1 min. 
     - 3 (Hard): Multi-step, 2 concepts linked (e.g., friction + NLM), ~1–2 min. 
     - 4 (Very Hard): Multi-concept integration, calculus/advanced logic, >3 min.
   `
-}
+    }
 
 - If question is based on subject inside ${subject.name} syllabus then change difficulty according to subject inside ${subject.name} syllabus.
 
@@ -195,6 +193,7 @@ STRICT RENDER & FORMAT RULES:
 - Tables: GitHub-style with a header row (| Col1 | Col2 | ... |).
 - Index-to-space rule wrap with $..$ (e.g. x_i -> $x_i$ or x^{-2} -> $x^{-2}$, \sqrt{x} -> $\sqrt{x}$ and many more)
 ${subject.name === "Chemistry" ? "- Transform all element-symbol in render format.(e.g. CO2 -> $CO_2$,SO_4^{-1} -> $SO_4^{-1}$)" : ""}
+${subject.name === "Mathematics" ? "- Transform difficult latex symbols in unicode format.(e.g. Instead of  \neq give direct ≠ , \notin -> ∉)" : ""}
 - Math delimiters: Use ONLY $...$ for inline and $$ on its own lines for display and use the following format:
     $$
     ....
@@ -213,12 +212,11 @@ CONTENT vs OPTIONS RULES:
 
 SOLUTION RULES AND REGULATIONS:
 - Subheading in bold format like this: (eg. **Shortcut/Trick:** , **Exploratory:** , **Did You Know:** ,**Final Answer:** ,etc)
-${
-  subject.name === "Physics"
-    ? `
+${subject.name === "Physics"
+      ? `
     [NOTE]: USE MINIMUM THEORETICAL EXPLANATION AND ONLY SHOW THE CALCULATION STEPS.
   - Given data: [like, Given: 10kg, 20kg, 30kg...] (If Needed)
-  - If solution needed the visualize (diagram / table / etc) Describe the diagram inside square brackets so we will generate and add it. (If needed)
+  - If solution needed the visualize which helps to solve the question faster and easier (diagram / table / logical diagram/ etc) Describe the diagram inside square brackets so we will generate and add it. (If needed)
   - Establish relevant equations. (If needed)
   - Reason through Physics. (If needed)
   - Solve Mathematics in step by step. (If needed)
@@ -226,10 +224,10 @@ ${
   - Add Shortcut/Trick. (If Possible)
   - If-Then Scenario [like, If mass doubles then...](If Possible)
   `
-    : subject.name === "Chemistry"
-      ? `
+      : subject.name === "Chemistry"
+        ? `
     - Highlight the important point from the question.(If Needed)
-    - If solution needed the visualize (diagram / table / etc) Describe the diagram inside square brackets so we will generate and add it. (If needed)
+    - If solution needed the visualize (diagram / table / reaction flow/ etc) Describe the diagram inside square brackets so we will generate and add it. (If needed)
     - Solution steps like this:
       - Convert data into useful form.(If Needed)
       - Apply relevant formula or application.(If Needed)
@@ -238,8 +236,8 @@ ${
       - Add Shortcut/Trick. (If Possible)
       - Quick recall [like, If you see this[...]-> think:[...]] (If Possible)
   `
-      : subject.name === "Biology"
-        ? `
+        : subject.name === "Biology"
+          ? `
         -  If solution needed the visualize (diagram / table / etc) Describe the diagram inside square brackets so we will generate and add it. (If needed)
         - Explain the solution step by step through bullets in minimual words and understandable manner.
         - Final answer.
@@ -247,19 +245,20 @@ ${
         - Did You Know [like, Did you know...] (If Possible)
         - Exploratory [like, Exploratory...] (If Possible)
   `
-        : subject.name === "Mathematics"
-          ? `
+          : subject.name === "Mathematics"
+            ? `
+            [NOTE]: USE MINIMUM THEORETICAL EXPLANATION AND ONLY SHOW THE CALCULATION STEPS.
           - Solve the question with proper format and step by step untill Final answer gives (Skip Simple Calculation).
           - Add Shortcut/Trick. (If Possible)
   `
-          : ``
-}
+            : ``
+    }
 
 
 POLICY:
 • SI units, define symbols, formal student tone
 • Keep type, format, options, isNumerical, isTrueFalse consistent
-• Pick 2-4 categories
+• Pick Question Categories based on the question and subject syllabus.
 • In Solution make steps subtitle bold.
 
 CORRECTNESS: use image to mark correct option.
@@ -269,7 +268,7 @@ RETURN EXACTLY THIS JSON (no extra text and each field need to follow strict rul
   "title": "string",
   "content": "Full question stem only exactly like image (no answer choices). Use Markdown for structure and tables when helpful. Follow RENDER & FORMAT RULES",
   "type": "MULTIPLE_CHOICE" | "INTEGER" | "SUBJECTIVE",
-  "format": "SINGLE_SELECT" | "MULTIPLE_SELECT" | "TRUE_FALSE" | "MATCHING" | "ASSERTION_REASON" | "COMPREHENSION" ,
+  "format": "SINGLE_SELECT" | "MULTIPLE_SELECT" | "TRUE_FALSE" | "MATCHING" | "ASSERTION_REASON" | "COMPREHENSION" (e.g consider Statement-base -> "TRUE_FALSE", Match The Following -> "MATCHING"),
   "difficulty": 1|2|3|4,
   "topicId": "exact_topic_id_from_list_above",
   "subtopicId": "exact_subtopic_id_from_list_above",
@@ -277,11 +276,11 @@ RETURN EXACTLY THIS JSON (no extra text and each field need to follow strict rul
   "solution": " Follow solution generations RULES AND REGULATIONS and always validate the Render & Format Rules",
   "strategy": "1-2 sentences on approach selection, checkpoints, pitfalls, elimination techniques, and time management.",
   "hint": "One guiding line without revealing the answer",
-  "questionTime": 1-30,
+  "questionTime": 1-30 (In Seconds),
   "isNumerical": If Options not Present then add here numerical value otherwise null,
   "isTrueFalse": false|true,
   "commonMistake": "2 IMP Mistakes bullets, each in this format: '- Mistake: <what> | Fix: <instead>\n\n'.",
-  "book": "Reference if mentioned",
+  "book": "Reference Book Name",
   "pyqYear": "[Exam Name] Year (e.g., [JEE Main] 2024), null if not mentioned",
   "categories": ["CALCULATION", "APPLICATION", "THEORETICAL", "TRICKY", "FACTUAL", "TRAP", "GUESS_BASED", "MULTI_STEP", "OUT_OF_THE_BOX", "ELIMINATION_BASED", "MEMORY_BASED", "CONFIDENCE_BASED", "CONCEPTUAL", "FORMULA_BASED"],
   "options": [
@@ -402,7 +401,7 @@ function validateQuestionData(data: any): boolean {
 function tryParseQuestionJson(raw: string): any | null {
   try {
     return JSON.parse(raw);
-  } catch {}
+  } catch { }
 
   try {
     const noFences = stripCodeFences(raw);

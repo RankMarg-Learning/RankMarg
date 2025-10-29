@@ -31,9 +31,15 @@ const Setting = () => {
     if (settings) {
       const hasQuestionsChange = questionsPerDay !== settings.questionsPerDay;
       const hasActiveChange = isActive !== settings.isActive;
-      setHasChanges(hasQuestionsChange || hasActiveChange);
+      
+      // If subscription is required, only check for isActive changes
+      if (subscriptionRequired) {
+        setHasChanges(hasActiveChange);
+      } else {
+        setHasChanges(hasQuestionsChange || hasActiveChange);
+      }
     }
-  }, [questionsPerDay, isActive, settings]);
+  }, [questionsPerDay, isActive, settings, subscriptionRequired]);
 
   const loadSettings = async () => {
     try {
@@ -43,6 +49,11 @@ const Setting = () => {
       setSettings(userSettings);
       setQuestionsPerDay(userSettings.questionsPerDay);
       setIsActive(userSettings.isActive);
+      
+      // Check if subscription is required for full access
+      if (userSettings.subscriptionRequired) {
+        setSubscriptionRequired(true);
+      }
     } catch (error: any) {
       if (error?.message?.includes('subscription required') || error?.response?.status === 403) {
         setSubscriptionRequired(true);
@@ -64,12 +75,22 @@ const Setting = () => {
 
     try {
       setSaving(true);
-      const updatedSettings = await settingService.updateUserSettings({
-        questionsPerDay,
-        isActive,
-      });
       
-      setSettings(updatedSettings);
+      // If subscription is required, only update isActive
+      if (subscriptionRequired) {
+        const updatedSettings = await settingService.updateUserSettings({
+          isActive,
+        });
+        setSettings(updatedSettings);
+      } else {
+        // If subscription is not required, update both settings
+        const updatedSettings = await settingService.updateUserSettings({
+          questionsPerDay,
+          isActive,
+        });
+        setSettings(updatedSettings);
+      }
+      
       setHasChanges(false);
       
       toast({
@@ -185,7 +206,51 @@ const Setting = () => {
           </CardContent>
         </Card>
 
-        {/* Basic Settings Preview */}
+        {/* Account Status - Available without subscription */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Activity className="h-5 w-5" />
+              <span>Account Status</span>
+            </CardTitle>
+            <CardDescription>
+              Control your account activity status.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label htmlFor="account-status" className="text-base font-medium">
+                    Account Status
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Enable or disable your account activity.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Switch
+                  id="account-status"
+                  checked={isActive}
+                  onCheckedChange={setIsActive}
+                  disabled={saving}
+                />
+                <span className="text-sm font-medium">
+                  {isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {isActive 
+                  ? 'Your account is active and you can participate in all activities.'
+                  : 'Your account is inactive. Some features may be limited.'
+                }
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Study Preferences - Requires subscription */}
         <Card className="opacity-60">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -193,7 +258,7 @@ const Setting = () => {
               <span>Study Preferences</span>
             </CardTitle>
             <CardDescription>
-              Customize your daily study goals and activity status.
+              Customize your daily study goals (requires subscription).
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -218,28 +283,6 @@ const Setting = () => {
                   className="w-24"
                 />
                 <span className="text-sm text-muted-foreground">questions</span>
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-base font-medium">
-                    Account Status
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Enable or disable your account activity.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Switch
-                  checked={true}
-                  disabled
-                />
-                <span className="text-sm font-medium">Active</span>
               </div>
             </div>
           </CardContent>
