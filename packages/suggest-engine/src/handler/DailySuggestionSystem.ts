@@ -52,20 +52,22 @@ export class DailySuggestionSystem implements SuggestionHandler {
   ): Promise<PerformanceMetrics | null> {
     const IST_OFFSET_MINUTES = 5.5 * 60;
 
-    const today = new Date();
-    today.setUTCMinutes(today.getUTCMinutes() - IST_OFFSET_MINUTES);
-    today.setUTCHours(0, 0, 0, 0);
+    const now = new Date();
+    const istNow = new Date(now.getTime() + IST_OFFSET_MINUTES * 60 * 1000);
+    const istMidnight = new Date(istNow);
+    istMidnight.setHours(0, 0, 0, 0);
 
-    const yesterday = new Date(today);
-    yesterday.setUTCDate(today.getUTCDate() - 1);
+    const utcMidnight = new Date(istMidnight.getTime() - IST_OFFSET_MINUTES * 60 * 1000);
+    const utcYesterdayMidnight = new Date(utcMidnight);
+    utcYesterdayMidnight.setUTCDate(utcMidnight.getUTCDate() - 1);
 
     const attempts: AttemptWithQuestionDetails[] =
       await prisma.attempt.findMany({
         where: {
           userId,
           solvedAt: {
-            gte: yesterday,
-            lt: today,
+            gte: utcYesterdayMidnight,
+            lt: utcMidnight,
           },
         },
         include: {
@@ -563,7 +565,7 @@ export class DailySuggestionSystem implements SuggestionHandler {
       .filter(([key]) => key !== "other")
       .reduce((a, b) =>
         mistakeTypes[a[0] as keyof MistakeAnalysis] >
-        mistakeTypes[b[0] as keyof MistakeAnalysis]
+          mistakeTypes[b[0] as keyof MistakeAnalysis]
           ? a
           : b
       );
