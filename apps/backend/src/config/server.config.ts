@@ -33,6 +33,12 @@ export const ServerConfig = {
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
   },
+  s3: {
+    region: process.env.AWS_REGION,
+    bucket: process.env.AWS_S3_BUCKET,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
   openai: {
     api_key: process.env.OPENAI_API_KEY,
   },
