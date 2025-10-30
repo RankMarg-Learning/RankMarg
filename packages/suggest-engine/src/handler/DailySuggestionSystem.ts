@@ -520,9 +520,9 @@ export class DailySuggestionSystem implements SuggestionHandler {
 
     if (averageTimePerQuestion > idealTime * 1.5) {
       const templates = [
-        "⏰ {averageTime} min/question? Let’s pick up the pace together!",
-        "🏃‍♂️ You’re at {averageTime} min/question. Time to speed things up!",
-        "⏳ Averaging {averageTime} min/question—let’s work on efficiency!",
+        "⏰ {averageTime} sec/question? Let’s pick up the pace together!",
+        "🏃‍♂️ You’re at {averageTime} sec/question. Time to speed things up!",
+        "⏳ Averaging {averageTime} sec/question—let’s work on efficiency!",
       ];
       suggestions.push(
         this.createSuggestionConfig(
@@ -537,9 +537,9 @@ export class DailySuggestionSystem implements SuggestionHandler {
       );
     } else if (averageTimePerQuestion < idealTime * 0.7) {
       const templates = [
-        "⚡ Fast at {averageTime} min/question, but let’s lock in that accuracy too!",
-        "🏎️ You’re quick at {averageTime} min/question—now let’s nail the precision!",
-        "🌪️ {averageTime} min/question is speedy! Let’s balance it with accuracy!",
+        "⚡ Fast at {averageTime} sec/question, but let’s lock in that accuracy too!",
+        "🏎️ You’re quick at {averageTime} sec/question—now let’s nail the precision!",
+        "🌪️ {averageTime} sec/question is speedy! Let’s balance it with accuracy!",
       ];
       suggestions.push(
         this.createSuggestionConfig(userId, "ACCURACY_FOCUS", 2, templates, {
