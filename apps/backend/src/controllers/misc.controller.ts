@@ -121,12 +121,13 @@ export class MiscController {
           currentUsageCount: true,
         },
       });
-      if (cpn.maxUsageCount && cpn.currentUsageCount >= cpn.maxUsageCount) {
-        ResponseUtil.error(res, "Coupon code has reached the maximum usage limit", 400);
-      }
       if (!cpn) {
         ResponseUtil.error(res, "Invalid or expired coupon code", 400);
       }
+      if (cpn.maxUsageCount && cpn.currentUsageCount >= cpn.maxUsageCount) {
+        ResponseUtil.error(res, "Coupon code has reached the maximum usage limit", 400);
+      }
+      
       ResponseUtil.success(res, cpn, "Coupon code is valid", 200);
     } catch (error) {
       next(error);

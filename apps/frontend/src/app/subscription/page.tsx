@@ -3,8 +3,14 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { Check, ChevronDown, CreditCard, Shield, ArrowLeft } from "lucide-react";
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from "@/utils/api";
-import { plans } from "@/constant/pricing.constant";
+import { planService, Plan } from "@/services/subscription.service";
 import { subscription_progress, subscription_purchased } from '@/utils/analytics';
+import Loading from "@/components/Loading";
+import {
+  getSubscriptionExpiryDate,
+  formatDate,
+} from "@/utils/subscription-pricing.util";
+import { DEFAULT_PLAN_DISCOUNT } from "@/constant/pricing.constant";
 
 declare global {
   interface Window {
@@ -12,19 +18,132 @@ declare global {
   }
 }
 
+interface DisplayPlan {
+  plandId: string;
+  label: string;
+  tillDate: Date;
+  days: number;
+  current: number;
+  original: number;
+}
+
 const SubscriptionContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const ref_page = searchParams.get('ref');
   const plan_type = searchParams.get('plan');
+  const planIdParam = searchParams.get('planId');
+  const couponParam = searchParams.get('coupon');
   
-  const [selectedDuration, setSelectedDuration] = useState(365);
-  const [coupon, setCoupon] = useState("");
+  const [plans, setPlans] = useState<DisplayPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [coupon, setCoupon] = useState(couponParam || "");
   const [couponApplied, setCouponApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [couponError, setCouponError] = useState("");
   const [showCouponInput, setShowCouponInput] = useState(false);
   const [paying, setPaying] = useState(false);
+
+  // Fetch plans from API
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        setLoading(true);
+        const apiPlans = await planService.getPlans({ status: 'active' });
+        
+        const mappedPlans: DisplayPlan[] = apiPlans.map((plan: Plan) => {
+          const expiryDate = getSubscriptionExpiryDate(plan.duration);
+          
+          const originalPrice = plan.amount;
+          const discountedPrice = Math.round(originalPrice * (1 - DEFAULT_PLAN_DISCOUNT / 100));
+          
+          return {
+            plandId: plan.id,
+            label: plan.name,
+            tillDate: expiryDate, 
+            days: Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+            current: discountedPrice, 
+            original: originalPrice, 
+          };
+        });
+        
+        mappedPlans.sort((a, b) => a.days - b.days);
+        
+        setPlans(mappedPlans);
+        
+        // Set selected plan from URL param
+        if (planIdParam) {
+          const foundPlan = mappedPlans.find(p => p.plandId === planIdParam);
+          if (foundPlan) {
+            setSelectedPlanId(foundPlan.plandId);
+          } else if (mappedPlans.length > 0) {
+            setSelectedPlanId(mappedPlans[0].plandId);
+          }
+        } else if (mappedPlans.length > 0) {
+          setSelectedPlanId(mappedPlans[0].plandId);
+        }
+      } catch (error: any) {
+        console.error("Error fetching plans:", error);
+        setError(error?.response?.data?.message || "Failed to load plans. Please refresh the page.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, [planIdParam]);
+
+  // Auto-apply coupon from URL if present
+  useEffect(() => {
+    if (couponParam && couponParam.length > 0 && selectedPlanId) {
+      const autoApplyCoupon = async () => {
+        try {
+          const couponRes = await api.get('/m/check/coupon', {
+            params: { coupon: couponParam, planId: selectedPlanId },
+            headers: { 'Content-Type': 'application/json' }
+          });
+          
+          if (couponRes.data.success) {
+            setDiscount(couponRes.data.data.discount ?? 0);
+            setCouponApplied(true);
+            setCouponError("");
+            subscription_progress(ref_page || "Unknown", 'coupon_applied', plan_type || "Unknown", true);
+          }
+        } catch (error: any) {
+          console.error("Error auto-applying coupon:", error.response?.data?.message);
+        }
+      };
+      
+      autoApplyCoupon();
+    }
+  }, [couponParam, selectedPlanId, ref_page, plan_type]);
+
+  // Update URL when selection changes
+  useEffect(() => {
+    if (selectedPlanId) {
+      const params = new URLSearchParams(searchParams.toString());
+      const currentPlanId = params.get('planId');
+      const currentCoupon = params.get('coupon');
+      
+      // Only update if something actually changed
+      const shouldUpdate = 
+        currentPlanId !== selectedPlanId ||
+        (coupon && couponApplied && currentCoupon !== coupon) ||
+        ((!coupon || !couponApplied) && currentCoupon !== null);
+      
+      if (shouldUpdate) {
+        params.set('planId', selectedPlanId);
+        if (coupon && couponApplied) {
+          params.set('coupon', coupon);
+        } else {
+          params.delete('coupon');
+        }
+        router.replace(`/subscription?${params.toString()}`, { scroll: false });
+      }
+    }
+  }, [selectedPlanId, coupon, couponApplied, router, searchParams]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.gtag) {
@@ -32,8 +151,7 @@ const SubscriptionContent = () => {
     }
   }, []);
 
-
-  const selectedPlan = plans.find((p) => p.days === selectedDuration);
+  const selectedPlan = plans.find((p) => p.plandId === selectedPlanId);
   const finalPrice = couponApplied && selectedPlan ? selectedPlan.current - (selectedPlan.current * discount / 100) : selectedPlan?.current || 0;
 
   const applyCoupon = async() => {
@@ -54,6 +172,11 @@ const SubscriptionContent = () => {
       setCouponApplied(true);
       setCouponError("");
       
+      // Update URL with coupon
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('coupon', coupon);
+      router.replace(`/subscription?${params.toString()}`, { scroll: false });
+      
       subscription_progress(ref_page || "Unknown", 'coupon_applied', plan_type || "Unknown", true);
     } catch (error: any) {
       console.error("Error applying coupon:", error.response?.data?.message);
@@ -65,14 +188,14 @@ const SubscriptionContent = () => {
     if (!selectedPlan) return;
     
     setPaying(true);
-    
-      subscription_progress(ref_page || "Unknown", 'payment_initiated', plan_type || "Unknown", true);
+
+    subscription_progress(ref_page || "Unknown", 'payment_initiated', plan_type || "Unknown", true);
     
     try {
       const response = await api.post('/payment/create-order', {
         planId: selectedPlan.plandId,
-        amount: finalPrice,
-        duration: selectedPlan.days
+        coupon: couponApplied ? coupon : null,
+        // Note: duration is calculated on backend based on May-to-May cycle
       });
       
       if (!response.data.success) {
@@ -84,7 +207,7 @@ const SubscriptionContent = () => {
       const order = response.data.data;
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
-        amount: Math.round(finalPrice * 100),
+        amount: Math.round(order.amount * 100),
         currency: order.currency,
         order_id: order.orderId,
         name: 'RANK BOOSTER PLAN',
@@ -95,11 +218,10 @@ const SubscriptionContent = () => {
           const verifyResponse = await api.post(
             '/payment/verify',
             {
-              coupon: coupon,
+              coupon: couponApplied ? coupon : null,
               discount,
               planId: selectedPlan.plandId,
-              duration: selectedPlan.days,
-              amount: finalPrice,
+              amount: order.amount,
               userId: order.userId,
               orderId: order.orderId,
               razorpayPaymentId: response.razorpay_payment_id,
@@ -142,6 +264,30 @@ const SubscriptionContent = () => {
     return null;
   }
 
+  // Show full-screen loading until plans are loaded
+  if (loading) {
+    return <Loading />;
+  }
+
+  // Show error if plans failed to load
+  if (error || plans.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center">
+        <div className="text-center px-4">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            {error || "No plans available"}
+          </h2>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 bg-gradient-to-br from-primary-50 to-secondary-50">
       {/* Header */}
@@ -170,26 +316,32 @@ const SubscriptionContent = () => {
               
               <div className="space-y-4">
                 {plans.map((plan) => (
-                  <button
-                    key={plan.days}
-                    onClick={() => setSelectedDuration(plan.days)}
-                    className={`w-full p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 text-left ${
-                      selectedDuration === plan.days
-                        ? "border-primary-400 bg-primary-50 shadow-lg"
-                        : "border-gray-200 hover:border-gray-300 bg-white"
-                    }`}
-                  >
+                    <button
+                      key={plan.plandId}
+                      onClick={() => setSelectedPlanId(plan.plandId)}
+                      className={`w-full p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 text-left ${
+                        selectedPlanId === plan.plandId
+                          ? "border-primary-400 bg-primary-50 shadow-lg"
+                          : "border-gray-200 hover:border-gray-300 bg-white"
+                      }`}
+                    >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900 text-sm sm:text-base">{plan.label}</div>
-                        <div className="text-gray-600 text-xs sm:text-sm">{plan.days} days access</div>
+                        <div className="text-gray-600 text-xs sm:text-sm">
+                          Until {formatDate(plan.tillDate)}
+                        </div>
                       </div>
                       <div className="text-right">
                         <div className="text-base sm:text-lg font-bold text-primary-600">₹{plan.current.toLocaleString()}</div>
-                        <div className="text-gray-400 line-through text-xs sm:text-sm">₹{plan.original.toLocaleString()}</div>
-                        <div className="text-secondary-600 font-medium text-xs sm:text-sm">
-                          Save ₹{(plan.original - plan.current).toLocaleString()}
-                        </div>
+                        {plan.original > plan.current && (
+                          <>
+                            <div className="text-gray-400 line-through text-xs sm:text-sm">₹{plan.original.toLocaleString()}</div>
+                            <div className="text-secondary-600 font-medium text-xs sm:text-sm">
+                              Save ₹{(plan.original - plan.current).toLocaleString()}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </button>
@@ -242,6 +394,10 @@ const SubscriptionContent = () => {
                             setCoupon("");
                             setCouponApplied(false);
                             setDiscount(0);
+                            // Update URL to remove coupon
+                            const params = new URLSearchParams(searchParams.toString());
+                            params.delete('coupon');
+                            router.replace(`/subscription?${params.toString()}`, { scroll: false });
                           }}
                           className="text-green-600 hover:text-green-700 text-sm underline"
                         >
@@ -270,8 +426,8 @@ const SubscriptionContent = () => {
                     <span className="font-semibold text-gray-900 text-xs sm:text-sm">{selectedPlan.label}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600 text-xs sm:text-sm">Duration:</span>
-                    <span className="text-gray-900 text-xs sm:text-sm">{selectedPlan.days} days</span>
+                    <span className="text-gray-600 text-xs sm:text-sm">Valid Until:</span>
+                    <span className="text-gray-900 text-xs sm:text-sm">{formatDate(selectedPlan.tillDate)}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 text-xs sm:text-sm">Original Price:</span>
