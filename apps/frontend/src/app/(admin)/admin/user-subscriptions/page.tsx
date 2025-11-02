@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Plus, Search, Edit, Trash2, User, Mail, Calendar, Crown, DollarSign, Users, TrendingUp, Shield } from "lucide-react"
-import { adminSubscriptionService, SubscriptionDetails, AssignSubscriptionData, adminUserManagementService, UserDetails } from "@/services/subscription.service"
+import { adminSubscriptionService,  AssignSubscriptionData, adminUserManagementService, UserDetails } from "@/services/subscription.service"
 import { planService, Plan } from "@/services/subscription.service"
 
 const UserSubscriptionsPage = () => {
