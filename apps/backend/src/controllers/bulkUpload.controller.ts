@@ -365,40 +365,15 @@ async function saveQuestionToDatabase(
   userId: string
 ): Promise<string> {
   try {
-    console.log("\n=== Starting Question Processing ===");
-    console.log("Initial Question Data:", {
-      title: questionData.title,
-      subtopicId: questionData.subtopicId,
-      topicId: questionData.topicId,
-      subjectId: questionData.subjectId,
-    });
-
+   
     // Validate relationships first
     if (questionData.subtopicId) {
-      console.log("\nChecking Subtopic Relationship...");
       // Check if subtopic exists and belongs to the correct topic
       const subtopic = await prisma.subTopic.findUnique({
         where: { id: questionData.subtopicId },
         include: { topic: true },
       });
 
-      console.log(
-        "Found Subtopic:",
-        subtopic
-          ? {
-              id: subtopic.id,
-              name: subtopic.name,
-              topicId: subtopic.topicId,
-              topic: subtopic.topic
-                ? {
-                    id: subtopic.topic.id,
-                    name: subtopic.topic.name,
-                    subjectId: subtopic.topic.subjectId,
-                  }
-                : null,
-            }
-          : "Not found"
-      );
 
       if (!subtopic) {
         throw new Error(`Subtopic ${questionData.subtopicId} not found`);
@@ -424,22 +399,10 @@ async function saveQuestionToDatabase(
     }
 
     if (questionData.topicId && !questionData.subtopicId) {
-      console.log("\nChecking Topic Relationship...");
       // Check if topic exists and belongs to the correct subject
       const topic = await prisma.topic.findUnique({
         where: { id: questionData.topicId },
       });
-
-      console.log(
-        "Found Topic:",
-        topic
-          ? {
-              id: topic.id,
-              name: topic.name,
-              subjectId: topic.subjectId,
-            }
-          : "Not found"
-      );
 
       if (!topic) {
         throw new Error(`Topic ${questionData.topicId} not found`);
@@ -462,32 +425,15 @@ async function saveQuestionToDatabase(
     }
 
     if (questionData.subjectId) {
-      console.log("\nChecking Subject Relationship...");
       // Check if subject exists
       const subject = await prisma.subject.findUnique({
         where: { id: questionData.subjectId },
       });
 
-      console.log(
-        "Found Subject:",
-        subject
-          ? {
-              id: subject.id,
-              name: subject.name,
-            }
-          : "Not found"
-      );
-
       if (!subject) {
         throw new Error(`Subject ${questionData.subjectId} not found`);
       }
     }
-
-    console.log("\nFinal Relationship IDs:", {
-      subjectId: questionData.subjectId,
-      topicId: questionData.topicId,
-      subtopicId: questionData.subtopicId,
-    });
 
     // Generate unique slug
     const baseSlug = questionData.title
@@ -503,17 +449,6 @@ async function saveQuestionToDatabase(
       slug = `${baseSlug}-${counter}`;
       counter++;
     }
-
-    console.log("Generated Slug:", slug);
-
-    console.log("\nCreating Question with data:", {
-      title: questionData.title,
-      type: questionData.type || "MCQ",
-      format: questionData.format || "TEXT",
-      difficulty: questionData.difficulty || 1,
-      optionsCount: questionData.options?.length || 0,
-      categoriesCount: questionData.categories?.length || 0,
-    });
 
     // Create question with options
     const createdQuestion = await prisma.question.create({
@@ -552,7 +487,7 @@ async function saveQuestionToDatabase(
         },
       },
     });
-
+    console.log("Question saved successfully:", createdQuestion.id);
     return createdQuestion.id;
   } catch (error) {
     console.error("Error saving question:", error);

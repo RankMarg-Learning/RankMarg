@@ -4,6 +4,7 @@ import { Response, NextFunction } from "express";
 import { z } from "zod";
 import { getDayWindow } from "@/lib/dayRange";
 import prisma from "@repo/db";
+import { AttemptType } from "@repo/db/enums";
 
 const QuerySchema = z.object({
   subtopicsCount: z.coerce.number().int().positive().default(3),
@@ -362,121 +363,125 @@ export class DashboardController {
     try {
       const userId = req.user.id;
       const { from: todayStart, to: todayEnd } = getDayWindow();
-      const recentSessions = await prisma.practiceSession.findMany({
+
+      const recentAttempts = await prisma.attempt.findMany({
         where: {
           userId,
-          createdAt: {
+          type: {
+            in: [AttemptType.SESSION, AttemptType.NONE]
+          }, 
+          solvedAt: {
             gte: todayStart,
             lt: todayEnd,
           },
         },
         orderBy: {
-          createdAt: "desc",
+          solvedAt: "desc",
         },
         select: {
           id: true,
-          subjectId: true,
-          questions: {
+          timing: true,
+          status: true,
+          questionId: true,
+          question: {
             select: {
-              question: {
+              id: true,
+              subjectId: true,
+              subtopicId: true,
+              subject: {
                 select: {
-                  subTopic: {
-                    select: {
-                      name: true,
-                    },
-                  },
+                  id: true,
+                  name: true,
+                },
+              },
+              subTopic: {
+                select: {
+                  id: true,
+                  name: true,
                 },
               },
             },
           },
-          attempts: {
-            select: {
-              questionId: true,
-              status: true,
-              timing: true,
-            },
-          },
         },
       });
-      const subjectIdToName = await getSubjectMap();
 
-      let overallTotalQuestions = 0;
-      let overallAttempts = 0;
+      if (recentAttempts.length === 0) {
+        ResponseUtil.success(
+          res,
+          {
+            overallSummary: {
+              totalQuestions: 0,
+              attempted: 0,
+              correctAnswers: 0,
+              timeSpent: 0,
+              accuracyRate: 0,
+              subtopicsCovered: 0,
+            },
+            subjectWiseSummary: [],
+          },
+          "Ok",
+          200
+        );
+        return;
+      }
+
       let overallCorrect = 0;
       let overallTimeSpent = 0;
       const overallSubtopics = new Set<string>();
-      const subjectSummaries: Record<
+      const subjectSummaries = new Map<
         string,
         {
           totalQuestions: number;
           attempted: number;
           correctAnswers: number;
         }
-      > = {};
+      >();
 
-      recentSessions.forEach((session) => {
-        const questions = Array.isArray(session.questions)
-          ? session.questions
-          : [];
-        const attempts = Array.isArray(session.attempts)
-          ? session.attempts
-          : [];
+      for (const attempt of recentAttempts) {
+        const { status, timing, question } = attempt;
 
-        const questionCount = questions.length;
-        const attemptedIds = new Set(
-          attempts
-            .filter((a) => a && typeof a.questionId !== "undefined")
-            .map((a) => a.questionId)
-        );
+        if (status === "CORRECT") {
+          overallCorrect++;
+        }
 
-        const correctCount = attempts.filter(
-          (a) => a && a.status === "CORRECT"
-        ).length;
+        const timeSpent = typeof timing === "number" && timing > 0 ? timing : 0;
+        overallTimeSpent += timeSpent;
 
-        const totalTime = attempts.reduce((sum, a) => {
-          const timing = typeof a?.timing === "number" ? a.timing : 0;
-          return sum + timing;
-        }, 0);
+        if (question?.subTopic?.name) {
+          overallSubtopics.add(question.subTopic.name);
+        }
 
-        questions.forEach((q) => {
-          try {
-            const name = q?.question?.subTopic?.name;
-            if (name && typeof name === "string") {
-              overallSubtopics.add(name);
-            }
-          } catch (error) {
-            console.warn("Error processing subtopic for question:", q, error);
-          }
-        });
-        overallTotalQuestions += questionCount;
-        overallAttempts += attemptedIds.size;
-        overallCorrect += correctCount;
-        overallTimeSpent += totalTime;
+        const subjectName = question?.subject?.name || "Unknown Subject";
 
-        const subjectId = session.subjectId;
-        const subjectName =
-          subjectId && subjectIdToName[subjectId]
-            ? subjectIdToName[subjectId]
-            : "Unknown Subject";
-
-        if (!subjectSummaries[subjectName]) {
-          subjectSummaries[subjectName] = {
+        if (!subjectSummaries.has(subjectName)) {
+          subjectSummaries.set(subjectName, {
             totalQuestions: 0,
             attempted: 0,
             correctAnswers: 0,
-          };
+          });
         }
 
-        subjectSummaries[subjectName].totalQuestions += questionCount;
-        subjectSummaries[subjectName].attempted += attemptedIds.size;
-        subjectSummaries[subjectName].correctAnswers += correctCount;
-      });
-      const subjectWiseSummary = Object.entries(subjectSummaries).map(
-        ([subject, data]) => {
+        const subjectSummary = subjectSummaries.get(subjectName)!;
+        subjectSummary.totalQuestions++;
+        subjectSummary.attempted++;
+        if (status === "CORRECT") {
+          subjectSummary.correctAnswers++;
+        }
+      }
+
+      const overallAttempts = recentAttempts.length;
+      const overallAccuracy =
+        overallAttempts > 0
+          ? Math.round((overallCorrect / overallAttempts) * 10000) / 100
+          : 0;
+
+      const timeSpentMinutes = Math.round((overallTimeSpent / 60) * 100) / 100;
+
+      const subjectWiseSummary = Array.from(subjectSummaries.entries())
+        .map(([subject, data]) => {
           const accuracyRate =
             data.attempted > 0
-              ? Math.round((data.correctAnswers / data.attempted) * 100 * 100) /
-                100
+              ? Math.round((data.correctAnswers / data.attempted) * 10000) / 100
               : 0;
 
           return {
@@ -486,23 +491,18 @@ export class DashboardController {
             totalAttempts: data.attempted,
             accuracyRate,
           };
-        }
-      );
-      const overallAccuracy =
-        overallAttempts > 0
-          ? Math.round((overallCorrect / overallAttempts) * 100 * 100) / 100
-          : 0;
-
-      const timeSpentMinutes = Math.round((overallTimeSpent / 60) * 100) / 100;
+        })
+        .sort((a, b) => b.totalAttempts - a.totalAttempts);
 
       const overallSummary = {
-        totalQuestions: overallTotalQuestions,
+        totalQuestions: overallAttempts,
         attempted: overallAttempts,
         correctAnswers: overallCorrect,
         timeSpent: timeSpentMinutes,
         accuracyRate: overallAccuracy,
         subtopicsCovered: overallSubtopics.size,
       };
+
       ResponseUtil.success(
         res,
         {
@@ -510,7 +510,11 @@ export class DashboardController {
           subjectWiseSummary,
         },
         "Ok",
-        200
+        200,
+        undefined,
+        {
+          "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+        }
       );
     } catch (error) {
       next(error);
@@ -518,12 +522,6 @@ export class DashboardController {
   };
 }
 
-async function getSubjectMap(): Promise<Record<string, string>> {
-  const subjects = await prisma.subject.findMany({
-    select: { id: true, name: true },
-  });
-  return Object.fromEntries(subjects.map((s) => [s.id, s.name]));
-}
 function calculateUserLevel(
   performance: {
     accuracy: number;

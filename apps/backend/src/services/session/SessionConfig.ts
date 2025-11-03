@@ -84,7 +84,18 @@ export function getDifficultyDistributionByGrade(
   examCode: string,
   subjectId?: string | undefined
 ): { difficulty: number[] } {
-  
+
+  const percentMap: Record<GradeEnum, number[]> = {
+    D: [0.4, 0.35, 0.2, 0.05],
+    C: [0.35, 0.35, 0.2, 0.1],
+    B: [0.25, 0.4, 0.25, 0.1],
+    A: [0.2, 0.3, 0.3, 0.2],
+    A_PLUS: [0.15, 0.25, 0.3, 0.3],
+  };
+
+  const gradePercentages = percentMap[grade] || percentMap["C"];
+  const gradeBlendWeight = 0.3;
+
   const examData = exam[examCode as keyof typeof exam];
   
   if (examData) {
@@ -102,12 +113,16 @@ export function getDifficultyDistributionByGrade(
     }
     
     if (difficultyDistribution) {
-      const percentages = [
+      const examPercentages = [
         difficultyDistribution.easy_pct / 100,
         difficultyDistribution.medium_pct / 100,
         difficultyDistribution.hard_pct / 100,
         difficultyDistribution.very_hard_pct / 100,
       ];
+
+      const percentages = examPercentages.map(
+        (p, i) => p * (1 - gradeBlendWeight) + gradePercentages[i] * gradeBlendWeight
+      );
       
       const raw = percentages.map((p) => p * totalQuestions);
       const base = raw.map(Math.floor);
@@ -125,15 +140,7 @@ export function getDifficultyDistributionByGrade(
     }
   }
   
-  const percentMap: Record<GradeEnum, number[]> = {
-    D: [0.4, 0.35, 0.2, 0.05],
-    C: [0.35, 0.35, 0.2, 0.1],
-    B: [0.25, 0.4, 0.25, 0.1],
-    A: [0.2, 0.3, 0.3, 0.2],
-    A_PLUS: [0.15, 0.25, 0.3, 0.3],
-  };
-
-  const percentages = percentMap[grade] || percentMap["C"];
+  const percentages = gradePercentages;
 
   const raw = percentages.map((p) => p * totalQuestions);
   const base = raw.map(Math.floor);

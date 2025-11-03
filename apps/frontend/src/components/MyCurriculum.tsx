@@ -287,10 +287,9 @@ function Row({ status, topic, isCompleted, onMakeCurrent, onToggleDone, disableM
 	return (
 		<div className={`${base} ${styles}`}>
 			<div className="flex items-center gap-3 min-w-0">
-				{/* Removed orderIndex badge for a cleaner, faster UI */}
 				<div className="truncate">
 					<p className="font-medium truncate">{topic.name}</p>
-					<p className="text-xs text-muted-foreground truncate">Estimated: {topic.estimatedMinutes ?? "-"} mins</p>
+					<p className="text-xs text-muted-foreground truncate hidden">Estimated: {topic.estimatedMinutes ?? "-"} mins</p>
 				</div>
 			</div>
 			<div className="flex items-center gap-3 justify-between sm:justify-end">

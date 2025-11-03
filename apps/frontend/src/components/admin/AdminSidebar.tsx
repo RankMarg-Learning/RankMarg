@@ -1,6 +1,6 @@
 "use client"
 import { cn } from "@/lib/utils";
-import { Brain,  LayoutDashboard,  LogOut, Settings, TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload } from "lucide-react";
+import { Brain,  LayoutDashboard,  LogOut, Settings, TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,6 +13,7 @@ interface SidebarItemProps {
   href: string;
   isActive: boolean;
   onClick: () => void;
+  exact?: boolean;
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({ icon: Icon, label, href, isActive, onClick }) => {
@@ -39,13 +40,14 @@ const AdminSidebar = () => {
   const router = useRouter();
   
   const menuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/admin", exact: true },
     { icon: Brain, label: "Questions", href: "/admin/questions" },
     { icon: Upload, label: "Bulk Upload", href: "/admin/bulk-upload" },
     { icon: TestTube, label: "Tests", href: "/admin/tests" },
     { icon: BookOpen, label: "Curriculum", href: "/admin/curriculum" },
     { icon: CreditCard, label: "Plans", href: "/admin/plans" },
     { icon: Gift, label: "PromoCodes", href: "/admin/promocodes" },
+    { icon: Users, label: "User Subscriptions", href: "/admin/user-subscriptions" },
     { icon: Settings, label: "Settings", href: "/admin/settings" },
   ];
 
@@ -88,16 +90,21 @@ const AdminSidebar = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
-        {menuItems.map((item) => (
-          <SidebarItem
-            key={item.href}
-            icon={item.icon}
-            label={collapsed ? "" : item.label}
-            href={item.href}
-            isActive={currentPath == item.href}
-            onClick={() => {}}
-          />
-        ))}
+        {menuItems.map((item) => {
+          const isActive = item.exact 
+            ? currentPath === item.href 
+            : currentPath === item.href || currentPath?.startsWith(item.href + "/")
+          return (
+            <SidebarItem
+              key={item.href}
+              icon={item.icon}
+              label={collapsed ? "" : item.label}
+              href={item.href}
+              isActive={isActive}
+              onClick={() => {}}
+            />
+          )
+        })}
       </div>
 
       <div className="p-3 border-t border-gray-200">

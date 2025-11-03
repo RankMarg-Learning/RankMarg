@@ -24,7 +24,6 @@ export class QuestionSelector {
     count: number
   ): Promise<{ id: string; difficulty: number }[]> {
     try {
-      // Try to get cached current topics first
       const cachedTopics = await RedisCacheService.getCachedCurrentTopics(
         this.userId,
         subjectId

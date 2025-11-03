@@ -20,6 +20,8 @@ import paymentRoutes from "./payment.routes";
 import examRoutes from "./exam.routes";
 import planRoutes from "./subscription/plan.routes";
 import promoCodeRoutes from "./subscription/promoCode.routes";
+import adminSubscriptionRoutes from "./subscription/adminSubscription.routes";
+import adminUserManagementRoutes from "./subscription/adminUserManagement.routes";
 import bulkUploadRoutes from "./bulkUpload.routes";
 import userActivityRoutes from "./userActivity.routes";
 import settingRoutes from "./setting.routes";
@@ -48,6 +50,8 @@ export const routes = {
   exam: examRoutes,
   plan: planRoutes,
   promoCode: promoCodeRoutes,
+  adminSubscription: adminSubscriptionRoutes,
+  adminUserManagement: adminUserManagementRoutes,
   bulkUpload: bulkUploadRoutes,
   userActivity: userActivityRoutes,
   setting: settingRoutes,

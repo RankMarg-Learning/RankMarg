@@ -90,6 +90,8 @@ app.use(`${ServerConfig.api.prefix}/payment`, routes.payment);
 app.use(`${ServerConfig.api.prefix}/exams`, routes.exam);
 app.use(`${ServerConfig.api.prefix}/plans`, routes.plan);
 app.use(`${ServerConfig.api.prefix}/promocodes`, routes.promoCode);
+app.use(`${ServerConfig.api.prefix}/admin/subscriptions`, routes.adminSubscription);
+app.use(`${ServerConfig.api.prefix}/admin/user-management`, routes.adminUserManagement);
 app.use(`${ServerConfig.api.prefix}/bulk-upload`, routes.bulkUpload);
 app.use(`${ServerConfig.api.prefix}/user-activity`, routes.userActivity);
 app.use(`${ServerConfig.api.prefix}/settings`, routes.setting);

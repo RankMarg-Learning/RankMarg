@@ -148,8 +148,9 @@ export const routeConfigs: RouteConfig[] = [
   
   // Other admin features
   { path: "/admin/curriculum", type: RouteType.EXACT, access: AccessLevel.ADMIN, roles: ADMIN_ROLES, description: "Curriculum management" },
-  { path: "/admin/plans", type: RouteType.EXACT, access: AccessLevel.ADMIN, roles: ADMIN_ROLES, description: "Subscription plans" },
-  { path: "/admin/promocodes", type: RouteType.EXACT, access: AccessLevel.ADMIN, roles: ADMIN_ROLES, description: "Promo codes management" },
+  { path: "/admin/plans", type: RouteType.EXACT, access: AccessLevel.ADMIN, roles: ADMIN_ONLY, description: "Subscription plans" },
+  { path: "/admin/promocodes", type: RouteType.EXACT, access: AccessLevel.ADMIN, roles: ADMIN_ONLY, description: "Promo codes management" },
+  {path:"/admin/user-subscriptions", type: RouteType.EXACT, access: AccessLevel.ADMIN, roles: ADMIN_ONLY, description: "User subscriptions management" },
 ];
 
 
