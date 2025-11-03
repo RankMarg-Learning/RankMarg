@@ -7,7 +7,7 @@ import api from '@/utils/api'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useRef, useCallback } from 'react'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 70
 
 const SessionPage = () => {
   const {

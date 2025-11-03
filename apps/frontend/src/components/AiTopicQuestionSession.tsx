@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowRight, SkipForward, History } from 'lucide-react';
 import QuestionUI from './QuestionUI';
@@ -40,8 +40,6 @@ const AiTopicQuestionSession: React.FC<AiTopicQuestionSessionProps> = ({
     const userHasNavigated = useRef(false);
 
     // ===== DATA FETCHING =====
-    const queryClient = useQueryClient();
-
     const { data: questionsData, isLoading } = useQuery({
         queryKey: ["ai-questions-session", topicSlug],
         queryFn: () => aiQuestionService.getQuestionsByTopicForSession(topicSlug),
@@ -167,8 +165,8 @@ const AiTopicQuestionSession: React.FC<AiTopicQuestionSessionProps> = ({
                 // Update with real attempt
                 setLocalAttempts(prev => new Map(prev).set(currentQuestion.id, response.data));
                 
-                // Invalidate the questions cache to refresh the list
-                queryClient.invalidateQueries({ queryKey: ["ai-questions-session", topicSlug] });
+                // Update the cache directly instead of invalidating to avoid auto-navigation
+                // Remove invalidateQueries to prevent automatic navigation issues
             } else {
                 // Rollback on failure
                 setLocalAttempts(prev => {
@@ -193,7 +191,7 @@ const AiTopicQuestionSession: React.FC<AiTopicQuestionSessionProps> = ({
         } finally {
             setIsSubmitting(false);
         }
-    }, [currentQuestion, isSubmitting, queryClient, topicSlug]);
+    }, [currentQuestion, isSubmitting]);
 
 // ===== RENDER HELPERS =====
     const renderLoadingState = () => <Loading />;
