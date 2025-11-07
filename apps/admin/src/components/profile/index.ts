@@ -1,0 +1,5 @@
+export { ProfileHeader } from './ProfileHeader'
+export { StudyStreak } from './StudyStreak'
+export { AcademicPerformance } from './AcademicPerformance'
+export { CurrentStudies } from './CurrentStudies'
+export { RecentActivities } from './RecentActivities'

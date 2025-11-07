@@ -1,0 +1,220 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+} */
+
+@keyframes shine {
+  0% {
+    background-position: -200%;
+  }
+  100% {
+    background-position: 200%;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* prevents text selection */
+.noselect {
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 20 14.3% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14.3% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14.3% 4.1%;
+    --primary: 47.9 95.8% 53.1%;
+    --primary-foreground: 26 83.3% 14.1%;
+    --secondary: 60 4.8% 95.9%;
+    --secondary-foreground: 24 9.8% 10%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+    --accent: 60 4.8% 95.9%;
+    --accent-foreground: 24 9.8% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --ring: 20 14.3% 4.1%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  /* .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 60 9.1% 97.8%;
+    --card: 20 14.3% 4.1%;
+    --card-foreground: 60 9.1% 97.8%;
+    --popover: 20 14.3% 4.1%;
+    --popover-foreground: 60 9.1% 97.8%;
+    --primary: 47.9 95.8% 53.1%;
+    --primary-foreground: 26 83.3% 14.1%;
+    --secondary: 12 6.5% 15.1%;
+    --secondary-foreground: 60 9.1% 97.8%;
+    --muted: 12 6.5% 15.1%;
+    --muted-foreground: 24 5.4% 63.9%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 60 9.1% 97.8%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 12 6.5% 15.1%;
+    --input: 12 6.5% 15.1%;
+    --ring: 35.5 91.7% 32.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  } */
+}
+
+
+
+@layer base {
+  
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards; /* Reduced from 0.5s to 0.3s */
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out forwards; /* Reduced from 0.5s to 0.3s */
+  }
+
+  .animate-slide-in-up {
+    animation: slideInUp 0.3s ease-out forwards; /* Reduced from 0.5s to 0.3s */
+  }
+  
+  .yellow-gradient {
+    @apply bg-gradient-to-b from-[#FEF9C3] to-[#FEFCE8];
+  }
+  
+  .topic-card {
+    @apply h-full flex flex-col border rounded-lg p-4 transition-all duration-200 hover:shadow-md cursor-pointer;
+  }
+  
+  .topic-card.selected {
+    @apply border-primary bg-primary/5 ring-2 ring-primary/20;
+  }
+  
+  .student-card {
+    @apply bg-white/70 backdrop-blur-sm border border-border/50 shadow-sm rounded-xl p-4 transition-all duration-200 hover:shadow-md;
+  }
+  
+  .floating-icon {
+    @apply bg-accent text-primary rounded-full p-3 shadow-md;
+    animation: float 2s ease-in-out infinite; /* Reduced from 3s to 2s */
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(10px); /* Reduced from 20px to 10px */
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px); /* Reduced from -10px to -8px */
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.default-scroll {
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #888 #f1f1f1; /* Handle color and track color */
+}
+
+.default-scroll::-webkit-scrollbar {
+  width: 8px; /* Scrollbar width for WebKit browsers */
+}
+
+.default-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Track color */
+}
+
+.default-scroll::-webkit-scrollbar-thumb {
+  background-color: #888; /* Handle color */
+  border-radius: 4px; /* Optional rounded corners */
+  border: 8px solid #f1f1f1; /* Add space between handle and track */
+}
+
+.default-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Darker handle color on hover */
+}
