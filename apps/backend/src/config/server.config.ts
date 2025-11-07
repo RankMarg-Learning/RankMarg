@@ -8,6 +8,18 @@ try {
   console.log("No .env file found, using system environment variables");
 }
 
+const DEFAULT_CORS_ORIGIN = "http://localhost:3000";
+
+const corsOrigins = (
+  process.env.CORS_ORIGINS ?? process.env.CORS_ORIGIN ?? DEFAULT_CORS_ORIGIN
+)
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter((origin) => origin.length > 0);
+if (corsOrigins.length === 0) {
+  corsOrigins.push(DEFAULT_CORS_ORIGIN);
+}
+
 export const ServerConfig = {
   port: process.env.PORT || 3001,
   nodeEnv: process.env.NODE_ENV || "development",
@@ -48,7 +60,7 @@ export const ServerConfig = {
     webhook_secret: process.env.RAZORPAY_WEBHOOK_SECRET,
   },
   cors: {
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: corsOrigins,
     credentials: true,
   },
   adminAPIKey: process.env.ADMIN_API_KEY,
@@ -64,7 +76,7 @@ export const ServerConfig = {
       updateLearningProgress: "0 1 * * 0",
     },
     frequent: {
-      createSession: "0 0 * * *", // Every 3 minutes
+      createSession: "0 0 * * *", 
     },
   },
 

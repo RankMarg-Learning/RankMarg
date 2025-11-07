@@ -41,8 +41,7 @@ yarn-error.log*
 *.pem
 .qodo
 
-#Full Admin App
-apps/admin
+
 
 
 # Backend logs (ensure both relative and explicit paths are ignored)
