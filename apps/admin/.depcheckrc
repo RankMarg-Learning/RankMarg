@@ -1,0 +1,15 @@
+{
+    "skipMissing": true,
+    "ignores": [
+        "@types/*",
+        "typescript",
+        "eslint*",
+        "prettier",
+        "tailwindcss",
+        "postcss",
+        "husky",
+        "lint-staged",
+        "ts-node",
+        "prisma"
+    ]
+}
