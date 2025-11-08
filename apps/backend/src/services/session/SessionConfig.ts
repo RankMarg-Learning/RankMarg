@@ -16,6 +16,7 @@ export function createDefaultSessionConfig(
     examCode,
     grade: grade,
     totalQuestions: totalQuestions,
+    subjectwiseQuestions: getSubjectwiseQuestions(examCode,totalQuestions),
     attempts: {
       nDays: nDays,
       questionIds: [],
@@ -41,6 +42,17 @@ export function createDefaultSessionConfig(
   };
 
   return config;
+}
+
+
+export function getSubjectwiseQuestions(examCode: string,totalQuestions: number): { subjectId: string, questions: number }[] {
+  const examData = exam[examCode as keyof typeof exam];
+  return examData.subjects.map(subject => {
+    return {
+      subjectId: subject.id,
+      questions: Math.floor(totalQuestions * subject.share_percentage / 100),
+    }
+  });
 }
 
 export function getQuestionCategoriesByGrade(

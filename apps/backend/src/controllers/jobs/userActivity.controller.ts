@@ -209,5 +209,88 @@ export class UserActivityController {
       ResponseUtil.error(res, "Internal Server Error", 500);
     }
   };
+
+  public updateTotalQuestions = async (req: Request, res: Response) => {
+    try {
+      // Calculate date 5 days ago from now
+      const fiveDaysAgo = new Date();
+      fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+
+      // Get all active users
+      const users = await prisma.user.findMany({
+        where: {
+          isActive: true,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      let usersUpdated = 0;
+      const updateResults = [];
+
+      // Process each user
+      for (const user of users) {
+        // Get attempts from last 5 days with subject information
+        const attempts = await prisma.attempt.findMany({
+          where: {
+            userId: user.id,
+            solvedAt: {
+              gte: fiveDaysAgo,
+            },
+            status: {
+              not: "NOT_ANSWERED", // Only count answered questions
+            },
+          },
+          include: {
+            question: {
+              select: {
+                subjectId: true,
+              },
+            },
+          },
+        });
+
+        if (attempts.length === 0) {
+          continue; // Skip users with no attempts
+        }
+
+        
+
+       const questionsPerDay = Math.round(attempts.length / 5);
+
+        // Update user's questionsPerDay
+        if (questionsPerDay > 0) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              questionsPerDay: questionsPerDay,
+            },
+          });
+
+          usersUpdated++;
+          updateResults.push({
+            userId: user.id,
+            totalAttempts: attempts.length,
+            questionsPerDay: questionsPerDay,
+          });
+        }
+      }
+
+      ResponseUtil.success(
+        res,
+        {
+          usersUpdated,
+          totalUsers: users.length,
+          periodDays: 5,
+          updateResults: updateResults.slice(0, 10), // Return sample of first 10 users
+        },
+        "Total questions updated successfully"
+      );
+    } catch (error) {
+      console.error("[Update Total Questions Error]:", error);
+      ResponseUtil.error(res, "Internal Server Error", 500);
+    }
+  };
   
 }

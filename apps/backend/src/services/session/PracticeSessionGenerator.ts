@@ -54,7 +54,7 @@ export class PracticeSessionGenerator {
 
   private async generateSubjectSession(subjectId: string): Promise<void> {
     try {
-      const totalQuestionsForSubject = this.config.totalQuestions;
+      const totalQuestionsForSubject = this.config.subjectwiseQuestions.find(subject => subject.subjectId === subjectId)?.questions || 18;
       const questionMap = new Map<string, { id: string }>();
 
       const questions = await this.questionSelector.selectCurrentTopicQuestions(
@@ -80,9 +80,9 @@ export class PracticeSessionGenerator {
     subjectId: string
   ): Promise<void> {
     try {
-      const totalQuestionsForSubject = this.config.totalQuestions;
+      const totalQuestionsForSubject = this.config.subjectwiseQuestions.find(subject => subject.subjectId === subjectId)?.questions || 18;
       const questionMap = new Map<string, { id: string }>();
-
+      console.log("totalQuestionsForSubject", totalQuestionsForSubject);
       const distributions = this.calculateDistribution(
         totalQuestionsForSubject
       );
