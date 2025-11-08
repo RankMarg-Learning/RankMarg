@@ -175,7 +175,7 @@ const QuestionUI = ({
     toast({
       title: isCorrect ? "Correct Answer" : "Incorrect Answer",
       variant: "default",
-      duration: 3000,
+      duration: 500,
       className: isCorrect ? "bg-gray-100 text-gray-800" : "bg-red-500 text-white",
     })
 

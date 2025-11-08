@@ -5,6 +5,7 @@ import { ApiError, ErrorCode } from "@/types/common";
 import prisma from "@repo/db";
 import { GradeEnum, SubmitStatus, SubscriptionStatus } from "@repo/db/enums";
 import { NextFunction, Response } from "express";
+import { exam } from "@/constant/examJson";
 
 interface AIQuestionFilters {
   topicSlug: string;
@@ -90,21 +91,7 @@ export class AIQuestionController {
       const userId = req.user.id;
       const userGrade = await this.getUserGrade(userId);
 
-      // Check cache first
-      const cacheKey = `ai:questions:${topicSlug}:${userId}:${userGrade}:${page}:${limit}`;
-      const cachedData = await RedisCacheService.getCachedQuestionsBySubject(
-        topicSlug,
-        `ai-${userGrade}`
-      );
-
-      if (cachedData) {
-         ResponseUtil.success(
-          res,
-          cachedData,
-          "AI questions fetched successfully (cached)",
-          200
-        );
-      }
+      
 
       // Fetch topic details
       const topic = await prisma.topic.findFirst({
@@ -140,8 +127,9 @@ export class AIQuestionController {
 
       const attemptedQuestionIds = attemptedQuestions.map((a) => a.questionId);
 
-      // Get difficulty range based on user grade
-      const difficultyRange = this.getDifficultyRangeForGrade(userGrade);
+      // Get difficulty range based on user grade and exam
+      const examCode = req.user.examCode;
+      const difficultyRange = this.getDifficultyRangeForGrade(userGrade, examCode);
 
       // Fetch questions with performance-based filtering
       const [questions, totalCount] = await Promise.all([
@@ -223,30 +211,67 @@ export class AIQuestionController {
 
   /**
    * Get difficulty range based on user's grade
+   * Incorporates exam-specific difficulty distribution for adaptive learning
+   * 
    * A_PLUS: 3-4 (Hard, Very Hard)
    * A: 2-4 (Medium, Hard, Very Hard)
    * B: 2-3 (Medium, Hard)
    * C: 1-2 (Easy, Medium)
    * D: 1 (Easy)
+   * 
+   * Adjusts based on exam's global_difficulty_bias when examCode is provided
    */
-  private getDifficultyRangeForGrade(grade: GradeEnum): {
+  private getDifficultyRangeForGrade(
+    grade: GradeEnum,
+    examCode?: string
+  ): {
     min: number;
     max: number;
   } {
+    let baseRange = { min: 1, max: 2 };
+    
     switch (grade) {
       case GradeEnum.A_PLUS:
-        return { min: 3, max: 4 };
+        baseRange = { min: 3, max: 4 };
+        break;
       case GradeEnum.A:
-        return { min: 2, max: 4 };
+        baseRange = { min: 2, max: 4 };
+        break;
       case GradeEnum.B:
-        return { min: 2, max: 3 };
+        baseRange = { min: 2, max: 3 };
+        break;
       case GradeEnum.C:
-        return { min: 1, max: 2 };
+        baseRange = { min: 1, max: 2 };
+        break;
       case GradeEnum.D:
-        return { min: 1, max: 1 };
+        baseRange = { min: 1, max: 1 };
+        break;
       default:
-        return { min: 1, max: 2 };
+        baseRange = { min: 1, max: 2 };
     }
+
+    if (examCode && exam[examCode as keyof typeof exam]) {
+      const examConfig = exam[examCode as keyof typeof exam];
+      const difficultyBias = examConfig.global_difficulty_bias;
+      
+      const hardnessFactor = 
+        (difficultyBias.hard_pct + difficultyBias.very_hard_pct) / 100;
+      const easinessFactor = 
+        (difficultyBias.easy_pct + difficultyBias.medium_pct) / 100;
+
+      
+      if (grade === GradeEnum.A_PLUS && hardnessFactor > 0.3) {
+        baseRange.min = Math.max(3, baseRange.min);
+      } else if (grade === GradeEnum.A && hardnessFactor > 0.25) {
+        baseRange.min = Math.max(2, baseRange.min);
+      } else if (grade === GradeEnum.C && easinessFactor > 0.75) {
+        baseRange.max = Math.max(2, baseRange.max);
+      } else if (grade === GradeEnum.D && difficultyBias.easy_pct > 50) {
+        baseRange.max = 1;
+      }
+    }
+
+    return baseRange;
   }
 
   /**
@@ -499,8 +524,9 @@ export class AIQuestionController {
         );
       }
 
-      // Get difficulty range
-      const difficultyRange = this.getDifficultyRangeForGrade(userGrade);
+      // Get difficulty range based on user grade and exam
+      const examCode = req.user.examCode;
+      const difficultyRange = this.getDifficultyRangeForGrade(userGrade, examCode);
 
       // Get user's recent attempts (last 10) with full details
       const recentAttempts = await prisma.attempt.findMany({

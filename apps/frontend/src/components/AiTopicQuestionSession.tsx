@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, ArrowRight, SkipForward, History } from 'lucide-react';
+import { ArrowLeft, ArrowRight, History } from 'lucide-react';
 import QuestionUI from './QuestionUI';
 import Loading from './Loading';
 import { addAttempt } from '@/services';
@@ -12,6 +12,20 @@ import { useUserData } from '@/context/ClientContextProvider';
 import { cn } from '@/lib/utils';
 import { aiQuestionService } from '@/services/aiQuestion.service';
 import { Button } from './ui/button';
+import {
+    PERFORMANCE_WINDOW,
+    DIFFICULTY_JUMP_THRESHOLD,
+    DIFFICULTY_DROP_THRESHOLD,
+    SELECTION_WEIGHTS,
+    ADAPTIVE_RULES,
+    CORRECT_ANSWER_POINTS,
+    WRONG_ANSWER_POINTS,
+    STREAK_BONUS,
+    STREAK_PENALTY,
+    MAX_PERFORMANCE_SCORE,
+    MIN_PERFORMANCE_SCORE,
+    LOG_LEVELS,
+} from '@/constant/adaptiveLearning';
 
 // Constants
 const STALE_TIME = 5 * 60 * 1000; // 5 minutes
@@ -72,18 +86,220 @@ const AiTopicQuestionSession: React.FC<AiTopicQuestionSessionProps> = ({
         return localAttempt || serverAttempt || null;
     }, [currentQuestion, currentQuestionData, localAttempts]);
 
+    // ===== ADAPTIVE LEARNING LOGIC =====
     
+    /**
+     * Calculate user's recent performance score (-1 to 1)
+     * Positive = doing well, Negative = struggling
+     * 
+     * Uses constants from adaptiveLearning.ts rule book
+     */
+    const calculatePerformanceScore = useCallback((): number => {
+        const recentAttempts = questions
+            .slice(0, currentQuestionIndex + 1)
+            .filter(q => q.attempt || localAttempts.has(q.question.id))
+            .slice(-PERFORMANCE_WINDOW);
 
-    const hasNextUnattempted = useMemo(() =>
-        questions.some((q, index) =>
-            index > currentQuestionIndex && !q.attempt && !localAttempts.has(q.question.id)
-        ),
-        [questions, currentQuestionIndex, localAttempts]
-    );
+        if (recentAttempts.length === 0) return 0;
+
+        let score = 0;
+        let consecutiveCorrect = 0;
+        let consecutiveWrong = 0;
+
+        recentAttempts.forEach((q) => {
+            const attempt = localAttempts.get(q.question.id) || q.attempt;
+            const isCorrect = attempt?.status === 'CORRECT';
+            
+            if (isCorrect) {
+                score += CORRECT_ANSWER_POINTS;
+                consecutiveCorrect++;
+                consecutiveWrong = 0;
+            } else {
+                score += WRONG_ANSWER_POINTS;
+                consecutiveWrong++;
+                consecutiveCorrect = 0;
+            }
+        });
+
+        // Bonus/penalty for streaks
+        if (consecutiveCorrect >= DIFFICULTY_JUMP_THRESHOLD) {
+            score += STREAK_BONUS;
+        }
+        if (consecutiveWrong >= DIFFICULTY_DROP_THRESHOLD) {
+            score += STREAK_PENALTY;
+        }
+
+        // Normalize to -1 to 1 range
+        const normalizedScore = score / PERFORMANCE_WINDOW;
+        
+        if (LOG_LEVELS.PERFORMANCE) {
+            console.log('[Adaptive Learning] Performance:', {
+                score: normalizedScore,
+                consecutiveCorrect,
+                consecutiveWrong,
+                recentAttempts: recentAttempts.length,
+            });
+        }
+
+        return Math.max(MIN_PERFORMANCE_SCORE, Math.min(MAX_PERFORMANCE_SCORE, normalizedScore));
+    }, [questions, currentQuestionIndex, localAttempts]);
+
+    /**
+     * Get target difficulty based on current performance
+     * Uses adaptive rules from the rule book
+     */
+    const getTargetDifficulty = useCallback((): number => {
+        const performanceScore = calculatePerformanceScore();
+        
+        // Get current average difficulty from recent attempts
+        const recentAttempts = questions
+            .slice(0, currentQuestionIndex + 1)
+            .filter(q => q.attempt || localAttempts.has(q.question.id))
+            .slice(-PERFORMANCE_WINDOW);
+
+        let avgDifficulty = 2; // Default to medium
+        if (recentAttempts.length > 0) {
+            avgDifficulty = recentAttempts.reduce(
+                (sum, q) => sum + (q.question.difficulty || 2), 
+                0
+            ) / recentAttempts.length;
+        }
+
+        // Adjust difficulty based on performance
+        let targetDifficulty = avgDifficulty + performanceScore;
+        
+        // Apply maximum jump limit
+        const maxJump = ADAPTIVE_RULES.MAX_DIFFICULTY_JUMP;
+        if (Math.abs(targetDifficulty - avgDifficulty) > maxJump) {
+            targetDifficulty = avgDifficulty + (Math.sign(performanceScore) * maxJump);
+        }
+        
+        // Clamp to valid range
+        const clampedDifficulty = Math.max(
+            ADAPTIVE_RULES.MIN_DIFFICULTY,
+            Math.min(ADAPTIVE_RULES.MAX_DIFFICULTY, Math.round(targetDifficulty))
+        );
+
+        if (LOG_LEVELS.SELECTION) {
+            console.log('[Adaptive Learning] Target Difficulty:', {
+                avgDifficulty,
+                performanceScore,
+                targetDifficulty: clampedDifficulty,
+            });
+        }
+
+        return clampedDifficulty;
+    }, [calculatePerformanceScore, questions, currentQuestionIndex, localAttempts]);
+
+    /**
+     * Intelligent next question selection
+     * Returns the index of the best next question
+     * Uses multi-factor weighted scoring from rule book
+     */
+    const getAdaptiveNextQuestion = useCallback((): number | null => {
+        const targetDifficulty = getTargetDifficulty();
+        const performanceScore = calculatePerformanceScore();
+
+        // Get all unattempted questions after current index
+        const unattemptedQuestions = questions
+            .map((q, index) => ({ question: q, index }))
+            .filter(({ question, index }) => 
+                index > currentQuestionIndex && 
+                !question.attempt && 
+                !localAttempts.has(question.question.id)
+            );
+
+        if (unattemptedQuestions.length === 0) {
+            return null;
+        }
+
+        // Check if user is stuck (low performance, multiple failures)
+        const isStuck = performanceScore <= ADAPTIVE_RULES.STUCK_THRESHOLD * -0.1;
+
+        // Score each question based on multiple factors
+        const scoredQuestions = unattemptedQuestions.map(({ question, index }) => {
+            const questionDifficulty = question.question.difficulty || 2;
+            
+            // Factor 1: Difficulty match (0-1, higher is better)
+            const difficultyMatch = 1 - (Math.abs(questionDifficulty - targetDifficulty) / 3);
+            
+            // Factor 2: Progressive learning (slight preference for nearby questions)
+            const proximityScore = 1 - ((index - currentQuestionIndex) / questions.length);
+            
+            // Factor 3: Variety (prefer different difficulty if stuck)
+            const lastQuestionDiff = currentQuestion?.difficulty || 2;
+            let varietyScore = questionDifficulty !== lastQuestionDiff ? 0.2 : 0;
+            
+            // Boost variety if user is stuck
+            if (isStuck) {
+                varietyScore *= ADAPTIVE_RULES.VARIETY_BOOST_WHEN_STUCK;
+            }
+
+            // Calculate weighted score using constants from rule book
+            const totalScore = 
+                (difficultyMatch * SELECTION_WEIGHTS.DIFFICULTY_MATCH) +
+                (proximityScore * SELECTION_WEIGHTS.PROXIMITY) +
+                (varietyScore * SELECTION_WEIGHTS.VARIETY);
+
+            return {
+                index,
+                score: totalScore,
+                difficulty: questionDifficulty
+            };
+        });
+
+        // Sort by score (descending) and return the best match
+        scoredQuestions.sort((a, b) => b.score - a.score);
+        
+        const selectedQuestion = scoredQuestions[0];
+        
+        if (LOG_LEVELS.SCORING && selectedQuestion) {
+            console.log('[Adaptive Learning] Question Selection:', {
+                targetDifficulty,
+                selectedDifficulty: selectedQuestion.difficulty,
+                score: selectedQuestion.score,
+                isStuck,
+                totalCandidates: scoredQuestions.length,
+            });
+        }
+
+        return selectedQuestion?.index ?? null;
+    }, [
+        getTargetDifficulty, 
+        calculatePerformanceScore, 
+        questions, 
+        currentQuestionIndex, 
+        localAttempts,
+        currentQuestion
+    ]);
 
     // ===== NAVIGATION STATE =====
-    const canGoPrev = currentQuestionIndex > 0;
-    const canGoNext = currentQuestionIndex < questions.length - 1;
+    
+    /**
+     * Check if there are any attempted questions before current index
+     */
+    const canGoPrev = useMemo(() => {
+        for (let i = currentQuestionIndex - 1; i >= 0; i--) {
+            const question = questions[i];
+            const hasAttempt = question?.attempt || localAttempts.has(question?.question?.id);
+            if (hasAttempt) {
+                return true;
+            }
+        }
+        return false;
+    }, [currentQuestionIndex, questions, localAttempts]);
+    
+    /**
+     * Check if there are any questions to navigate to
+     * Uses adaptive selection or sequential fallback
+     */
+    const hasMoreQuestions = useMemo(() => {
+        const hasAdaptive = getAdaptiveNextQuestion() !== null;
+        const hasSequential = currentQuestionIndex < questions.length - 1;
+        return hasAdaptive || hasSequential;
+    }, [getAdaptiveNextQuestion, currentQuestionIndex, questions.length]);
+    
+    const canGoNext = hasMoreQuestions;
 
     // ===== EFFECTS =====
     useEffect(() => {
@@ -109,41 +325,87 @@ const AiTopicQuestionSession: React.FC<AiTopicQuestionSessionProps> = ({
         setShowSolution(hasAttempt);
     }, [currentQuestionIndex, currentAttempt]);
 
-    // ===== EVENT HANDLERS =====
-    const handlePrevQuestion = useCallback(() => {
-        if (currentQuestionIndex > 0) {
-            setCurrentQuestionIndex(prevIndex => prevIndex - 1);
-            userHasNavigated.current = true;
-        }
-    }, [currentQuestionIndex]);
+    // Auto-navigate to next adaptive question after successful attempt (optional)
+    // Uncomment if you want automatic navigation after each attempt
+    /*
+    useEffect(() => {
+        if (currentAttempt && !isSubmitting) {
+            const timer = setTimeout(() => {
+                const nextIndex = getAdaptiveNextQuestion();
+                if (nextIndex !== null) {
+                    setCurrentQuestionIndex(nextIndex);
+                }
+            }, 2000); // Wait 2 seconds before auto-navigating
 
+            return () => clearTimeout(timer);
+        }
+    }, [currentAttempt, isSubmitting, getAdaptiveNextQuestion]);
+    */
+
+    // ===== EVENT HANDLERS =====
+    /**
+     * Navigate to previous attempted question only
+     * Skips unattempted questions
+     */
+    const handlePrevQuestion = useCallback(() => {
+        // Find the previous attempted question
+        let prevAttemptedIndex = -1;
+        
+        for (let i = currentQuestionIndex - 1; i >= 0; i--) {
+            const question = questions[i];
+            const hasAttempt = question.attempt || localAttempts.has(question.question.id);
+            
+            if (hasAttempt) {
+                prevAttemptedIndex = i;
+                break;
+            }
+        }
+        
+        if (prevAttemptedIndex !== -1) {
+            setCurrentQuestionIndex(prevAttemptedIndex);
+            userHasNavigated.current = true;
+            
+            if (LOG_LEVELS.NAVIGATION) {
+                console.log('[Adaptive Learning] Navigate to previous attempted question:', prevAttemptedIndex);
+            }
+        }
+    }, [currentQuestionIndex, questions, localAttempts]);
+
+    /**
+     * Smart next question - uses adaptive selection when available,
+     * falls back to sequential if no adaptive match found
+     */
     const handleNextQuestion = useCallback(() => {
-        if (currentQuestionIndex < questions.length - 1) {
+        // Try adaptive selection first
+        const adaptiveNextIndex = getAdaptiveNextQuestion();
+        
+        if (adaptiveNextIndex !== null) {
+            // Use smart selection
+            setCurrentQuestionIndex(adaptiveNextIndex);
+            userHasNavigated.current = true;
+            
+            if (LOG_LEVELS.NAVIGATION) {
+                console.log('[Adaptive Learning] Smart navigation to index:', adaptiveNextIndex);
+            }
+        } else if (currentQuestionIndex < questions.length - 1) {
+            // Fallback to sequential navigation
             setCurrentQuestionIndex(prevIndex => prevIndex + 1);
             userHasNavigated.current = true;
+            
+            if (LOG_LEVELS.NAVIGATION) {
+                console.log('[Adaptive Learning] Sequential navigation (no adaptive match)');
+            }
         }
-    }, [currentQuestionIndex, questions.length]);
+    }, [currentQuestionIndex, questions.length, getAdaptiveNextQuestion]);
 
-    const goToNextUnattempted = useCallback(() => {
-        const nextUnattemptedIndex = questions.findIndex((q, index) =>
-            index > currentQuestionIndex && !q.attempt && !localAttempts.has(q.question.id)
-        );
-
-        if (nextUnattemptedIndex !== -1) {
-            setCurrentQuestionIndex(nextUnattemptedIndex);
-            userHasNavigated.current = true;
-        }
-    }, [questions, currentQuestionIndex, localAttempts]);
 
     const handleAttempt = useCallback(async (attemptData: attempDataProps) => {
         if (isSubmitting || !currentQuestion) return;
 
         setIsSubmitting(true);
 
-        const optimisticAttemptId = `temp_${Date.now()}_${currentQuestion.id}`;
 
         const optimisticAttempt = {
-            id: optimisticAttemptId,
             questionId: currentQuestion.id,
             answer: attemptData.answer,
             isOptimistic: true
@@ -215,35 +477,6 @@ const AiTopicQuestionSession: React.FC<AiTopicQuestionSessionProps> = ({
         </div>
     );
 
-    const renderProgressSection = () => (
-        <div className="flex items-center gap-4">
-            
-
-            {/* View History Button !NOTE: Future Feature */}
-            {onViewHistory && false && (
-                <button
-                    onClick={onViewHistory}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
-                >
-                    <History className="h-4 w-4" />
-                    <span className="hidden sm:inline">History</span>
-                </button>
-            )}
-
-            {/* Next Unattempted Button */}
-            {hasNextUnattempted && (
-                <button
-                    onClick={goToNextUnattempted}
-                    disabled={isSubmitting}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <SkipForward className="h-4 w-4" />
-                    <span className="hidden sm:inline">Next Unattempted</span>
-                </button>
-            )}
-        </div>
-    );
-
     const renderNavigationButtons = () => (
         <div className="flex items-center gap-3">
             <button
@@ -267,12 +500,8 @@ const AiTopicQuestionSession: React.FC<AiTopicQuestionSessionProps> = ({
     const renderTopNavigation = () => (
         <div className={cn("sticky bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-t border-gray-100", mobileMenuOpen && "hidden lg:block")}>
             <div className="max-w-8xl mx-auto px-4 sm:px-6">
-                <div className="flex items-center justify-between h-14">
-                    {/* Left Side - Progress and Controls */}
-                    <div className="flex-1 min-w-0">
-                        {renderProgressSection()}
-                    </div>
-                    {/* Right Side - Navigation Buttons */}
+                <div className="flex items-center justify-end h-14">
+                    {/* Navigation Buttons - Now with Smart Selection */}
                     <div className="flex-shrink-0">
                         {renderNavigationButtons()}
                     </div>
