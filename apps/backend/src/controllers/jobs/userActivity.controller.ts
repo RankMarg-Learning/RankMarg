@@ -4,6 +4,7 @@ import { ResponseUtil } from "@/utils/response.util";
 import { GradeEnum, SubscriptionStatus } from "@repo/db/enums";
 import { Response, Request } from "express";
 import { StudentGradeService } from "@/services/grade.service";
+import { exam } from "@/constant/examJson";
 
 export class UserActivityController {
   /**
@@ -223,6 +224,11 @@ export class UserActivityController {
         },
         select: {
           id: true,
+          examRegistrations:{
+            select:{
+              examCode:true,
+            }
+          }
         },
       });
 
@@ -231,7 +237,8 @@ export class UserActivityController {
 
       // Process each user
       for (const user of users) {
-        // Get attempts from last 5 days with subject information
+        const examCode = user.examRegistrations[0].examCode;
+
         const attempts = await prisma.attempt.findMany({
           where: {
             userId: user.id,
@@ -255,9 +262,10 @@ export class UserActivityController {
           continue; // Skip users with no attempts
         }
 
-        
+        const examConfig = exam[examCode];
+        const totalQuestions = examConfig.total_questions;
 
-       const questionsPerDay = Math.round(attempts.length / 5);
+       const questionsPerDay = Math.round(Math.min(Math.max(attempts.length / 5, 15), totalQuestions));
 
         // Update user's questionsPerDay
         if (questionsPerDay > 0) {
