@@ -265,7 +265,7 @@ export class UserActivityController {
         const examConfig = exam[examCode];
         const totalQuestions = examConfig.total_questions;
 
-       const questionsPerDay = Math.round(Math.min(Math.max(attempts.length / 5, 15), totalQuestions));
+       const questionsPerDay = Math.round(Math.min(Math.max((attempts.length / 5) + 6, 15), totalQuestions));
 
         // Update user's questionsPerDay
         if (questionsPerDay > 0) {

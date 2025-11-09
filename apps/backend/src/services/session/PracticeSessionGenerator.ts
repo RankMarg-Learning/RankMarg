@@ -82,7 +82,7 @@ export class PracticeSessionGenerator {
     try {
       const totalQuestionsForSubject = this.config.subjectwiseQuestions.find(subject => subject.subjectId === subjectId)?.questions || 18;
       const questionMap = new Map<string, { id: string }>();
-      console.log("totalQuestionsForSubject", totalQuestionsForSubject);
+      
       const distributions = this.calculateDistribution(
         totalQuestionsForSubject
       );
@@ -111,7 +111,9 @@ export class PracticeSessionGenerator {
 
   private calculateDistribution(
     totalQuestions: number
-  ): QuestionDistribution[] {
+  ): QuestionDistribution[] {  
+    
+    const date = new Date().getDate();
     return [
       {
         source: "currentTopic",
@@ -121,19 +123,12 @@ export class PracticeSessionGenerator {
         priority: 1,
       },
       {
-        source: "weakConcepts",
+        source: date % 2 === 0 ? "weakConcepts" : "revisionTopics",
         count: Math.round(
-          totalQuestions * this.config.distribution.weakConcepts
+          totalQuestions * (date % 2 === 0 ? this.config.distribution.weakConcepts : this.config.distribution.revisionTopics)
         ),
         priority: 2,
-      },
-      {
-        source: "revisionTopics",
-        count: Math.round(
-          totalQuestions * this.config.distribution.revisionTopics
-        ),
-        priority: 3,
-      },
+      }
     ];
   }
 

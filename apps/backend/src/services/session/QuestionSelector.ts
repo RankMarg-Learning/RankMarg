@@ -205,7 +205,7 @@ export class QuestionSelector {
             topic: {
               subjectId: subjectId,
             },
-            OR: [{ masteryLevel: { lte: 40 } }],
+            OR: [{ masteryLevel: { lte: 40 } } , { masteryLevel: { gt: 0 } }],
           },
           select: {
             topicId: true,

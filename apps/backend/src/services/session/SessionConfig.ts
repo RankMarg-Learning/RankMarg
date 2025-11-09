@@ -22,9 +22,9 @@ export function createDefaultSessionConfig(
       questionIds: [],
     },
     distribution: {
-      currentTopic: 0.5,
-      weakConcepts: 0.3,
-      revisionTopics: 0.2,
+      currentTopic: 0.6,
+      weakConcepts: 0.4,
+      revisionTopics: 0.4,
     },
     questionCategoriesDistribution: getQuestionCategoriesByGrade(grade),
     difficultyDistribution: getDifficultyDistributionByGrade(
