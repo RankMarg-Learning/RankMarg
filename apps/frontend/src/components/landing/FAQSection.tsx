@@ -34,7 +34,7 @@ const List = [
     },
     { 
       question: "Is there a free trial? What features can I test?", 
-      answer: "Yes! We offer a 7-day free trial with full access to all 11 features: Adaptive Practice, Smart Hints, Solving Strategies, Common Mistakes Guide, Step-by-Step Solutions, Mastery System, Mock Tests, Mistake Tracker, Analytics Dashboard, Curriculum Management, and Performance-Based AI Learning. No credit card required to start." 
+      answer: "Yes! We offer a 10-day free trial with full access to all 11 features: Adaptive Practice, Smart Hints, Solving Strategies, Common Mistakes Guide, Step-by-Step Solutions, Mastery System, Mock Tests, Mistake Tracker, Analytics Dashboard, Curriculum Management, and Performance-Based AI Learning. No credit card required to start." 
     },
     { 
       question: "How long does it take to see improvement in my scores?", 
@@ -43,11 +43,7 @@ const List = [
     { 
       question: "Can I access RankMarg on mobile phones or tablets?", 
       answer: "Absolutely! RankMarg works perfectly on all devices - smartphones, tablets, laptops, and desktops. Your progress syncs automatically across devices. Mobile app for Android and iOS is coming soon. You can practice anywhere, anytime." 
-    },
-    { 
-      question: "What if I'm not satisfied? Is there a refund policy?", 
-      answer: "We offer a 30-day money-back guarantee. If you're not satisfied with your progress or the platform within 30 days, we'll refund your subscription - no questions asked. We're confident you'll see results, but want you to feel completely risk-free." 
-    },
+    }
 ]
 
 const FAQSection = () => {

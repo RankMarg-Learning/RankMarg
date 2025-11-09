@@ -67,7 +67,7 @@ function OngoingSessionCard({ session, isPremiumLocked }: OngoingSessionProps) {
                     <div>
                         <div className="flex justify-between text-xs mb-1">
                             <span>Progress</span>
-                            <span>{(session?.questionsAttempted / session?.totalQuestions)*100}%</span>
+                            <span>{Math.round((session?.questionsAttempted / session?.totalQuestions)*100)}%</span>
                         </div>
                         <Progress value={(session?.questionsAttempted / session?.totalQuestions)*100} className="h-1.5 " indicatorColor={` ${SubjectBackgroundColor[session?.title.toLowerCase() as keyof typeof SubjectBackgroundColor] || SubjectBackgroundColor.default}`} />
                     </div>
