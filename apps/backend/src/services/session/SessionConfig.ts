@@ -22,9 +22,9 @@ export function createDefaultSessionConfig(
       questionIds: [],
     },
     distribution: {
-      currentTopic: 0.6,
-      weakConcepts: 0.4,
-      revisionTopics: 0.4,
+      currentTopic: 0.65,
+      weakConcepts: 0.35,
+      revisionTopics: 0.35,
     },
     questionCategoriesDistribution: getQuestionCategoriesByGrade(grade),
     difficultyDistribution: getDifficultyDistributionByGrade(
@@ -50,7 +50,7 @@ export function getSubjectwiseQuestions(examCode: string,totalQuestions: number)
   return examData.subjects.map(subject => {
     return {
       subjectId: subject.id,
-      questions: Math.floor(totalQuestions * subject.share_percentage / 100),
+      questions: Math.round(totalQuestions * subject.share_percentage / 100),
     }
   });
 }
