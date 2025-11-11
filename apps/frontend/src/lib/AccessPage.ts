@@ -308,15 +308,8 @@ export function checkRouteAccess(
 export function getDefaultRedirectUrl(user: { role?: Role }): string {
   if (!user.role) return "/onboarding";
   
-  switch (user.role) {
-    case Role.ADMIN:
-    case Role.INSTRUCTOR:
-      return "/admin";
-    case Role.USER:
-      return "/dashboard";
-    default:
-      return "/dashboard";
-  }
+  return "/dashboard";
+  
 }
 
 /**

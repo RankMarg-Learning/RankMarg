@@ -18,6 +18,7 @@ import {
     SelectValue,
 } from "../ui/select";
 import { DateFormator } from '@/utils/dateFormator';
+import { useRouter } from 'next/navigation';
 
 const getMasteryColor = (mastery: number) => {
     if (mastery >= 85) return {
@@ -77,7 +78,7 @@ interface MasterySubjectPageProps {
 
 const MasterySubjectPage = ({ subjectId }: MasterySubjectPageProps) => {
     const [sortBy, setSortBy] = useState('index');
-
+    const router = useRouter();
     const { data: subjectMastery, isLoading, error, refetch } = useQuery<{data:SubjectMasteryResponseProps,success:true,message:string}>({
         queryKey: ['subjectMastery', subjectId, sortBy],
         queryFn: () => getSubjectMastery(subjectId, sortBy),
@@ -325,6 +326,7 @@ const MasterySubjectPage = ({ subjectId }: MasterySubjectPageProps) => {
                                         variant="outline"
                                         size="sm"
                                         className={`border-${topicColors.bg.replace('bg-', '')} text-${topicColors.bg.replace('bg-', '')} hover:bg-${topicColors.bg.replace('bg-', '')}/10`}
+                                        onClick={() => router.push(`/ai-questions/${subjectId}/${topic.slug}`)}
                                     >
                                         Practice this topic
                                     </Button>

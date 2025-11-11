@@ -98,7 +98,7 @@ export class PracticeService extends BaseJobService {
       user.id,
       isPaidUser,
       examReg?.examCode || "DEFAULT",
-      isPaidUser ? user.questionsPerDay || 10 : 5,
+      isPaidUser ? Math.max(user.questionsPerDay , 18 ): 18,
       (user.grade as GradeEnum) || GradeEnum.C,
       isPaidUser ? 90 : 28
     );

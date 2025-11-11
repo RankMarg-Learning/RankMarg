@@ -13,6 +13,7 @@ export interface SessionConfig {
   examCode: string;
   grade: GradeEnum;
   totalQuestions: number;
+  subjectwiseQuestions: { subjectId: string, questions: number }[];
   attempts: {
     nDays: number;
     questionIds: string[];

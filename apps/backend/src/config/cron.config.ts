@@ -10,6 +10,7 @@ import { updateUserActivityJob } from "../jobs/tasks/userActivity.job";
 import { subscriptionExpiredJob } from "../jobs/tasks/userActivity.job";
 import { updateGradeJob } from "@/jobs/tasks/grade.job";
 import { updatePromocodeJob } from "@/jobs/tasks/promocode.job";
+import { updateQuestionsPerDayJob } from "@/jobs/tasks/questionsPerDay.update.job";
 
 export interface CronJob {
   name: string;
@@ -96,6 +97,14 @@ export class CronManager {
       job: updatePromocodeJob,
       enabled: true,
       description: "Update promo code usage count weekly on Sunday at midnight",
+    },
+    {
+      name: "updateQuestionsPerDay",
+      schedule: "0 3 */5 * *", // Every 5 days at 3 AM
+      job: updateQuestionsPerDayJob,
+      enabled: true,
+      description:
+        "Update user questionsPerDay field based on last 5 days attempts from top 3 subjects",
     }
   ];
 

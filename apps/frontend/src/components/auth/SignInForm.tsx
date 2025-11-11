@@ -76,16 +76,8 @@ const SignInForm = () => {
         if (user.isNewUser) {
           redirectPath = '/onboarding';
         } else {
-          switch (user.role) {
-            case 'ADMIN':
-              redirectPath = '/admin';
-              break;
-            case 'INSTRUCTOR':
-              redirectPath = '/instructor';
-              break;
-            default:
-              redirectPath = '/dashboard';
-          }
+          redirectPath = '/dashboard';
+          
         }
         
         setTimeout(() => {

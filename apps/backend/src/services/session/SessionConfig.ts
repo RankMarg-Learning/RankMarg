@@ -16,14 +16,15 @@ export function createDefaultSessionConfig(
     examCode,
     grade: grade,
     totalQuestions: totalQuestions,
+    subjectwiseQuestions: getSubjectwiseQuestions(examCode,totalQuestions),
     attempts: {
       nDays: nDays,
       questionIds: [],
     },
     distribution: {
-      currentTopic: 0.5,
-      weakConcepts: 0.3,
-      revisionTopics: 0.2,
+      currentTopic: 0.65,
+      weakConcepts: 0.35,
+      revisionTopics: 0.35,
     },
     questionCategoriesDistribution: getQuestionCategoriesByGrade(grade),
     difficultyDistribution: getDifficultyDistributionByGrade(
@@ -41,6 +42,17 @@ export function createDefaultSessionConfig(
   };
 
   return config;
+}
+
+
+export function getSubjectwiseQuestions(examCode: string,totalQuestions: number): { subjectId: string, questions: number }[] {
+  const examData = exam[examCode as keyof typeof exam];
+  return examData.subjects.map(subject => {
+    return {
+      subjectId: subject.id,
+      questions: Math.round(totalQuestions * subject.share_percentage / 100),
+    }
+  });
 }
 
 export function getQuestionCategoriesByGrade(

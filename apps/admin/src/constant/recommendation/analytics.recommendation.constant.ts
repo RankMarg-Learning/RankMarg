@@ -52,7 +52,7 @@ export function getMetricCardData(metrics: Metric[]): Record<string, FormattedMe
 
             case "TEST_SCORE":
                 valueStr = `${currentValue}`;
-                deltaStr = hasChanged ? `{((diff / (previousValue === 0 ? 1:previousValue)) * 100).toFixed(1)}%` : '0%';
+                deltaStr = hasChanged ? `${((diff / (previousValue === 0 ? 1:previousValue)) * 100).toFixed(1)}%` : '0%';
                 suggestion = isImproved
                     ? diff >= 10
                         ? "Big jump in score! Keep up the momentum"

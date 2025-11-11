@@ -16,6 +16,26 @@ import { createTrialSubscription } from "@/utils/subscription.util";
 import { AuthenticatedRequest } from "@/middleware/auth.middleware";
 import { sendPasswordResetEmail } from "@/lib/email";
 
+const DEFAULT_FRONTEND_ORIGIN = "http://localhost:3000";
+
+const getPrimaryFrontendOrigin = (): string => {
+  const { origin } = ServerConfig.cors;
+
+  if (!origin) {
+    return DEFAULT_FRONTEND_ORIGIN;
+  }
+
+  if (typeof origin === "string") {
+    return origin;
+  }
+
+  if (Array.isArray(origin) && origin.length > 0) {
+    return origin[0];
+  }
+
+  return DEFAULT_FRONTEND_ORIGIN;
+};
+
 export const authController = {
   /**
    * Sign up a new user
@@ -297,7 +317,7 @@ export const authController = {
 
       // For browser response, redirect to frontend
       // The token is already in the cookie, so no need to include in URL
-      const frontendUrl = ServerConfig.cors.origin || "http://localhost:3000";
+      const frontendUrl = getPrimaryFrontendOrigin();
       res.redirect(`${frontendUrl}${redirectUrl}`);
     } catch (error) {
       next(error);
@@ -443,7 +463,7 @@ export const authController = {
         { expiresIn: "1h" }
       );
 
-      const frontendBase = ServerConfig.cors.origin || "http://localhost:3000";
+      const frontendBase = getPrimaryFrontendOrigin();
       const resetUrl = `${frontendBase}/reset-password?token=${token}`;
 
       await sendPasswordResetEmail(email, resetUrl);
