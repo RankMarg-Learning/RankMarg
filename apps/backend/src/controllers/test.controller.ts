@@ -639,7 +639,7 @@ export class TestController {
   ): Promise<void> => {
     try {
       const userId = req.user.id;
-
+      const examCode = req.user.examCode;
       if (
         req.user.plan.status === SubscriptionStatus.EXPIRED ||
         req.user.plan.status === SubscriptionStatus.CANCELLED
@@ -681,6 +681,7 @@ export class TestController {
                 },
               }
             : {}),
+            ...(examCode && { examCode }),
           visibility: Visibility.PUBLIC,
         },
         orderBy: { createdAt: "desc" },

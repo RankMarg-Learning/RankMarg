@@ -166,7 +166,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
     toast({
       title: "LaTeX delimiters replaced successfully!",
       variant: "default",
-      duration: 3000,
+      duration: 500,
       className: "bg-green-500 text-white",
     });
   };
@@ -266,7 +266,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       toast({
         title: "Maximum options reached!!",
         variant: "default",
-        duration: 3000,
+        duration: 500,
         className: "bg-red-500 text-white",
       })
       return;
@@ -359,7 +359,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       toast({
         title: "Image size should be less than 5MB",
         variant: "default",
-        duration: 3000,
+        duration: 500,
         className: "bg-red-500 text-white",
       });
       return;
@@ -369,7 +369,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       toast({
         title: "Please upload an image file",
         variant: "default",
-        duration: 3000,
+        duration: 500,
         className: "bg-red-500 text-white",
       });
       return;
@@ -456,28 +456,9 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       .replace(/[^a-z0-9\s]/g, "")
       .replace(/\s+/g, "-")
       .substring(0, 30);
-
-    // Check if this name already exists in the content
-    const currentContent = getValues("content") || "";
-    const imageRegex = /!\[([^\]]+)\]/g;
-    const existingNames = new Set<string>();
-    let match;
-
-    while ((match = imageRegex.exec(currentContent)) !== null) {
-      existingNames.add(match[1]);
-    }
-
-    if (!existingNames.has(baseName)) {
-      return baseName;
-    }
-
-    // Find the next available index
-    let index = 1;
-    while (existingNames.has(`${baseName}-${index}`)) {
-      index++;
-    }
-
-    return `${baseName}-${index}`;
+    const index = Math.floor(1000 + Math.random() * 9000);
+    
+    return `${baseName}-${index.toString()}`;
   };
 
   // Handle content change manually
