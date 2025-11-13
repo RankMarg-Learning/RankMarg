@@ -36,6 +36,243 @@ const querySchemaAvailableTests = z.object({
 });
 
 export class TestController {
+  //[POST] /api/test/intelligent-create
+  intelligentCreateTest = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const { sections, examCode, totalQuestions, duration } = req.body;
+
+      // Validate input
+      if (!sections || sections.length === 0) {
+        ResponseUtil.error(res, "At least one section is required", 400);
+        return;
+      }
+
+      // Process each section and find matching questions
+      const processedSections = [];
+
+      for (const section of sections) {
+        const {
+          name,
+          isOptional,
+          maxQuestions,
+          correctMarks,
+          negativeMarks,
+          questionCount,
+          subjectId,
+          topicIds,
+          difficultyRange,
+          questionTypes,
+          questionFormats,
+          questionCategories,
+        } = section;
+
+        // Build where clause for question filtering
+        const whereClause: any = {
+          isPublished: true,
+        };
+
+        // Add subject filter
+        if (subjectId) {
+          whereClause.subjectId = subjectId;
+        }
+
+        // Add topic filter
+        if (topicIds && topicIds.length > 0) {
+          whereClause.topicId = {
+            in: topicIds,
+          };
+        }
+
+        // Add difficulty range filter
+        if (difficultyRange) {
+          whereClause.difficulty = {
+            gte: difficultyRange.min || 1,
+            lte: difficultyRange.max || 4,
+          };
+        }
+
+        // Add question type filter
+        if (questionTypes && questionTypes.length > 0) {
+          whereClause.type = {
+            in: questionTypes,
+          };
+        }
+
+        // Add question format filter
+        if (questionFormats && questionFormats.length > 0) {
+          whereClause.format = {
+            in: questionFormats,
+          };
+        }
+
+        // Add question categories filter
+        if (questionCategories && questionCategories.length > 0) {
+          whereClause.category = {
+            some: {
+              category: {
+                in: questionCategories,
+              },
+            },
+          };
+        }
+
+        // Fetch matching questions
+        const availableQuestions = await prisma.question.findMany({
+          where: whereClause,
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            type: true,
+            format: true,
+            difficulty: true,
+            subject: {
+              select: {
+                id: true,
+                name: true,
+                shortName: true,
+              },
+            },
+            topic: {
+              select: {
+                id: true,
+                name: true,
+                weightage: true,
+              },
+            },
+            subTopic: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            category: {
+              select: {
+                category: true,
+              },
+            },
+            pyqYear: true,
+          },
+        });
+
+        if (availableQuestions.length === 0) {
+          ResponseUtil.error(
+            res,
+            `No questions found for section: ${name}`,
+            404
+          );
+          return;
+        }
+
+        // Intelligent question selection algorithm
+        const selectedQuestions = this.selectOptimizedQuestions(
+          availableQuestions,
+          questionCount,
+          difficultyRange
+        );
+
+        processedSections.push({
+          name,
+          isOptional,
+          maxQuestions,
+          correctMarks,
+          negativeMarks,
+          questions: selectedQuestions,
+        });
+      }
+
+      ResponseUtil.success(
+        res,
+        {
+          sections: processedSections,
+          totalQuestions: processedSections.reduce(
+            (sum, section) => sum + section.questions.length,
+            0
+          ),
+          duration,
+          examCode,
+        },
+        "Questions selected successfully",
+        200
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Helper method to select optimized questions
+  private selectOptimizedQuestions = (
+    availableQuestions: any[],
+    requiredCount: number,
+    difficultyRange?: { min: number; max: number }
+  ) => {
+    // Group questions by difficulty
+    const questionsByDifficulty = {
+      1: availableQuestions.filter((q) => q.difficulty === 1),
+      2: availableQuestions.filter((q) => q.difficulty === 2),
+      3: availableQuestions.filter((q) => q.difficulty === 3),
+      4: availableQuestions.filter((q) => q.difficulty === 4),
+    };
+
+    // Calculate distribution based on difficulty range
+    const minDiff = difficultyRange?.min || 1;
+    const maxDiff = difficultyRange?.max || 4;
+
+    // Smart distribution: 40% easy-medium, 40% medium, 20% hard-very_hard
+    const distribution = {
+      1: Math.floor(requiredCount * 0.2), // 20% easy
+      2: Math.floor(requiredCount * 0.4), // 40% medium
+      3: Math.floor(requiredCount * 0.3), // 30% hard
+      4: Math.floor(requiredCount * 0.1), // 10% very hard
+    };
+
+    // Adjust distribution based on requested range
+    const selectedQuestions: any[] = [];
+    const difficultyLevels = [1, 2, 3, 4].filter(
+      (level) => level >= minDiff && level <= maxDiff
+    );
+
+    // Select questions from each difficulty level
+    for (const difficulty of difficultyLevels) {
+      const questionsAtLevel = questionsByDifficulty[difficulty] || [];
+      const countToSelect = Math.min(
+        distribution[difficulty],
+        questionsAtLevel.length
+      );
+
+      // Randomly shuffle and select
+      const shuffled = this.shuffleArray(questionsAtLevel);
+      selectedQuestions.push(...shuffled.slice(0, countToSelect));
+    }
+
+    // If we don't have enough questions, fill from remaining pool
+    if (selectedQuestions.length < requiredCount) {
+      const remaining = availableQuestions.filter(
+        (q) => !selectedQuestions.find((sq) => sq.id === q.id)
+      );
+      const shuffled = this.shuffleArray(remaining);
+      const needed = requiredCount - selectedQuestions.length;
+      selectedQuestions.push(...shuffled.slice(0, needed));
+    }
+
+    // Final shuffle for randomness
+    return this.shuffleArray(selectedQuestions).slice(0, requiredCount);
+  };
+
+  // Fisher-Yates shuffle algorithm
+  private shuffleArray = <T>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   //[POST] /api/test
   createTest = async (
     req: AuthenticatedRequest,

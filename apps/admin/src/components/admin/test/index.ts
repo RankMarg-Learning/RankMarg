@@ -6,6 +6,10 @@ export { default as BasicInfoForm } from './forms/BasicInfoForm';
 export { default as SectionsForm } from './forms/SectionsForm';
 export { default as ReviewForm } from './forms/ReviewForm';
 
+// Export intelligent test creation components
+export { IntelligentSectionBuilder } from './IntelligentSectionBuilder';
+export { QuestionPreviewList } from './QuestionPreviewList';
+
 // Export context and hooks
 export { TestBuilderProvider, useTestBuilder } from '../../../context/TestBuilderContext';
 export type { TestBuilderState, TestSection } from '../../../context/TestBuilderContext';
