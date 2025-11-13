@@ -306,16 +306,16 @@ export function checkRouteAccess(
  * Get default redirect URL for authenticated users
  */
 export function getDefaultRedirectUrl(user: { role?: Role }): string {
-  if (!user.role) return "/onboarding";
+  if (!user.role) return `${process.env.NEXT_PUBLIC_APP_URL}/onboarding`;
   
   switch (user.role) {
     case Role.ADMIN:
     case Role.INSTRUCTOR:
       return "/admin";
     case Role.USER:
-      return "/dashboard";
+      return `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
     default:
-      return "/dashboard";
+      return `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
   }
 }
 

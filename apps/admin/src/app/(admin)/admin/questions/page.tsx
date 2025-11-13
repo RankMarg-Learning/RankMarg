@@ -456,12 +456,6 @@ function QuestionsContent() {
                               <Edit className="h-4 w-4" /> Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="flex items-center gap-2"
-                              onClick={() => window.open(`/question/${question.slug}?solution=true`, '_blank')}
-                            >
-                              <Eye className="h-4 w-4" /> Preview
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
                               className="flex items-center gap-2 text-red-600"
                               onClick={() => {
                                 setDeleteQuestionSlug(question.slug);
@@ -516,15 +510,6 @@ function QuestionsContent() {
             }}
           >
             <Edit className="h-4 w-4" /> Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            className="flex items-center gap-2"
-            onClick={() => {
-              window.open(`/question/${contextMenu.question.slug}?solution=true`, '_blank');
-              setContextMenu(null);
-            }}
-          >
-            <Eye className="h-4 w-4" /> Preview 
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

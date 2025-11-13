@@ -1,8 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Trash2, Upload, CheckCircle, XCircle, Clock, Eye } from 'lucide-react'
+import { Trash2, Upload, Eye } from 'lucide-react'
 
 interface UploadedFile {
   id: string
@@ -23,34 +22,6 @@ export const FilePreview = ({
   removeFile,
   isUploading,
 }: FilePreviewProps) => {
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'failed':
-      case 'error':
-        return <XCircle className="h-4 w-4 text-red-500" />
-      case 'processing':
-        return <Clock className="h-4 w-4 text-blue-500 animate-spin" />
-      default:
-        return <Clock className="h-4 w-4 text-gray-400" />
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800 border-green-200'
-      case 'failed':
-      case 'error':
-        return 'bg-red-100 text-red-800 border-red-200'
-      case 'processing':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
-  }
-
   return (
     <Card>
       <CardHeader>
@@ -67,54 +38,64 @@ export const FilePreview = ({
             <p className="text-sm">Select images to get started</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="space-y-4">
             {uploadedFiles.map((file) => (
-              <div key={file.id} className="relative group">
-                <div className="aspect-square rounded-lg overflow-hidden border">
-                  <img
-                    src={file.url}
-                    alt={file.fileName}
-                    className="w-full h-full object-cover"
-                  />
+              <div
+                key={file.id}
+                className="group flex flex-col items-center gap-3 rounded-lg border p-2 text-center transition-shadow hover:shadow-sm sm:flex-row sm:items-center sm:justify-between sm:text-left"
+              >
+                <div className="min-w-0 space-y-2 sm:flex-1">
+                  <div className="flex flex-wrap justify-center sm:justify-start">
+                    <a
+                      href={file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="truncate text-sm font-medium text-primary hover:underline"
+                    >
+                      {file.fileName}
+                    </a>
+                  </div>
+                  {file.error && (
+                    <p className="text-xs text-red-500" title={file.error}>
+                      {file.error.length > 50
+                        ? `${file.error.substring(0, 50)}...`
+                        : file.error}
+                    </p>
+                  )}
                 </div>
-                <div className="absolute top-2 right-2 flex gap-1">
-                  <Badge 
-                    variant="secondary" 
-                    className={`text-xs hidden ${getStatusColor(file.status)}`}
-                  >
-                    <span className="flex items-center gap-1">
-                      {getStatusIcon(file.status)}
-                      {file.status}
-                    </span>
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => removeFile(file.id)}
-                    disabled={isUploading}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-                <div className="absolute top-2 left-2">
+                <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => window.open(file.url, '_blank')}
+                    disabled={isUploading}
+                    asChild
                   >
-                    <Eye className="h-3 w-3" />
+                    <a
+                      href={file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-1"
+                      aria-label={`Open ${file.fileName} in a new tab`}
+                    >
+                      <Eye className="h-3 w-3" />
+                      <span className="hidden text-xs font-medium sm:inline">
+                        Open
+                      </span>
+                    </a>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => removeFile(file.id)}
+                    disabled={isUploading}
+                    className="flex items-center gap-1"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    <span className="hidden text-xs font-medium sm:inline">
+                      Remove
+                    </span>
                   </Button>
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground truncate">
-                  {file.fileName}
-                </p>
-                {file.error && (
-                  <p className="text-xs text-red-500 mt-1" title={file.error}>
-                    {file.error.length > 50 ? `${file.error.substring(0, 50)}...` : file.error}
-                  </p>
-                )}
               </div>
             ))}
           </div>
