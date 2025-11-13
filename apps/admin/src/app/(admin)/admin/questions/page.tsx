@@ -23,7 +23,6 @@ import {
   Plus,
   Trash,
   AlertCircle,
-  Eye,
   Search,
   Filter,
   X,
