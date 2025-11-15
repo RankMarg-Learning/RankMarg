@@ -11,7 +11,9 @@
       "@repo/db": ["../../packages/db/dist"],
       "@repo/db/*": ["../../packages/db/dist/*"],
       "@repo/suggest": ["../../packages/suggest-engine/dist"],
-      "@repo/suggest/*": ["../../packages/suggest-engine/dist/*"]
+      "@repo/suggest/*": ["../../packages/suggest-engine/dist/*"],
+      "@repo/curriculum": ["../../packages/curriculum/src/index.ts"],
+      "@repo/curriculum/*": ["../../packages/curriculum/src/*"]
     },
     "moduleResolution": "node",
     "esModuleInterop": true,

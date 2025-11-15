@@ -40,6 +40,12 @@
       ],
       "@repo/common-utils/*": [
         "../../packages/common-utils/src/*"
+      ],
+      "@repo/curriculum": [
+        "../../packages/curriculum/src/index.ts"
+      ],
+      "@repo/curriculum/*": [
+        "../../packages/curriculum/src/*"
       ]
     }
   },
