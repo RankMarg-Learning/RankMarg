@@ -87,7 +87,8 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
     "zod": "^3.23.8",
-    "zustand": "^5.0.3"
+    "zustand": "^5.0.3",
+    "@repo/common-ui": "*"
   },
   "devDependencies": {
     "@repo/eslint-config": "^0.0.0",
