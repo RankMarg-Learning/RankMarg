@@ -29,7 +29,6 @@ import {
   GripVertical,
   Trash2,
   AlertCircle,
-  CheckCircle2,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { VariantProps } from "class-variance-authority";
