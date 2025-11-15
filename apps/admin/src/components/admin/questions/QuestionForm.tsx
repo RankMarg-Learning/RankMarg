@@ -617,8 +617,8 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
         handleSaveWithPublish();
       }
       
-      // Check if Ctrl+Shift+P (Windows/Linux) or Cmd+Shift+P (Mac) is pressed - Preview
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'p') {
+      // Check if Ctrl+Shift+A (Windows/Linux) or Cmd+Shift+A (Mac) is pressed - Preview
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'a') {
         event.preventDefault();
         
         // Open preview dialog
