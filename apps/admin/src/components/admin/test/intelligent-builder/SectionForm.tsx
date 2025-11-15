@@ -1,18 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Label } from "@repo/common-ui";
+import { Input } from "@repo/common-ui";
+import { Button } from "@repo/common-ui";
+import { Switch } from "@repo/common-ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+} from "@repo/common-ui";
+import { Badge } from "@repo/common-ui";
 import { Loader2, Plus, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useTopics } from "@/hooks/useTopics";

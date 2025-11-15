@@ -1,11 +1,11 @@
 "use client"
 import Image from "next/image"
 import Link from "next/link"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@repo/common-ui"
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Loading from "./Loading";
-import { Card } from "./ui/card";
+import { Card } from "@repo/common-ui";
 
 const BlogHome = () => {
     const { data: posts, isLoading } = useQuery({

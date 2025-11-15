@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useMemo } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@repo/common-ui";
 import {
   Table,
   TableBody,
@@ -9,8 +9,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Label } from "@/components/ui/label";
+} from "@repo/common-ui";
+import { Label } from "@repo/common-ui";
 import type { Subject } from "@/types/typeAdmin";
 import { SectionFilter } from "./types";
 

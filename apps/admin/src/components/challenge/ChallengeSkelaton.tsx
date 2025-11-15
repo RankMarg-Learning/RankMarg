@@ -1,6 +1,6 @@
 "use client";
-import { Skeleton } from "@/components/ui/skeleton"; // Assuming you have Skeleton component from ShadCN
-import { Card } from "../ui/card";
+import { Skeleton } from "@repo/common-ui"; // Assuming you have Skeleton component from ShadCN
+import { Card } from "@repo/common-ui";
 
 const ChallengeSkeleton = () => {
   return (

@@ -1,11 +1,11 @@
 import { ArrowUpRight, Clock, ShieldAlert, Target, Zap } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@repo/common-ui';
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@repo/common-ui"
 import { AnalyticsMetricsProps } from '@/types';
 
 export function PerformanceOverview({ metrics }: { metrics: AnalyticsMetricsProps }) {

@@ -3,7 +3,7 @@
 import React, {  useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import Footer from "@/components/Footer";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@repo/common-ui";
 import { usePathname } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';

@@ -2,18 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Input } from "@repo/common-ui";
+import { Button } from "@repo/common-ui";
+import { Textarea } from "@repo/common-ui";
+import { Label } from "@repo/common-ui";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
+} from "@repo/common-ui";
+import { Switch } from "@repo/common-ui";
 import { DateTimePicker } from "@/utils/test/date-time-picker";
 import { toast } from "@/hooks/use-toast";
 import SelectFilter from "@/components/SelectFilter";
@@ -21,9 +21,9 @@ import { IntelligentSectionBuilder } from "@/components/admin/test/intelligent-b
 import { QuestionPreviewList } from "@/components/admin/test/QuestionPreviewList";
 import { Loader2, Sparkles, ArrowLeft, ArrowRight, Check } from "lucide-react";
 import api from "@/utils/api";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Progress } from "@repo/common-ui";
+import { Badge } from "@repo/common-ui";
+import { Separator } from "@repo/common-ui";
 import { ExamType, TestStatus, Visibility } from "@repo/db/enums";
 import { TextFormator } from "@/utils/textFormator";
 import {
@@ -32,7 +32,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@repo/common-ui";
 import type { SectionFilter } from "@/components/admin/test/intelligent-builder/types";
 
 

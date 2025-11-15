@@ -13,8 +13,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
+} from "@repo/common-ui";
+import { Button } from "@repo/common-ui";
 
 const TestPage = ({ testId }: { testId: string }) => {
   const { setTestId, isLoaded, setIsTestComplete, setMinimizeCount } = useTestContext();

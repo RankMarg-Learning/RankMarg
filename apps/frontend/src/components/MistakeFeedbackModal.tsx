@@ -4,10 +4,10 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
+} from '@repo/common-ui';
+import { Button } from '@repo/common-ui';
+import { RadioGroup, RadioGroupItem } from '@repo/common-ui';
+import { Label } from '@repo/common-ui';
 import { useToast } from '@/hooks/use-toast';
 import { MessageCircle, Brain, Calculator, BookOpen, Zap, PenTool } from 'lucide-react';
 import { addMistakeFeedback } from '@/services';

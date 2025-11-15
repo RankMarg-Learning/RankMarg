@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui'
+import { Badge } from '@repo/common-ui'
+import { Button } from '@repo/common-ui'
 import { 
   Lightbulb, 
   Target, 

@@ -1,17 +1,17 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@repo/common-ui"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/common-ui"
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/common-ui"
 import Link from 'next/link'
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "@/hooks/use-toast"
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@repo/common-ui"
 import { AlertCircle, Edit, MoreHorizontal, Plus, Trash } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@repo/common-ui"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@repo/common-ui"
 import { deleteTest, getTests } from "@/services/test.service"
 
 

@@ -9,11 +9,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@repo/common-ui"
 import Image from 'next/image'
 import Link from 'next/link'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Card } from '@/components/ui/card'
+import { Skeleton } from '@repo/common-ui'
+import { Card } from '@repo/common-ui'
 
 const LeaderboardPage = ({ params }: { params: { testId: string } }) => {
   const { testId } = params

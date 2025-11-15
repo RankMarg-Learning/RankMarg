@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { Button } from '@repo/common-ui'
 import { toast } from '@/hooks/use-toast'
 import { useTopics } from '@/hooks/useTopics'
 import { useSubtopics } from '@/hooks/useSubtopics'

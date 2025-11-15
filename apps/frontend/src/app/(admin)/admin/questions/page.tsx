@@ -1,14 +1,14 @@
 "use client"
 import { Suspense, useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,  DialogDescription, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,  DialogDescription, DialogClose } from "@repo/common-ui";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@repo/common-ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+} from "@repo/common-ui";
 import {
   Table,
   TableBody,
@@ -16,7 +16,7 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from "@/components/ui/table";
+} from "@repo/common-ui";
 import {
   Edit,
   MoreHorizontal,
@@ -29,15 +29,15 @@ import {
   X,
   MessageSquare
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@repo/common-ui";
+import { Input } from "@repo/common-ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@repo/common-ui";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { deleteQuestion, getQuestionByFilter } from "@/services/question.service";

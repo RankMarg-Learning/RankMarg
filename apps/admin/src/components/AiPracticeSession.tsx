@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowRight, SkipForward } from 'lucide-react';
 import QuestionUI from './QuestionUI';
-import { Progress } from './ui/progress';
+import { Progress } from '@repo/common-ui';
 import Loading from './Loading';
 import { addAttempt, getAiPracticeSession } from '@/services';
 import { attempDataProps } from '@/types';

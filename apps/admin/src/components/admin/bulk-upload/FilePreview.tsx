@@ -1,6 +1,6 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/common-ui'
+import { Button } from '@repo/common-ui'
 import { Trash2, Upload, Eye } from 'lucide-react'
 
 interface UploadedFile {

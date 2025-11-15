@@ -2,13 +2,13 @@
 import React, { useState } from 'react';
 import useOnboardingStore from '@/store/onboardingStore';
 import GradeSelection from '@/components/onboarding/GradeSelection';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@repo/common-ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui';
 import { ArrowRight, Calendar, Clock, GraduationCap, RefreshCw, BookOpen, School, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import Motion from '@/components/ui/motion';
+import { Motion } from '@repo/common-ui';
 import ExamSelection from '@/components/onboarding/ExamSelection';
 import StudyHoursSelection from '@/components/onboarding/StudyHoursSelection';
-import Chip from '@/components/ui/chip';
+import { Chip } from '@repo/common-ui';
 import YearSelection from '@/components/onboarding/YearSelection';
 import TopicSelection from '@/components/onboarding/TopicSelection';
 import { useRouter } from 'next/navigation';
@@ -21,7 +21,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "@repo/common-ui";
 import api from '@/utils/api';
 import { onboarding_progress } from '@/utils/analytics';
 

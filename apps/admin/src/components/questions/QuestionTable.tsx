@@ -1,7 +1,7 @@
 "use client";
 import { AlertCircle, Plus, Search } from "lucide-react";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardFooter } from "@repo/common-ui";
+import { Input } from "@repo/common-ui";
 import {
   Table,
   TableBody,
@@ -9,8 +9,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+} from "@repo/common-ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/common-ui";
 import SelectFilter from "@/components/SelectFilter";
 import React, { useState, useEffect } from "react";
 import { QTableRow } from "@/components/questions/QTableRow";
@@ -25,12 +25,12 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from "@repo/common-ui";
 import { cn } from "@/lib/utils";
 import { QuestionFormat, QuestionType } from "@repo/db/enums";
 import { useSubjects } from "@/hooks/useSubject";
 import Link from "next/link";
-import { Button } from "../ui/button";
+import { Button } from "@repo/common-ui";
 import { usePathname } from "next/navigation";
 import {  getQuestionByFilter } from "@/services/question.service";
 import { PYQ_Year } from "@/constant/pyqYear";

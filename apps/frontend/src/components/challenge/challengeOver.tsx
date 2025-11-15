@@ -1,6 +1,6 @@
 import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/common-ui"
+import { Badge } from "@repo/common-ui"
 import { CheckCircle, XCircle, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { Question } from '@prisma/client'

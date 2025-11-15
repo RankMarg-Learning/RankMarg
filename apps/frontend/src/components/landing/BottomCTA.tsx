@@ -1,6 +1,6 @@
 "use client"
 import React from 'react'
-import { Button } from '../ui/button'
+import { Button } from '@repo/common-ui'
 import Link from "next/link"
 import { click_signup_cta } from '@/utils/analytics'
 

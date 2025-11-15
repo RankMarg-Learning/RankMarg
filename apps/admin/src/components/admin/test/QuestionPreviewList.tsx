@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@repo/common-ui";
 import {
+  Badge,
+  type BadgeProps,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge, badgeVariants } from "@/components/ui/badge";
+} from "@repo/common-ui";
 import {
   Table,
   TableBody,
@@ -17,21 +18,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@repo/common-ui";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@repo/common-ui";
 import {
   ArrowLeft,
   GripVertical,
   Trash2,
   AlertCircle,
 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { VariantProps } from "class-variance-authority";
+import { Alert, AlertDescription } from "@repo/common-ui";
 import { TextFormator } from "@/utils/textFormator";
 import { PreviewQuestion, QuestionFulfillmentDialog } from "./components/QuestionFulfillmentDialog";
 
@@ -89,6 +89,21 @@ export function QuestionPreviewList({
         return "Very Hard";
       default:
         return "Unknown";
+    }
+  };
+
+  const getDifficultyVariant = (difficulty: number): BadgeProps["variant"] => {
+    switch (difficulty) {
+      case 1:
+        return "Easy";
+      case 2:
+        return "Medium";
+      case 3:
+        return "Hard";
+      case 4:
+        return "Hard";
+      default:
+        return "secondary";
     }
   };
 
@@ -233,14 +248,14 @@ export function QuestionPreviewList({
                           <span className="font-medium">Difficulty Distribution:</span>
                         </div>
                         <div className="flex gap-2">
-                          {Object.entries(stats).map(([diff, count]) => (
-                            <Badge
-                              key={diff}
-                              variant={parseInt(diff) as VariantProps<typeof badgeVariants>["variant"]}
-                            >
-                              {getDifficultyLabel(parseInt(diff))}: {count}
-                            </Badge>
-                          ))}
+                          {Object.entries(stats).map(([diff, count]) => {
+                            const difficulty = parseInt(diff, 10);
+                            return (
+                              <Badge key={diff} variant={getDifficultyVariant(difficulty)}>
+                                {getDifficultyLabel(difficulty)}: {count}
+                              </Badge>
+                            );
+                          })}
                         </div>
                         <div className="ml-auto flex items-center gap-2">
                           {section.questionLimit && (
@@ -333,7 +348,7 @@ export function QuestionPreviewList({
                                 </TableCell>
                                 <TableCell>
                                   <Badge
-                                    variant={parseInt(question.difficulty as unknown as string) as VariantProps<typeof badgeVariants>["variant"]}
+                                    variant={getDifficultyVariant(Number(question.difficulty))}
                                   >
                                     {getDifficultyLabel(question.difficulty)}
                                   </Badge>

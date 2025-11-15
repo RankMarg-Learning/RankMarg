@@ -6,7 +6,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@repo/common-ui";
 import { useSubjects } from "@/hooks/useSubject";
 import { SectionForm } from "./SectionForm";
 import { ConfiguredSectionsTable } from "./ConfiguredSectionsTable";

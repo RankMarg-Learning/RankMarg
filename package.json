@@ -26,6 +26,7 @@
     "schema": "packages/db/src/prisma/schema.prisma"
   },
   "devDependencies": {
+    "@turbo/eslint-config": "^2.1.3",
     "depcheck": "^1.4.7",
     "prettier": "^3.2.5",
     "turbo": "^2.1.3",

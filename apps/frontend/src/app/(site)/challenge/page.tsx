@@ -1,14 +1,14 @@
 "use client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/common-ui";
 import React from "react";
 import {  Link2, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
+import { Separator } from "@repo/common-ui";
+import { Button } from "@repo/common-ui";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import ChallengeSkeleton from "@/components/challenge/ChallengeSkelaton";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@repo/common-ui";
 import Banner from "@/components/challenge/banner";
 import ScheduleBanner from "@/components/challenge/scheduleBanner";
 

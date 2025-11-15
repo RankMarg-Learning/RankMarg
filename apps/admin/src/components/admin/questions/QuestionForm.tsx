@@ -1,16 +1,16 @@
 "use client"
 import React, { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@repo/common-ui";
+import { Input } from "@repo/common-ui";
+import { Textarea } from "@repo/common-ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@repo/common-ui";
 import {
   Card,
   CardContent,
@@ -18,7 +18,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@repo/common-ui";
 import {
   Dialog,
   DialogContent,
@@ -26,10 +26,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@repo/common-ui";
 import { PlusCircle, Trash2, Save, Upload, Loader2, RefreshCw, Eye } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Switch } from "@repo/common-ui";
+import { Label } from "@repo/common-ui";
 import { QCategory, Question, QuestionFormat } from "@/types/typeAdmin";
 import { QuestionType } from "@repo/db/enums";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
@@ -40,7 +40,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { generateSlug } from "@/lib/generateSlug";
 import { TextFormator } from "@/utils/textFormator";
 import { CategoryMultiSelect } from "./CategoryMultiSelect";
-import { SearchableSelect } from "@/components/ui/searchable-select";
+import { SearchableSelect } from "@repo/common-ui";
 import api from "@/utils/api";
 
 interface QuestionFormProps {

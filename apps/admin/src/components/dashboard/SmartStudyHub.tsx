@@ -1,10 +1,10 @@
 "use client"
 import { BrainCircuit, Flame, ListTodo, Target, BookOpen } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardContent } from "@repo/common-ui";
+import { Badge } from "@repo/common-ui";
+import { Button } from "@repo/common-ui";
+import { Progress } from "@repo/common-ui";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@repo/common-ui";
 import CurrentTopicCard from "./CurrentTopicCard";
 import { SmartStudyHubProps, SubjectGroup } from "@/types/dashboard.types";
 import { useMemo, useState } from "react";

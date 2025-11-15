@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@repo/common-ui';
 import { Clock, FileText, Info, Lock, Crown, ChevronDown, ChevronUp } from 'lucide-react';
 import { TextFormator } from '@/utils/textFormator';
 import { AvailableTestsProps, TestCardProps } from '@/types';

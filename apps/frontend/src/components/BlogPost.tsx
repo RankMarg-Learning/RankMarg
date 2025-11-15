@@ -1,8 +1,7 @@
 "use client"
 import React from 'react';
 import 'katex/dist/katex.min.css';
-import { Card } from './ui/card';
-import { Separator } from '@radix-ui/react-dropdown-menu';
+import { Card, Separator } from '@repo/common-ui';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import SkeletonBlogPage from './skeleton/skel_blogpage';

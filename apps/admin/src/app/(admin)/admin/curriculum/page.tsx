@@ -1,21 +1,21 @@
 "use client"
 import { useState, useMemo, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@repo/common-ui";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@repo/common-ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/common-ui";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader,
   TableRow
-} from "@/components/ui/table";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+} from "@repo/common-ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/common-ui";
+import { Input } from "@repo/common-ui";
+import { Badge } from "@repo/common-ui";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
-// import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+} from "@repo/common-ui";
+// import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@repo/common-ui";
 import { Subject, Topic, Subtopic, Exam, ExamSubject } from "@/types/typeAdmin";
 
 import {
@@ -33,8 +33,8 @@ import { useTopics } from "@/hooks/useTopics";
 import { useSubtopics } from "@/hooks/useSubtopics";
 import { useExams } from "@/hooks/useExams";
 import { toast } from "@/hooks/use-toast";
-import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@/components/ui/select";
-import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@repo/common-ui";
+import { SearchableSelect } from "@repo/common-ui";
 
 // Enhanced filtering and search
 interface FilterState {

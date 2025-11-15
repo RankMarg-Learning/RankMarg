@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { aiQuestionService, Topic } from "@/services/aiQuestion.service";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader } from "@repo/common-ui";
+import { Button } from "@repo/common-ui";
+import { Skeleton } from "@repo/common-ui";
 import { ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 

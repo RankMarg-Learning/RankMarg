@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/common-ui';
+import { Label } from '@repo/common-ui';
+import { Input } from '@repo/common-ui';
+import { Switch } from '@repo/common-ui';
+import { Button } from '@repo/common-ui';
+import { Separator } from '@repo/common-ui';
 import { useToast } from '@/hooks/use-toast';
 import { settingService, UserSettings } from '@/services/setting.service';
 import { Loader2, Save, RefreshCw, Target, Activity, Crown, ArrowRight } from 'lucide-react';

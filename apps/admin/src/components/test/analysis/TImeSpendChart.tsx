@@ -9,12 +9,12 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@repo/common-ui"
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
-} from "@/components/ui/chart"
+} from "@repo/common-ui"
 import { SectioncQuestionTiming } from "@/types/typeTest"
 
 

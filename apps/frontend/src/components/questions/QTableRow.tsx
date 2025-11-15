@@ -1,5 +1,5 @@
-import { Badge } from "@/components/ui/badge";
-import { TableCell } from "@/components/ui/table";
+import { Badge } from "@repo/common-ui";
+import { TableCell } from "@repo/common-ui";
 import { QuestionTableProps } from "@/types";
 import { CircleCheck } from "lucide-react";
 import Link from "next/link";

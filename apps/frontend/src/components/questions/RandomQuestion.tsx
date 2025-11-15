@@ -3,16 +3,15 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { CaretSortIcon } from "@radix-ui/react-icons";
-import { Shuffle, CheckIcon } from "lucide-react";
+import { Shuffle, Check as CheckIcon, ChevronsUpDown } from "lucide-react";
 import SelectFilter from "@/components/SelectFilter";
 import { filterData } from "@/constant/topics"; // Add your filterData here if needed.
 import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/common-ui";
+import { Button } from "@repo/common-ui";
+import { Badge } from "@repo/common-ui";
+import { Popover, PopoverContent, PopoverTrigger } from "@repo/common-ui";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@repo/common-ui";
 
 const RandomQuestion = () => {
   const router = useRouter();
@@ -156,7 +155,7 @@ const Combobox = ({ topics, onChange }) => {
           className="w-full justify-between"
         >
           {value || "Select Topic..."}
-          <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">

@@ -9,7 +9,6 @@ const nextConfig = {
     transpilePackages: ["@repo/db", "@repo/suggest", "@repo/common-ui"],
     experimental: {
         optimizePackageImports: [
-            '@radix-ui/react-icons',
             'lucide-react',
             'recharts',
             'framer-motion',

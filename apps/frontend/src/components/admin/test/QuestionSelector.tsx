@@ -1,7 +1,7 @@
 "use client"
 import {  useState, useMemo, useCallback } from "react";
 import { testQuestion } from "@/types/typeAdmin";
-import { Button } from "@/components/ui/button";
+import { Button } from "@repo/common-ui";
 import { Trash2, Check, GripVertical} from "lucide-react";
 import Questionset from "@/components/questions/QuestionTable";
 

@@ -3,9 +3,9 @@
 
 
 "use client"; 
-import { CopyIcon } from "@radix-ui/react-icons"
+import { Copy } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@repo/common-ui"
 import {
   Dialog,
   DialogClose,
@@ -15,9 +15,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@repo/common-ui"
+import { Input } from "@repo/common-ui"
+import { Label } from "@repo/common-ui"
 import {   useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -76,7 +76,7 @@ const  InviteFriend = () => {
           onClick={handleCopy}
           >
             <span className="sr-only">Copy</span>
-            <CopyIcon className="h-4 w-4" />
+            <Copy className="h-4 w-4" />
           </Button>
         </div>
         <DialogFooter className="sm:justify-between gap-2">

@@ -13,8 +13,8 @@ import {
   Edit,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@repo/common-ui";
+import { Badge } from "@repo/common-ui";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from "@/components/ui/dialog";
+} from "@repo/common-ui";
 import {
   Table,
   TableBody,
@@ -31,7 +31,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@repo/common-ui";
 import { getReportsByQuestionSlug, deleteReportQuestion } from "@/services/question.service";
 
 interface ReportDetail {

@@ -1,9 +1,9 @@
 import { ArrowUp, CheckIcon, ChevronRight, CircleX, Info, InfoIcon, LucideIcon, TriangleAlert, BookOpen } from 'lucide-react';
 import React from 'react'
-import { Card } from '../ui/card';
-import { Progress } from '../ui/progress';
+import { Card } from '@repo/common-ui';
+import { Progress } from '@repo/common-ui';
 import Link from 'next/link';
-import { Button } from '../ui/button';
+import { Button } from '@repo/common-ui';
 import { SubjectBackgroundColor, SubjectCardColor } from '@/constant/SubjectColorCode';
 import { SubjectMasteryProps } from '@/types/mastery.types';
 import { RecommendationIcon } from '@/types/recommendation.types';

@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Badge } from '@repo/common-ui';
+import { Separator } from '@repo/common-ui';
 import { BookOpenIcon, Clock, Target } from 'lucide-react';
 import { useTestBuilder } from '../../../../context/TestBuilderContext';
 import { 
@@ -11,7 +11,7 @@ import {
   FormGrid 
 } from '../components/FormField';
 import { DateTimePicker } from '@/utils/test/date-time-picker';
-import { Label } from '@/components/ui/label';
+import { Label } from '@repo/common-ui';
 import { Visibility } from '@/types/typeAdmin';
 import { TestStatus } from '@repo/db/enums';
 import { TextFormator } from '@/utils/textFormator';

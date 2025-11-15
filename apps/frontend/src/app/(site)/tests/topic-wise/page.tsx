@@ -1,8 +1,8 @@
 "use client"
 import TypeWiseTestsSkeleton from '@/components/test/TypeWiseTestsSkeleton';
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
+import { Button } from '@repo/common-ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui'
+import { Separator } from '@repo/common-ui'
 import { ExamType } from '@repo/db/enums';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';

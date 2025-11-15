@@ -11,7 +11,7 @@ import { attempDataProps } from '@/types';
 import { useUserData } from '@/context/ClientContextProvider';
 import { cn } from '@/lib/utils';
 import { aiQuestionService } from '@/services/aiQuestion.service';
-import { Button } from './ui/button';
+import { Button } from '@repo/common-ui';
 import {
     PERFORMANCE_WINDOW,
     DIFFICULTY_JUMP_THRESHOLD,

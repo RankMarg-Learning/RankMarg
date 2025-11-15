@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@repo/common-ui';
 import { Sparkles, Lightbulb, CheckCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { click_signup_cta } from '@/utils/analytics';

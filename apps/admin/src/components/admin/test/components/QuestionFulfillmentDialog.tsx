@@ -7,9 +7,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+} from "@repo/common-ui";
+import { Button } from "@repo/common-ui";
+import { Badge } from "@repo/common-ui";
 import Questionset from "@/components/questions/QuestionTable";
 import type { QuestionSelection } from "@/components/questions/QuestionTable";
 import type { QuestionFormat, QuestionType } from "@repo/db/enums";
