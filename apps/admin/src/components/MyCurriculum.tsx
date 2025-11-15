@@ -4,19 +4,19 @@ import { useEffect, useMemo, useState, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import api from "@/utils/api";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
+import { Card } from "@repo/common-ui";
+import { Button } from "@repo/common-ui";
+import { Badge } from "@repo/common-ui";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@repo/common-ui";
+import { Separator } from "@repo/common-ui";
+import { Switch } from "@repo/common-ui";
 import { toast } from "@/hooks/use-toast";
 import { useSubjects } from "@/hooks/useSubject";
 import { useTopics } from "@/hooks/useTopics";
 import { CheckCircle2, Circle, PlayCircle } from "lucide-react";
 import CurriculumSkeleton from "@/components/skeleton/curriculum.skeleton";
 import { useUser } from "@/hooks/useUser";
-import { Skeleton } from "./ui/skeleton";
+import { Skeleton } from "@repo/common-ui";
 
 type CurrentState = {
 	topicId: string;

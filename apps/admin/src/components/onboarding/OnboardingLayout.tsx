@@ -1,10 +1,10 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@repo/common-ui';
 import useOnboardingStore, { OnboardingStep } from '@/store/onboardingStore';
 import { useToast } from '@/hooks/use-toast';
-import Motion from '../ui/motion';
+import { Motion } from '@repo/common-ui';
 import { onboarding_progress } from '@/utils/analytics';
 
 interface OnboardingLayoutProps {

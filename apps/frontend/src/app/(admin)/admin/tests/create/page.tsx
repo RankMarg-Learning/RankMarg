@@ -7,20 +7,20 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { z } from "zod"
 import axios from "axios"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
+import { Input } from "@repo/common-ui"
+import { Button } from "@repo/common-ui"
+import { Textarea } from "@repo/common-ui"
+import { Label } from "@repo/common-ui"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Switch } from "@/components/ui/switch"
+} from "@repo/common-ui"
+import { Switch } from "@repo/common-ui"
 import { DateTimePicker } from "@/utils/test/date-time-picker"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/common-ui"
 import { toast } from "@/hooks/use-toast"
 import Questionset from "@/components/questions/QuestionTable"
 import SelectFilter from "@/components/SelectFilter";

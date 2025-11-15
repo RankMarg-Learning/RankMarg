@@ -11,7 +11,7 @@ import { attempDataProps } from '@/types';
 import { useUserData } from '@/context/ClientContextProvider';
 import { cn } from '@/lib/utils';
 import { aiQuestionService } from '@/services/aiQuestion.service';
-import { Button } from './ui/button';
+import { Button } from '@repo/common-ui';
 
 // Constants
 const STALE_TIME = 5 * 60 * 1000; // 5 minutes

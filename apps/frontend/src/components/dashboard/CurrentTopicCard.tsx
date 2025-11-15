@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button';
-import { Card } from '../ui/card';
+import { Button } from '@repo/common-ui';
+import { Card } from '@repo/common-ui';
 import { CurrentStudies } from '@/types/dashboard.types';
 import {  Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';

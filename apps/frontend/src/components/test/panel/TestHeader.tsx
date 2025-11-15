@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@repo/common-ui";
 import { useTestContext } from "@/context/TestContext";
 import { Maximize, Minimize, Clock, GraduationCap } from "lucide-react";
 import { useEffect, useState } from "react";

@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton"; // Adjust the import path as necessary
+import { Skeleton } from "@repo/common-ui"; // Adjust the import path as necessary
 
 const QuestionUISkeleton = () => {
   return (

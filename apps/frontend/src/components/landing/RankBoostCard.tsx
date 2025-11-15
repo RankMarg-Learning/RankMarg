@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TrendingUp, Zap, Target } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@repo/common-ui';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@repo/common-ui';
 
 const RankBoostCard = () => {
   const [isHovered, setIsHovered] = useState(false);

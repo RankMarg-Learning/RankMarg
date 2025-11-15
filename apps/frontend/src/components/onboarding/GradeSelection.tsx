@@ -2,8 +2,8 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import useOnboardingStore from '@/store/onboardingStore';
 import OnboardingLayout from './OnboardingLayout';
-import { Card } from '@/components/ui/card';
-import Motion from '../ui/motion';
+import { Card } from '@repo/common-ui';
+import { Motion } from '@repo/common-ui';
 import { GRADE_LEVELS } from '@/utils/constants';
 
 const GradeSelection: React.FC = () => {

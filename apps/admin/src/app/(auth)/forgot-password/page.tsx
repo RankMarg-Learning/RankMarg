@@ -1,9 +1,9 @@
 "use client";
 import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
+import { Button } from "@repo/common-ui"
+import { Input } from "@repo/common-ui"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@repo/common-ui"
+import { Label } from "@repo/common-ui"
 import { AlertCircle, ArrowRight } from 'lucide-react'
 import { getForgotPassword } from '@/services';
 

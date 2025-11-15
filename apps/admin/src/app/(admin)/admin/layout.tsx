@@ -1,5 +1,5 @@
 import AdminSidebar from "@/components/admin/AdminSidebar"
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@repo/common-ui"
 // import QueryProvider from "@/context/QueryContext"
 
 

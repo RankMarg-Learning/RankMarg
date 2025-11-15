@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import { Button } from '@repo/common-ui';
+import { Progress } from '@repo/common-ui';
 import { ArrowLeft, ArrowRight, Save, CheckIcon, AlertTriangle } from 'lucide-react';
 import { FormStep } from '@/types/typeAdmin';
 import { useTestBuilder } from '../../../../context/TestBuilderContext';

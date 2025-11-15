@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { DropdownMenu, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import { Button } from "./ui/button";
-import Image from "next/image";
-import { CircleUser } from "lucide-react";
 import {
+  Button,
+  DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-} from "./ui/dropdown-menu";
+  DropdownMenuTrigger,
+} from "@repo/common-ui";
+import Image from "next/image";
+import { CircleUser } from "lucide-react";
 import Link from "next/link";
 import { signOut, useSession, getSession } from "next-auth/react";
 

@@ -1,15 +1,15 @@
 "use client";
 import React, { useEffect, useState, useMemo } from 'react'
-import { Button } from './ui/button'
+import { Button } from '@repo/common-ui'
 import MarkdownRenderer from '@/lib/MarkdownRenderer'
 import { useToast } from '@/hooks/use-toast';
 import { attempDataProps, QuestionProps } from '@/types';
 import Options from './Options';
 import { AlertCircle, BookOpen, Lightbulb, AlertTriangle, Lock } from 'lucide-react';
 import { getDifficultyLabel } from '@/utils/getDifficultyLabel';
-import Motion from './ui/motion';
+import { Motion } from '@repo/common-ui';
 import Timer from './Timer';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@repo/common-ui';
 import MistakeFeedbackModal from './MistakeFeedbackModal';
 import { useRouter } from 'next/navigation';
 import { reportQuestion } from '@/services/question.service';

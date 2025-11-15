@@ -1,0 +1,23 @@
+{
+  "name": "@repo/curriculum",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared curricula, blueprints, and helper utilities for multi-exam support across RankMarg apps.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*": "./dist/*"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  }
+}
+

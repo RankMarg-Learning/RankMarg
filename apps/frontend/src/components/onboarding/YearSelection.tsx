@@ -2,9 +2,9 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { getTargetYears } from '@/utils/constants';
 import useOnboardingStore from '@/store/onboardingStore';
-import Motion from '@/components/ui/motion';
+import { Motion } from '@repo/common-ui';
 import OnboardingLayout from './OnboardingLayout';
-import { Card } from '@/components/ui/card';
+import { Card } from '@repo/common-ui';
 
 const YearSelection: React.FC = () => {
   const { targetYear, setTargetYear, examCode } = useOnboardingStore();

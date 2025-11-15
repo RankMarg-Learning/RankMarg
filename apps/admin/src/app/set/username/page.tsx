@@ -1,14 +1,14 @@
 "use client";
-import { Button } from "@/components/ui/button";
+import { Button } from "@repo/common-ui";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@repo/common-ui";
+import { Input } from "@repo/common-ui";
+import { Label } from "@repo/common-ui";
 import {  useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";

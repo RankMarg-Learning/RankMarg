@@ -1,4 +1,4 @@
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@repo/common-ui";
 import React from "react";
 
 interface AdditionInfoProps {

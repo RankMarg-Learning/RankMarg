@@ -1,5 +1,5 @@
-import { Card } from "../ui/card";
-import { Skeleton } from "../ui/skeleton";
+import { Card } from "@repo/common-ui";
+import { Skeleton } from "@repo/common-ui";
 
 
 export default function SkeletonBlogPage(){

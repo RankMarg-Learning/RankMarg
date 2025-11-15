@@ -1,17 +1,17 @@
 import { Crown, LogOut, Menu,  Settings, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@repo/common-ui';
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/common-ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
+} from '@repo/common-ui';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useUserData } from '@/context/ClientContextProvider';
 import api from '@/utils/api';
-import { Skeleton } from './ui/skeleton';
+import { Skeleton } from '@repo/common-ui';
 import { useRouter } from 'next/navigation';
 import HeaderTrialBadge from './upgrade/trial';
 

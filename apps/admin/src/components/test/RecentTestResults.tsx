@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@repo/common-ui';
 import { Info, Check, TrendingUp, Award } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

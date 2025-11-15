@@ -1,6 +1,6 @@
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@repo/common-ui"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@repo/common-ui"
 import Link from "next/link"
 import { CheckCircle, Clock } from 'lucide-react'
 

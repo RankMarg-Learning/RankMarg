@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@repo/common-ui";
+import { Input } from "@repo/common-ui";
+import { Label } from "@repo/common-ui";
 import { Subject } from "@/types/typeAdmin";
 
 interface SubjectFormProps {

@@ -1,6 +1,6 @@
 "use client"
 import React from 'react'
-import { Badge } from '../ui/badge'
+import { Badge } from '@repo/common-ui'
 
 interface UserPerformance {
     streak: number | null

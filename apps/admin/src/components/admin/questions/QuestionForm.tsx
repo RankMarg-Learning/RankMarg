@@ -1,16 +1,16 @@
 "use client"
 import React, { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@repo/common-ui";
+import { Input } from "@repo/common-ui";
+import { Textarea } from "@repo/common-ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@repo/common-ui";
 import {
   Card,
   CardContent,
@@ -18,7 +18,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@repo/common-ui";
 import {
   Dialog,
   DialogContent,
@@ -26,10 +26,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@repo/common-ui";
 import { PlusCircle, Trash2, Save, Upload, Loader2, RefreshCw, Eye } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Switch } from "@repo/common-ui";
+import { Label } from "@repo/common-ui";
 import { QCategory, Question, QuestionFormat } from "@/types/typeAdmin";
 import { QuestionType } from "@repo/db/enums";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
@@ -40,7 +40,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { generateSlug } from "@/lib/generateSlug";
 import { TextFormator } from "@/utils/textFormator";
 import { CategoryMultiSelect } from "./CategoryMultiSelect";
-import { SearchableSelect } from "@/components/ui/searchable-select";
+import { SearchableSelect } from "@repo/common-ui";
 import api from "@/utils/api";
 
 interface QuestionFormProps {
@@ -166,7 +166,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
     toast({
       title: "LaTeX delimiters replaced successfully!",
       variant: "default",
-      duration: 3000,
+      duration: 500,
       className: "bg-green-500 text-white",
     });
   };
@@ -266,7 +266,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       toast({
         title: "Maximum options reached!!",
         variant: "default",
-        duration: 3000,
+        duration: 500,
         className: "bg-red-500 text-white",
       })
       return;
@@ -359,7 +359,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       toast({
         title: "Image size should be less than 5MB",
         variant: "default",
-        duration: 3000,
+        duration: 500,
         className: "bg-red-500 text-white",
       });
       return;
@@ -369,7 +369,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       toast({
         title: "Please upload an image file",
         variant: "default",
-        duration: 3000,
+        duration: 500,
         className: "bg-red-500 text-white",
       });
       return;
@@ -456,28 +456,9 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       .replace(/[^a-z0-9\s]/g, "")
       .replace(/\s+/g, "-")
       .substring(0, 30);
-
-    // Check if this name already exists in the content
-    const currentContent = getValues("content") || "";
-    const imageRegex = /!\[([^\]]+)\]/g;
-    const existingNames = new Set<string>();
-    let match;
-
-    while ((match = imageRegex.exec(currentContent)) !== null) {
-      existingNames.add(match[1]);
-    }
-
-    if (!existingNames.has(baseName)) {
-      return baseName;
-    }
-
-    // Find the next available index
-    let index = 1;
-    while (existingNames.has(`${baseName}-${index}`)) {
-      index++;
-    }
-
-    return `${baseName}-${index}`;
+    const index = Math.floor(1000 + Math.random() * 9000);
+    
+    return `${baseName}-${index.toString()}`;
   };
 
   // Handle content change manually
@@ -636,8 +617,8 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
         handleSaveWithPublish();
       }
       
-      // Check if Ctrl+Shift+P (Windows/Linux) or Cmd+Shift+P (Mac) is pressed - Preview
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'p') {
+      // Check if Ctrl+Shift+A (Windows/Linux) or Cmd+Shift+A (Mac) is pressed - Preview
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'a') {
         event.preventDefault();
         
         // Open preview dialog

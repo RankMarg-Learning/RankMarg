@@ -26,6 +26,7 @@
     "@prisma/client": "^5.21.0",
     "@repo/db": "*",
     "@repo/suggest": "^1.0.0",
+    "@repo/curriculum": "*",
     "@types/ws": "^8.5.12",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.7.0",

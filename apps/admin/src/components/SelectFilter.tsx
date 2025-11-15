@@ -5,8 +5,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+} from "@repo/common-ui";
+import { Badge } from "@repo/common-ui";
 
 type FilterSelectProps = {
   label?: string;

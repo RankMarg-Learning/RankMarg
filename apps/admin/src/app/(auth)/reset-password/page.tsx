@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@repo/common-ui"
+import { Input } from "@repo/common-ui"
+import { Label } from "@repo/common-ui"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@repo/common-ui"
+import { Alert, AlertDescription, AlertTitle } from "@repo/common-ui"
 import { AlertCircle, CheckCircle2 } from 'lucide-react'
 import Link from "next/link"
 import { resetPassword } from "@/services"

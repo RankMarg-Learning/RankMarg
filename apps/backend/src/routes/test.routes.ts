@@ -6,6 +6,7 @@ const router = Router();
 const testController = new TestController();
 
 router.post("/", authenticate, testController.createTest);
+router.post("/intelligent-create", authenticate, testController.intelligentCreateTest);
 router.get("/", authenticate, testController.getTests);
 router.post("/ai/join", authenticate, testController.joinTest);
 router.get("/:testId", authenticate, testController.getTestById);

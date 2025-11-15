@@ -1,6 +1,6 @@
 "use client"
 import React from 'react'
-import { Progress } from '../ui/progress'
+import { Progress } from '@repo/common-ui'
 import { SubjectBackgroundColor, SubjectIcons, SubjectTextColor } from '@/constant/SubjectColorCode'
 
 interface UserPerformance {

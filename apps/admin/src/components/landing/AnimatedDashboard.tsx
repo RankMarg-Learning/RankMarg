@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Brain,  Zap, Target } from 'lucide-react';
 import ProgressTooltip from './ProgressTooltip';
-import { Progress } from '../ui/progress';
-import { Card, CardContent } from '../ui/card';
+import { Progress } from '@repo/common-ui';
+import { Card, CardContent } from '@repo/common-ui';
 import { SubjectBackgroundColor, SubjectCardColor, SubjectTextColor } from '@/constant/SubjectColorCode';
 import { SubjectIcons } from '@/constant/SubjectColorCode';
 

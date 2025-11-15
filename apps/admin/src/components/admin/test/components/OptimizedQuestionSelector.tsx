@@ -2,11 +2,11 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { testQuestion } from '@/types/typeAdmin';
-import { Button } from '@/components/ui/button';
+import { Button } from '@repo/common-ui';
 import { Trash2, Check, GripVertical, Search, Filter } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
+import { Badge } from '@repo/common-ui';
+import { Input } from '@repo/common-ui';
+import { Separator } from '@repo/common-ui';
 import Questionset from '@/components/questions/QuestionTable';
 
 interface OptimizedQuestionSelectorProps {

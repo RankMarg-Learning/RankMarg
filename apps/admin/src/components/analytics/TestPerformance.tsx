@@ -6,13 +6,13 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@repo/common-ui"
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
+} from "@repo/common-ui"
 import { Info } from "lucide-react"
 import { RecentTestScoresProps } from "@/types"
 

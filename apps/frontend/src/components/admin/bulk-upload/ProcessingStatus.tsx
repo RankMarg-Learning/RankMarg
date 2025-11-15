@@ -1,9 +1,9 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/common-ui'
+import { Progress } from '@repo/common-ui'
+import { Alert, AlertDescription } from '@repo/common-ui'
+import { Badge } from '@repo/common-ui'
 import { CheckCircle, XCircle, Clock, FileText, AlertTriangle } from 'lucide-react'
 import { FileProcessingStatus } from '@/services/bulk-upload.service'
 

@@ -1,10 +1,10 @@
 "use client"
 import React, { useMemo, useState } from 'react'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
-import { Badge } from '../ui/badge';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@repo/common-ui';
+import { Badge } from '@repo/common-ui';
 import { CheckCircle, Target, BookOpen, Award, TrendingUp, Filter, SortAsc, SortDesc } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Progress } from '../ui/progress';
+import { Button } from '@repo/common-ui';
+import { Progress } from '@repo/common-ui';
 import { useQuery } from '@tanstack/react-query';
 import { getSubjectMastery } from '@/services/mastery.service';
 import { SubjectMasteryResponseProps } from '@/types';
@@ -16,7 +16,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../ui/select";
+} from "@repo/common-ui";
 import { DateFormator } from '@/utils/dateFormator';
 
 const getMasteryColor = (mastery: number) => {

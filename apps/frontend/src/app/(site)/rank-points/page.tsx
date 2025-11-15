@@ -1,8 +1,8 @@
 "use client"
 
 import PointActivitySkeleton from "@/components/skeleton/skel_rank-points"
-import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
+import { Badge } from "@repo/common-ui"
+import { Card } from "@repo/common-ui"
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
 import {  HandCoins } from "lucide-react"

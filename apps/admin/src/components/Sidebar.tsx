@@ -13,7 +13,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Button } from '@repo/common-ui';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUserData } from '@/context/ClientContextProvider';

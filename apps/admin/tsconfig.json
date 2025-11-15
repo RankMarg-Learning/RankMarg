@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -18,11 +22,40 @@
         "name": "next"
       }
     ],
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@repo/common-ui": [
+        "../../packages/common-ui/src/index.ts"
+      ],
+      "@repo/common-ui/*": [
+        "../../packages/common-ui/src/*"
+      ],
+      "@repo/common-utils": [
+        "../../packages/common-utils/src/index.ts"
+      ],
+      "@repo/common-utils/*": [
+        "../../packages/common-utils/src/*"
+      ],
+      "@repo/curriculum": [
+        "../../packages/curriculum/src/index.ts"
+      ],
+      "@repo/curriculum/*": [
+        "../../packages/curriculum/src/*"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

@@ -1,5 +1,4 @@
-import { InstagramLogoIcon } from "@radix-ui/react-icons";
-import { Mail, Send, Youtube } from "lucide-react";
+import { Instagram, Mail, Send, Youtube } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -76,7 +75,7 @@ const Footer = () => {
                             <Send className="w-5 h-5 text-white" />
                             </Link>
                             <Link href="https://www.instagram.com/rankmarg.in/" target="_blank" className="w-9 h-9 rounded-full bg-gray-700 flex justify-center items-center hover:bg-primary-600">
-                            <InstagramLogoIcon className="w-5 h-5 text-white" />
+                            <Instagram className="w-5 h-5 text-white" />
 
                             </Link>
                             <Link href="https://www.youtube.com/@RankMarg" target="_blank" className="w-9 h-9 rounded-full bg-gray-700 flex justify-center items-center hover:bg-primary-600">

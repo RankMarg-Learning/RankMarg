@@ -2,10 +2,10 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { cn, decodeURLParam } from '@/lib/utils'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@repo/common-ui';
+import { Badge } from '@repo/common-ui';
 import { useRouter } from 'next/navigation';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@repo/common-ui';
 import { CircleCheck } from 'lucide-react';
 import axios from 'axios';
 import {
@@ -16,7 +16,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from "@repo/common-ui";
 import { getDifficultyLabel } from '@/utils/getDifficultyLabel';
 
 const getQuestionsBySubjectAndTopic = async (subject: string, topic: string) => {

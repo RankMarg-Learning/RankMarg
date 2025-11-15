@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import { PlusCircle, Trash2, FileText } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@repo/common-ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui';
+import { Badge } from '@repo/common-ui';
 import { useTestBuilder, TestSection } from '../../../../context/TestBuilderContext';
 import { 
   TextField, 

@@ -1,14 +1,13 @@
 "use client";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@repo/common-ui";
+import { Label } from "@repo/common-ui";
+import { Textarea } from "@repo/common-ui";
 import React, { useEffect, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/common-ui";
 import SelectFilter from "@/components/SelectFilter";
-import { Button } from "@/components/ui/button";
-import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
+import { Button } from "@repo/common-ui";
+import { CirclePlus, ChevronsUpDown, Check as CheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CirclePlus } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -16,12 +15,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from "@repo/common-ui";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@repo/common-ui";
 import { filterData } from "@/constant/topics";
 import { generateSlug } from "@/lib/generateSlug";
 import axios from "axios";
@@ -29,9 +28,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { PYQ_Year } from "@/constant/pyqYear";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
-import { Checkbox } from "../ui/checkbox";
+import { Checkbox } from "@repo/common-ui";
 import { z } from "zod";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@repo/common-ui";
 
 const QuestionFormSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -515,7 +514,7 @@ function Combobox({ topics, onchange }: ComboboxProps) {
           className="w-full justify-between"
         >
           {value ? topics.find((topic) => topic === value) : "Select Topic..."}
-          <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">

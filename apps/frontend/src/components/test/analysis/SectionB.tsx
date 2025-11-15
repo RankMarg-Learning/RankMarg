@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui'
+import { Progress } from '@repo/common-ui'
+import { Badge } from '@repo/common-ui'
 import { 
   TrendingUp, 
   Target, 

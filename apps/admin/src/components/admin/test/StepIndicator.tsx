@@ -1,4 +1,4 @@
-import { Progress } from '@/components/ui/progress'
+import { Progress } from '@repo/common-ui'
 import { FormStep } from '@/types/typeAdmin'
 import { CheckIcon } from 'lucide-react'
 import React from 'react'

@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Progress } from "../ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/common-ui";
+import { Progress } from "@repo/common-ui";
 
 
 type SubjectStats = {

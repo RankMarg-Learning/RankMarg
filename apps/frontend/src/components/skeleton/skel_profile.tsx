@@ -1,5 +1,5 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardHeader, CardTitle, CardContent } from "@repo/common-ui";
+import { Skeleton } from "@repo/common-ui";
 
 export default function ProfileSkeleton() {
   return (

@@ -1,6 +1,6 @@
 "use client"
 import React from 'react'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@repo/common-ui'
 import { HelpCircle, CheckCircle } from 'lucide-react'
 
 const List = [

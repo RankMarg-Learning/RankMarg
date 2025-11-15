@@ -1,6 +1,6 @@
 
 "use client"
-import { Button } from "@/components/ui/button"
+import { Button } from "@repo/common-ui"
 import Image from "next/image"
 import HeroSection from "@/components/landing/HeroSection"
 import BottomCTA from "@/components/landing/BottomCTA"

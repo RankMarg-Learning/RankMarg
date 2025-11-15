@@ -4,7 +4,7 @@ import { Brain,  LayoutDashboard,  LogOut, Settings, TestTube, BookOpen, ArrowRi
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "@repo/common-ui";
 import api from "@/utils/api";
 
 interface SidebarItemProps {

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@repo/common-ui';
+import { Badge } from '@repo/common-ui';
 import { Lightbulb } from 'lucide-react';
 import MarkdownRenderer from '@/lib/MarkdownRenderer';
 import { ExamType } from '@repo/db/enums';

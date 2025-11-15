@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
+import { Card, CardContent, CardHeader } from '@repo/common-ui'
+import { Progress } from '@repo/common-ui'
 import React from 'react'
 import { TimeSpendChart } from './TImeSpendChart'
 import { AnalysisSectionC } from '@/types/typeTest'

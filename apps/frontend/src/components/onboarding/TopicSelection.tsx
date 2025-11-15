@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import useOnboardingStore from '@/store/onboardingStore';
 import { TopicData } from '@/utils/constants';
-import Motion from '@/components/ui/motion';
+import { Motion } from '@repo/common-ui';
 import OnboardingLayout from './OnboardingLayout';
-import { Chip } from '@/components/ui/chip';
+import { Chip } from '@repo/common-ui';
 import { useSubjects } from '@/hooks/useSubject';
 import { useTopics } from '@/hooks/useTopics';
 import { AlertCircle, Check, BookOpen } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@repo/common-ui';
 import {
   Command,
   CommandEmpty,
@@ -16,10 +16,10 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from "@repo/common-ui";
 import { SubjectCardColor, SubjectTextColor, SubjectIcons } from '@/constant/SubjectColorCode';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@repo/common-ui';
+import { Skeleton } from '@repo/common-ui';
 
 const TopicSelection: React.FC = () => {
   const {

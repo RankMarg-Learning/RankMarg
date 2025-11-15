@@ -2,10 +2,10 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { STUDY_HOURS_OPTIONS } from '@/utils/constants';
 import useOnboardingStore from '@/store/onboardingStore';
-import Motion from '@/components/ui/motion';
+import { Motion } from '@repo/common-ui';
 import OnboardingLayout from './OnboardingLayout';
-import { Card } from '@/components/ui/card';
-import { Slider } from '../ui/slider';
+import { Card } from '@repo/common-ui';
+import { Slider } from '@repo/common-ui';
 
 const StudyHoursSelection: React.FC = () => {
   const { studyHoursPerDay, setStudyHoursPerDay } = useOnboardingStore();

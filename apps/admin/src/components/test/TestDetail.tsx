@@ -2,18 +2,18 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { Button } from '@repo/common-ui'
 import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from '../ui/label'
-import { Input } from '../ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/common-ui"
+import { Checkbox } from "@repo/common-ui"
+import { Label } from '@repo/common-ui'
+import { Input } from '@repo/common-ui'
 import { useTestContext } from '@/context/TestContext'
-import { ScrollArea } from '../ui/scroll-area'
+import { ScrollArea } from '@repo/common-ui'
 import Loading from '../Loading'
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@repo/common-ui'
 import { TestStatus } from '@repo/db/enums'
 import { TextFormator } from '@/utils/textFormator'
 import { getTestDetails } from '@/services/testPanel.service'

@@ -1,6 +1,6 @@
 import { Goal, Hourglass, ListChecks } from 'lucide-react'
 import React from 'react'
-import { Progress } from '../ui/progress'
+import { Progress } from '@repo/common-ui'
 import { SubjectBackgroundColor } from '@/constant/SubjectColorCode';
 import { PracticeSummaryProps, StudySuggestionProps } from '@/types/aiPractice.type';
 import { useToast } from '@/hooks/use-toast';

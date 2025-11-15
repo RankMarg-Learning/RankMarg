@@ -6,10 +6,9 @@ dotenv.config({ path: '../../.env' });
 const nextConfig = {
     output: 'standalone',
     reactStrictMode: true,
-    transpilePackages: ["@repo/db", "@repo/suggest"],
+    transpilePackages: ["@repo/db", "@repo/suggest", "@repo/common-ui"],
     experimental: {
         optimizePackageImports: [
-            '@radix-ui/react-icons',
             'lucide-react',
             'recharts',
             'framer-motion',

@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui'
+import { Badge } from '@repo/common-ui'
+import { Button } from '@repo/common-ui'
 import {
   CheckCircle2,
   XCircle,
@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/common-ui'
 
 interface SectionFAnalysis {
   questionAnalysis: Array<{

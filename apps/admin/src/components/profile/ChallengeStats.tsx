@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import { CartesianGrid, Line, LineChart, XAxis, YAxis, Tooltip } from "recharts"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChartContainer } from "@/components/ui/chart"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/common-ui"
+import { ChartContainer } from "@repo/common-ui"
 import {  UserChallengeStats } from "@/types"
 
 type ChallengeStatsProps = {

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card } from '../ui/card';
-import { Badge } from '../ui/badge';
+import { Card } from '@repo/common-ui';
+import { Badge } from '@repo/common-ui';
 import { 
   AlertTriangle, 
   Target, 

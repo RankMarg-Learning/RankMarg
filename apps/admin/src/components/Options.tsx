@@ -1,7 +1,7 @@
 "use client"
 import React, { useMemo } from 'react';
 import Select from './Select';
-import { Input } from './ui/input';
+import { Input } from '@repo/common-ui';
 import { Option } from '@prisma/client';
 import {QuestionType} from "@repo/db/enums"
 import { cn } from '../lib/utils'; 

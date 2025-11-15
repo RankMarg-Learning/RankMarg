@@ -1,8 +1,8 @@
 "use client"
 import React from 'react'
 import Image from 'next/image'
-import { Button } from '../ui/button'
-import { Badge } from '../ui/badge'
+import { Button } from '@repo/common-ui'
+import { Badge } from '@repo/common-ui'
 import { useRouter } from 'next/navigation'
 import { TextFormator } from '@/utils/textFormator'
 

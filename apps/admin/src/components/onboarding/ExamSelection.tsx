@@ -1,11 +1,11 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import useOnboardingStore from '@/store/onboardingStore';
-import { Card, CardContent } from '@/components/ui/card';
-import Motion from '@/components/ui/motion';
+import { Card, CardContent } from '@repo/common-ui';
+import { Motion } from '@repo/common-ui';
 import OnboardingLayout from './OnboardingLayout';
 import { useExams } from '@/hooks/useExams';
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from '@repo/common-ui';
 
 const ExamSelection: React.FC = () => {
 	const { examCode, setExamCode } = useOnboardingStore();
