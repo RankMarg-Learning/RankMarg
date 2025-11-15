@@ -298,17 +298,21 @@ router.post("/intelligent-create", authenticate, testController.intelligentCreat
 
 **Components:**
 
-1. **IntelligentSectionBuilder** (`IntelligentSectionBuilder.tsx`)
-   - Section configuration form
-   - Filter selection UI
-   - Subject/Topic fetching and selection
-   - Section management
+1. **IntelligentSectionBuilder** (`intelligent-builder/IntelligentSectionBuilder.tsx`)
+   - Composes `SectionForm` and `ConfiguredSectionsTable`
+   - Keeps subject/topic fetching isolated inside the form
+   - Handles add/remove flows and loading states
 
 2. **QuestionPreviewList** (`QuestionPreviewList.tsx`)
-   - Drag-and-drop interface
-   - Question cards with metadata
-   - Section statistics
-   - Delete functionality
+   - Drag-and-drop interface plus manual fulfillment entry point
+   - Displays section statistics, limits, and optionality
+   - Invokes the new `QuestionFulfillmentDialog` for replacements
+   - Supports delete/reorder actions
+
+3. **QuestionFulfillmentDialog** (`components/QuestionFulfillmentDialog.tsx`)
+   - Embeds the shared `Questionset` picker with max slot enforcement
+   - Normalizes question metadata for the preview grid
+   - Provides cancel/save controls for manual adjustments
 
 ## Usage Examples
 

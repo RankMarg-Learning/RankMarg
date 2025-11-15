@@ -18,6 +18,10 @@ const badgeVariants = cva(
         Easy: "border-green-500   text-green-500  ",
         Medium: "border-yellow-500  text-yellow-500  ",
         Hard: "border-red-500   text-red-500  ",
+        1: "border-green-500   text-green-500  ",
+        2: "border-yellow-500  text-yellow-500  ",
+        3: "border-red-500   text-red-500  ",
+        4: "border-purple-500   text-purple-500  ",
       },
     },
     defaultVariants: {

@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -32,31 +32,11 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { VariantProps } from "class-variance-authority";
+import { TextFormator } from "@/utils/textFormator";
+import { PreviewQuestion, QuestionFulfillmentDialog } from "./components/QuestionFulfillmentDialog";
 
-interface SelectedQuestion {
-  id: string;
-  title: string;
-  slug: string;
-  difficulty: number;
-  type: string;
-  format: string;
-  subject: {
-    id: string;
-    name: string;
-    shortName: string;
-  };
-  topic: {
-    id: string;
-    name: string;
-    weightage: number;
-  };
-  subTopic?: {
-    id: string;
-    name: string;
-  };
-  category: { category: string }[];
-  pyqYear?: string;
-}
+type SelectedQuestion = PreviewQuestion;
 
 interface ProcessedSection {
   name: string;
@@ -64,6 +44,8 @@ interface ProcessedSection {
   maxQuestions?: number;
   correctMarks: number;
   negativeMarks: number;
+  questionLimit?: number;
+  subjectId?: string;
   questions: SelectedQuestion[];
 }
 
@@ -73,6 +55,7 @@ interface QuestionPreviewListProps {
   onBack: () => void;
   onCreate: () => void;
   hideActions?: boolean;
+  examCode: string;
 }
 
 export function QuestionPreviewList({
@@ -81,31 +64,19 @@ export function QuestionPreviewList({
   onBack,
   onCreate,
   hideActions = false,
+  examCode,
 }: QuestionPreviewListProps) {
   const [draggedItem, setDraggedItem] = useState<{
     sectionIndex: number;
     questionIndex: number;
   } | null>(null);
+  const [activeSectionIndex, setActiveSectionIndex] = useState<number | null>(null);
+  const [isFulfillmentOpen, setIsFulfillmentOpen] = useState(false);
 
   const totalQuestions = sections.reduce(
     (sum, section) => sum + section.questions.length,
     0
   );
-
-  const getDifficultyColor = (difficulty: number) => {
-    switch (difficulty) {
-      case 1:
-        return "bg-green-500";
-      case 2:
-        return "bg-yellow-500";
-      case 3:
-        return "bg-orange-500";
-      case 4:
-        return "bg-red-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
 
   const getDifficultyLabel = (difficulty: number) => {
     switch (difficulty) {
@@ -182,15 +153,32 @@ export function QuestionPreviewList({
     return difficultyCount;
   };
 
+  const openFulfillmentDialog = (sectionIndex: number) => {
+    setActiveSectionIndex(sectionIndex);
+    setIsFulfillmentOpen(true);
+  };
+
+  const handleFulfillmentSave = (updatedQuestions: SelectedQuestion[]) => {
+    if (activeSectionIndex === null) return;
+    const updatedSections = sections.map((section, index) =>
+      index === activeSectionIndex ? { ...section, questions: updatedQuestions } : section,
+    );
+    onUpdateSections(updatedSections);
+    setIsFulfillmentOpen(false);
+  };
+
+  const activeSection =
+    activeSectionIndex !== null ? sections[activeSectionIndex] : null;
+  const activeSubjectId = activeSection?.subjectId;
+
+  const getRemainingSlots = (section: ProcessedSection) => {
+    if (!section.questionLimit) return 0;
+    return Math.max(section.questionLimit - section.questions.length, 0);
+  };
+
   return (
     <div className="space-y-4">
-      <Alert>
-        <CheckCircle2 className="h-4 w-4" />
-        <AlertDescription>
-          <strong>Questions Generated Successfully!</strong> Review and adjust the
-          questions below. You can drag and drop to reorder, or remove unwanted questions.
-        </AlertDescription>
-      </Alert>
+      
 
       <Card>
         <CardHeader>
@@ -215,9 +203,11 @@ export function QuestionPreviewList({
           </div>
         </CardHeader>
         <CardContent>
-          <Accordion type="multiple" className="w-full">
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+            <Accordion type="multiple" className="w-full">
             {sections.map((section, sectionIndex) => {
               const stats = getSectionStats(section);
+              const remainingSlots = getRemainingSlots(section);
               return (
                 <AccordionItem key={sectionIndex} value={`section-${sectionIndex}`}>
                   <AccordionTrigger className="hover:no-underline">
@@ -247,14 +237,29 @@ export function QuestionPreviewList({
                           {Object.entries(stats).map(([diff, count]) => (
                             <Badge
                               key={diff}
-                              variant="outline"
-                              className={count > 0 ? getDifficultyColor(parseInt(diff)) : ""}
+                              variant={parseInt(diff) as VariantProps<typeof badgeVariants>["variant"]}
                             >
                               {getDifficultyLabel(parseInt(diff))}: {count}
                             </Badge>
                           ))}
                         </div>
-                        <div className="ml-auto">
+                        <div className="ml-auto flex items-center gap-2">
+                          {section.questionLimit && (
+                            <Badge
+                              variant={remainingSlots > 0 ? "outline" : "secondary"}
+                            >
+                              {remainingSlots > 0
+                                ? `${remainingSlots} slot${remainingSlots === 1 ? "" : "s"} open`
+                                : "Section full"}
+                            </Badge>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openFulfillmentDialog(sectionIndex)}
+                          >
+                            Adjust Questions
+                          </Button>
                           <Button
                             variant="destructive"
                             size="sm"
@@ -324,12 +329,12 @@ export function QuestionPreviewList({
                                     )}
                                   </div>
                                 </TableCell>
-                                <TableCell>
-                                  <Badge variant="outline">{question.type}</Badge>
+                                <TableCell className="truncate">
+                                  <Badge variant="outline">{TextFormator(question.type as string)}</Badge>
                                 </TableCell>
                                 <TableCell>
                                   <Badge
-                                    className={getDifficultyColor(question.difficulty)}
+                                    variant={parseInt(question.difficulty as unknown as string) as VariantProps<typeof badgeVariants>["variant"]}
                                   >
                                     {getDifficultyLabel(question.difficulty)}
                                   </Badge>
@@ -365,7 +370,8 @@ export function QuestionPreviewList({
                 </AccordionItem>
               );
             })}
-          </Accordion>
+            </Accordion>
+          </div>
 
           {sections.length === 0 && (
             <Alert variant="destructive">
@@ -377,6 +383,26 @@ export function QuestionPreviewList({
           )}
         </CardContent>
       </Card>
+
+      <QuestionFulfillmentDialog
+        open={isFulfillmentOpen && Boolean(activeSection)}
+        onOpenChange={(open) => {
+          setIsFulfillmentOpen(open);
+          if (!open) {
+            setActiveSectionIndex(null);
+          }
+        }}
+        sectionName={activeSection?.name ?? null}
+        selectionLimit={
+          activeSection
+            ? activeSection.questionLimit ?? activeSection.questions.length
+            : 0
+        }
+        currentQuestions={activeSection?.questions ?? []}
+        examCode={examCode}
+        subjectId={activeSubjectId}
+        onSave={handleFulfillmentSave}
+      />
     </div>
   );
 }

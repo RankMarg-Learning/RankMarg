@@ -27,7 +27,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import { QuestionType } from "@repo/db/enums";
+import { QuestionFormat, QuestionType } from "@repo/db/enums";
 import { useSubjects } from "@/hooks/useSubject";
 import Link from "next/link";
 import { Button } from "../ui/button";
@@ -35,15 +35,29 @@ import { usePathname } from "next/navigation";
 import {  getQuestionByFilter } from "@/services/question.service";
 import { PYQ_Year } from "@/constant/pyqYear";
 
+export interface QuestionSelection {
+  id: string;
+  title?: string;
+  slug?: string;
+  difficulty?: number;
+  type?: QuestionType | string;
+  format?: QuestionFormat | string;
+  pyqYear?: string;
+  topic?: { id?: string; name: string; weightage?: number };
+  subTopic?: { id?: string; name: string };
+  subject?: { id?: string; name: string; shortName?: string };
+  category?: { category: string }[];
+}
+
 interface QuestionsetProps {
-  selectedQuestions?: {
-    id: string;
-    title?: string;
-  }[];
-  onSelectedQuestionsChange?: (selected: { id: string; title?: string; }[]) => void;
+  selectedQuestions?: QuestionSelection[];
+  onSelectedQuestionsChange?: (selected: QuestionSelection[]) => void;
   isCheckBox?: boolean;
   isPublished?: boolean;
   examCode?: string;
+  maxSelectable?: number;
+  onSelectionLimitReached?: () => void;
+  lockedSubjectId?: string;
 }
 
 const Questionset: React.FC<QuestionsetProps> = ({
@@ -51,9 +65,12 @@ const Questionset: React.FC<QuestionsetProps> = ({
   onSelectedQuestionsChange,
   isCheckBox = false,
   isPublished = false,
-  examCode
+  examCode,
+  maxSelectable,
+  onSelectionLimitReached,
+  lockedSubjectId,
 }) => {
-  const [subject, setSubject] = useState("");
+  const [subject, setSubject] = useState(() => lockedSubjectId ?? "");
   const [difficulty, setDifficulty] = useState<number | null>(null);
   const [pyqYear, setPyqYear] = useState("");
   const [search, setSearch] = useState("");
@@ -62,6 +79,14 @@ const Questionset: React.FC<QuestionsetProps> = ({
 
   const pathname = usePathname();
   const isAdminPage = pathname.startsWith("/admin");
+  const { subjects: subjectOptions, isLoading: isSubjectLoading } = useSubjects(examCode);
+
+  useEffect(() => {
+    if (lockedSubjectId && lockedSubjectId !== subject) {
+      setSubject(lockedSubjectId);
+      setCurrentPage(1);
+    }
+  }, [lockedSubjectId, subject]);
 
 
   const handleDifficulty = (value: string[]) => {
@@ -70,12 +95,71 @@ const Questionset: React.FC<QuestionsetProps> = ({
       Easy: 1,
       Medium: 2,
       Hard: 3,
-      "Very Hard" :4
+      "Very Hard": 4,
     };
-  
+
     const selected = value[0];
     setDifficulty(difficultyMap[selected] ?? null);
     setCurrentPage(1);
+  };
+
+  const activeTab = subject || (lockedSubjectId ? lockedSubjectId : "all");
+
+  const handleTabChange = (value: string) => {
+    if (lockedSubjectId) return;
+    if (value === "all") {
+      setSubject("");
+    } else {
+      setSubject(value);
+    }
+    setCurrentPage(1);
+  };
+
+  const renderSubjectTabs = () => {
+    if (lockedSubjectId) {
+      const lockedSubject = subjectOptions.find((sub) => sub.id === lockedSubjectId);
+      return (
+        <TabsList>
+          <TabsTrigger
+            value={lockedSubjectId}
+            className="pointer-events-none opacity-70"
+          >
+            {lockedSubject?.name || "Selected Subject"}
+          </TabsTrigger>
+        </TabsList>
+      );
+    }
+
+    if (isSubjectLoading) {
+      return (
+        <TabsList>
+          <TabsTrigger value="all" className="pointer-events-none opacity-70">
+            Loading subjects...
+          </TabsTrigger>
+        </TabsList>
+      );
+    }
+
+    if (subjectOptions.length === 0) {
+      return (
+        <TabsList>
+          <TabsTrigger value="all" className="pointer-events-none opacity-70">
+            No subjects available
+          </TabsTrigger>
+        </TabsList>
+      );
+    }
+
+    return (
+      <TabsList className="flex flex-wrap gap-2">
+        <TabsTrigger value="all">All</TabsTrigger>
+        {subjectOptions.map((sub) => (
+          <TabsTrigger key={sub.id} value={sub.id}>
+            {sub.name}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    );
   };
 
   const handlePyqYear = (value: string[]) => {
@@ -106,44 +190,43 @@ const Questionset: React.FC<QuestionsetProps> = ({
     }
   };
 
-  const handleCheckboxChange = (id: string, title: string) => {
+  const buildSelectionPayload = (question: QuestionTableProps): QuestionSelection => ({
+    id: question.id,
+    title: question.title,
+    slug: question.slug,
+    difficulty: question.difficulty,
+    type: question.type,
+    format: question.format,
+    pyqYear: question.pyqYear,
+    topic: question.topic ? { name: question.topic.name } : undefined,
+    subTopic: question.subTopic ? { name: question.subTopic.name } : undefined,
+    subject: question.subject ? { name: question.subject.name } : undefined,
+  });
+
+  const handleCheckboxChange = (question: QuestionTableProps) => {
     if (!onSelectedQuestionsChange) return;
 
-    const updatedSelection = selectedQuestions.some((q) => q.id === id)
-      ? selectedQuestions.filter((q) => q.id !== id)
-      : [...selectedQuestions, { id, title }];
+    const isSelected = selectedQuestions.some((q) => q.id === question.id);
 
-    onSelectedQuestionsChange(updatedSelection);
+    if (isSelected) {
+      onSelectedQuestionsChange(selectedQuestions.filter((q) => q.id !== question.id));
+      return;
+    }
+
+    if (typeof maxSelectable === "number" && maxSelectable > 0 && selectedQuestions.length >= maxSelectable) {
+      onSelectionLimitReached?.();
+      return;
+    }
+
+    onSelectedQuestionsChange([...selectedQuestions, buildSelectionPayload(question)]);
   };
 
-  const { subjects, isLoading: isSubjectLoading } = useSubjects(examCode);
 
   return (
     <div className="w-full">
-      <Tabs defaultValue="all">
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <div className="grid gap-2 sm:flex sm:items-center">
-          <TabsList>
-            {!isSubjectLoading ? subjects?.data?.map((sub) => (
-              <TabsTrigger
-                key={sub.id} 
-                value={sub.id} 
-                onClick={() => {
-                  setSubject(sub.id); 
-                  setCurrentPage(1);
-                }}
-              >
-                {sub.name} 
-              </TabsTrigger>
-            )):
-            
-            <TabsTrigger
-              value="Loading"
-              className="animate-pulse"
-            >
-              Loading
-            </TabsTrigger>
-            }
-          </TabsList>
+          {renderSubjectTabs()}
           <div className="relative flex-1 my-2 sm:ml-7">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -179,7 +262,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
 
           </div>
         </div>
-        <TabsContent value={subject || "all"}>
+        <TabsContent value={activeTab}>
           <Card>
             <CardContent>
               <div className="overflow-x-auto">
@@ -207,7 +290,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
                                 <input
                                   type="checkbox"
                                   checked={selectedQuestions.some((q) => q.id === question.id)}
-                                  onChange={() => handleCheckboxChange(question.id, question.title)}
+                                  onChange={() => handleCheckboxChange(question)}
                                   className="form-checkbox h-5 w-5 text-yellow-500"
                                 />
                               </TableCell>

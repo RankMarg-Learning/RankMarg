@@ -66,9 +66,13 @@ apps/admin/
 │   │   └── intelligent-create/
 │   │       └── page.tsx                 # Main page component
 │   └── components/admin/test/
-│       ├── IntelligentSectionBuilder.tsx # Section configuration
-│       ├── QuestionPreviewList.tsx      # Preview & adjustment UI
-│       └── index.ts                      # Updated exports
+│       ├── intelligent-builder/
+│       │   ├── SectionForm.tsx             # Filter-driven form
+│       │   ├── ConfiguredSectionsTable.tsx # Section summary table
+│       │   └── IntelligentSectionBuilder.tsx # Orchestrator
+│       ├── components/QuestionFulfillmentDialog.tsx # Manual adjustments
+│       ├── QuestionPreviewList.tsx        # Preview & adjustment UI
+│       └── index.ts                        # Updated exports
 ```
 
 ### Documentation

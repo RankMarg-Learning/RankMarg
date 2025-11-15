@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { DateTimePicker } from "@/utils/test/date-time-picker";
 import { toast } from "@/hooks/use-toast";
 import SelectFilter from "@/components/SelectFilter";
-import { IntelligentSectionBuilder } from "@/components/admin/test/IntelligentSectionBuilder";
+import { IntelligentSectionBuilder } from "@/components/admin/test/intelligent-builder/IntelligentSectionBuilder";
 import { QuestionPreviewList } from "@/components/admin/test/QuestionPreviewList";
 import { Loader2, Sparkles, ArrowLeft, ArrowRight, Check } from "lucide-react";
 import api from "@/utils/api";
@@ -33,26 +33,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { SectionFilter } from "@/components/admin/test/intelligent-builder/types";
 
-interface DifficultyRange {
-  min: number;
-  max: number;
-}
-
-interface SectionFilter {
-  name: string;
-  isOptional: boolean;
-  maxQuestions?: number;
-  correctMarks: number;
-  negativeMarks: number;
-  questionCount: number;
-  subjectId: string;
-  topicIds: string[];
-  difficultyRange: DifficultyRange;
-  questionTypes: string[];
-  questionFormats: string[];
-  questionCategories: string[];
-}
 
 interface SelectedQuestion {
   id: string;
@@ -85,6 +67,8 @@ interface ProcessedSection {
   maxQuestions?: number;
   correctMarks: number;
   negativeMarks: number;
+  questionLimit?: number;
+  subjectId?: string;
   questions: SelectedQuestion[];
 }
 
@@ -249,10 +233,15 @@ export default function IntelligentTestCreate() {
 
       if (response.data.success && response.data.data.sections.length > 0) {
         const generatedSection = response.data.data.sections[0];
+        const normalizedSection: ProcessedSection = {
+          ...generatedSection,
+          questionLimit: section.questionCount,
+          subjectId: section.subjectId,
+        };
         
         // Add to section filters and generated sections
         setSectionFilters([...sectionFilters, section]);
-        setGeneratedSections([...generatedSections, generatedSection]);
+        setGeneratedSections([...generatedSections, normalizedSection]);
         
         toast({
           title: "Section Added Successfully",
@@ -376,9 +365,9 @@ export default function IntelligentTestCreate() {
     <div className="py-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-2">
           <Sparkles className="h-8 w-8 text-yellow-500" />
-          <h1 className="text-3xl font-bold">Intelligent Test Creator</h1>
+          <h1 className="text-xl font-bold">Intelligent Test Creator</h1>
         </div>
         <p className="text-muted-foreground">
           Create tests with AI-powered question selection through a step-by-step process
@@ -598,6 +587,7 @@ export default function IntelligentTestCreate() {
             onBack={() => {}}
             onCreate={() => {}}
             hideActions={true}
+            examCode={examCode}
           />
 
           <div className="flex justify-between gap-4">
@@ -854,7 +844,7 @@ export default function IntelligentTestCreate() {
               onClick={handleCreateTest}
               disabled={isCreatingTest}
               size="lg"
-              className="bg-green-600 hover:bg-green-700"
+              
             >
               {isCreatingTest ? (
                 <>
