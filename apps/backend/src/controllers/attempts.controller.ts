@@ -255,13 +255,11 @@ async function updateUserPerformanceOptimized(
     update: {
       totalAttempts: { increment: 1 },
       correctAttempts: isCorrect ? { increment: 1 } : undefined,
-      streak: isCorrect ? { increment: 1 } : 0,
     },
     create: {
       userId,
       totalAttempts: 1,
       correctAttempts: isCorrect ? 1 : 0,
-      streak: isCorrect ? 1 : 0,
       accuracy: isCorrect ? 100 : 0,
     },
     select: {
