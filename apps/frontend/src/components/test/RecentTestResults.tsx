@@ -12,6 +12,7 @@ interface RawResult {
   endTime: string;
   accuracy: number;
   test: {
+    testId: string;
     title: string;
     totalMarks: number;
     examType: ExamType;
@@ -31,16 +32,18 @@ const RecentTestResults: React.FC<RecentTestResultsProps> = ({ results, allResul
 
   const transformedResults = results?.map((r) => {
     const scoreRaw = `${r?.score}/${r?.test?.totalMarks}`;
-    const percentile = r?.accuracy; 
+    const percentile = (r?.score / r?.test?.totalMarks) * 100;
     return {
       id: r?.id,
+      testId: r?.test?.testId,
+      accuracy: r?.accuracy,
       title: r?.test?.title,
       completedDate: formatDate(r?.endTime),
       score: `${r?.score}`,
       scoreRaw,
-      percentile,
       totalMarks: r?.test?.totalMarks,
       type: r?.test?.examType,
+      percentile,
     };
   });
 
@@ -69,25 +72,25 @@ const RecentTestResults: React.FC<RecentTestResultsProps> = ({ results, allResul
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {transformedResults?.length > 0 ? transformedResults?.map((result) => (
             <div key={result.id} className={`bg-white border rounded-lg overflow-hidden shadow-sm ${
-              result.percentile >= 90 ? 'bg-green-50 border-green-200' :
-              result.percentile >= 80 ? 'bg-yellow-50 border-yellow-200' :
-              result.percentile >= 70 ? 'bg-blue-50 border-blue-200' :
+              result.accuracy >= 90 ? 'bg-green-50 border-green-200' :
+              result.accuracy >= 80 ? 'bg-yellow-50 border-yellow-200' :
+              result.accuracy >= 70 ? 'bg-blue-50 border-blue-200' :
               'border-gray-200'
             }`}>
               {/* Badge */}
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2 p-2">
                   <div className={`flex items-center gap-1 ${
-                    result.percentile >= 90 ? 'text-green-600' :
-                    result.percentile >= 80 ? 'text-yellow-600' :
-                    result.percentile >= 70 ? 'text-blue-600' :
+                    result.accuracy >= 90 ? 'text-green-600' :
+                    result.accuracy >= 80 ? 'text-yellow-600' :
+                    result.accuracy >= 70 ? 'text-blue-600' :
                     'text-gray-600'
                   }`}>
-                    {getScoreIcon(result.percentile)}
+                    {getScoreIcon(result.accuracy)}
                     <span className="text-xs font-medium">
-                      {result.percentile >= 90 ? 'Excellent' :
-                       result.percentile >= 80 ? 'Good' :
-                       result.percentile >= 70 ? 'Average' : 'Needs Work'}
+                      {result.accuracy >= 90 ? 'Excellent' :
+                       result.accuracy >= 80 ? 'Good' :
+                       result.accuracy >= 70 ? 'Average' : 'Needs Work'}
                     </span>
                   </div>
                 </div>
@@ -115,7 +118,7 @@ const RecentTestResults: React.FC<RecentTestResultsProps> = ({ results, allResul
                   </div>
                   <div className="flex items-center">
                     <TrendingUp size={16} className="mr-2 flex-shrink-0" />
-                    Performance: {result.percentile.toFixed(1)}%
+                    Accuracy: {result.accuracy.toFixed(1)}%
                   </div>
                   <div className="flex items-center">
                     <Award size={16} className="mr-2 flex-shrink-0" />
@@ -126,7 +129,7 @@ const RecentTestResults: React.FC<RecentTestResultsProps> = ({ results, allResul
                 <div className="mb-4">
                   <div className="flex justify-between text-xs text-gray-600 mb-1">
                     <span>Performance</span>
-                    <span>{result.percentile.toFixed(1)}%</span>
+                    <span>{result?.percentile?.toFixed(1)}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
@@ -143,7 +146,7 @@ const RecentTestResults: React.FC<RecentTestResultsProps> = ({ results, allResul
 
                 <div className="flex gap-2">
                   <Button
-                    onClick={() => handleAnalysis(result?.id)}
+                    onClick={() => handleAnalysis(result?.testId)}
                     className="flex-1 bg-primary-600 hover:bg-primary-700 text-white"
                   >
                     View Analysis

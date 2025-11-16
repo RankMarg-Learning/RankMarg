@@ -966,17 +966,16 @@ export class TestController {
           userId,
           status: "COMPLETED",
         },
-        include: {
+        select: {
+          id: true,
+          score: true,
+          accuracy: true,
+          endTime: true,
           test: {
             select: {
               testId: true,
               title: true,
-              description: true,
-              examCode: true,
               totalMarks: true,
-              totalQuestions: true,
-              difficulty: true,
-              duration: true,
               examType: true,
             },
           },
