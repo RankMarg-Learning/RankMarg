@@ -3,18 +3,18 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, ArrowRight, SkipForward } from 'lucide-react';
 import BaseQuestionUI from './BaseQuestionUI';
-import { Progress } from '@repo/common-ui';
-import Loading from './Loading';
 import { addAttempt, getAiPracticeSession } from '@/services';
 import { attempDataProps } from '@/types';
 import { useUserData } from '@/context/ClientContextProvider';
-import { cn } from '@/lib/utils';
-
-// Constants
-const STALE_TIME = 5 * 60 * 1000; // 5 minutes
-const GC_TIME = 10 * 60 * 1000; // 10 minutes
+import {
+    QuestionSessionNavigation,
+    STALE_TIME,
+    GC_TIME,
+    renderLoadingState,
+    renderErrorState,
+    renderEmptyState
+} from './question-session';
 
 interface AiPracticeSessionProps {
     sessionId: string;
@@ -232,98 +232,6 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
     }, [currentQuestion, sessionId, isSubmitting, queryClient]);
 
     // ===== RENDER HELPERS =====
-    const renderLoadingState = () => <Loading />;
-
-    const renderErrorState = () => (
-        <div className="flex justify-center items-center min-h-screen px-4">
-            <div className="text-center">
-                <h1 className="text-xl sm:text-2xl font-bold text-red-500 mb-2">
-                    Session Error
-                </h1>
-                <p className="text-sm sm:text-base text-gray-600">
-                    {session?.message || "Failed to load session"}
-                </p>
-            </div>
-        </div>
-    );
-
-    const renderEmptyState = () => (
-        <div className="flex justify-center items-center min-h-screen px-4">
-            <div className="text-center">
-                <h1 className="text-lg sm:text-xl text-gray-600">
-                    No questions available in this session
-                </h1>
-            </div>
-        </div>
-    );
-
-    const renderProgressSection = () => (
-        <div className="flex items-center gap-4">
-            {/* Progress Bar */}
-            <div className="flex items-center gap-3">
-                <div className="w-20 sm:w-28 md:w-36">
-                    <Progress
-                        value={progressPercentage}
-                        className="h-1.5 bg-gray-100"
-                        indicatorColor="bg-primary-500"
-                    />
-                </div>
-                <span className="text-xs md:text-sm font-medium text-gray-600 tabular-nums">
-                    {attemptedQuestions.size}/{questions.length}
-                </span>
-            </div>
-
-            {/* Next Unattempted Button */}
-            {(hasNextUnattempted && !session?.data?.isCompleted) && (
-                <button
-                    onClick={goToNextUnattempted}
-                    disabled={isSubmitting}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <SkipForward className="h-4 w-4" />
-                    <span className="hidden sm:inline">Next Unattempted</span>
-                </button>
-            )}
-        </div>
-    );
-
-    const renderNavigationButtons = () => (
-        <div className="flex items-center gap-3">
-            <button
-                onClick={handlePrevQuestion}
-                disabled={!canGoPrev || isSubmitting}
-                className="inline-flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-                <ArrowLeft className="h-4 w-4" />
-            </button>
-
-            <button
-                onClick={handleNextQuestion}
-                disabled={!canGoNext || isSubmitting}
-                className="inline-flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-                <ArrowRight className="h-4 w-4" />
-            </button>
-        </div>
-    );
-
-    const renderTopNavigation = () => (
-        <div className={cn("sticky bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-gray-100", mobileMenuOpen && "hidden lg:block")}>
-            <div className="max-w-8xl mx-auto px-4 sm:px-6">
-                <div className="flex items-center justify-between h-14">
-                    {/* Left Side - Progress and Controls */}
-                    <div className="flex-1 min-w-0">
-                        {renderProgressSection()}
-                    </div>
-                    {/* Right Side - Navigation Buttons */}
-                    <div className="flex-shrink-0">
-                        {renderNavigationButtons()}
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    );
 
     const renderMainContent = () => (
         <>
@@ -347,17 +255,30 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
     }
 
     if (!session?.success) {
-        return renderErrorState();
+        return renderErrorState(session?.message || "Failed to load session");
     }
 
     if (questions.length === 0) {
-        return renderEmptyState();
+        return renderEmptyState("No questions available in this session");
     }
 
     return (
         <div className="min-h-screen bg-white">
             {renderMainContent()}
-            {renderTopNavigation()}
+            <QuestionSessionNavigation
+                canGoPrev={canGoPrev}
+                canGoNext={canGoNext}
+                isSubmitting={isSubmitting}
+                onPrev={handlePrevQuestion}
+                onNext={handleNextQuestion}
+                mobileMenuOpen={mobileMenuOpen}
+                showProgress={true}
+                progressPercentage={progressPercentage}
+                attemptedCount={attemptedQuestions.size}
+                totalCount={questions.length}
+                showNextUnattempted={hasNextUnattempted && !session?.data?.isCompleted}
+                onNextUnattempted={goToNextUnattempted}
+            />
         </div>
     );
 };

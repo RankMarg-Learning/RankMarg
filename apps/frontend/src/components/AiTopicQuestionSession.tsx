@@ -3,13 +3,11 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, ArrowRight, History } from 'lucide-react';
+import { History } from 'lucide-react';
 import BaseQuestionUI from './BaseQuestionUI';
-import Loading from './Loading';
 import { addAttempt } from '@/services';
 import { attempDataProps } from '@/types';
 import { useUserData } from '@/context/ClientContextProvider';
-import { cn } from '@/lib/utils';
 import { aiQuestionService } from '@/services/aiQuestion.service';
 import { Button } from '@repo/common-ui';
 import {
@@ -26,10 +24,13 @@ import {
     MIN_PERFORMANCE_SCORE,
     LOG_LEVELS,
 } from '@/constant/adaptiveLearning';
-
-// Constants
-const STALE_TIME = 5 * 60 * 1000; // 5 minutes
-const GC_TIME = 10 * 60 * 1000; // 10 minutes
+import {
+    QuestionSessionNavigation,
+    STALE_TIME,
+    GC_TIME,
+    renderLoadingState,
+    renderEmptyState
+} from './question-session';
 
 interface AiTopicQuestionSessionProps {
     topicSlug: string;
@@ -456,59 +457,6 @@ const AiTopicQuestionSession: React.FC<AiTopicQuestionSessionProps> = ({
     }, [currentQuestion, isSubmitting]);
 
 // ===== RENDER HELPERS =====
-    const renderLoadingState = () => <Loading />;
-
-    const renderEmptyState = () => (
-        <div className="flex justify-center items-center min-h-screen px-4">
-            <div className="text-center">
-                <h1 className="text-lg sm:text-xl text-gray-600 mb-4">
-                    No questions available for this topic
-                </h1>
-                <p className="text-sm text-gray-500 mb-4">
-                    You've attempted all available questions or there are no questions at your level.
-                </p>
-                {onViewHistory && (
-                    <Button onClick={onViewHistory} variant="outline">
-                        <History className="w-4 h-4 mr-2" />
-                        View Attempted Questions
-                    </Button>
-                )}
-            </div>
-        </div>
-    );
-
-    const renderNavigationButtons = () => (
-        <div className="flex items-center gap-3">
-            <button
-                onClick={handlePrevQuestion}
-                disabled={!canGoPrev || isSubmitting}
-                className="inline-flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-                <ArrowLeft className="h-4 w-4" />
-            </button>
-
-            <button
-                onClick={handleNextQuestion}
-                disabled={!canGoNext || isSubmitting}
-                className="inline-flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-                <ArrowRight className="h-4 w-4" />
-            </button>
-        </div>
-    );
-
-    const renderTopNavigation = () => (
-        <div className={cn("sticky bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-t border-gray-100", mobileMenuOpen && "hidden lg:block")}>
-            <div className="max-w-8xl mx-auto px-4 sm:px-6">
-                <div className="flex items-center justify-end h-14">
-                    {/* Navigation Buttons - Now with Smart Selection */}
-                    <div className="flex-shrink-0">
-                        {renderNavigationButtons()}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
 
     const renderMainContent = () => {
         return (
@@ -536,13 +484,29 @@ const AiTopicQuestionSession: React.FC<AiTopicQuestionSessionProps> = ({
     }
 
     if (!questionsData || questions.length === 0) {
-        return renderEmptyState();
+        return renderEmptyState(
+            "No questions available for this topic",
+            "You've attempted all available questions or there are no questions at your level.",
+            onViewHistory ? (
+                <Button onClick={onViewHistory} variant="outline">
+                    <History className="w-4 h-4 mr-2" />
+                    View Attempted Questions
+                </Button>
+            ) : undefined
+        );
     }
 
     return (
         <div className="min-h-screen bg-white">
             {renderMainContent()}
-            {renderTopNavigation()}
+            <QuestionSessionNavigation
+                canGoPrev={canGoPrev}
+                canGoNext={canGoNext}
+                isSubmitting={isSubmitting}
+                onPrev={handlePrevQuestion}
+                onNext={handleNextQuestion}
+                mobileMenuOpen={mobileMenuOpen}
+            />
         </div>
     );
 };
