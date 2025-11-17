@@ -27,7 +27,7 @@ const Layout = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-subtle-gray noselect">
+    <div className="min-h-screen flex flex-col bg-subtle-gray ">
       <Header onMenuClick={toggleMobileMenu} />
       <div className="flex flex-1 relative">
         {/* Mobile Overlay - only shown on mobile when menu is open */}

@@ -5,7 +5,7 @@ import MarkdownRenderer from '@/lib/MarkdownRenderer'
 import { useToast } from '@/hooks/use-toast';
 import { attempDataProps, QuestionProps } from '@/types';
 import Options from './Options';
-import { AlertCircle, BookOpen, Lightbulb, AlertTriangle, Lock } from 'lucide-react';
+import { AlertCircle, BookOpen, Lightbulb, AlertTriangle, Lock, EyeOff, Settings } from 'lucide-react';
 import { getDifficultyLabel } from '@/utils/getDifficultyLabel';
 import { Motion } from '@repo/common-ui';
 import Timer from './Timer';
@@ -13,6 +13,15 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@r
 import MistakeFeedbackModal from './MistakeFeedbackModal';
 import { useRouter } from 'next/navigation';
 import { reportQuestion } from '@/services/question.service';
+import QuestionUISettings from './QuestionUISettings';
+import {
+  QuestionUIPreferences,
+  loadUIPreferences,
+} from '@/utils/questionUIPreferences';
+import {
+  filterSolutionContent,
+  getAvailableSections,
+} from '@/utils/solutionFilter';
 
 
 interface QuestionShowProps extends Omit<QuestionProps, "attempts" | "createdAt"> { }
@@ -187,6 +196,21 @@ const QuestionUI = ({
   const [reportText, setReportText] = useState<string>('');
   const [isReporting, setIsReporting] = useState(false);
 
+  // UI Preferences
+  const [uiPreferences, setUiPreferences] = useState<QuestionUIPreferences>(loadUIPreferences());
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  
+  // Get available sections and filtered content
+  const availableSections = useMemo(() => 
+    question?.solution ? getAvailableSections(question.solution) : [],
+    [question?.solution]
+  );
+
+  const filteredSolution = useMemo(() => 
+    question?.solution ? filterSolutionContent(question.solution, uiPreferences.solutionContentFilters) : '',
+    [question?.solution, uiPreferences.solutionContentFilters]
+  );
+
   const REPORT_TYPES: { value: string; label: string; hint?: string }[] = [
     { value: 'WRONG_ANSWER', label: 'Wrong Answer' },
     { value: 'WRONG_SOLUTION', label: 'Wrong Solution' },
@@ -217,7 +241,18 @@ const QuestionUI = ({
       <div className="flex flex-wrap md:flex-row flex-1 p-2 rounded-lg overflow-hidden ">
         {/* Left side: Question */}
         <div className="w-full md:w-1/2 md:p-6 p-2 border-b md:border-b-0 md:border-r">
+        <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
+
           <h1 className="text-lg font-bold mb-2">Question</h1>
+          <button
+                className="px-2 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-full text-xs font-medium flex items-center gap-1 transition-colors border border-purple-200"
+                onClick={() => setIsSettingsOpen(true)}
+                title="Display Settings"
+              >
+                <Settings className="h-3 w-3" />
+                <span className="hidden sm:inline">Settings</span>
+              </button>
+          </div>
 
           {/* Timer - Hidden when answered */}
           {!isAnswered && (
@@ -239,12 +274,14 @@ const QuestionUI = ({
               <span className="px-2 py-0.5 md:py-1 border border-amber-500 text-amber-500 rounded-full text-xs font-medium">
                 {getDifficultyLabel(question?.difficulty)}
               </span>
+              
               <span
                 className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium flex items-center gap-1 hover:underline cursor-pointer"
                 onClick={() => setIsReportOpen(true)}
               >
                 Report
               </span>
+              
             </div>
           </div>
 
@@ -254,7 +291,7 @@ const QuestionUI = ({
           </div>
 
           {/* Hint button */}
-          {!isAnswered && !isHintUsed && (
+          {!isAnswered && !isHintUsed && uiPreferences.showHint && (
             <Button
               variant="link"
               className="text-sm mt-2 underline"
@@ -314,7 +351,7 @@ const QuestionUI = ({
       )}
 
       {/* Hint section */}
-      {!isAnswered && isHintUsed && (
+      {!isAnswered && isHintUsed && uiPreferences.showHint && (
         <Motion animation='fade-in' className="w-full p-2">
           <div className="mt-3 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg border border-yellow-200 p-3">
             <div className="flex items-center gap-2 mb-2">
@@ -336,7 +373,7 @@ const QuestionUI = ({
       )}
 
       {/* Solution section  */}
-      {(isAnswered || isSubmitting) && (
+      {(isAnswered || isSubmitting) && uiPreferences.showDetailedSolution && (
         <Motion animation="fade-in" className="w-full p-2 ">
           <Accordion type="single" collapsible defaultValue="solution" >
             <AccordionItem value="solution" >
@@ -356,7 +393,7 @@ const QuestionUI = ({
                         isUnlocked ? (
                           <>
                             {/* Solving Strategy */}
-                            {question?.strategy && question?.strategy?.length > 10 && (
+                            {uiPreferences.showStrategy && question?.strategy && question?.strategy?.length > 10 && (
                               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                   <Lightbulb className="h-4 w-4 text-blue-600" />
@@ -368,7 +405,7 @@ const QuestionUI = ({
                               </div>
                             )}
                             {/* Common Mistakes */}
-                            {question?.commonMistake && question?.commonMistake?.length > 10 && (
+                            {uiPreferences.showCommonMistakes && question?.commonMistake && question?.commonMistake?.length > 10 && (
                               <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-200 p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                   <AlertTriangle className="h-4 w-4 text-red-600" />
@@ -406,7 +443,7 @@ const QuestionUI = ({
                           <h4 className="font-semibold text-purple-900 text-sm">Step-by-Step Analysis</h4>
                         </div>
                         <div className="prose prose-sm max-w-none overflow-x-auto">
-                          <MarkdownRenderer content={question.solution} className="text-sm" />
+                          <MarkdownRenderer content={filteredSolution} className="text-sm" />
                         </div>
                       </div>
 
@@ -421,6 +458,17 @@ const QuestionUI = ({
               </div>
             </AccordionItem>
           </Accordion>
+        </Motion>
+      )}
+      
+      {/* Solution Hidden Message */}
+      {(isAnswered || isSubmitting) && !uiPreferences.showDetailedSolution && (
+        <Motion animation="fade-in" className="w-full p-2">
+          <div className="mt-3 p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
+            <EyeOff className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+            <p className="text-sm text-gray-600 font-medium">Detailed solution is hidden</p>
+            <p className="text-xs text-gray-500 mt-1">Open settings to enable solution display</p>
+          </div>
         </Motion>
       )}
       <MistakeFeedbackModal
@@ -487,6 +535,14 @@ const QuestionUI = ({
           </div>
         </div>
       )}
+
+      {/* Settings Modal */}
+      <QuestionUISettings
+        availableSolutionSections={availableSections}
+        onPreferencesChange={setUiPreferences}
+        isOpen={isSettingsOpen}
+        onOpenChange={setIsSettingsOpen}
+      />
     </div>
   );
 };

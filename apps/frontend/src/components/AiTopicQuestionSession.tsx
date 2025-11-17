@@ -498,7 +498,7 @@ const AiTopicQuestionSession: React.FC<AiTopicQuestionSessionProps> = ({
     );
 
     const renderTopNavigation = () => (
-        <div className={cn("sticky bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-t border-gray-100", mobileMenuOpen && "hidden lg:block")}>
+        <div className={cn("sticky bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-t border-gray-100", mobileMenuOpen && "hidden lg:block")}>
             <div className="max-w-8xl mx-auto px-4 sm:px-6">
                 <div className="flex items-center justify-end h-14">
                     {/* Navigation Buttons - Now with Smart Selection */}

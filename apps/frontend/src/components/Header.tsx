@@ -35,7 +35,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-white/95 border-b border-gray-200/50 shadow-sm">
+    <header className="sticky top-0 z-30 w-full backdrop-blur-md bg-white/95 border-b border-gray-200/50 shadow-sm">
       <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         <div className="flex h-14 sm:h-16 items-center justify-between">
           {/* Left Section - Logo & Mobile Menu */}
