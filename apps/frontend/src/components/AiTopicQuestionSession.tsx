@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowRight, History } from 'lucide-react';
-import QuestionUI from './QuestionUI';
+import BaseQuestionUI from './BaseQuestionUI';
 import Loading from './Loading';
 import { addAttempt } from '@/services';
 import { attempDataProps } from '@/types';
@@ -515,7 +515,7 @@ const AiTopicQuestionSession: React.FC<AiTopicQuestionSessionProps> = ({
             <>
                 
                 {currentQuestion && (
-                    <QuestionUI
+                    <BaseQuestionUI
                         key={`${currentQuestion.id}-${currentQuestionIndex}`}
                         question={currentQuestion}
                         handleAttempt={handleAttempt}

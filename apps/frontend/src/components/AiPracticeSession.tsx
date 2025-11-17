@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowRight, SkipForward } from 'lucide-react';
-import QuestionUI from './QuestionUI';
+import BaseQuestionUI from './BaseQuestionUI';
 import { Progress } from '@repo/common-ui';
 import Loading from './Loading';
 import { addAttempt, getAiPracticeSession } from '@/services';
@@ -328,7 +328,7 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
     const renderMainContent = () => (
         <>
             {currentQuestion && (
-                <QuestionUI
+                <BaseQuestionUI
                     key={`${currentQuestion.id}-${currentQuestionIndex}`}
                     question={currentQuestion}
                     handleAttempt={handleAttempt}

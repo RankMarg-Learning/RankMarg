@@ -1,8 +1,6 @@
 "use client";
 
-import { QuestionNavigation } from "@/components/test/panel/QuestionNavigation";
-import { TestHeader } from "@/components/test/panel/TestHeader";
-import { TestQuestion } from "@/components/test/panel/TestQuestion";
+import { QuestionNavigation, TestHeader, TestQuestionUI } from "@/components/test/panel";
 import { useTestContext } from "@/context/TestContext";
 import React, { useEffect, useState } from "react";
 import Loading from "../Loading";
@@ -75,7 +73,7 @@ const TestPage = ({ testId }: { testId: string }) => {
       <TestHeader />
       <div className="flex flex-1 relative">
         <main className="flex-1 w-full lg:w-4/5">
-          <TestQuestion />
+          <TestQuestionUI />
         </main>
         <QuestionNavigation />
       </div>

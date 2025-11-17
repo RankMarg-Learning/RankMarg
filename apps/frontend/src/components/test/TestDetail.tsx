@@ -180,7 +180,7 @@ export default function TestDetail({ testId }: { testId: string }) {
             <div >
               <CardHeader>
                 <CardTitle className="text-xl font-bold text-center mb-4">
-                  {TextFormator(test?.data?.examType)} - {test.title}
+                  {TextFormator(test?.data?.examType)} - {test?.data?.title}
                 </CardTitle>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Duration: {test?.data?.duration} Mins</span>

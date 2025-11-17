@@ -1,12 +1,6 @@
-/**
- * @deprecated This component is deprecated and replaced by TestQuestionUI.tsx
- * Please use TestQuestionUI instead for better code organization and maintainability.
- * This file is kept for reference only.
- */
-
-import { Button } from "@repo/common-ui";
-import { Badge } from "@repo/common-ui";
-import { useCallback, useEffect, useMemo, useState } from "react";
+"use client";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Badge } from "@repo/common-ui";
 import Options from "@/components/Options";
 import { useTestContext } from "@/context/TestContext";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
@@ -15,10 +9,17 @@ import { QuestionStatus } from "@/utils";
 import { QuestionType } from "@repo/db/enums";
 
 /**
- * @deprecated Use TestQuestionUI from './TestQuestionUI' instead
+ * TestQuestionUI - A streamlined question display component for test mode
+ * 
+ * This component displays questions during a test without showing solutions,
+ * hints, or other practice-mode features. It focuses on:
+ * - Clean question and options display
+ * - Test-specific actions (Save, Mark for Review, Clear)
+ * - Time tracking per question
+ * - Navigation between questions
  */
-export function TestQuestion() {
-  // State for the new Options component interface
+export function TestQuestionUI() {
+  // State for the Options component interface
   const [selectedValues, setSelectedValues] = useState<number[]>([]);
   const [numericalValue, setNumericalValue] = useState<number | null>(null);
 
@@ -33,37 +34,50 @@ export function TestQuestion() {
   } = useTestContext();
 
   // Memoized values for optimization
-  const question = useMemo(() => questions?.[currentQuestion - 1], [questions, currentQuestion]);
+  const question = useMemo(
+    () => questions?.[currentQuestion - 1],
+    [questions, currentQuestion]
+  );
   const options = useMemo(() => question?.options || [], [question]);
-  
+
   // Question type flags
-  const questionTypes = useMemo(() => ({
-    isLastQuestion: currentQuestion === totalQuestions,
-    isNumerical: question?.type === "INTEGER",
-    isSingleChoice: question?.type === "MULTIPLE_CHOICE" && question?.format !== "MULTIPLE_SELECT",
-    isMultipleChoice: question?.type === "MULTIPLE_CHOICE" && question?.format === "MULTIPLE_SELECT"
-  }), [currentQuestion, totalQuestions, question?.type, question?.format]);
+  const questionTypes = useMemo(
+    () => ({
+      isLastQuestion: currentQuestion === totalQuestions,
+      isNumerical: question?.type === "INTEGER",
+      isSingleChoice:
+        question?.type === "MULTIPLE_CHOICE" &&
+        question?.format !== "MULTIPLE_SELECT",
+      isMultipleChoice:
+        question?.type === "MULTIPLE_CHOICE" &&
+        question?.format === "MULTIPLE_SELECT",
+    }),
+    [currentQuestion, totalQuestions, question?.type, question?.format]
+  );
 
   // Calculate marks based on question section
-  const getMarks = useCallback((questionIndex) => {
-    if (!testSection || Object.keys(testSection).length === 0) {
-      return { correctMarks: 0, negativeMarks: 0 };
-    }
-
-    for (const [key, value] of Object.entries(testSection)) {
-      const range = key.split('_')[1];
-      const [start, end] = range.split('-').map(Number);
-      
-      if (questionIndex >= start && questionIndex <= end) {
-        return {
-          correctMarks: value.correctMarks,
-          negativeMarks: value.negativeMarks > 0 ? -value.negativeMarks : 0,
-        };
+  const getMarks = useCallback(
+    (questionIndex: number) => {
+      if (!testSection || Object.keys(testSection).length === 0) {
+        return { correctMarks: 0, negativeMarks: 0 };
       }
-    }
-    
-    return { correctMarks: 0, negativeMarks: 0 };
-  }, [testSection]);
+
+      for (const [key, value] of Object.entries(testSection)) {
+        const range = key.split("_")[1];
+        const [start, end] = range.split("-").map(Number);
+
+        if (questionIndex >= start && questionIndex <= end) {
+          return {
+            correctMarks: value.correctMarks,
+            negativeMarks: value.negativeMarks > 0 ? -value.negativeMarks : 0,
+          };
+        }
+      }
+
+      return { correctMarks: 0, negativeMarks: 0 };
+    },
+    [testSection]
+  );
 
   // Handle selection changes
   const handleSelectionChange = useCallback((values: number[]) => {
@@ -77,8 +91,9 @@ export function TestQuestion() {
 
   // Load saved answers when navigating between questions
   useEffect(() => {
-    const currentQuestionData = questionsData[currentQuestion]?.selectedOptions || [];
-    
+    const currentQuestionData =
+      questionsData[currentQuestion]?.selectedOptions || [];
+
     if (currentQuestionData.length > 0) {
       if (questionTypes.isNumerical) {
         // For numerical questions, store as numerical value
@@ -107,43 +122,60 @@ export function TestQuestion() {
   }, [questionTypes.isNumerical, numericalValue, selectedValues]);
 
   // Determine question status
-  const getQuestionStatus = useCallback((isMarked, hasAnswer) => {
+  const getQuestionStatus = useCallback((isMarked: boolean, hasAnswer: boolean) => {
     if (isMarked) {
-      return hasAnswer ? QuestionStatus.AnsweredAndMarked : QuestionStatus.MarkedForReview;
+      return hasAnswer
+        ? QuestionStatus.AnsweredAndMarked
+        : QuestionStatus.MarkedForReview;
     }
     return hasAnswer ? QuestionStatus.Answered : QuestionStatus.NotAnswered;
   }, []);
 
   // Update question data
-  const updateQuestionData = useCallback((isMarked = false) => {
-    const currentSelection = getCurrentSelection();
-    const hasAnswer = currentSelection.length > 0;
-    const questionType = questionTypes.isMultipleChoice ? 'multiple' : 'single';
-    
-    setQuestionsData((prev) => ({
-      ...prev,
-      [currentQuestion]: {
-        ...prev[currentQuestion],
-        selectedOptions: currentSelection,
-        status: getQuestionStatus(isMarked, hasAnswer),
-        type: question?.type === 'INTEGER' ? "integer" : questionType,
-        submittedAt: new Date(),
-      },
-    }));
+  const updateQuestionData = useCallback(
+    (isMarked = false) => {
+      const currentSelection = getCurrentSelection();
+      const hasAnswer = currentSelection.length > 0;
+      const questionType = questionTypes.isMultipleChoice ? "multiple" : "single";
 
-    return { hasAnswer };
-  }, [currentQuestion, getCurrentSelection, getQuestionStatus, question?.type, questionTypes.isMultipleChoice, setQuestionsData]);
+      setQuestionsData((prev) => ({
+        ...prev,
+        [currentQuestion]: {
+          ...prev[currentQuestion],
+          selectedOptions: currentSelection,
+          status: getQuestionStatus(isMarked, hasAnswer),
+          type: question?.type === "INTEGER" ? "integer" : questionType,
+          submittedAt: new Date(),
+        },
+      }));
+
+      return { hasAnswer };
+    },
+    [
+      currentQuestion,
+      getCurrentSelection,
+      getQuestionStatus,
+      question?.type,
+      questionTypes.isMultipleChoice,
+      setQuestionsData,
+    ]
+  );
 
   // Handler: Mark for review
   const onMarkForReview = useCallback(() => {
     updateQuestionData(true);
-    
+
     if (!questionTypes.isLastQuestion) {
       setCurrentQuestion(currentQuestion + 1);
       setSelectedValues([]);
       setNumericalValue(null);
     }
-  }, [currentQuestion, questionTypes.isLastQuestion, setCurrentQuestion, updateQuestionData]);
+  }, [
+    currentQuestion,
+    questionTypes.isLastQuestion,
+    setCurrentQuestion,
+    updateQuestionData,
+  ]);
 
   // Handler: Clear response
   const onClearResponse = useCallback(() => {
@@ -164,19 +196,24 @@ export function TestQuestion() {
   // Handler: Save and next
   const onSaveAndNext = useCallback(() => {
     updateQuestionData(false);
-    
+
     if (!questionTypes.isLastQuestion) {
       setCurrentQuestion(currentQuestion + 1);
       setSelectedValues([]);
       setNumericalValue(null);
     }
-  }, [currentQuestion, questionTypes.isLastQuestion, setCurrentQuestion, updateQuestionData]);
+  }, [
+    currentQuestion,
+    questionTypes.isLastQuestion,
+    setCurrentQuestion,
+    updateQuestionData,
+  ]);
 
   const marks = getMarks(currentQuestion);
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)]">
-      {/* Question Header */}
+      {/* Question Header with metadata */}
       <div className="flex sm:flex-row sm:items-center justify-between p-2 sm:p-3 border-b space-y-2 sm:space-y-0">
         <div className="flex items-center gap-1 justify-between">
           <Badge variant="outline">
@@ -194,16 +231,17 @@ export function TestQuestion() {
         </div>
       </div>
 
-      {/* Question Content */}
+      {/* Question Content - Two Column Layout */}
       <div className="flex-1 overflow-auto default-scroll">
         <div className="flex flex-col lg:flex-row h-full">
-          {/* Question Text */}
+          {/* Left Column: Question Text */}
           <div className="lg:flex-1 lg:w-1/2 p-4 sm:p-6 pb-8 border-b lg:border-b-0 lg:border-r noselect">
+            <h2 className="text-lg font-bold mb-4">Question</h2>
             <MarkdownRenderer content={question?.content || ""} />
           </div>
 
-          {/* Options */}
-          <div className="flex-1 lg:w-1/2 p-4 sm:p-6">
+          {/* Right Column: Options */}
+          <div className="flex-1 lg:w-1/2 p-4 sm:p-6 noselect">
             <Options
               type={question?.type as QuestionType}
               options={options}
@@ -218,7 +256,7 @@ export function TestQuestion() {
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Action Buttons - Fixed at bottom */}
       <div className="sticky bottom-0 left-0 right-0 flex flex-col sm:flex-row justify-between items-stretch sm:items-center p-2 sm:p-4 bg-[#F5F5F5] border-t gap-3 z-10">
         <div className="flex flex-row gap-1 sm:gap-1">
           <Button
@@ -240,7 +278,11 @@ export function TestQuestion() {
           <Button
             onClick={onSaveAndNext}
             className="flex-1 sm:flex-initial bg-yellow-400 hover:bg-yellow-500"
-            disabled={(questionTypes.isNumerical ? numericalValue === null : selectedValues.length === 0)}
+            disabled={
+              questionTypes.isNumerical
+                ? numericalValue === null
+                : selectedValues.length === 0
+            }
           >
             {`Save ${!questionTypes.isLastQuestion ? "and Next" : ""}`}
           </Button>
@@ -249,3 +291,4 @@ export function TestQuestion() {
     </div>
   );
 }
+
