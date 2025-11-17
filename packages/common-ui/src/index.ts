@@ -44,3 +44,4 @@ export * from "./components/ui/typewriter-effect";
 export { useToast, toast, reducer } from "./hooks/use-toast";
 export { useQueryError } from "./hooks/useQueryError";
 export { createUseSubtopics } from "./hooks/createUseSubtopics";
+export { cn } from "./lib/utils";
