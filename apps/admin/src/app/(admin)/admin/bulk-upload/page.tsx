@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@repo/common-ui'
 import { toast } from '@/hooks/use-toast'
@@ -51,8 +51,8 @@ const BulkUpload = () => {
   const { topics: rawTopics = [], isLoading: topicsLoading } = useTopics(selectedSubjectId)
   useSubtopics(selectedTopicId === 'auto' ? undefined : selectedTopicId)
 
-  const subjects = Array.isArray(rawSubjects) ? rawSubjects : Array.isArray(rawSubjects) ? rawSubjects : []
-  const topics = Array.isArray(rawTopics) ? rawTopics : Array.isArray(rawTopics) ? rawTopics : []
+  const subjects = Array.isArray(rawSubjects) ? rawSubjects : []
+  const topics = Array.isArray(rawTopics) ? rawTopics : []
   
   // Update URL when subjectId or topicId changes
   useEffect(() => {
@@ -304,4 +304,10 @@ const BulkUpload = () => {
   )
 }
 
-export default BulkUpload
+export default function BulkUploadPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto p-2">Loading...</div>}>
+      <BulkUpload />
+    </Suspense>
+  )
+}
