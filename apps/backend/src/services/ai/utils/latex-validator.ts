@@ -6,7 +6,7 @@
 import {
   createLatexToUnicodeMap,
   createLatexMatchPattern,
-} from "@/constants/latex-symbols";
+} from "@/constant/latex-symbols";
 
 // Initialize fast lookup structures for LaTeX symbol validation
 const latexToUnicodeMap = createLatexToUnicodeMap();
