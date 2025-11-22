@@ -11,8 +11,8 @@ import {
   Copy,
   Check
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui';
+import { Badge } from '@repo/common-ui';
 import { usePromoCode } from '@/hooks/usePromoCode';
 
 export default function PartnerProgramPage({ params }: { params: { promocodeId: string } }) {

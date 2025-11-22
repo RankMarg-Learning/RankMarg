@@ -1,10 +1,10 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import useOnboardingStore from '@/store/onboardingStore';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import Motion from '@/components/ui/motion';
+import { Card, CardContent } from '@repo/common-ui';
+import { Input } from '@repo/common-ui';
+import { Label } from '@repo/common-ui';
+import { Motion } from '@repo/common-ui';
 import OnboardingLayout from './OnboardingLayout';
 import {
   Select,
@@ -12,7 +12,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@repo/common-ui";
 import { Loader2 } from 'lucide-react';
 import api from '@/utils/api';
 

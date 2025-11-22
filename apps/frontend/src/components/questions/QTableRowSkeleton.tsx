@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { TableCell, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@repo/common-ui";
+import { TableCell, TableRow } from "@repo/common-ui";
 
 export const QTableRowSkeleton = () => {
   return (

@@ -237,7 +237,20 @@ export class UserActivityController {
 
       // Process each user
       for (const user of users) {
+
+        if (!user.examRegistrations || user.examRegistrations.length === 0) {
+          continue; 
+        }
+
         const examCode = user.examRegistrations[0].examCode;
+
+        const examConfig = exam[examCode];
+        if (!examConfig || !examConfig.total_questions) {
+          console.warn(`Invalid exam config for user ${user.id}, examCode: ${examCode}`);
+          continue;
+        }
+
+        const totalQuestions = examConfig.total_questions;
 
         const attempts = await prisma.attempt.findMany({
           where: {
@@ -262,11 +275,10 @@ export class UserActivityController {
           continue; // Skip users with no attempts
         }
 
-        const examConfig = exam[examCode];
-        const totalQuestions = examConfig.total_questions;
-
-       const questionsPerDay = Math.round(Math.min(Math.max((attempts.length / 5) + 6, 15), totalQuestions));
-
+        const avgPerDay = attempts.length / 5;
+        const questionsPerDay = Math.round(
+          Math.min(Math.max(avgPerDay * 1.2, 15), totalQuestions)
+        );
         // Update user's questionsPerDay
         if (questionsPerDay > 0) {
           await prisma.user.update({

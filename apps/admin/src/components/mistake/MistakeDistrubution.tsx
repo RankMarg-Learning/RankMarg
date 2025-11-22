@@ -4,13 +4,13 @@ import { Info } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 import {
   Card,
-} from "@/components/ui/card"
+} from "@repo/common-ui"
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
+} from "@repo/common-ui"
 import { AnalyticsDashboardProps } from "@/types/mistake.type"
 
 const chartConfig = {

@@ -1,16 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@repo/common-ui";
+import { Input } from "@repo/common-ui";
+import { Label } from "@repo/common-ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/common-ui";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@repo/common-ui";
 import api from "@/utils/api";
 import { click_login_cta, signup_completed } from "@/utils/analytics";
 

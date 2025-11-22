@@ -1,13 +1,13 @@
-import { Button } from '@/components/ui/button';
-import { Card } from '../ui/card';
+import { Button } from '@repo/common-ui';
+import { Card } from '@repo/common-ui';
 import { CurrentStudies } from '@/types/dashboard.types';
 import {  Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-export default function CurrentTopicCard({ currentStudies }: { currentStudies: CurrentStudies[] }) {
+export default function CurrentTopicCard({ currentStudies }: { currentStudies: CurrentStudies[] | undefined }) {
   const router = useRouter();
 
-  const groupedTopics = currentStudies?.reduce((acc, topic) => {
+  const groupedTopics = currentStudies?.reduce((acc: Record<string, { topics: CurrentStudies[], totalCount: number }>, topic: CurrentStudies) => {
     if (!acc[topic.subjectName]) {
       acc[topic.subjectName] = {
         topics: [],

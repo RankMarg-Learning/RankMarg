@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@repo/common-ui";
+import { Badge } from "@repo/common-ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Options from "@/components/Options";
 import { useTestContext } from "@/context/TestContext";

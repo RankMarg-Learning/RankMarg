@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { aiQuestionService, Subject } from "@/services/aiQuestion.service";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/common-ui";
+import { Button } from "@repo/common-ui";
+import { Skeleton } from "@repo/common-ui";
 import { BookOpen, ArrowRight,  } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SubjectBackgroundColor, SubjectCardColor, SubjectTextColor } from "@/constant/SubjectColorCode";

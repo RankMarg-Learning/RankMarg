@@ -24,10 +24,12 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.919.0",
     "@prisma/client": "^5.21.0",
+    "@repo/curriculum": "*",
     "@repo/db": "*",
     "@repo/suggest": "^1.0.0",
     "@types/ws": "^8.5.12",
     "bcrypt": "^6.0.0",
+    "bullmq": "^5.64.1",
     "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

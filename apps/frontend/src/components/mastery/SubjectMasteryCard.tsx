@@ -1,9 +1,9 @@
 import { ArrowUp, CheckIcon, ChevronRight, CircleX, Info, InfoIcon, LucideIcon, TriangleAlert, BookOpen } from 'lucide-react';
 import React from 'react'
-import { Card } from '../ui/card';
-import { Progress } from '../ui/progress';
+import { Card } from '@repo/common-ui';
+import { Progress } from '@repo/common-ui';
 import Link from 'next/link';
-import { Button } from '../ui/button';
+import { Button } from '@repo/common-ui';
 import { SubjectBackgroundColor, SubjectCardColor } from '@/constant/SubjectColorCode';
 import { SubjectMasteryProps } from '@/types/mastery.types';
 import { RecommendationIcon } from '@/types/recommendation.types';
@@ -124,7 +124,7 @@ const SubjectMasteryCard = ({ sbt }: { sbt: SubjectMasteryProps }) => {
           ))}
         </div>
 
-        <div className="mb-6 border-t pt-3 border-gray-200">
+        <div className="mb-6 border-t pt-3 border-gray-200 hidden">
           <h3 className="font-medium text-gray-800 flex items-center gap-1 mb-3">
             <Info className="h-4 w-4 text-blue-500" />
             <span>Smart Recommendations</span>

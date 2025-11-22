@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Skeleton } from './ui/skeleton';
-import { Badge } from './ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui';
+import { Skeleton } from '@repo/common-ui';
+import { Badge } from '@repo/common-ui';
 import { ArrowLeft, CheckCircle2, XCircle, Clock, BookOpen, Share2, Check } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from '@repo/common-ui';
 import { aiQuestionService } from '@/services/aiQuestion.service';
 import { useToast } from '@/hooks/use-toast';
 

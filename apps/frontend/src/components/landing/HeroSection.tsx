@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@repo/common-ui';
 import { Sparkles, Lightbulb, CheckCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { click_signup_cta } from '@/utils/analytics';
@@ -24,18 +24,21 @@ const HeroSection = () => {
             <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24 text-center">
                 <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur text-gray-800 px-4 py-2 rounded-full text-sm font-medium ring-1 ring-gray-200">
                     <Sparkles className="w-4 h-4" />
-                    India's Best Practice Platform
+                    Your Personal AI Coach
                 </div>
 
                 <h1 className="mt-6 font-Manrope text-[32px] leading-[1.15] sm:text-5xl md:text-6xl font-extrabold text-gray-900">
-                    Personalized Practice for
-                    <br className="hidden sm:block" />
-                    <span className="inline-block mt-2">NEET & JEE Success</span>
+                    <span className="sm:hidden">AI Coach for Faster NEET/JEE Rank Growth.</span>
+                    <span className="hidden sm:inline">
+                        AI Coach for Faster
+                        <br className="hidden sm:block" />
+                        <span className="inline-block mt-2">NEET/JEE Rank Growth.</span>
+                    </span>
                 </h1>
 
                 <p className="mt-4 mx-auto max-w-[680px] text-gray-600 text-[14px] sm:text-base md:text-lg">
-                    RankMarg builds daily practice tailored to you: adaptive sessions by weak/current/revision topics,
-                    smart hints (no answers), step-by-step solutions, mistake tracking, mastery analytics and curriculum management.
+                    RankMarg acts like a coach—diagnoses weak areas, builds daily practice sessions, gives hint‑first guidance,
+                    tracks mistakes, and drives mastery with clear analytics—so your rank climbs faster.
                 </p>
 
                 <div className="mt-8 flex items-center justify-center">

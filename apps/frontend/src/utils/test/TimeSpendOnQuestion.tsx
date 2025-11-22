@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@repo/common-ui'
 import { useTestContext } from '@/context/TestContext';
 import React, { useEffect, useState } from 'react'
 

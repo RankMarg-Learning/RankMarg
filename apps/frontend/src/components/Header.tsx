@@ -1,19 +1,20 @@
 import { Crown, LogOut, Menu,  Settings, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@repo/common-ui';
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/common-ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
+} from '@repo/common-ui';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useUserData } from '@/context/ClientContextProvider';
 import api from '@/utils/api';
-import { Skeleton } from './ui/skeleton';
+import { Skeleton } from '@repo/common-ui';
 import { useRouter } from 'next/navigation';
 import HeaderTrialBadge from './upgrade/trial';
+import { NotificationDropdown } from './notifications/NotificationDropdown';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -35,7 +36,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-white/95 border-b border-gray-200/50 shadow-sm">
+    <header className="sticky top-0 z-30 w-full backdrop-blur-md bg-white/95 border-b border-gray-200/50 shadow-sm">
       <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         <div className="flex h-14 sm:h-16 items-center justify-between">
           {/* Left Section - Logo & Mobile Menu */}
@@ -61,7 +62,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             </Link>
           </div>
 
-          {/* Right Section - Trial Badge, Upgrade & User Menu */}
+          {/* Right Section - Trial Badge, Notifications, Upgrade & User Menu */}
           <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
             {/* Trial Badge */}
             <HeaderTrialBadge 
@@ -70,6 +71,9 @@ export function Header({ onMenuClick }: HeaderProps) {
               isLoading={isLoading}
               onUpgrade={() => window.location.href = `/pricing?ref=header_upgrade&id=${user?.id}&current_plan=${user?.plan?.status}`}
             />
+
+            {/* Notifications */}
+            {!isLoading && <NotificationDropdown />}
 
             {/* Upgrade Button */}
             {user?.plan?.status !== "ACTIVE" && !isLoading && (

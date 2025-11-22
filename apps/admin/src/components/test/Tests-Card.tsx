@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { Button } from '../ui/button'
+import { Button } from '@repo/common-ui'
 import { Clock, HelpCircle } from 'lucide-react'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '../ui/card'
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
-import { Separator } from '../ui/separator';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@repo/common-ui'
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@repo/common-ui"
+import { Separator } from '@repo/common-ui';
 import Link from 'next/link';
 
 interface TestsCardProps {

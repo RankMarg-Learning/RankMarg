@@ -26,6 +26,7 @@ import bulkUploadRoutes from "./bulkUpload.routes";
 import userActivityRoutes from "./userActivity.routes";
 import settingRoutes from "./setting.routes";
 import aiQuestionRoutes from "./aiQuestion.routes";
+import notificationRoutes from "./notification.routes";
 // Add new routes here
 export const routes = {
   auth: authRoutes,
@@ -56,4 +57,5 @@ export const routes = {
   userActivity: userActivityRoutes,
   setting: settingRoutes,
   aiQuestion: aiQuestionRoutes,
+  notification: notificationRoutes,
 };

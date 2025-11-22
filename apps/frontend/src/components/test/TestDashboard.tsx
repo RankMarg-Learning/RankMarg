@@ -9,8 +9,8 @@ import RecentTestResults from './RecentTestResults'
 import { useTestDashboardData } from '@/hooks/useTestDashboardData'
 import { useRouter } from 'next/navigation'
 import TestDashboardSkeleton from '../skeleton/test.dashboard.skeleton'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@repo/common-ui'
+import { Badge } from '@repo/common-ui'
 import BannerUpgrade from '../upgrade/bannerUpgrade'
 import ErrorCTA from '../error'
 
@@ -207,7 +207,7 @@ const TestDashboard = () => {
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="h-1 w-8 bg-blue-500 rounded-full"></div>
-            <h2 className="text-lg font-semibold text-gray-900">Available Tests (Limit: {available?.data?.userTestCount}/{available?.data?.monthlyLimit})</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Available Tests {(available?.data?.isLimitExceeded) ? `(Limit: ${available?.data?.userTestCount}/${available?.data?.monthlyLimit})` : ''}</h2>
           </div>
 
           {available?.data && available.data.isLimitExceeded && (

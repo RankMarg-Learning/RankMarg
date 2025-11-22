@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { useState, useCallback, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Button } from '@repo/common-ui'
 import { toast } from '@/hooks/use-toast'
 import { useTopics } from '@/hooks/useTopics'
 import { useSubtopics } from '@/hooks/useSubtopics'
@@ -37,9 +37,12 @@ interface ProcessingJob {
 
 const BulkUpload = () => {
   const router = useRouter()
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('')
-  const [selectedTopicId, setSelectedTopicId] = useState<string>('auto')
-  const [selectedGptModel, setSelectedGptModel] = useState<string>('gpt-4o-mini')
+  const searchParams = useSearchParams()
+  
+  // Initialize from URL params
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(searchParams.get('subjectId') || '')
+  const [selectedTopicId, setSelectedTopicId] = useState<string>(searchParams.get('topicId') || 'auto')
+  const [selectedGptModel, setSelectedGptModel] = useState<string>('gpt-5-mini')
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [processingJob, setProcessingJob] = useState<ProcessingJob | null>(null)
@@ -48,8 +51,22 @@ const BulkUpload = () => {
   const { topics: rawTopics = [], isLoading: topicsLoading } = useTopics(selectedSubjectId)
   useSubtopics(selectedTopicId === 'auto' ? undefined : selectedTopicId)
 
-  const subjects = Array.isArray(rawSubjects) ? rawSubjects : Array.isArray(rawSubjects) ? rawSubjects : []
-  const topics = Array.isArray(rawTopics) ? rawTopics : Array.isArray(rawTopics) ? rawTopics : []
+  const subjects = Array.isArray(rawSubjects) ? rawSubjects : []
+  const topics = Array.isArray(rawTopics) ? rawTopics : []
+  
+  // Update URL when subjectId or topicId changes
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (selectedSubjectId) {
+      params.set('subjectId', selectedSubjectId)
+    }
+    if (selectedTopicId && selectedTopicId !== 'auto') {
+      params.set('topicId', selectedTopicId)
+    }
+    
+    const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname
+    router.replace(newUrl, { scroll: false })
+  }, [selectedSubjectId, selectedTopicId, router])
 
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -287,4 +304,10 @@ const BulkUpload = () => {
   )
 }
 
-export default BulkUpload
+export default function BulkUploadPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto p-2">Loading...</div>}>
+      <BulkUpload />
+    </Suspense>
+  )
+}

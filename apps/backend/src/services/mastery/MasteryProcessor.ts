@@ -8,6 +8,7 @@ import {
   MasteryCalculationContext,
   HierarchicalMasteryData,
 } from "../../types/mastery.api.types";
+import { NotificationService } from "../notification.service";
 
 export interface MasteryResult {
   masteryLevel: number;
@@ -125,6 +126,39 @@ export class MasteryProcessor {
           Array.from(allSubjectIds),
           context
         );
+
+        // Send notification for mastery update
+        try {
+          // Get the highest mastery subject to notify about
+          const subjectMasteries = await prisma.subjectMastery.findMany({
+            where: { 
+              userId,
+              subjectId: { in: Array.from(allSubjectIds) }
+            },
+            include: {
+              subject: { select: { name: true } }
+            },
+            orderBy: { masteryLevel: 'desc' },
+            take: 1,
+          });
+
+          if (subjectMasteries.length > 0) {
+            const topSubject = subjectMasteries[0];
+            const masteryLevel = topSubject.masteryLevel.toFixed(1);
+            const template = NotificationService.templates.masteryUpdated(
+              topSubject.subject.name,
+              masteryLevel
+            );
+            await NotificationService.createAndDeliverToUser(
+              userId,
+              template.type,
+              template.title,
+              template.message
+            );
+          }
+        } catch (notificationError) {
+          console.error("Error sending mastery notification:", notificationError);
+        }
       }
 
       await this.updateMasteryHistory(userId, context);

@@ -1,17 +1,17 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@repo/common-ui"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/common-ui"
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/common-ui"
 import Link from 'next/link'
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "@/hooks/use-toast"
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { AlertCircle, Edit, MoreHorizontal, Plus, Trash } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@repo/common-ui"
+import { AlertCircle, Copy, Edit, MoreHorizontal, Plus, Trash } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@repo/common-ui"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@repo/common-ui"
 import { deleteTest, getTests } from "@/services/test.service"
 
 
@@ -26,6 +26,37 @@ export default function AdminTestPage() {
     queryFn: async () => getTests(),
   });
   
+  const getTestLink = (testId: string) => `${process.env.NEXT_PUBLIC_WEBSITE_URL!}/test/${testId}`
+
+  const handleCopyTestLink = async (testId: string) => {
+    const link = getTestLink(testId)
+    if (typeof navigator === "undefined" || !navigator?.clipboard) {
+      toast({
+        title: "Clipboard unavailable",
+        description: "Please copy the link manually.",
+        duration: 3000,
+        className: "bg-red-500 text-white",
+      })
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(link)
+      toast({
+        title: "Test link copied",
+        description: link,
+        duration: 3000,
+        className: "bg-gray-100 text-gray-800",
+      })
+    } catch (error) {
+      toast({
+        title: "Failed to copy test link",
+        variant: "default",
+        duration: 3000,
+        className: "bg-red-500 text-white",
+      })
+    }
+  }
+
   const handleDelete = async (testId: string) => {
     if (testId) {
 
@@ -123,7 +154,20 @@ export default function AdminTestPage() {
                     <TableRow key={test.testId}>
                       <TableCell className="font-medium">{test.testId.substring(0, 6)}</TableCell>
                       <TableCell className="truncate">{test.title}</TableCell>
-                      <TableCell className="truncate w-48">{`${process.env.NEXT_PUBLIC_WEBSITE_URL!}/test/${test.testId}`}</TableCell>
+                      <TableCell className="w-48">
+                        <div className="flex items-center gap-2">
+                          <span className="truncate text-sm">{getTestLink(test.testId)}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => handleCopyTestLink(test.testId)}
+                            aria-label="Copy test link"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
                       <TableCell className="truncate">{test.examType.replace(/_/g, ' ').toLocaleLowerCase()
                         .replace(/\b\w/g, (char) => char.toUpperCase())}</TableCell>
                       <TableCell>{test.examCode}</TableCell>

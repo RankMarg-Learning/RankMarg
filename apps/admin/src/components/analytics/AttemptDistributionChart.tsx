@@ -5,7 +5,7 @@ import {
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
-} from "@/components/ui/chart"
+} from "@repo/common-ui"
 
 const chartData = [
     { name: "Correct", value: 45, fill: "var(--color-correct)" },

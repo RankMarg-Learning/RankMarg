@@ -10,9 +10,9 @@ import { SubscriptionStatus } from "@repo/db/enums";
 import { NextFunction, Response } from "express";
 
 const MASTERY_THRESHOLDS = {
-  EXCELLENT: 80,
-  GOOD: 70,
-  SATISFACTORY: 60,
+  EXCELLENT: 70,
+  GOOD: 60,
+  SATISFACTORY: 40,
 } as const;
 
 interface SubjectMasteryResponse {

@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@repo/common-ui";
 
 const TypeWiseTestsSkeleton = () => (
   <div className="min-h-screen mx-auto p-6 max-w-7xl">

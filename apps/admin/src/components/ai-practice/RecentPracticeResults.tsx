@@ -1,6 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent } from "@repo/common-ui";
+import { Badge } from "@repo/common-ui";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/common-ui";
 import { PracticeSession } from "@/types/dashboard.types";
 import { SubjectIcons, SubjectTextColor } from "@/constant/SubjectColorCode";
 import { DateFormator } from "@/utils/dateFormator";

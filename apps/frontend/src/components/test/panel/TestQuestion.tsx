@@ -1,5 +1,11 @@
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+/**
+ * @deprecated This component is deprecated and replaced by TestQuestionUI.tsx
+ * Please use TestQuestionUI instead for better code organization and maintainability.
+ * This file is kept for reference only.
+ */
+
+import { Button } from "@repo/common-ui";
+import { Badge } from "@repo/common-ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Options from "@/components/Options";
 import { useTestContext } from "@/context/TestContext";
@@ -8,6 +14,9 @@ import TimeSpendOnQuestion from "@/utils/test/TimeSpendOnQuestion";
 import { QuestionStatus } from "@/utils";
 import { QuestionType } from "@repo/db/enums";
 
+/**
+ * @deprecated Use TestQuestionUI from './TestQuestionUI' instead
+ */
 export function TestQuestion() {
   // State for the new Options component interface
   const [selectedValues, setSelectedValues] = useState<number[]>([]);

@@ -8,7 +8,7 @@ import StepNavigation from './components/StepNavigation';
 import BasicInfoForm from './forms/BasicInfoForm';
 import SectionsForm from './forms/SectionsForm';
 import ReviewForm from './forms/ReviewForm';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@repo/common-ui';
 import { AlertTriangle } from 'lucide-react';
 
 interface TestBuilderProps {

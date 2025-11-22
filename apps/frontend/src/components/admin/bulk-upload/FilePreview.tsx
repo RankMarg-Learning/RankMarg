@@ -1,7 +1,7 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/common-ui'
+import { Button } from '@repo/common-ui'
+import { Badge } from '@repo/common-ui'
 import { Trash2, Upload, CheckCircle, XCircle, Clock, Eye } from 'lucide-react'
 
 interface UploadedFile {

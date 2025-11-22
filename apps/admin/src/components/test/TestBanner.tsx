@@ -7,8 +7,8 @@ import { useState } from 'react'
 import { Clock, HelpCircle } from 'lucide-react'
 import Link from 'next/link'
 import Countdown from './TestCounter'
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
-import { Skeleton } from '../ui/skeleton'
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui'
+import { Skeleton } from '@repo/common-ui'
 
 interface BannerProps {
     testId: string

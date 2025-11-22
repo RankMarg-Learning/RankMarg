@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Badge } from '@repo/common-ui';
+import { Separator } from '@repo/common-ui';
 import { BookOpenIcon, Clock, Target } from 'lucide-react';
 import { useTestBuilder } from '../../../../context/TestBuilderContext';
 import { 
@@ -11,9 +11,8 @@ import {
   FormGrid 
 } from '../components/FormField';
 import { DateTimePicker } from '@/utils/test/date-time-picker';
-import { Label } from '@/components/ui/label';
-import { Visibility } from '@/types/typeAdmin';
-import { TestStatus } from '@repo/db/enums';
+import { Label } from '@repo/common-ui';
+import { Visibility, TestStatus } from '@repo/db/enums';
 import { TextFormator } from '@/utils/textFormator';
 
 const ReviewForm: React.FC = () => {
@@ -151,16 +150,16 @@ const ReviewForm: React.FC = () => {
           <div className="space-y-2">
             <Label>Start Date & Time</Label>
             <DateTimePicker
-              date={state.startTime}
-              setDate={(date) => handleFieldChange('startTime', date)}
+              date={state.startTime ?? undefined}
+              setDate={(date) => handleFieldChange('startTime', date ?? null)}
             />
           </div>
 
           <div className="space-y-2">
             <Label>End Date & Time</Label>
             <DateTimePicker
-              date={state.endTime}
-              setDate={(date) => handleFieldChange('endTime', date)}
+              date={state.endTime ?? undefined}
+              setDate={(date) => handleFieldChange('endTime', date ?? null)}
             />
             {!state.endTime && (
               <p className="text-gray-500 text-sm">∞ (No end time set)</p>

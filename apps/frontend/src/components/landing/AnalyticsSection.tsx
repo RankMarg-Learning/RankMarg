@@ -1,9 +1,9 @@
 "use client"
 import React from 'react';
-import { Card } from '../ui/card';
+import { Card } from '@repo/common-ui';
 import { ClipboardList, Clock, TrendingUp, BarChart2, Activity, Target, Flame } from 'lucide-react';
 import { SubjectBackgroundColor, SubjectIcons } from '@/constant/SubjectColorCode';
-import { Progress } from '../ui/progress';
+import { Progress } from '@repo/common-ui';
 
 
 const subjectData = [

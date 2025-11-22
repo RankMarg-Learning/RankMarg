@@ -1,10 +1,10 @@
 "use client"
 import { ArrowRight, Clock, History, RotateCcw, Star } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Card, CardContent } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { Progress } from '../ui/progress';
-import { Button } from '../ui/button';
+import { Card, CardContent } from '@repo/common-ui';
+import { Badge } from '@repo/common-ui';
+import { Progress } from '@repo/common-ui';
+import { Button } from '@repo/common-ui';
 import { SubjectBackgroundColor, SubjectCardColor, SubjectIcons, SubjectTextColor } from '@/constant/SubjectColorCode';
 import { PracticeSession } from '@/types/dashboard.types';
 import { useRouter } from 'next/navigation';

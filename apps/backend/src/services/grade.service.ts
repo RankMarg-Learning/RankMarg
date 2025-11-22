@@ -339,9 +339,9 @@ export class StudentGradeService {
       consistency: 0.2, // 20% - Consistency matters
       improvement: 0.15, // 15% - Growth mindset
       difficulty: 0.15, // 15% - Handling tough questions
-      speed: 0.1, // 10% - Time management
+      speed: 0.07, // 10% - Time management
       hints: 0.1, // 10% - Independence
-      streak: 0.05, // 5% - Motivation
+      streak: 0.07, // 5% - Motivation
     };
 
     let subjectWeightedDifficultyScore = difficultyMetrics.difficultyScore;
@@ -380,7 +380,7 @@ export class StudentGradeService {
   }
 
   private determineGradeFromScore(score: number): GradeEnum {
-    if (score >= 0.85) return GradeEnum.A_PLUS;
+    if (score >= 0.80) return GradeEnum.A_PLUS;
     if (score >= 0.7) return GradeEnum.A;
     if (score >= 0.55) return GradeEnum.B;
     if (score >= 0.35) return GradeEnum.C;

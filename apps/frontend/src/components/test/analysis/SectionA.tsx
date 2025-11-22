@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
+import { Card, CardContent, CardHeader } from '@repo/common-ui'
+import { Progress } from '@repo/common-ui'
 import { SubjectBackgroundColor, SubjectCardColor, SubjectTextColor } from '@/constant/SubjectColorCode'
 import { AnalysisSectionA } from '@/types/typeTest'
 import { BarChart3, CheckCircle2, Clock } from 'lucide-react'

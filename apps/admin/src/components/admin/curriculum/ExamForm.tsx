@@ -1,9 +1,9 @@
 // no local state
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@repo/common-ui";
+import { Input } from "@repo/common-ui";
+import { Label } from "@repo/common-ui";
+import { Textarea } from "@repo/common-ui";
+import { Switch } from "@repo/common-ui";
 import { DateTimePicker } from "@/utils/test/date-time-picker";
 import { Exam, Subject } from "@/types/typeAdmin";
 import { Controller, useForm } from "react-hook-form";

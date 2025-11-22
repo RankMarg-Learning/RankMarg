@@ -1,9 +1,9 @@
 "use client";
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@repo/common-ui";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@repo/common-ui";
 import {  ChevronLeft } from 'lucide-react';
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@repo/common-ui";
 import { useTestContext } from "@/context/TestContext";
 import { QuestionStatus } from "@/utils";
 import { TestSummaryPopup } from "./TestSubmitPop";

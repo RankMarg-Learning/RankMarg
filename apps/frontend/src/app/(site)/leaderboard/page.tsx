@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Button } from '@repo/common-ui'
+import { Card } from '@repo/common-ui'
 import { Trophy } from 'lucide-react'
 import React from 'react'
 

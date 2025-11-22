@@ -1,5 +1,5 @@
 "use client";
-import QuestionUI from '@/components/QuestionUI';
+import BaseQuestionUI from '@/components/BaseQuestionUI';
 import { useQuery } from '@tanstack/react-query';
 import QuestionUISkeleton from '@/components/QuestionUISkeleton';
 import { attempDataProps } from '@/types';
@@ -53,7 +53,7 @@ const QuestionPage = ({ params }: { params: { slug: string } }) => {
         isLoading ? (
           <QuestionUISkeleton />
         ) : (
-          <QuestionUI question={question.data}
+          <BaseQuestionUI question={question.data}
             handleAttempt={handleAttempt}
             isSolutionShow={isSolutionShow}
           />

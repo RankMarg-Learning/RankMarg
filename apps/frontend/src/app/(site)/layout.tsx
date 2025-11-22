@@ -3,7 +3,7 @@
 import React, {  useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import Footer from "@/components/Footer";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@repo/common-ui";
 import { usePathname } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
@@ -27,7 +27,7 @@ const Layout = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-subtle-gray noselect">
+    <div className="min-h-screen flex flex-col bg-subtle-gray ">
       <Header onMenuClick={toggleMobileMenu} />
       <div className="flex flex-1 relative">
         {/* Mobile Overlay - only shown on mobile when menu is open */}

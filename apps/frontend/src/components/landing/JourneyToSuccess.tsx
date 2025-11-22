@@ -10,7 +10,7 @@ const JourneyToSuccess = () => {
           lineColor: 'bg-primary-700',
         },
         {
-          label: 'Daily Practice',
+          label: 'Coach Practice',
           icon: <Check className="text-white" size={20} />,
           bgColor: 'bg-primary-500',
           lineColor: 'bg-yellow-700',

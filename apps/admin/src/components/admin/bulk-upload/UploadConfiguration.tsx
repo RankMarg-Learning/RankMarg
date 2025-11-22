@@ -1,10 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { SearchableSelect } from '@/components/ui/searchable-select'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/common-ui'
+import { Button } from '@repo/common-ui'
+import { Input } from '@repo/common-ui'
+import { Label } from '@repo/common-ui'
+import { SearchableSelect } from '@repo/common-ui'
 import { Upload } from 'lucide-react'
-import { Textarea } from '@/components/ui/textarea'
+import { Textarea } from '@repo/common-ui'
 
 interface UploadConfigurationProps {
   selectedSubjectId: string

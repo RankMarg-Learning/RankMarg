@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@repo/common-ui";
 
 export default function CurriculumSkeleton() {
 	return (
