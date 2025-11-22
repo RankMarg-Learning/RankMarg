@@ -13,6 +13,7 @@ import {
 } from "@repo/db/enums";
 import { NextFunction, Response } from "express";
 import z from "zod";
+import { NotificationService } from "@/services/notification.service";
 
 export interface TestSection {
   id?: string;
@@ -479,7 +480,13 @@ export class TestController {
         (total, section) => total + section.testQuestion.length,
         0
       );
-      await prisma.test.update({
+      // Check if test is being made live
+      const existingTest = await prisma.test.findUnique({
+        where: { testId },
+        select: { status: true, visibility: true },
+      });
+
+      const updatedTest = await prisma.test.update({
         where: { testId },
         data: {
           title,
@@ -514,6 +521,39 @@ export class TestController {
           },
         },
       });
+
+      // Send notification if test is now live (PUBLIC and ACTIVE)
+      const isNowLive = 
+        visibility === "PUBLIC" && 
+        status === "ACTIVE" &&
+        (existingTest?.visibility !== "PUBLIC" || existingTest?.status !== "ACTIVE");
+
+      if (isNowLive) {
+        try {
+          // Get all users (or users based on examCode if needed)
+          const users = await prisma.user.findMany({
+            where: {
+              onboardingCompleted: true,
+              ...(examCode ? { examRegistrations: { some: { examCode } } } : {}),
+            },
+            select: { id: true },
+            take: 1000, // Limit to prevent overload
+          });
+
+          if (users.length > 0) {
+            const template = NotificationService.templates.testLive(title);
+            await NotificationService.createAndDeliverToUsers(
+              users.map(u => u.id),
+              template.type,
+              template.title,
+              template.message
+            );
+          }
+        } catch (notificationError) {
+          console.error("Error sending test live notification:", notificationError);
+        }
+      }
+
       ResponseUtil.success(res, null, "Ok", 200);
     } catch (error) {
       next(error);

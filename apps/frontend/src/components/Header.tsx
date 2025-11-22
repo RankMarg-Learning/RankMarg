@@ -14,6 +14,7 @@ import api from '@/utils/api';
 import { Skeleton } from '@repo/common-ui';
 import { useRouter } from 'next/navigation';
 import HeaderTrialBadge from './upgrade/trial';
+import { NotificationDropdown } from './notifications/NotificationDropdown';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -61,7 +62,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             </Link>
           </div>
 
-          {/* Right Section - Trial Badge, Upgrade & User Menu */}
+          {/* Right Section - Trial Badge, Notifications, Upgrade & User Menu */}
           <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
             {/* Trial Badge */}
             <HeaderTrialBadge 
@@ -70,6 +71,9 @@ export function Header({ onMenuClick }: HeaderProps) {
               isLoading={isLoading}
               onUpgrade={() => window.location.href = `/pricing?ref=header_upgrade&id=${user?.id}&current_plan=${user?.plan?.status}`}
             />
+
+            {/* Notifications */}
+            {!isLoading && <NotificationDropdown />}
 
             {/* Upgrade Button */}
             {user?.plan?.status !== "ACTIVE" && !isLoading && (

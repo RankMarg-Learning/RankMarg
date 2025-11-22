@@ -96,6 +96,7 @@ app.use(`${ServerConfig.api.prefix}/bulk-upload`, routes.bulkUpload);
 app.use(`${ServerConfig.api.prefix}/user-activity`, routes.userActivity);
 app.use(`${ServerConfig.api.prefix}/settings`, routes.setting);
 app.use(`${ServerConfig.api.prefix}/ai-questions`, routes.aiQuestion);
+app.use(`${ServerConfig.api.prefix}/notifications`, routes.notification);
 
 // Authentication routes
 app.use(`${ServerConfig.api.prefix}/auth`, routes.auth);

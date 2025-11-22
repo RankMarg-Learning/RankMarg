@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { QuestionSelector } from "./QuestionSelector";
 import { SessionConfig } from "@/types/session.api.types";
+import { NotificationService } from "@/services/notification.service";
 
 type QuestionSource =
   | "currentTopic"
@@ -174,7 +175,7 @@ export class PracticeSessionGenerator {
   private async createPracticeSession(
     questions: { id: string }[],
     subjectId: string
-  ): Promise<any> {
+  ) {
     try {
       const session = await this.prisma.practiceSession.create({
         data: {
@@ -190,6 +191,29 @@ export class PracticeSessionGenerator {
           },
         },
       });
+
+      // Send notification for new practice session
+      try {
+        // Fetch subject name separately
+        const subject = await this.prisma.subject.findUnique({
+          where: { id: subjectId },
+          select: { name: true },
+        });
+
+        const template = NotificationService.templates.practiceSessionCreated(
+          subject?.name || "Practice Session"
+        );
+        await NotificationService.createAndDeliverToUser(
+          this.config.userId,
+          template.type,
+          template.title,
+          template.message
+        );
+      } catch (notificationError) {
+        // Log error but don't fail session creation
+        console.error("Error sending notification:", notificationError);
+      }
+
       return session;
     } catch (error) {
       console.error("Error creating practice session:", error);

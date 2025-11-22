@@ -3,6 +3,7 @@ import { AuthUtil } from "@/utils/auth.util";
 import { ResponseUtil } from "@/utils/response.util";
 import prisma from "@repo/db";
 import { NextFunction, Response } from "express";
+import { NotificationService } from "@/services/notification.service";
 
 export class OnboardingController {
   createOnboarding = async (
@@ -21,7 +22,7 @@ export class OnboardingController {
       } = req.body;
 
       const userId = req.user.id;
-      await prisma.user.update({
+      const user = await prisma.user.update({
         where: { id: userId },
         data: {
           phone: phone || null,
@@ -35,6 +36,7 @@ export class OnboardingController {
             },
           },
         },
+        select: { name: true },
       });
       if (
         selectedTopics &&
@@ -83,6 +85,19 @@ export class OnboardingController {
         isNewUser: false,
         examCode: examCode,
       }));
+
+      // Send welcome notification
+      try {
+        const template = NotificationService.templates.welcomeUser(user.name);
+        await NotificationService.createAndDeliverToUser(
+          userId,
+          template.type,
+          template.title,
+          template.message
+        );
+      } catch (notificationError) {
+        console.error("Error sending welcome notification:", notificationError);
+      }
 
       ResponseUtil.success(
         res,
