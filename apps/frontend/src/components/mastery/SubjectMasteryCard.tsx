@@ -124,7 +124,7 @@ const SubjectMasteryCard = ({ sbt }: { sbt: SubjectMasteryProps }) => {
           ))}
         </div>
 
-        <div className="mb-6 border-t pt-3 border-gray-200">
+        <div className="mb-6 border-t pt-3 border-gray-200 hidden">
           <h3 className="font-medium text-gray-800 flex items-center gap-1 mb-3">
             <Info className="h-4 w-4 text-blue-500" />
             <span>Smart Recommendations</span>

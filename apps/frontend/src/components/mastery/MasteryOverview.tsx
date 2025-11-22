@@ -70,7 +70,7 @@ const MasteryOverview = ({ overview }: { overview: MasteryOverviewProps }) => {
 
                     let label = "";
 
-                    if (mastery >= 80) {
+                    if (mastery >= 70) {
                       label = "Top 5% of students";
                     } else if (mastery >= 50) {
                       const topPercent = Math.ceil((100 - mastery) / 2);
