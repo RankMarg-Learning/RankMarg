@@ -20,5 +20,5 @@ export { default as ExamForm } from "./ExamForm";
 export { default as ExamSubjectForm } from "./ExamSubjectForm";
 
 // Types
-export type { FilterState, BreadcrumbItem, CurriculumStats, DeleteItem } from "./types";
+export type { FilterState, BreadcrumbItem, CurriculumStatsData, DeleteItem } from "./types";
 

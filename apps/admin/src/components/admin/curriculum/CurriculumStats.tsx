@@ -1,9 +1,9 @@
 import { Card, CardContent } from "@repo/common-ui";
 import { BookText, BookOpen, Zap, Users } from "lucide-react";
-import { CurriculumStats as StatsType } from "./types";
+import { CurriculumStatsData } from "./types";
 
 interface CurriculumStatsProps {
-  stats: StatsType;
+  stats: CurriculumStatsData;
   isLoadingSubjects: boolean;
   isLoadingTopics: boolean;
   isLoadingExams: boolean;

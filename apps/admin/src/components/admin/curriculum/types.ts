@@ -13,7 +13,7 @@ export interface BreadcrumbItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-export interface CurriculumStats {
+export interface CurriculumStatsData {
   totalSubjects: number;
   totalTopics: number;
   totalSubtopics: number;
