@@ -161,16 +161,22 @@ export function TestQuestion() {
     setNumericalValue(null);
   }, [currentQuestion, setQuestionsData]);
 
-  // Handler: Save and next
+  // Handler: Save and next (or just Next when not answered)
   const onSaveAndNext = useCallback(() => {
+    // Always record timing & status, even if unanswered
     updateQuestionData(false);
-    
+
     if (!questionTypes.isLastQuestion) {
       setCurrentQuestion(currentQuestion + 1);
       setSelectedValues([]);
       setNumericalValue(null);
     }
   }, [currentQuestion, questionTypes.isLastQuestion, setCurrentQuestion, updateQuestionData]);
+
+  const hasAnswer = useMemo(
+    () => (questionTypes.isNumerical ? numericalValue !== null : selectedValues.length > 0),
+    [questionTypes.isNumerical, numericalValue, selectedValues.length]
+  );
 
   const marks = getMarks(currentQuestion);
 
@@ -240,9 +246,12 @@ export function TestQuestion() {
           <Button
             onClick={onSaveAndNext}
             className="flex-1 sm:flex-initial bg-yellow-400 hover:bg-yellow-500"
-            disabled={(questionTypes.isNumerical ? numericalValue === null : selectedValues.length === 0)}
           >
-            {`Save ${!questionTypes.isLastQuestion ? "and Next" : ""}`}
+            {hasAnswer
+              ? `Save ${!questionTypes.isLastQuestion ? "and Next" : ""}`
+              : !questionTypes.isLastQuestion
+                ? "Next"
+                : "Finish"}
           </Button>
         </div>
       </div>
