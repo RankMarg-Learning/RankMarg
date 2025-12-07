@@ -7,12 +7,12 @@ import Link from 'next/link'
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "@/hooks/use-toast"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@repo/common-ui"
-import { AlertCircle, Copy, Edit, MoreHorizontal, Plus, Trash } from "lucide-react"
+import { AlertCircle, Copy, Download, Edit, MoreHorizontal, Plus, Trash } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@repo/common-ui"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Badge } from "@repo/common-ui"
-import { deleteTest, getTests } from "@/services/test.service"
+import { deleteTest, downloadTestPDF, getTests } from "@/services/test.service"
 
 
 export default function AdminTestPage() {
@@ -80,6 +80,42 @@ export default function AdminTestPage() {
         })
         
       }
+    }
+  }
+
+  const handleDownloadPDF = async (testId: string) => {
+    try {
+      toast({
+        title: "Generating PDF...",
+        description: "Please wait while we generate your question paper",
+        duration: 2000,
+        className: "bg-gray-100 text-gray-800",
+      });
+      
+      const response = await downloadTestPDF(testId);
+      
+      if (response.success) {
+        toast({
+          title: "PDF Downloaded Successfully",
+          description: "Your question paper has been downloaded",
+          duration: 3000,
+          className: "bg-gray-100 text-gray-800",
+        });
+      } else {
+        toast({
+          title: "Failed to Download PDF",
+          description: response.message || "An error occurred",
+          duration: 3000,
+          className: "bg-red-500 text-white",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download PDF. Please try again.",
+        duration: 3000,
+        className: "bg-red-500 text-white",
+      });
     }
   }
 
@@ -193,6 +229,12 @@ export default function AdminTestPage() {
                               onClick={() => router.push(`/admin/tests/${test.testId}/edit`)}
                             >
                               <Edit className="h-4 w-4" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="flex items-center gap-2"
+                              onClick={() => handleDownloadPDF(test.testId)}
+                            >
+                              <Download className="h-4 w-4" /> Download PDF
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="flex items-center gap-2 text-red-600"

@@ -1775,4 +1775,97 @@ export class TestController {
       'Focus on time management',
     ];
   };
+
+  //[GET] /api/test/:testId/generate-pdf
+  generateTestPDF = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const { testId } = req.params;
+    try {
+      // Fetch test with all questions and options
+      const test = await prisma.test.findUnique({
+        where: {
+          testId: testId,
+        },
+        include: {
+          testSection: {
+            include: {
+              testQuestion: {
+                include: {
+                  question: {
+                    include: {
+                      options: {
+                        orderBy: {
+                          id: "asc",
+                        },
+                      },
+                      subject: {
+                        select: {
+                          name: true,
+                          shortName: true,
+                        },
+                      },
+                      topic: {
+                        select: {
+                          name: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!test) {
+        ResponseUtil.error(res, "Test not found", 404);
+        return;
+      }
+
+      // Import PDF service
+      const { PDFService } = await import("@/services/pdf.service");
+      const pdfService = new PDFService();
+
+      // Generate PDF
+      const pdfBuffer = await pdfService.generatePDF({
+        testId: test.testId,
+        title: test.title,
+        description: test.description || undefined,
+        examCode: test.examCode || undefined,
+        testSection: test.testSection.map((section) => ({
+          name: section.name,
+          testQuestion: section.testQuestion.map((tq) => ({
+            question: {
+              id: tq.question.id,
+              title: tq.question.title,
+              content: tq.question.content,
+              options: tq.question.options.map((opt) => ({
+                id: opt.id,
+                content: opt.content,
+                isCorrect: opt.isCorrect,
+              })),
+              subject: tq.question.subject,
+              topic: tq.question.topic,
+            },
+          })),
+        })),
+      });
+
+      // Set response headers for PDF download
+      const fileName = `${test.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${testId.substring(0, 8)}.pdf`;
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+      res.setHeader("Content-Length", pdfBuffer.length.toString());
+
+      // Send PDF
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      next(error);
+    }
+  };
 }
