@@ -1,3 +1,6 @@
+import Handlebars from "handlebars";
+import fs from "fs";
+import path from "path";
 import * as puppeteer from "puppeteer-core";
 import { Readable } from "stream";
 
@@ -46,158 +49,34 @@ export class PDFService {
         allQuestions.push(tq.question);
       });
     });
-
-    // Split questions: left column gets all questions first, then right column
-    // This ensures left column fills completely before right column starts
-    const leftColumnQuestions = allQuestions;
-    const rightColumnQuestions: Question[] = []; // Right column will be empty initially
-
-    // Get subject name from first question (if available)
-    const firstSubject = allQuestions.length > 0 && allQuestions[0]?.subject?.name 
-      ? allQuestions[0].subject.name 
-      : "Subject";
     
-    // Get exam type from examCode
-    const examType = testData.examCode || "EXAM";
-    const testCode = testData.testId.substring(0, 8).toUpperCase();
 
-    const leftColumnHTML = leftColumnQuestions
-      .map((question, index) => {
-        const questionNumber = index + 1;
-        const optionsHTML = question.options
-          .map((option, optIndex) => {
-            const optionNumber = optIndex + 1;
-            return `<div>(${optionNumber}) <span class="ml-2">${this.escapeHtml(option.content)}</span></div>`;
-          })
-          .join("\n                  ");
-
-        return `
-            <div class="question-item flex gap-3 mb-6 break-inside-avoid">
-              <span class="font-semibold text-sm">${questionNumber}.</span>
-              <div class="flex-1">
-                <p class="text-sm mb-3 leading-relaxed">
-                  ${this.escapeHtml(question.content)}
-                </p>
-                <div class="space-y-1.5 text-sm">
-                  ${optionsHTML}
-                </div>
-              </div>
-            </div>`;
-      })
-      .join("\n            ");
-
-    const rightColumnHTML = rightColumnQuestions
-      .map((question, index) => {
-        const questionNumber = leftColumnQuestions.length + index + 1;
-        const optionsHTML = question.options
-          .map((option, optIndex) => {
-            const optionNumber = optIndex + 1;
-            return `<div>(${optionNumber}) <span class="ml-2">${this.escapeHtml(option.content)}</span></div>`;
-          })
-          .join("\n                  ");
-
-        return `
-            <div class="question-item flex gap-3 mb-6 break-inside-avoid">
-              <span class="font-semibold text-sm">${questionNumber}.</span>
-              <div class="flex-1">
-                <p class="text-sm mb-3 leading-relaxed">
-                  ${this.escapeHtml(question.content)}
-                </p>
-                <div class="space-y-1.5 text-sm">
-                  ${optionsHTML}
-                </div>
-              </div>
-            </div>`;
-      })
-      .join("\n            ");
-
-    const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${testData.title}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @media print {
-      body { margin: 0; }
-      .no-print { display: none; }
-      .page-break { page-break-after: always; }
-      .column-break { break-after: column; }
+    const paperData = {
+      testId: "TEST-001",
+      title: "SAMPLE PAPER-01",
+      description: "Mental Ability Test",
+      examCode: "MAT",
+      testCategory: "MENTAL ABILITY TEST",
+      testDate: "10-Dec-2025",
+      duration: "90 Minutes",
+      customFooter: "Rankmarg – Personalized Practice & Test Analytics",
+      testSection: testData.testSection
     }
-    body {
-      font-family: 'Arial', sans-serif;
-    }
-    .question-item {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    .left-column {
-      column-fill: auto;
-    }
-    .right-column {
-      column-fill: auto;
-    }
-  </style>
-</head>
-<body>
-  <div class="min-h-screen bg-gray-50 p-8">
-    <div class="max-w-5xl mx-auto bg-white shadow-lg">
-      <!-- Header Section -->
-      <div class="bg-white p-6 border-b-2 border-gray-200">
-        <div class="flex justify-between items-start mb-4">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center">
-              <span class="text-2xl font-bold">A</span>
-            </div>
-            <div>
-              <h1 class="text-3xl font-bold">Aakash</h1>
-              <p class="text-xs text-gray-600">Medical|IIT-JEE|Foundations</p>
-              <p class="text-xs text-gray-500 italic">The Most Trusted Brand</p>
-            </div>
-          </div>
-          <div class="border-2 border-black px-4 py-2 text-center">
-            <p class="text-sm font-bold">${testCode}</p>
-            <p class="text-xs font-semibold">${examType}</p>
-            <p class="text-xs font-semibold">TEST</p>
-          </div>
-        </div>
-        
-        <div class="text-center">
-          <h2 class="text-2xl font-bold mb-1">${this.escapeHtml(testData.title)}</h2>
-          <p class="text-sm text-gray-700">${testData.description || "Question Paper"}</p>
-        </div>
-      </div>
 
-      <!-- Chapter/Subject Title -->
-      ${testData.testSection.length > 0 ? `
-      <div class="bg-gray-300 py-2 px-6">
-        <p class="text-center font-semibold text-gray-800">${testData.testSection.map(s => s.name).join(" | ")}</p>
-      </div>
-      ` : ""}
+    Handlebars.registerHelper("inc", function(value) {
+      return parseInt(value) + 1;
+    });
+    Handlebars.registerHelper("optLabel", function(i) {
+      return String.fromCharCode(65 + i);
+    });
+    const templatePath = path.join(__dirname, '../../../../packages/pdf-templates/question-paper/sample-2.hbs');
 
-      <!-- Two Column Layout with proper page breaks -->
-      <div class="grid grid-cols-2 gap-0 divide-x-2 divide-gray-200" style="height: calc(100vh - 200px);">
-        <!-- Left Column - fills first, then breaks to next page -->
-        <div class="left-column p-6" style="overflow: hidden;">
-          ${leftColumnHTML}
-        </div>
+    const templateSource = fs.readFileSync(templatePath, "utf8");
+    const template = Handlebars.compile(templateSource);
 
-        <!-- Right Column - starts after left column is complete -->
-        <div class="right-column p-6" style="overflow: hidden;">
-          ${rightColumnHTML || '<div class="text-gray-400 text-sm text-center mt-4">No questions in right column</div>'}
-        </div>
-      </div>
+    const html = template(paperData);
 
-      <!-- Footer Page Number -->
-      <div class="bg-gray-300 py-2 text-center border-t-2 border-gray-200">
-        <span class="font-bold text-sm">(1)</span>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`;
+
 
     return html;
   }
@@ -251,7 +130,7 @@ export class PDFService {
     let browser;
     try {
       const executablePath = this.getExecutablePath();
-      
+
       // Launch browser with puppeteer-core
       const launchOptions: Parameters<typeof puppeteer.launch>[0] = {
         headless: true,
@@ -281,17 +160,29 @@ export class PDFService {
         waitUntil: "networkidle0",
       });
 
-      // Generate PDF
       const pdf = await page.pdf({
+        path: "paper.pdf",
         format: "A4",
         printBackground: true,
+        displayHeaderFooter: true,
         margin: {
-          top: "0.5cm",
-          right: "0.5cm",
-          bottom: "0.5cm",
-          left: "0.5cm",
+          top: "40px",
+          bottom: "40px", // must be big enough to show footer
+          left: "10mm",
+          right: "10mm",
         },
+        headerTemplate: `
+          <div style="font-size:8px; width:100%; text-align:center;">
+            <!-- keep empty or put exam name / code if you want -->
+          </div>
+        `,
+        footerTemplate: `
+          <div style="font-size:8px; width:100%; text-align:center; margin:0 auto;">
+            Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+          </div>
+        `,
       });
+      
 
       return Buffer.from(pdf);
     } catch (error) {
