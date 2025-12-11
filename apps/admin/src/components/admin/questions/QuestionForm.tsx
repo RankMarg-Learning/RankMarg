@@ -14,24 +14,16 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@repo/common-ui";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@repo/common-ui";
-import { PlusCircle, Trash2, Save, Upload, Loader2, RefreshCw, Eye } from "lucide-react";
+import { Save, RefreshCw, Eye, Upload, Loader2 } from "lucide-react";
 import { Switch } from "@repo/common-ui";
 import { Label } from "@repo/common-ui";
 import { QCategory, Question, QuestionFormat } from "@/types/typeAdmin";
-import { QuestionType } from "@repo/db/enums";
+import { QuestionType, Role } from "@repo/db/enums";
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import { useSubtopics } from "@/hooks/useSubtopics";
 import { z } from "zod";
@@ -41,7 +33,11 @@ import { generateSlug } from "@/lib/generateSlug";
 import { TextFormator } from "@/utils/textFormator";
 import { CategoryMultiSelect } from "./CategoryMultiSelect";
 import { SearchableSelect } from "@repo/common-ui";
-import api from "@/utils/api";
+import { useUserData } from "@/context/ClientContextProvider";
+import { useImageUpload } from "@/hooks/useImageUpload";
+import { replaceLatexDelimiters as replaceLatex } from "@/utils/questionUtils";
+import { QuestionPreviewDialog } from "./QuestionPreviewDialog";
+import { QuestionOptionsSection } from "./QuestionOptionsSection";
 
 interface QuestionFormProps {
   initialQuestion?: Question;
@@ -76,7 +72,6 @@ export const questionSchema = z.object({
     z.number().optional()
   ),
   isPublished: z.boolean().default(true),
-
   options: z
     .array(
       z.object({
@@ -100,76 +95,17 @@ export const questionSchema = z.object({
 
 const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFormProps) => {
   const { toast } = useToast();
+  const { user } = useUserData();
   const isEditing = !!initialQuestion;
+  const isInstructor = user?.role === Role.INSTRUCTOR;
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const solutionTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [localContent, setLocalContent] = useState("");
   const [localSolution, setLocalSolution] = useState("");
   const [optionRefs, setOptionRefs] = useState<{ [key: number]: React.RefObject<HTMLTextAreaElement> }>({});
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isMac, setIsMac] = useState(false);
-
-  // Function to replace LaTeX delimiters
-  const replaceLatexDelimiters = () => {
-    const fields = ['content', 'hint', 'solution', 'commonMistake', 'strategy'] as const;
-
-    fields.forEach(fieldName => {
-      const currentValue = getValues(fieldName);
-      if (currentValue && typeof currentValue === 'string') {
-        let updatedValue = currentValue;
-
-        // Replace \[ and \] with $$
-        updatedValue = updatedValue.replace(/\\\[/g, '$$');
-        updatedValue = updatedValue.replace(/\\\]/g, '$$');
-        // Replace \( and \) with $
-        updatedValue = updatedValue.replace(/\\\(/g, '$');
-        updatedValue = updatedValue.replace(/\\\)/g, '$');
-
-
-        // Update the form value
-        setValue(fieldName, updatedValue);
-
-        // Update local state for content and solution
-        if (fieldName === 'content') {
-          setLocalContent(updatedValue);
-        } else if (fieldName === 'solution') {
-          setLocalSolution(updatedValue);
-        }
-      }
-    });
-
-    // Replace LaTeX delimiters in options
-    const currentOptions = getValues("options");
-    if (currentOptions && Array.isArray(currentOptions)) {
-      const updatedOptions = currentOptions.map(option => {
-        if (option.content && typeof option.content === 'string') {
-          let updatedContent = option.content;
-
-          // Replace \( and \) with $
-          updatedContent = updatedContent.replace(/\\\(/g, '$');
-          updatedContent = updatedContent.replace(/\\\)/g, '$');
-          // Replace \[ and \] with $$
-          updatedContent = updatedContent.replace(/\\\[/g, '$$');
-          updatedContent = updatedContent.replace(/\\\]/g, '$$');
-
-
-          return { ...option, content: updatedContent };
-        }
-        return option;
-      });
-
-      setValue("options", updatedOptions);
-    }
-
-    toast({
-      title: "LaTeX delimiters replaced successfully!",
-      variant: "default",
-      duration: 500,
-      className: "bg-green-500 text-white",
-    });
-  };
 
   const {
     register,
@@ -201,106 +137,35 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       commonMistake: "",
       questionTime: 1,
       isNumerical: undefined,
-      isPublished: true,
+      isPublished: false,
       options: [],
     },
   });
 
+  const { subtopics: allSubtopics, isLoading: isLoadingSubtopics } = useSubtopics();
 
-  // Create refs for options when they're added
-  useEffect(() => {
-    const options = watch("options") || [];
-    const newRefs: { [key: number]: React.RefObject<HTMLTextAreaElement> } = {};
-    options.forEach((_, index) => {
-      newRefs[index] = optionRefs[index] || React.createRef<HTMLTextAreaElement>();
-    });
-    setOptionRefs(newRefs);
-  }, [watch("options")]);
-
-  // Initialize local states when form resets
-  useEffect(() => {
-    if (initialQuestion?.content) {
-      setLocalContent(initialQuestion.content);
+  const insertImageAtCursor = (imageMarkdown: string, fieldName?: string) => {
+    let targetRef: React.RefObject<HTMLTextAreaElement> | undefined;
+    
+    if (fieldName === 'content') {
+      targetRef = contentTextareaRef;
+    } else if (fieldName === 'solution') {
+      targetRef = solutionTextareaRef;
+    } else if (fieldName?.startsWith('option-')) {
+      const optionIndex = parseInt(fieldName.split('-')[1]);
+      targetRef = optionRefs[optionIndex];
     }
-    if (initialQuestion?.solution) {
-      setLocalSolution(initialQuestion.solution);
-    }
-  }, [initialQuestion?.content, initialQuestion?.solution]);
 
-  useEffect(() => {
-    if (initialQuestion) {
-      reset(initialQuestion);
-    }
-  }, [initialQuestion, reset]);
-
-  useEffect(() => {
-    const title = watch("title");
-    if (title && !initialQuestion) {
-      const slug = generateSlug(title);
-      setValue("slug", slug, { shouldValidate: true });
-    }
-  }, [watch("title"), !initialQuestion]);
-
-  // Handle hierarchical relationship when subtopic is selected
-  const handleSubtopicChange = (subtopicId: string) => {
-    if (allSubtopics) {
-      const selectedSubtopic = allSubtopics.find(st => st.id === subtopicId);
-      if (selectedSubtopic && selectedSubtopic.topic && selectedSubtopic.topic.subject) {
-        setValue("topicId", selectedSubtopic.topic.id);
-        setValue("subjectId", selectedSubtopic.topic.subject.id);
-      }
-    }
-    setValue("subtopicId", subtopicId);
-  };
-
-  const onSubmit = (data: Partial<Question>) => {
-    if (!isEditing) {
-      data.createdAt = new Date().toISOString();
-    }
-    onSave(data);
-  };
-
-  const addOption = () => {
-    const options = getValues("options") || [];
-    if (options.length >= 4) {
-      toast({
-        title: "Maximum options reached!!",
-        variant: "default",
-        duration: 500,
-        className: "bg-red-500 text-white",
-      })
-      return;
-    }
-    setValue("options", [...options, { content: "", isCorrect: false }]);
-  };
-
-  const removeOption = (index: number) => {
-    const options = getValues("options") || [];
-    options.splice(index, 1);
-    setValue("options", options);
-  };
-
-  const updateOption = (index: number, field: "content" | "isCorrect", value: string | boolean) => {
-    const options = getValues("options") || [];
-    options[index] = { ...options[index], [field]: value };
-    setValue("options", options);
-  };
-
-  // Insert image markdown at cursor position for any field
-  const insertImageAtCursor = (imageMarkdown: string, targetRef?: React.RefObject<HTMLTextAreaElement>, fieldName?: string) => {
     const textarea = targetRef?.current;
     if (!textarea) return;
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const currentContent = textarea.value || "";
-
     const newContent = currentContent.substring(0, start) + imageMarkdown + currentContent.substring(end);
 
-    // Update the textarea value directly
     textarea.value = newContent;
 
-    // Update form state based on field name
     if (fieldName === 'content') {
       setLocalContent(newContent);
       setValue("content", newContent, {
@@ -331,18 +196,12 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
       }
     }
 
-    // Create and dispatch a proper input event
     const inputEvent = new Event('input', { bubbles: true, cancelable: true });
     textarea.dispatchEvent(inputEvent);
-
-    // Also dispatch a change event
     const changeEvent = new Event('change', { bubbles: true, cancelable: true });
     textarea.dispatchEvent(changeEvent);
 
-    // Set cursor position after the inserted image
     const newCursorPos = start + imageMarkdown.length;
-
-    // Use setTimeout to ensure the DOM is updated
     setTimeout(() => {
       if (textarea) {
         textarea.focus();
@@ -351,131 +210,221 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
     }, 100);
   };
 
-  // Handle image upload for specific fields
+  const { uploadImage, isUploading } = useImageUpload({
+    onImageInserted: insertImageAtCursor,
+    getFormValue: getValues,
+  });
+
   const handleImageUploadForField = async (file: File, targetRef?: React.RefObject<HTMLTextAreaElement>, fieldName?: string) => {
-    if (!file) return;
+    await uploadImage(file, fieldName);
+  };
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "Image size should be less than 5MB",
-        variant: "default",
-        duration: 500,
-        className: "bg-red-500 text-white",
+  const replaceLatexDelimiters = () => {
+    const fields = ['content', 'hint', 'solution', 'commonMistake', 'strategy'] as const;
+
+    fields.forEach(fieldName => {
+      const currentValue = getValues(fieldName);
+      if (currentValue && typeof currentValue === 'string') {
+        const updatedValue = replaceLatex(currentValue);
+        setValue(fieldName, updatedValue);
+
+        if (fieldName === 'content') {
+          setLocalContent(updatedValue);
+        } else if (fieldName === 'solution') {
+          setLocalSolution(updatedValue);
+        }
+      }
+    });
+
+    const currentOptions = getValues("options");
+    if (currentOptions && Array.isArray(currentOptions)) {
+      const updatedOptions = currentOptions.map(option => {
+        if (option.content && typeof option.content === 'string') {
+          return { ...option, content: replaceLatex(option.content) };
+        }
+        return option;
       });
-      return;
+      setValue("options", updatedOptions);
     }
 
-    if (!file.type.startsWith("image/")) {
-      toast({
-        title: "Please upload an image file",
-        variant: "default",
-        duration: 500,
-        className: "bg-red-500 text-white",
-      });
-      return;
+    toast({
+      title: "LaTeX delimiters replaced successfully!",
+      variant: "default",
+      duration: 500,
+      className: "bg-green-500 text-white",
+    });
+  };
+
+  useEffect(() => {
+    const options = watch("options") || [];
+    const newRefs: { [key: number]: React.RefObject<HTMLTextAreaElement> } = {};
+    options.forEach((_, index) => {
+      newRefs[index] = optionRefs[index] || React.createRef<HTMLTextAreaElement>();
+    });
+    setOptionRefs(newRefs);
+  }, [watch("options")]);
+
+  useEffect(() => {
+    if (initialQuestion?.content) {
+      setLocalContent(initialQuestion.content);
     }
+    if (initialQuestion?.solution) {
+      setLocalSolution(initialQuestion.solution);
+    }
+  }, [initialQuestion?.content, initialQuestion?.solution]);
 
-    setIsUploading(true);
+  useEffect(() => {
+    if (initialQuestion) {
+      reset(initialQuestion);
+    }
+  }, [initialQuestion, reset]);
 
+  useEffect(() => {
+    const title = watch("title");
+    if (title && !initialQuestion) {
+      const slug = generateSlug(title);
+      setValue("slug", slug, { shouldValidate: true });
+    }
+  }, [watch("title"), !initialQuestion]);
+
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name === 'content') {
+        if (value.content !== localContent) {
+          setLocalContent(value.content || "");
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, localContent]);
+
+  useEffect(() => {
+    setIsMac(navigator.platform.toLowerCase().includes('mac'));
+  }, []);
+
+  useEffect(() => {
+    if (isInstructor) {
+      setValue("isPublished", false);
+    }
+  }, [isInstructor, setValue]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        handleSaveWithPublish();
+      }
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'a') {
+        event.preventDefault();
+        setIsPreviewOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const handleSubtopicChange = (subtopicId: string) => {
+    if (allSubtopics) {
+      const selectedSubtopic = allSubtopics.find(st => st.id === subtopicId);
+      if (selectedSubtopic && selectedSubtopic.topic && selectedSubtopic.topic.subject) {
+        setValue("topicId", selectedSubtopic.topic.id);
+        setValue("subjectId", selectedSubtopic.topic.subject.id);
+      }
+    }
+    setValue("subtopicId", subtopicId);
+  };
+
+  const onSubmit = (data: Partial<Question>) => {
+    if (isInstructor) {
+      data.isPublished = false;
+    }
+    if (!isEditing) {
+      data.createdAt = new Date().toISOString();
+    }
+    onSave(data);
+  };
+
+  const handleSaveWithPublish = async () => {
     try {
-      const readFileAsDataURL = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
+      const isValid = await trigger();
+      
+      if (!isValid) {
+        toast({
+          title: "Please fix validation errors before saving",
+          variant: "default",
+          duration: 3000,
+          className: "bg-red-500 text-white",
         });
-      };
-
-      const dataUrl = await readFileAsDataURL(file);
-
-      const loadImage = (src: string): Promise<HTMLImageElement> => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = reject;
-          img.src = src;
-        });
-      };
-
-      const img = await loadImage(dataUrl);
-
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-
-      if (!ctx) {
-        throw new Error("Failed to create canvas context");
+        return;
       }
 
-      canvas.width = img.width;
-      canvas.height = img.height;
-
-      // Draw original image without cropping
-      ctx.drawImage(img, 0, 0);
-
-      const originalImage = canvas.toDataURL("image/png", 0.9);
-      
-      const questionTitle = getValues("title") || "question";
-      const imageName = generateImageName(questionTitle);
-
-      const response = await api.post("/m/upload-s3", {
-        image: originalImage,
-        folder: "question-images",
-        fileName: imageName
-      });
-      
-      const imageUrl = response.data.data;
-
-      const markdownImage = `![${imageName}](${imageUrl})`;
-      insertImageAtCursor(markdownImage, targetRef, fieldName);
+      const formData = getValues();
+      const dataWithPublish = {
+        ...formData,
+        isPublished: isInstructor ? false : true
+      };
 
       toast({
-        title: "Image uploaded successfully!",
+        title: "Saving and publishing question...",
         variant: "default",
-        duration: 3000,
-        className: "bg-green-500 text-white",
+        duration: 2000,
+        className: "bg-blue-500 text-white",
       });
+
+      onSave(dataWithPublish);
 
     } catch (error) {
-      console.error("Image upload error:", error);
+      console.error('Error saving with publish:', error);
       toast({
-        title: "Failed to process or upload image",
+        title: "Error saving question",
         variant: "default",
         duration: 3000,
         className: "bg-red-500 text-white",
       });
-    } finally {
-      setIsUploading(false);
     }
   };
 
-  // Generate unique image name with indexing if needed
-  const generateImageName = (questionTitle: string) => {
-    const baseName = questionTitle
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "")
-      .replace(/\s+/g, "-")
-      .substring(0, 30);
-    const index = Math.floor(1000 + Math.random() * 9000);
-    
-    return `${baseName}-${index.toString()}`;
+  const addOption = () => {
+    const options = getValues("options") || [];
+    if (options.length >= 4) {
+      toast({
+        title: "Maximum options reached!!",
+        variant: "default",
+        duration: 500,
+        className: "bg-red-500 text-white",
+      })
+      return;
+    }
+    setValue("options", [...options, { content: "", isCorrect: false }]);
   };
 
-  // Handle content change manually
+  const removeOption = (index: number) => {
+    const options = getValues("options") || [];
+    options.splice(index, 1);
+    setValue("options", options);
+  };
+
+  const updateOption = (index: number, field: "content" | "isCorrect", value: string | boolean) => {
+    const options = getValues("options") || [];
+    options[index] = { ...options[index], [field]: value };
+    setValue("options", options);
+  };
+
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setLocalContent(value);
     setValue("content", value);
   };
 
-  // Handle option content change
   const handleOptionContentChange = (index: number, value: string) => {
     const options = getValues("options") || [];
     options[index] = { ...options[index], content: value };
     setValue("options", options);
   };
 
-  // Handle drag and drop for content field
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -508,7 +457,6 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
     }
   };
 
-  // Handle drag and drop for solution field
   const handleSolutionDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -538,7 +486,6 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
     }
   };
 
-  // Handle drag and drop for option fields
   const handleOptionDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     e.stopPropagation();
@@ -568,122 +515,8 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
     }
   };
 
-  // Handle file input change
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleImageUploadForField(file, contentTextareaRef, "content");
-    }
-    // Reset the input value to allow selecting the same file again
-    e.target.value = "";
-  };
-
-  // Get all subtopics for searchable select (not filtered by topic)
-  const { subtopics: allSubtopics, isLoading: isLoadingSubtopics } = useSubtopics()
-
-  // Monitor content changes
-  useEffect(() => {
-    const subscription = watch((value, { name }) => {
-      if (name === 'content') {
-        // Sync local content with form content
-        if (value.content !== localContent) {
-          setLocalContent(value.content || "");
-        }
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, localContent]);
-
-  // Initialize local content when form resets
-  useEffect(() => {
-    if (initialQuestion?.content) {
-      setLocalContent(initialQuestion.content);
-    }
-  }, [initialQuestion?.content]);
-
-  // Detect platform for keyboard shortcut display
-  useEffect(() => {
-    setIsMac(navigator.platform.toLowerCase().includes('mac'));
-  }, []);
-
-  // Keyboard shortcut handler for Ctrl+Shift+S (Save & Publish) and Ctrl+Shift+P (Preview)
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Check if Ctrl+Shift+S (Windows/Linux) or Cmd+Shift+S (Mac) is pressed - Save & Publish
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 's') {
-        event.preventDefault();
-        
-        // Trigger save with publish
-        handleSaveWithPublish();
-      }
-      
-      // Check if Ctrl+Shift+A (Windows/Linux) or Cmd+Shift+A (Mac) is pressed - Preview
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'a') {
-        event.preventDefault();
-        
-        // Open preview dialog
-        setIsPreviewOpen(true);
-      }
-    };
-
-    // Add event listener
-    document.addEventListener('keydown', handleKeyDown);
-
-    // Cleanup function
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-
-  // Save with publish function
-  const handleSaveWithPublish = async () => {
-    try {
-      // First validate the form
-      const isValid = await trigger();
-      
-      if (!isValid) {
-        toast({
-          title: "Please fix validation errors before saving",
-          variant: "default",
-          duration: 3000,
-          className: "bg-red-500 text-white",
-        });
-        return;
-      }
-
-      // Get form data
-      const formData = getValues();
-      
-      // Set isPublished to true
-      const dataWithPublish = {
-        ...formData,
-        isPublished: true
-      };
-
-      // Show loading toast
-      toast({
-        title: "Saving and publishing question...",
-        variant: "default",
-        duration: 2000,
-        className: "bg-blue-500 text-white",
-      });
-
-      // Call the save function
-      onSave(dataWithPublish);
-
-    } catch (error) {
-      console.error('Error saving with publish:', error);
-      toast({
-        title: "Error saving question",
-        variant: "default",
-        duration: 3000,
-        className: "bg-red-500 text-white",
-      });
-    }
-  };
-
   return (
-    <Card className="w-full ">
+    <Card className="w-full">
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -696,195 +529,26 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-                <DialogTrigger asChild>
-                  <Button type="button" variant="outline" className="flex items-center gap-2">
-                    <Eye className="h-4 w-4" />
-                    Preview
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Question Preview</DialogTitle>
-                  <DialogDescription>
-                    Preview of all renderable content in your question
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-6">
-                  {/* Question Title */}
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900">Question Title</h3>
-                    <div className="p-3 bg-gray-50 rounded-md border">
-                      <p className="text-gray-800">{watch("title") || "No title provided"}</p>
-                    </div>
-                  </div>
-
-                  {/* Question Content */}
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900">Question Content</h3>
-                    <div className="p-4 bg-white rounded-md border">
-                      {watch("content") ? (
-                        <MarkdownRenderer content={watch("content")} />
-                      ) : (
-                        <p className="text-gray-500 italic">No content provided</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Options (if multiple choice) */}
-                  {watch("type") === QuestionType.MULTIPLE_CHOICE && watch("options")?.length > 0 && (
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold text-gray-900">Options</h3>
-                      <div className="space-y-3">
-                        {watch("options").map((option, index) => (
-                          <div key={index} className={`p-3 rounded-md border ${option.isCorrect ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className="flex items-start gap-3">
-                              <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-sm font-medium ${option.isCorrect ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'}`}>
-                                {String.fromCharCode(65 + index)}
-                              </span>
-                              <div className="flex-1">
-                                <MarkdownRenderer content={option.content} />
-                              </div>
-                              {option.isCorrect && (
-                                <span className="text-green-600 font-medium text-sm">✓ Correct</span>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Numerical Answer (if integer type) */}
-                  {watch("type") === QuestionType.INTEGER && watch("isNumerical") && (
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold text-gray-900">Correct Answer</h3>
-                      <div className="p-3 bg-blue-50 rounded-md border border-blue-200">
-                        <p className="text-blue-800 font-medium">{watch("isNumerical")}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Solution */}
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900">Solution</h3>
-                    <div className="p-4 bg-white rounded-md border">
-                      {watch("solution") ? (
-                        <MarkdownRenderer content={watch("solution")} />
-                      ) : (
-                        <p className="text-gray-500 italic">No solution provided</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Strategy */}
-                  {watch("strategy") && (
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold text-gray-900">Strategy</h3>
-                      <div className="p-3 bg-yellow-50 rounded-md border border-yellow-200">
-                        <MarkdownRenderer content={watch("strategy")} />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Hint */}
-                  {watch("hint") && (
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold text-gray-900">Hint</h3>
-                      <div className="p-3 bg-blue-50 rounded-md border border-blue-200">
-                        <MarkdownRenderer content={watch("hint")} />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Common Mistakes */}
-                  {watch("commonMistake") && (
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold text-gray-900">Common Mistakes</h3>
-                      <div className="p-3 bg-red-50 rounded-md border border-red-200">
-                        <MarkdownRenderer content={watch("commonMistake")} />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Question Metadata */}
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900">Question Details</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-3 bg-gray-50 rounded-md border">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Type</p>
-                        <p className="text-sm text-gray-800">{TextFormator(watch("type"))}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Difficulty</p>
-                        <p className="text-sm text-gray-800">
-                          {watch("difficulty") === 1 && "Easy"}
-                          {watch("difficulty") === 2 && "Medium"}
-                          {watch("difficulty") === 3 && "Hard"}
-                          {watch("difficulty") === 4 && "Very Hard"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Time</p>
-                        <p className="text-sm text-gray-800">{watch("questionTime")} min</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Status</p>
-                        <p className="text-sm text-gray-800">
-                          {watch("isPublished") ? "Published" : "Draft"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Categories */}
-                  {watch("category")?.length > 0 && (
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold text-gray-900">Categories</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {watch("category").map((cat, index) => (
-                          <span key={index} className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm">
-                            {TextFormator(cat)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* References */}
-                  {(watch("pyqYear") || watch("book")) && (
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold text-gray-900">References</h3>
-                      <div className="space-y-2">
-                        {watch("pyqYear") && (
-                          <div className="p-2 bg-gray-50 rounded border">
-                            <p className="text-sm font-medium text-gray-600">PYQ Year</p>
-                            <p className="text-sm text-gray-800">{watch("pyqYear")}</p>
-                          </div>
-                        )}
-                        {watch("book") && (
-                          <div className="p-2 bg-gray-50 rounded border">
-                            <p className="text-sm font-medium text-gray-600">Book Reference</p>
-                            <p className="text-sm text-gray-800">{watch("book")}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                </DialogContent>
-              </Dialog>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={() => setIsPreviewOpen(true)}
+              >
+                <Eye className="h-4 w-4" />
+                Preview
+              </Button>
               <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded border">
                 <div className="flex items-center gap-1">
                   <kbd className="text-xs">
                     {isMac ? '⌘' : 'Ctrl'}
-                  </kbd> + <kbd className="text-xs">1</kbd> Save & Publish
+                  </kbd> + <kbd className="text-xs">Shift</kbd> + <kbd className="text-xs">S</kbd> Save & Publish
                 </div>
                 <div className="w-px h-3 bg-gray-300"></div>
                 <div className="flex items-center gap-1">
                   <kbd className="text-xs">
                     {isMac ? '⌘' : 'Ctrl'}
-                  </kbd> + <kbd className="text-xs">2</kbd> Preview
+                  </kbd> + <kbd className="text-xs">Shift</kbd> + <kbd className="text-xs">A</kbd> Preview
                 </div>
               </div>
             </div>
@@ -910,7 +574,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                   control={control}
                   name="type"
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value} >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger className="h-9"><SelectValue placeholder="Select Type" /></SelectTrigger>
                       <SelectContent>
                         {Object.values(QuestionType).map((type) => (
@@ -933,13 +597,11 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger className="h-9"><SelectValue placeholder="Select Format" /></SelectTrigger>
                       <SelectContent>
-                        {
-                          Object.values(QuestionFormat).map((format) => (
-                            <SelectItem key={format} value={format}>
-                              {TextFormator(format)}
-                            </SelectItem>
-                          ))
-                        }
+                        {Object.values(QuestionFormat).map((format) => (
+                          <SelectItem key={format} value={format}>
+                            {TextFormator(format)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   )}
@@ -1018,7 +680,6 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
               )}
             />
             {errors.subtopicId && <p className="text-red-500 text-xs">{errors.subtopicId.message}</p>}
-
           </div>
 
           <div className="space-y-3">
@@ -1035,12 +696,13 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                     onChange={handleContentChange}
                     placeholder="Write your question here... You can drag and drop images here or use the upload button below."
                     rows={Math.max(6, Math.ceil((localContent || (watch("content") || "")).split('\n').length / 2))}
-                    className={`border transition-all duration-200 ${errors.content
-                      ? "border-red-500"
-                      : isDragOver
-                        ? "border-primary-500 bg-primary-50"
-                        : "border-gray-300"
-                      }`}
+                    className={`transition-all duration-200 ${
+                      errors.content
+                        ? "border-red-500"
+                        : isDragOver
+                          ? "border-primary-500 bg-primary-50"
+                          : "border-gray-300"
+                    }`}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
@@ -1050,16 +712,25 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                       type="file"
                       id="image-upload"
                       accept="image/*"
-                      onChange={handleFileInputChange}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleImageUploadForField(file, contentTextareaRef, "content");
+                        }
+                        if (e.target) {
+                          e.target.value = "";
+                        }
+                      }}
                       className="hidden"
                       disabled={isUploading}
                     />
                     <label
                       htmlFor="image-upload"
-                      className={`cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-md transition-colors ${isUploading
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-primary-500 hover:bg-primary-600"
-                        } text-white`}
+                      className={`cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-md transition-colors ${
+                        isUploading
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-primary-500 hover:bg-primary-600"
+                      } text-white`}
                       title={isUploading ? "Uploading..." : "Upload image"}
                     >
                       {isUploading ? (
@@ -1075,10 +746,6 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                     </div>
                   )}
                 </div>
-                {/* <div className="flex items-center gap-2 text-xs text-gray-600">
-                  <span>💡 Drag & drop images here or use the upload button</span>
-                  {isUploading && <span className="text-primary-500">Uploading...</span>}
-                </div> */}
                 {errors.content && <p className="text-red-500 text-xs">{errors.content.message}</p>}
               </div>
 
@@ -1099,105 +766,21 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
           </div>
 
           {watch("type") === QuestionType.MULTIPLE_CHOICE && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm">Options <span className="text-red-500">*</span></Label>
-                <Button type="button" variant="outline" size="sm" onClick={addOption} className="flex items-center gap-1 h-8">
-                  <PlusCircle className="h-3 w-3" /> Add Option
-                </Button>
-              </div>
-
-              {watch("options")?.length > 0 ? (
-                <div className="space-y-2">
-                  {watch("options").map((option, index) => (
-                    <div key={index} className="border rounded p-2 ">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-sm">Option {index + 1}</Label>
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1">
-                              <Switch
-                                checked={option.isCorrect}
-                                onCheckedChange={(checked) => updateOption(index, "isCorrect", checked)}
-                              />
-                              <span className="text-xs">Correct</span>
-                            </div>
-                            <Button type="button" variant="ghost" size="icon" onClick={() => removeOption(index)} className="text-red-500 h-7 w-7">
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="relative">
-                          <Textarea
-                            ref={optionRefs[index]}
-                            value={option.content}
-                            onChange={(e) => handleOptionContentChange(index, e.target.value)}
-                            placeholder={`Enter option ${index + 1} content... You can drag and drop images here or use the upload button.`}
-                            rows={1}
-                            className="border border-gray-300 transition-all duration-200"
-                            onDragOver={(e) => handleOptionDragOver(e, index)}
-                            onDragLeave={(e) => handleOptionDragLeave(e, index)}
-                            onDrop={(e) => handleOptionDrop(e, index)}
-                          />
-                          <div className="absolute top-2 right-2">
-                            <input
-                              type="file"
-                              id={`image-upload-option-${index}`}
-                              accept="image/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  handleImageUploadForField(file, optionRefs[index], `option-${index}`);
-                                }
-                                e.target.value = "";
-                              }}
-                              className="hidden"
-                              disabled={isUploading}
-                            />
-                            <label
-                              htmlFor={`image-upload-option-${index}`}
-                              className={`cursor-pointer inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors ${isUploading
-                                ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-primary-500 hover:bg-primary-600"
-                                } text-white`}
-                              title={isUploading ? "Uploading..." : "Upload image"}
-                            >
-                              {isUploading ? (
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                              ) : (
-                                <Upload className="h-3 w-3" />
-                              )}
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className=" rounded p-1 flex items-center gap-2 bg-gray-50">
-                          <Label className="text-xs text-gray-600  block font-bold ">Preview:</Label>
-                          <MarkdownRenderer content={option.content} className="text-sm" />
-                        </div>
-
-                        {errors.options?.[index]?.content && (
-                          <p className="text-red-500 text-xs">{errors.options[index].content.message}</p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-4 border-2 border-dashed rounded border-gray-300 bg-gray-50">
-                  <p className="text-gray-500 text-sm">No options added yet.</p>
-                  <Button type="button" variant="ghost" size="sm" onClick={addOption} className="flex items-center gap-1 mx-auto h-7 mt-2">
-                    <PlusCircle className="h-3 w-3" /> Add option
-                  </Button>
-                </div>
-              )}
-
-              {/* Show validation errors */}
-              {errors.options?.root?.message && (
-                <p className="text-red-500 text-xs bg-red-50 p-2 rounded border border-red-200">{errors.options.root.message}</p>
-              )}
-            </div>
+            <QuestionOptionsSection
+              watch={watch}
+              setValue={setValue}
+              errors={errors}
+              optionRefs={optionRefs}
+              onAddOption={addOption}
+              onRemoveOption={removeOption}
+              onUpdateOption={updateOption}
+              onOptionContentChange={handleOptionContentChange}
+              onOptionDragOver={handleOptionDragOver}
+              onOptionDragLeave={handleOptionDragLeave}
+              onOptionDrop={handleOptionDrop}
+              onFileSelect={(file, fieldName) => handleImageUploadForField(file, optionRefs[parseInt(fieldName.split('-')[1])], fieldName)}
+              isUploading={isUploading}
+            />
           )}
 
           <div className="space-y-3">
@@ -1216,8 +799,9 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                     }}
                     placeholder="Provide a solution/explanation"
                     rows={Math.max(5, Math.ceil((localSolution || (watch("solution") || "")).split('\n').length / 2))}
-                    className={`border transition-all duration-200 ${errors.solution ? "border-red-500" : "border-gray-300"
-                      }`}
+                    className={`transition-all duration-200 ${
+                      errors.solution ? "border-red-500" : "border-gray-300"
+                    }`}
                     onDragOver={handleSolutionDragOver}
                     onDragLeave={handleSolutionDragLeave}
                     onDrop={handleSolutionDrop}
@@ -1232,17 +816,20 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                         if (file) {
                           handleImageUploadForField(file, solutionTextareaRef, "solution");
                         }
-                        e.target.value = "";
+                        if (e.target) {
+                          e.target.value = "";
+                        }
                       }}
                       className="hidden"
                       disabled={isUploading}
                     />
                     <label
                       htmlFor="image-upload-solution"
-                      className={`cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-md transition-colors ${isUploading
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-primary-500 hover:bg-primary-600"
-                        } text-white`}
+                      className={`cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-md transition-colors ${
+                        isUploading
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-primary-500 hover:bg-primary-600"
+                      } text-white`}
                       title={isUploading ? "Uploading..." : "Upload image"}
                     >
                       {isUploading ? (
@@ -1272,14 +859,14 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="space-y-1">
+              <div className="space-y-1">
                 <Label htmlFor="strategy" className="text-sm">Strategy</Label>
                 <Textarea
                   id="strategy"
                   {...register("strategy")}
                   placeholder="Provide solving strategy or approach for this question"
                   rows={2}
-                  className={`border ${errors.strategy ? "border-red-500" : "border-gray-300"}`}
+                  className={`${errors.strategy ? "border-red-500" : "border-gray-300"}`}
                 />
                 {errors.strategy && <p className="text-red-500 text-xs">{errors.strategy.message}</p>}
               </div>
@@ -1290,11 +877,10 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                   {...register("hint")}
                   placeholder="Provide a hint for students"
                   rows={2}
-                  className={`border ${errors.hint ? "border-red-500" : "border-gray-300"}`}
+                  className={`${errors.hint ? "border-red-500" : "border-gray-300"}`}
                 />
                 {errors.hint && <p className="text-red-500 text-xs">{errors.hint.message}</p>}
               </div>
-
             </div>
 
             <div className="space-y-1">
@@ -1304,7 +890,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                 {...register("commonMistake")}
                 placeholder="Common errors students make with this question"
                 rows={2}
-                className={`border ${errors.commonMistake ? "border-red-500" : "border-gray-300"}`}
+                className={`${errors.commonMistake ? "border-red-500" : "border-gray-300"}`}
               />
               {errors.commonMistake && <p className="text-red-500 text-xs">{errors.commonMistake.message}</p>}
             </div>
@@ -1369,20 +955,35 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center space-x-3 p-3 bg-primary-50 rounded-lg border border-primary-200">
+            <div className={`flex items-center space-x-3 p-3 rounded-lg border ${
+              isInstructor 
+                ? "bg-gray-50 border-gray-200 opacity-60 hidden" 
+                : "bg-primary-50 border-primary-200"
+            }`}>
               <Switch
                 id="isPublished"
                 checked={watch("isPublished")}
-                onCheckedChange={(checked) => setValue("isPublished", checked)}
+                onCheckedChange={(checked) => {
+                  if (!isInstructor) {
+                    setValue("isPublished", checked);
+                  }
+                }}
+                disabled={isInstructor}
               />
               <div>
-                <Label htmlFor="isPublished" className="font-medium text-sm">Publish question immediately</Label>
-                <p className="text-xs text-gray-600">Make this question available to students right away</p>
+                <Label htmlFor="isPublished" className="font-medium text-sm">
+                  Publish question immediately
+                  {isInstructor && <span className="text-red-500 ml-1">(Instructors cannot publish)</span>}
+                </Label>
+                <p className="text-xs text-gray-600">
+                  {isInstructor 
+                    ? "Only admins can publish questions. Your question will be saved as a draft."
+                    : "Make this question available to students right away"}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* LaTeX Delimiter Replacement Button */}
           <div className="flex justify-center pt-4">
             <Button
               type="button"
@@ -1411,6 +1012,11 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
           </Button>
         </CardFooter>
       </form>
+      <QuestionPreviewDialog
+        open={isPreviewOpen}
+        onOpenChange={setIsPreviewOpen}
+        watch={watch}
+      />
     </Card>
   );
 };

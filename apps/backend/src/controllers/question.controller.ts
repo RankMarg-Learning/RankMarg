@@ -6,6 +6,7 @@ import {
   QCategory,
   QuestionFormat,
   QuestionType,
+  Role,
   SubmitStatus,
 } from "@repo/db/enums";
 import { NextFunction, Response } from "express";
@@ -21,6 +22,7 @@ interface WhereClauseProps {
   pyqYear?: string;
   isPublished?: boolean;
   slug?: { in: string[] };
+  createdBy?: string;
 }
 
 interface Question {
@@ -89,9 +91,15 @@ export class QuestionController {
         limit = 25,
       } = req.query;
       const userID = req.user.id;
+      const userRole = req.user.role;
       const l = Number(limit) || 25;
       const skip = (Number(page) - 1) * l;
       const whereClause: WhereClauseProps = {};
+      
+      if (userRole !== Role.ADMIN) {
+        whereClause.createdBy = userID;
+      }
+      
       if (subjectId) whereClause.subjectId = subjectId as string;
       if (topicId) whereClause.topicId = topicId as string;
       if (subtopicId) whereClause.subtopicId = subtopicId as string;

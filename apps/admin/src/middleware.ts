@@ -66,15 +66,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Handle new user onboarding flow
-  if (user && user.isNewUser) {
-    // New users must complete onboarding first
-    if (pathname !== '/onboarding') {
-      return NextResponse.redirect(new URL('/onboarding', request.url));
-    }
-    // Allow access to onboarding page
-    return NextResponse.next();
-  }
+  // // Handle new user onboarding flow
+  // if (user && user.isNewUser) {
+  //   // New users must complete onboarding first
+  //   if (pathname !== '/onboarding') {
+  //     return NextResponse.redirect(new URL('/onboarding', request.url));
+  //   }
+  //   // Allow access to onboarding page
+  //   return NextResponse.next();
+  // }
 
   // Check route access using the new system
   const accessResult = checkRouteAccess(pathname, user);
