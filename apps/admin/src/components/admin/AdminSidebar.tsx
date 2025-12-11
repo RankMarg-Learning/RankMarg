@@ -1,6 +1,6 @@
 "use client"
 import { cn } from "@/lib/utils";
-import { Brain,  LayoutDashboard,  LogOut, Settings, TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload, Users } from "lucide-react";
+import { Brain,  LayoutDashboard,  LogOut,  TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useMemo } from "react";

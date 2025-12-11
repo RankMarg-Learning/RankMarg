@@ -41,7 +41,7 @@ const BulkUpload = () => {
   
   // Initialize from URL params
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(searchParams.get('subjectId') || '')
-  const [selectedTopicId, setSelectedTopicId] = useState<string>(searchParams.get('topicId') || 'auto')
+  const [selectedTopicId, setSelectedTopicId] = useState<string>(searchParams.get('topicId') || '')
   const [selectedGptModel, setSelectedGptModel] = useState<string>('gpt-5-mini')
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [isUploading, setIsUploading] = useState(false)
@@ -49,7 +49,7 @@ const BulkUpload = () => {
   const [additionalInstructions, setAdditionalInstructions] = useState<string>('')
   const { subjects: rawSubjects = [], isLoading: subjectsLoading } = useSubjects()
   const { topics: rawTopics = [], isLoading: topicsLoading } = useTopics(selectedSubjectId)
-  useSubtopics(selectedTopicId === 'auto' ? undefined : selectedTopicId)
+  useSubtopics(selectedTopicId || undefined)
 
   const subjects = Array.isArray(rawSubjects) ? rawSubjects : []
   const topics = Array.isArray(rawTopics) ? rawTopics : []
@@ -60,7 +60,7 @@ const BulkUpload = () => {
     if (selectedSubjectId) {
       params.set('subjectId', selectedSubjectId)
     }
-    if (selectedTopicId && selectedTopicId !== 'auto') {
+    if (selectedTopicId) {
       params.set('topicId', selectedTopicId)
     }
     
@@ -124,6 +124,15 @@ const BulkUpload = () => {
       return
     }
 
+    if (!selectedTopicId || selectedTopicId === 'auto') {
+      toast({
+        title: "Topic Required",
+        description: "Please select a topic before uploading.",
+        variant: "destructive"
+      })
+      return
+    }
+
     if (uploadedFiles.length === 0) {
       toast({
         title: "No Files",
@@ -139,7 +148,7 @@ const BulkUpload = () => {
       const requestData = {
         subjectId: selectedSubjectId,
         gptModel: selectedGptModel,
-        topicId: selectedTopicId && selectedTopicId !== 'auto' ? selectedTopicId : undefined,
+        topicId: selectedTopicId,
         additionalInstructions,
         urls: uploadedFiles.map(f => f.url)
       }
@@ -252,17 +261,12 @@ const BulkUpload = () => {
     <div className="container mx-auto p-2 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Bulk Question Upload</h1>
+          <h1 className="text-lg font-bold">Bulk Question Upload</h1>
           <p className="text-muted-foreground">
             Upload multiple question screenshots and convert them to structured data using AI
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => router.push('/admin/questions')}
-        >
-          Back to Questions
-        </Button>
+       
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -289,7 +293,9 @@ const BulkUpload = () => {
         </div>
 
         {/* File Preview */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-2">
+          {/* Processing Status */}
+          {processingJob && <ProcessingStatus processingJob={processingJob} />}
           <FilePreview
             uploadedFiles={uploadedFiles}
             removeFile={removeFile}
@@ -298,8 +304,7 @@ const BulkUpload = () => {
         </div>
       </div>
 
-      {/* Processing Status */}
-      <ProcessingStatus processingJob={processingJob} />
+      
     </div>
   )
 }

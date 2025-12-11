@@ -5,6 +5,7 @@ import { Label } from '@repo/common-ui'
 import { SearchableSelect } from '@repo/common-ui'
 import { Upload } from 'lucide-react'
 import { Textarea } from '@repo/common-ui'
+import { useState, useRef } from 'react'
 
 interface UploadConfigurationProps {
   selectedSubjectId: string
@@ -25,12 +26,6 @@ interface UploadConfigurationProps {
   setAdditionalInstructions: (value: string) => void
 }
 
-const GPT_MODELS = [
-  { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Faster, Cost-effective)' },
-  { value: 'gpt-5-mini', label: 'GPT-5 Mini (More Accurate)' },
-  { value: 'gpt-5', label: 'GPT-5 (More Accurate)' },
-]
-
 export const UploadConfiguration = ({
   selectedSubjectId,
   setSelectedSubjectId,
@@ -49,12 +44,48 @@ export const UploadConfiguration = ({
   additionalInstructions,
   setAdditionalInstructions,
 }: UploadConfigurationProps) => {
+  const [isDragging, setIsDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+
+    const files = e.dataTransfer.files
+    if (files && files.length > 0) {
+      // Create a synthetic event to reuse handleFileUpload
+      const syntheticEvent = {
+        target: {
+          files: files,
+        },
+      } as React.ChangeEvent<HTMLInputElement>
+      handleFileUpload(syntheticEvent)
+    }
+  }
+
+  const handleClick = () => {
+    fileInputRef.current?.click()
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Configuration</CardTitle>
         <CardDescription>
-          Select subject, topic, and AI model for the questions
+          Select subject and topic for the questions
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -75,19 +106,16 @@ export const UploadConfiguration = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="topic">Topic (Optional)</Label>
+          <Label htmlFor="topic">Topic *</Label>
           <SearchableSelect
             value={selectedTopicId}
             onValueChange={setSelectedTopicId}
             disabled={!selectedSubjectId || topicsLoading || subjectsLoading}
-            placeholder="Select topic or let AI decide"
-            options={[
-              { value: 'auto', label: 'Let AI decide topic' },
-              ...(topics?.map(topic => ({
-                value: topic.id,
-                label: topic.name
-              })) || [])
-            ]}
+            placeholder="Select topic"
+            options={topics?.map(topic => ({
+              value: topic.id,
+              label: topic.name
+            })) || []}
             emptyMessage={
               topicsLoading ? "Loading topics..." :
               selectedSubjectId ? `No topics available for selected subject` :
@@ -97,20 +125,6 @@ export const UploadConfiguration = ({
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="gptModel">AI Model *</Label>
-          <SearchableSelect
-            value={selectedGptModel}
-            onValueChange={setSelectedGptModel}
-            placeholder="Select AI model"
-            options={GPT_MODELS}
-            emptyMessage="No models available"
-            searchPlaceholder="Search models..."
-          />
-          <p className="text-xs text-muted-foreground">
-            GPT-4o Mini is faster and more cost-effective. GPT-4 Turbo provides higher accuracy.
-          </p>
-        </div>
 
         <div className="space-y-2">
           <Label htmlFor="additionalInstructions">Additional AI Instructions (Optional)</Label>
@@ -127,22 +141,43 @@ export const UploadConfiguration = ({
 
         <div className="space-y-2">
           <Label htmlFor="files">Upload Images</Label>
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={handleClick}
+            className={`
+              border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
+              ${isDragging 
+                ? 'border-primary bg-primary/5' 
+                : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50'
+              }
+              ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}
+            `}
+          >
+            <Upload className={`mx-auto h-12 w-12 mb-4 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
+            <p className="text-sm font-medium mb-2">
+              {isDragging ? 'Drop images here' : 'Drag and drop images here, or click to select'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Supports JPG, PNG, WebP formats
+            </p>
+          </div>
           <Input
+            ref={fileInputRef}
             id="files"
             type="file"
             multiple
             accept="image/*"
             onChange={handleFileUpload}
             disabled={isUploading}
+            className="hidden"
           />
-          <p className="text-sm text-muted-foreground">
-            Upload screenshots of questions. Supports JPG, PNG, WebP formats.
-          </p>
         </div>
 
         <Button
           onClick={handleSubmit}
-          disabled={isUploading || uploadedFiles.length === 0 || !selectedSubjectId || !selectedGptModel || subjectsLoading}
+          disabled={isUploading || uploadedFiles.length === 0 || !selectedSubjectId || !selectedTopicId || subjectsLoading || topicsLoading}
           className="w-full"
         >
           {isUploading ? (
