@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "@/hooks/use-toast"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@repo/common-ui"
-import { AlertCircle, Copy, Download, Edit, MoreHorizontal, Plus, Trash } from "lucide-react"
+import { AlertCircle, Copy, Download, Edit, MoreHorizontal, Plus, Trash, Users } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@repo/common-ui"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -229,6 +229,12 @@ export default function AdminTestPage() {
                               onClick={() => router.push(`/admin/tests/${test.testId}/edit`)}
                             >
                               <Edit className="h-4 w-4" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="flex items-center gap-2"
+                              onClick={() => router.push(`/admin/tests/${test.testId}/participants`)}
+                            >
+                              <Users className="h-4 w-4" /> View Participants
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="flex items-center gap-2"

@@ -681,6 +681,166 @@ export class TestController {
     }
   };
 
+  //[GET] /api/test/:testId/participants
+  getTestParticipants = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const { testId } = req.params;
+    const { status, limit, offset, sortBy, sortOrder } = req.query;
+    
+    try {
+      // Only admins can view all participants
+      if (req.user.role !== Role.ADMIN) {
+        ResponseUtil.error(res, "Unauthorized. Admin access required.", 403);
+        return;
+      }
+      const whereClause: any = {
+        testId: testId,
+      };
+
+      if (status) {
+        whereClause.status = status;
+      }
+
+      const orderBy: any = {};
+      if (sortBy === 'score') {
+        orderBy.score = sortOrder === 'asc' ? 'asc' : 'desc';
+      } else if (sortBy === 'accuracy') {
+        orderBy.accuracy = sortOrder === 'asc' ? 'asc' : 'desc';
+      } else if (sortBy === 'startTime') {
+        orderBy.startTime = sortOrder === 'asc' ? 'asc' : 'desc';
+      } else {
+        orderBy.startTime = 'desc';
+      }
+
+      const limitNum = limit ? parseInt(limit as string) : 100;
+      const offsetNum = offset ? parseInt(offset as string) : 0;
+
+      const [participants, total] = await Promise.all([
+        prisma.testParticipation.findMany({
+          where: whereClause,
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                username: true,
+                email: true,
+                avatar: true,
+                phone: true,
+              },
+            },
+            attempt: {
+              select: {
+                id: true,
+                status: true,
+                timing: true,
+              },
+            },
+          },
+          orderBy,
+          take: limitNum,
+          skip: offsetNum,
+        }),
+        prisma.testParticipation.count({
+          where: whereClause,
+        }),
+      ]);
+
+      // Calculate additional stats
+      const participantsWithStats = participants.map((participant) => {
+        const attempts = participant.attempt || [];
+        const correctCount = attempts.filter((a) => a.status === 'CORRECT').length;
+        const incorrectCount = attempts.filter((a) => a.status === 'INCORRECT').length;
+        const totalAttempts = attempts.length;
+
+        return {
+          ...participant,
+          stats: {
+            totalAttempts,
+            correctCount,
+            incorrectCount,
+            unattemptedCount: totalAttempts - correctCount - incorrectCount,
+          },
+        };
+      });
+
+      ResponseUtil.success(
+        res,
+        {
+          participants: participantsWithStats,
+          total,
+          limit: limitNum,
+          offset: offsetNum,
+        },
+        "Participants fetched successfully",
+        200
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  //[DELETE] /api/test/:testId/participants/:participantId
+  deleteTestParticipant = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const { testId, participantId } = req.params;
+    
+    try {
+      // Only admins can delete participants
+      if (req.user.role !== Role.ADMIN) {
+        ResponseUtil.error(res, "Unauthorized. Admin access required.", 403);
+        return;
+      }
+
+      // Check if participant exists
+      const participant = await prisma.testParticipation.findUnique({
+        where: {
+          id: participantId,
+        },
+        include: {
+          attempt: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+
+      if (!participant) {
+        ResponseUtil.error(res, "Participant not found", 404);
+        return;
+      }
+
+      // Verify participant belongs to the test
+      if (participant.testId !== testId) {
+        ResponseUtil.error(res, "Participant does not belong to this test", 400);
+        return;
+      }
+
+      // Delete participant (attempts will be deleted via cascade)
+      await prisma.testParticipation.delete({
+        where: {
+          id: participantId,
+        },
+      });
+
+      ResponseUtil.success(
+        res,
+        null,
+        "Participant deleted successfully",
+        200
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
   //[POST] /api/test/:testId/submit
   submitTest = async (
     req: AuthenticatedRequest,

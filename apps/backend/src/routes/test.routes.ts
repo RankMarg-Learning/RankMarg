@@ -18,6 +18,16 @@ router.get(
   authenticate,
   testController.getTestParticipantById
 );
+router.get(
+  "/:testId/participants",
+  authenticate,
+  testController.getTestParticipants
+);
+router.delete(
+  "/:testId/participants/:participantId",
+  authenticate,
+  testController.deleteTestParticipant
+);
 router.post("/:testId/submit", authenticate, testController.submitTest);
 router.get("/ai/available", authenticate, testController.getAiAvailableTests);
 router.get(
