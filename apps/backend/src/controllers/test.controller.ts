@@ -371,6 +371,9 @@ export class TestController {
   ): Promise<void> => {
     try {
       const tests = await prisma.test.findMany({
+        where: {
+          createdBy: req.user.id,
+        },
         orderBy: {
           createdAt: "desc",
         },
