@@ -104,6 +104,31 @@
             max-height: 80px !important;
         }
 
+        /* Auto-detect long content and switch to single column layout */
+        .options {
+            container-type: inline-size;
+        }
+
+        /* Default: Two-column layout for short content */
+        .option-item {
+            flex: 1 1 calc(50% - 6px);
+            min-width: 45%;
+            max-width: calc(50% - 6px);
+        }
+
+        /* Ensure content doesn't overflow and wraps properly */
+        .option-item .option-content {
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        /* Only apply single column when explicitly marked as long content */
+        .options.has-long-content .option-item {
+            flex: 1 1 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+        }
+
         /* Content spacing for nested elements */
         .q-content p:not(:first-child),
         .option-content p:not(:first-child),
@@ -141,7 +166,112 @@
             display: block;
             margin: 8px 0;
         }
+
+        /* Class added by JS to force single column when long content detected */
+        .options.has-long-content .option-item {
+            flex: 1 1 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+        }
     </style>
+    <script>
+        // Detect long content in options and switch to single column
+        function checkOptionContentLength() {
+            document.querySelectorAll('.options').forEach(optionsContainer => {
+                // Reset the class first
+                optionsContainer.classList.remove('has-long-content');
+                
+                const optionItems = optionsContainer.querySelectorAll('.option-item');
+                const containerWidth = optionsContainer.offsetWidth;
+                const gap = 12; // gap-x-3 = 12px
+                const padding = 18; // ml-[18px] left margin
+                const availableWidth = containerWidth - padding;
+                const maxWidthPerOption = (availableWidth - gap) / 2; // Maximum width for 2-column layout
+                
+                let hasLongContent = false;
+
+                optionItems.forEach(item => {
+                    const content = item.querySelector('.option-content');
+                    if (content) {
+                        // Check for display math (long equations) - these are always long
+                        const hasDisplayMath = content.querySelector('mjx-container[display="true"]');
+                        
+                        // Get actual rendered width of content
+                        const contentRect = content.getBoundingClientRect();
+                        const contentWidth = contentRect.width;
+                        
+                        // Also check scrollWidth for overflow
+                        const scrollWidth = content.scrollWidth;
+                        const actualWidth = Math.max(contentWidth, scrollWidth);
+                        
+                        // Consider it long if:
+                        // 1. Has display math (block equations)
+                        // 2. Content width exceeds 90% of available space per column
+                        // 3. Content is overflowing (scrollWidth > width)
+                        const isOverflowing = scrollWidth > contentRect.width + 5; // 5px tolerance
+                        const exceedsColumnWidth = actualWidth > maxWidthPerOption * 0.85;
+                        
+                        if (hasDisplayMath || (isOverflowing && exceedsColumnWidth)) {
+                            hasLongContent = true;
+                        }
+                    }
+                });
+
+                // Only add class if we actually detected long content
+                if (hasLongContent) {
+                    optionsContainer.classList.add('has-long-content');
+                }
+            });
+        }
+
+        // Run after DOM loads
+        function initOptionLayout() {
+            // Initial check after DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(checkOptionContentLength, 100);
+                });
+            } else {
+                setTimeout(checkOptionContentLength, 100);
+            }
+
+            // Also run after MathJax finishes rendering
+            function waitForMathJax() {
+                if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+                    window.MathJax.startup.promise.then(() => {
+                        if (window.MathJax.typesetPromise) {
+                            window.MathJax.typesetPromise().then(() => {
+                                // Wait a bit more for rendering to settle
+                                setTimeout(checkOptionContentLength, 300);
+                            });
+                        } else {
+                            setTimeout(checkOptionContentLength, 200);
+                        }
+                    }).catch(() => {
+                        // Fallback if MathJax fails
+                        setTimeout(checkOptionContentLength, 500);
+                    });
+                } else {
+                    // Poll for MathJax availability
+                    const checkInterval = setInterval(() => {
+                        if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+                            clearInterval(checkInterval);
+                            waitForMathJax();
+                        }
+                    }, 100);
+                    
+                    // Clear interval after 5 seconds
+                    setTimeout(() => clearInterval(checkInterval), 5000);
+                }
+            }
+
+            // Start waiting for MathJax
+            waitForMathJax();
+        }
+
+        // Initialize
+        initOptionLayout();
+    </script>
 </head>
 
 <body class="m-0 p-0 h-full font-['Inter',sans-serif] text-[11px] bg-gray-200 print:bg-white">
@@ -256,7 +386,7 @@
                         {{#if options}}
                         <div class="mt-1.5 ml-[18px] flex flex-wrap gap-y-2 gap-x-3 items-start options">
                             {{#each options}}
-                            <div class="mb-0.5 leading-[1.5] font-['Inter',sans-serif] text-[11px] break-words flex items-start gap-1 flex-[1_1_calc(50%-6px)] min-w-[45%] max-w-full box-border option-item">
+                            <div class="mb-0.5 leading-[1.5] font-['Inter',sans-serif] text-[11px] break-words flex items-start gap-1 box-border option-item">
                                 <span class="shrink-0 font-medium align-top leading-[1.5]">({{optLabel @index}})</span>
                                 <span class="flex-1 min-w-0 break-words align-top leading-[1.5] option-content [&>p]:m-0 [&>p]:p-0 [&>p]:leading-[1.5] [&>span]:inline [&>strong]:inline [&>strong]:font-bold [&>em]:inline [&>em]:italic [&>code]:inline [&>code]:bg-gray-100 [&>code]:px-0.5 [&>code]:py-0 [&>code]:rounded-sm [&>code]:text-[9px] [&>code]:font-mono [&>div]:inline-block">
                                     {{{content}}}
