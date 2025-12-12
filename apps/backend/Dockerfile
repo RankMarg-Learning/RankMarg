@@ -1,8 +1,20 @@
 # Use the base turbo image for consistency
 FROM node:20-alpine AS base
 
-# Install dependencies for native modules
-RUN apk add --no-cache libc6-compat openssl
+# Install dependencies for native modules and Chromium for puppeteer-core
+RUN apk add --no-cache \
+    libc6-compat \
+    openssl \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    font-noto-emoji \
+    font-noto-cjk \
+    && rm -rf /var/cache/apk/*
 
 # Set working directory
 WORKDIR /app
@@ -13,6 +25,9 @@ COPY turbo.json ./
 COPY apps/backend/package*.json ./apps/backend/
 COPY packages/db/package*.json ./packages/db/
 COPY packages/suggest-engine/package*.json ./packages/suggest-engine/
+
+# Copy PDF templates package (no package.json needed, just templates)
+COPY packages/pdf-templates ./packages/pdf-templates
 
 # Copy Prisma schema first (needed for postinstall script)
 COPY packages/db/prisma ./packages/db/prisma
@@ -40,8 +55,20 @@ RUN npm run build --workspace=backend
 # Production stage
 FROM node:20-alpine AS production
 
-# Install dependencies for native modules
-RUN apk add --no-cache libc6-compat openssl
+# Install dependencies for native modules and Chromium for puppeteer-core
+RUN apk add --no-cache \
+    libc6-compat \
+    openssl \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    font-noto-emoji \
+    font-noto-cjk \
+    && rm -rf /var/cache/apk/*
 
 # Set working directory
 WORKDIR /app
@@ -70,9 +97,17 @@ COPY --from=base /app/apps/backend/dist ./apps/backend/dist
 # Copy Prisma schema and generated client
 COPY --from=base /app/packages/db/prisma ./packages/db/prisma
 
+# Copy PDF templates package
+COPY --from=base /app/packages/pdf-templates ./packages/pdf-templates
+
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3001
+# Set Chromium path for puppeteer-core (Alpine Linux uses /usr/bin/chromium)
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV CHROME_PATH=/usr/bin/chromium
+# Tell Chromium to run in no-sandbox mode (required for Docker)
+ENV PUPPETEER_ARGS=--no-sandbox,--disable-setuid-sandbox
 
 # Expose port
 EXPOSE 3001

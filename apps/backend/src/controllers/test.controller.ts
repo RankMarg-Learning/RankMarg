@@ -1783,6 +1783,8 @@ export class TestController {
     next: NextFunction
   ): Promise<void> => {
     const { testId } = req.params;
+    const { useQueue = "false" } = req.query; // Optional: ?useQueue=true to use queue system
+
     try {
       // Fetch test with all questions and options
       const test = await prisma.test.findUnique({
@@ -1826,16 +1828,14 @@ export class TestController {
         return;
       }
 
-      // Import PDF service
-      const { PDFService } = await import("@/services/pdf.service");
-      const pdfService = new PDFService();
-
-      // Generate PDF
-      const pdfBuffer = await pdfService.generatePDF({
+      const testData = {
         testId: test.testId,
         title: test.title,
         description: test.description || undefined,
         examCode: test.examCode || undefined,
+        testCategory: test.examType?.replace(/_/g, ' ').toUpperCase(),
+        testDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        duration: `${test.duration} Minutes`,
         testSection: test.testSection.map((section) => ({
           name: section.name,
           testQuestion: section.testQuestion.map((tq) => ({
@@ -1853,15 +1853,79 @@ export class TestController {
             },
           })),
         })),
-      });
+      };
 
-      // Set response headers for PDF download
+      // Use queue system if requested
+      if (useQueue === "true" || process.env.PDF_USE_QUEUE === "true") {
+        const { pdfQueueService } = await import("@/services/pdf/queue");
+        const { PDFJobPriority, PDFJobStatus } = await import("@/services/pdf/queue");
+
+        const priorityParam = req.query.priority as string;
+        let priority: typeof PDFJobPriority.NORMAL = PDFJobPriority.NORMAL;
+        
+        if (priorityParam) {
+          const priorityNum = parseInt(priorityParam, 10);
+          // Validate priority is a valid enum value (1-4)
+          if (priorityNum >= PDFJobPriority.LOW && priorityNum <= PDFJobPriority.URGENT) {
+            priority = priorityNum as typeof PDFJobPriority.NORMAL;
+          }
+        }
+
+        const job = await pdfQueueService.queueTestPDF(
+          testData,
+          priority,
+          req.user.id
+        );
+
+        const isExisting = job.status === PDFJobStatus.COMPLETED && job.metadata?.downloadUrl;
+        
+        ResponseUtil.success(
+          res,
+          {
+            jobId: job.id,
+            status: job.status,
+            downloadUrl: job.metadata?.downloadUrl,
+            message: isExisting
+              ? "PDF found in cache. Ready for download."
+              : "PDF generation queued. Use /api/pdf/job/:jobId to check status.",
+          },
+          isExisting
+            ? "PDF ready for download"
+            : "PDF generation job queued successfully"
+        );
+        return;
+      }
+
+      // Direct generation (synchronous - for backward compatibility)
+      // Check S3 cache first
+      const { checkPDFExistsInS3, uploadPDFToS3 } = await import("@/services/pdf/queue/pdf-s3-storage");
+      const checkResult = await checkPDFExistsInS3(test.testId, "test", "pdfs");
+      
+      if (checkResult.exists && checkResult.url) {
+        // PDF exists in S3 - redirect to CDN URL
+        res.redirect(302, checkResult.url);
+        return;
+      }
+
+      // Generate PDF
+      const { PDFService } = await import("@/services/pdf.service");
+      const pdfService = new PDFService();
+      const pdfBuffer = await pdfService.generatePDF(testData);
+
+      // Upload to S3 for future cache hits (async, don't wait)
+      uploadPDFToS3(
+        pdfBuffer,
+        test.title.replace(/[^a-z0-9]/gi, "_"),
+        "pdfs",
+        test.testId,
+        "test"
+      ).catch((error) => console.error("Failed to upload PDF to S3:", error));
+
+      // Return PDF
       const fileName = `${test.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${testId.substring(0, 8)}.pdf`;
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
       res.setHeader("Content-Length", pdfBuffer.length.toString());
-
-      // Send PDF
       res.send(pdfBuffer);
     } catch (error) {
       console.error("Error generating PDF:", error);
