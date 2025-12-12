@@ -322,6 +322,10 @@
         .options {
             margin-top: 6px;
             margin-left: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            align-items: flex-start;
         }
 
         .option-item {
@@ -334,7 +338,14 @@
             display: flex;
             align-items: flex-start;
             gap: 4px;
+            flex: 1 1 calc(50% - 6px);
+            min-width: 45%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
+        
+        /* When option content is too wide for two columns, min-width constraint
+           will cause items to wrap to single column layout naturally */
 
         .option-label {
             flex-shrink: 0;
