@@ -257,21 +257,118 @@ export class PDFService {
         timeout: 60000,
       });
 
-      // Wait for MathJax to be available and typeset with explicit timeout
-      await page.waitForFunction(
-        // @ts-ignore - window is available in browser context
-        () => window.MathJax && typeof window.MathJax.typesetPromise === "function",
-        { timeout: 60000 }
-      );
-      
-      // Wait for MathJax to finish typesetting
-      await page.evaluate(() => {
-        // @ts-ignore - MathJax is available in browser context
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        return (globalThis as any).MathJax.typesetPromise();
-      });
+      // Wait for MathJax to load and render using a robust approach that handles frame detachment
+      try {
+        // Give the page time to load MathJax script
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Give a small delay to ensure rendering is complete
+        // Wait for MathJax object to be available with retry logic
+        let mathJaxReady = false;
+        let attempts = 0;
+        const maxAttempts = 40;
+        
+        while (!mathJaxReady && attempts < maxAttempts) {
+          try {
+            const result = await Promise.race([
+              page.evaluate(() => {
+                // @ts-ignore - window exists in browser context
+                const w = (globalThis as any).window || globalThis;
+                return w && 
+                       w.MathJax && 
+                       typeof w.MathJax.typesetPromise === "function";
+              }),
+              new Promise<boolean>((_, reject) => 
+                setTimeout(() => reject(new Error('evaluate timeout')), 1000)
+              )
+            ]) as boolean;
+            
+            mathJaxReady = result;
+            
+            if (!mathJaxReady) {
+              await new Promise(resolve => setTimeout(resolve, 500));
+              attempts++;
+            }
+          } catch (error) {
+            // If page is detached, log and continue
+            if (error instanceof Error && 
+                (error.message.includes('detached') || 
+                 error.message.includes('Target closed') ||
+                 error.message.includes('Session closed'))) {
+              console.warn('Page frame detached, proceeding with PDF generation');
+              break;
+            }
+            // For other errors, continue retrying
+            attempts++;
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+
+        if (!mathJaxReady) {
+          console.warn('MathJax not fully loaded after attempts, proceeding with PDF generation');
+        } else {
+          // Wait for MathJax startup to complete, then typeset all math
+          try {
+            await Promise.race([
+              page.evaluate(async () => {
+                // @ts-ignore - MathJax is available in browser context
+                const MJ = (globalThis as any).MathJax;
+                
+                if (!MJ) return;
+                
+                try {
+                  // Wait for startup to complete if promise exists
+                  // @ts-ignore
+                  if (MJ.startup && MJ.startup.promise) {
+                    // @ts-ignore
+                    await MJ.startup.promise;
+                  }
+                  
+                  // Small delay to ensure initialization is complete
+                  await new Promise(resolve => setTimeout(resolve, 100));
+                  
+                  // Now typeset the document
+                  // @ts-ignore
+                  if (typeof MJ.typesetPromise === 'function') {
+                    // @ts-ignore
+                    await MJ.typesetPromise();
+                  }
+                  
+                  // Additional delay to ensure rendering completes
+                  await new Promise(resolve => setTimeout(resolve, 500));
+                } catch (error) {
+                  console.error('MathJax typesetting error:', error);
+                }
+              }),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('typeset timeout')), 30000)
+              )
+            ]);
+          } catch (error) {
+            // If typesetting fails (including frame detachment), log and continue
+            if (error instanceof Error && 
+                (error.message.includes('detached') || 
+                 error.message.includes('Target closed') ||
+                 error.message.includes('Session closed') ||
+                 error.message.includes('timeout'))) {
+              console.warn('MathJax typesetting interrupted, proceeding with PDF generation');
+            } else {
+              console.error('MathJax typesetting error:', error);
+            }
+          }
+        }
+      } catch (error) {
+        // If we get any error during MathJax loading, log it but continue
+        if (error instanceof Error && 
+            (error.message.includes('detached') || 
+             error.message.includes('Target closed') ||
+             error.message.includes('Session closed'))) {
+          console.warn('Frame detached during MathJax wait, proceeding with PDF generation');
+        } else if (error instanceof Error) {
+          console.warn('Error waiting for MathJax:', error.message, '- proceeding anyway');
+        }
+      }
+
+      // Final wait to ensure all rendering and layout is complete
       await new Promise(resolve => setTimeout(resolve, 500));
 
       const pdf = await page.pdf({

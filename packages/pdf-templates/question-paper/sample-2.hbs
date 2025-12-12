@@ -19,11 +19,12 @@
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
                 packages: { '[+]': ['noerrors', 'noundefined', 'mhchem', 'physics'] }
             },
-            chtml: {
-                fontURL: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/tex',
-                matchFontHeight: true,
-                scale: 1,               // adjust global size if required
-                mtextInheritFont: true  // make text elements use page font if available
+            svg: {
+                fontCache: 'local',     // 'local' is good when fonts are available, else 'none'
+                exFactor: 1.0
+            },
+            startup: {
+                typeset: false
             },
             options: {
                 processHtmlClass: 'mathjax',
@@ -197,19 +198,29 @@
             clear: both;
         }
 
+        .question-flex {
+            display: flex;
+            align-items: flex-start;
+            line-height: 1.6;
+            gap: 4px;
+        }
+
         .q-number {
             font-weight: bold;
-            display: inline;
-            margin-right: 6px;
+            flex-shrink: 0;
+            vertical-align: top;
+            line-height: 1.6;
         }
 
         .q-content {
-            display: inline;
+            flex: 1;
+            min-width: 0;
             line-height: 1.6;
             font-family: 'Inter', sans-serif;
             font-size: 11px;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            vertical-align: top;
         }
 
         .q-content img {
@@ -237,10 +248,40 @@
         }
 
         .q-content p {
-            margin: 3px 0;
-            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
             font-size: 11px;
             font-family: 'Inter', sans-serif;
+        }
+
+        .q-content p:first-child {
+            margin-top: 0;
+        }
+
+        .q-content p:not(:first-child) {
+            margin-top: 2px;
+        }
+
+        /* Ensure all inline elements in q-content flow properly */
+        .q-content span,
+        .q-content strong,
+        .q-content em,
+        .q-content code {
+            display: inline;
+        }
+
+        /* Block elements should maintain their block nature but align properly */
+        .q-content div,
+        .q-content ul,
+        .q-content ol {
+            margin-top: 2px;
+        }
+
+        .q-content div:first-child,
+        .q-content ul:first-child,
+        .q-content ol:first-child {
+            margin-top: 0;
         }
 
         .q-content strong {
@@ -290,6 +331,25 @@
             font-size: 11px;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .option-label {
+            flex-shrink: 0;
+            font-weight: 500;
+            vertical-align: top;
+            line-height: 1.5;
+        }
+
+        .option-content {
+            flex: 1;
+            min-width: 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            vertical-align: top;
+            line-height: 1.5;
         }
 
         .option-item img {
@@ -303,19 +363,53 @@
             object-fit: contain !important;
         }
 
+        .option-content p,
         .option-item p {
-            margin: 2px 0;
+            margin: 0;
+            padding: 0;
             line-height: 1.5;
         }
 
+        .option-content p:first-child {
+            margin-top: 0;
+        }
+
+        .option-content p:not(:first-child) {
+            margin-top: 2px;
+        }
+
+        /* Ensure all inline elements in option-content flow properly */
+        .option-content span,
+        .option-content strong,
+        .option-content em,
+        .option-content code {
+            display: inline;
+        }
+
+        /* Block elements should maintain their block nature but align properly */
+        .option-content div,
+        .option-content ul,
+        .option-content ol {
+            margin-top: 2px;
+        }
+
+        .option-content div:first-child,
+        .option-content ul:first-child,
+        .option-content ol:first-child {
+            margin-top: 0;
+        }
+
+        .option-content strong,
         .option-item strong {
             font-weight: bold;
         }
 
+        .option-content em,
         .option-item em {
             font-style: italic;
         }
 
+        .option-content code,
         .option-item code {
             background-color: #f3f4f6;
             padding: 1px 3px;
@@ -353,25 +447,17 @@
             content: counter(page);
         }
 
-        /* ---------- MATHJAX MATH RENDERING (Inter font, normal weight) ---------- */
-        mjx-container,
-        mjx-container *,
-        mjx-math,
-        mjx-text {
-            font-family: 'Inter', sans-serif !important;
-            font-weight: 400 !important;
+        /* ---------- MATHJAX MATH RENDERING ---------- */
+        /* Let MathJax handle its own sizing and styling for proper vector output */
+        
+        mjx-container {
+            display: inline-block;
+            margin: 0 2px;
         }
-
-        mjx-container[jax="CHTML"][display="inline"] {
-            font-size: 0.95em !important;
-        }
-
-        mjx-container[jax="CHTML"][display="true"] {
-            font-size: 1.05em !important;
-        }
-
-        mjx-bold {
-            font-weight: 600 !important;
+        
+        mjx-container[display="true"] {
+            display: block;
+            margin: 8px 0;
         }
     </style>
 </head>
@@ -476,16 +562,19 @@
                     {{#each testQuestion}}
                     {{#with question}}
                     <div class="question-item">
-                        <span class="q-number">Q{{inc @index}}.</span>
-                        <div class="q-content">
-                            {{{content}}}
+                        <div class="question-flex">
+                            <span class="q-number">Q{{inc @index}}.</span>
+                            <div class="q-content">
+                                {{{content}}}
+                            </div>
                         </div>
 
                         {{#if options}}
                         <div class="options">
                             {{#each options}}
                             <div class="option-item">
-                                ({{optLabel @index}}) {{{content}}}
+                                <span class="option-label">({{optLabel @index}})</span>
+                                <span class="option-content">{{{content}}}</span>
                             </div>
                             {{/each}}
                         </div>
