@@ -283,7 +283,7 @@ const SectionsForm: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={addSection}
-              className="flex items-center gap-2"
+              className="gap-2"
             >
               <PlusCircle className="h-4 w-4 mr-2" />
               Create your first section
