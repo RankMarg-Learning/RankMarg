@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+
+  <style>
+    @page {
+      margin: 10mm 10mm 16mm 10mm;
+      counter-increment: page;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      counter-reset: page;
+      background: #f9fafb;
+    }
+
+    @media print {
+      .no-print {
+        display: none;
+      }
+
+      body {
+        background: white;
+      }
+    }
+
+    .question-item {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      margin-bottom: 14px;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .question-grid {
+      column-count: 2;
+      column-gap: 20px;
+      column-rule: 1px solid #e5e7eb;
+    }
+
+    .q-number {
+      font-weight: bold;
+      display: inline;
+      margin-right: 6px;
+    }
+
+    .q-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 11px;
+    }
+
+    .q-content {
+      display: inline;
+      line-height: 1.6;
+    }
+
+    .options {
+      margin-top: 6px;
+      margin-left: 18px;
+    }
+
+    .option-item {
+      margin-bottom: 3px;
+      line-height: 1.5;
+    }
+
+    .q-meta {
+      font-size: 9px;
+      color: #6b7280;
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    .section-header {
+      font-weight: bold;
+      font-size: 12px;
+      margin-top: 16px;
+      margin-bottom: 10px;
+      text-decoration: underline;
+      break-after: avoid;
+    }
+
+    .print-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      font-size: 9px;
+      text-align: center;
+      padding: 4px 0;
+      border-top: 1px solid #d1d5db;
+      background: white;
+    }
+
+    .print-footer .page-number::after {
+      content: counter(page);
+    }
+
+    .main-content {
+      padding-bottom: 32px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="min-h-screen bg-gray-50 p-6">
+    <div class="max-w-5xl mx-auto bg-white shadow-lg border-4 border-black main-content">
+
+      <!-- Header -->
+      <div class="bg-white p-4 border-b-4 border-black">
+        <div class="flex justify-between items-start">
+
+          <!-- ALLEN Logo Block -->
+          <div class="flex items-center gap-3">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2">
+                <div class="w-16 h-10 border-2 border-black flex items-center justify-center">
+                  <span class="font-extrabold text-lg tracking-tight">ALLEN</span>
+                </div>
+                <div class="text-[10px] leading-tight font-semibold">
+                  <p>CAREER INSTITUTE</p>
+                  <p class="italic">KOTA (RAJ.)</p>
+                </div>
+              </div>
+              <p class="text-[10px] mt-1 font-medium uppercase tracking-wide">
+                Leaders in JEE (Main + Adv.) | NEET (UG) | Olympiads
+              </p>
+            </div>
+          </div>
+
+          <!-- Center Exam Info -->
+          <div class="text-center px-4">
+            {{#if examCode}}
+            <p class="text-[11px] font-bold uppercase tracking-wide">
+              {{examCode}}
+            </p>
+            {{/if}}
+            {{#if testCategory}}
+            <p class="text-[11px] font-semibold uppercase tracking-wide">
+              {{testCategory}}
+            </p>
+            {{/if}}
+            {{#if testDate}}
+            <p class="text-[10px] mt-1">
+              Date: <span class="font-semibold">{{testDate}}</span>
+            </p>
+            {{/if}}
+            {{#if duration}}
+            <p class="text-[10px]">
+              Duration: <span class="font-semibold">{{duration}}</span>
+            </p>
+            {{/if}}
+          </div>
+
+          <!-- Right side -->
+          <div class="w-20">
+            {{#if testId}}
+            <div class="text-right font-bold text-sm">{{testId}}</div>
+            {{/if}}
+          </div>
+        </div>
+
+        <!-- Title -->
+        <div class="text-center mt-3">
+          <h1 class="text-xl font-extrabold uppercase tracking-wide">
+            {{title}}
+          </h1>
+          {{#if description}}
+          <p class="text-xs text-gray-700 mt-1">
+            {{description}}
+          </p>
+          {{/if}}
+        </div>
+      </div>
+
+
+
+      <!-- Questions: Two-Column Layout -->
+      <div class="px-6 py-4">
+        <div class="question-grid">
+          {{#each testSection}}
+
+          {{#if name}}
+          <div class="bg-gray-200 py-2 px-6 border-b border-black">
+            <p class="text-center font-semibold text-gray-900 text-[11px] uppercase tracking-wide">
+              {{name}}
+            </p>
+          </div>
+          {{/if}}
+
+          {{#each testQuestion}}
+          {{#with question}}
+          <div class="question-item">
+            <span class="q-number">Q{{inc @index}}.</span>
+
+            
+
+            <div class="q-content">
+              {{{content}}}
+            </div>
+
+            {{#if options}}
+            <div class="options">
+              {{#each options}}
+              <div class="option-item">
+                ({{optLabel @index}}) {{{content}}}
+              </div>
+              {{/each}}
+            </div>
+            {{/if}}
+
+           
+          </div>
+          {{/with}}
+          {{/each}}
+
+          {{/each}}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+ 

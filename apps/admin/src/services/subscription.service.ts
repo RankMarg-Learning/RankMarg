@@ -382,9 +382,46 @@ export interface UserDetails {
 
 // User Management API functions
 export const adminUserManagementService = {
+  // Get all users with pagination
+  async getAllUsers(params?: {
+    page?: number
+    limit?: number
+    search?: string
+    role?: string
+  }): Promise<{
+    users: UserDetails[]
+    pagination: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
+    }
+  }> {
+    const searchParams = new URLSearchParams()
+    if (params?.page) searchParams.append('page', params.page.toString())
+    if (params?.limit) searchParams.append('limit', params.limit.toString())
+    if (params?.search) searchParams.append('search', params.search)
+    if (params?.role) searchParams.append('role', params.role)
+    
+    const response = await api.get(`/admin/user-management/users?${searchParams.toString()}`)
+    return response.data.data
+  },
+
   // Get user details by unified search
   async getUser(search: string): Promise<UserDetails> {
     const response = await api.get(`/admin/user-management/user?search=${encodeURIComponent(search)}`)
+    return response.data.data
+  },
+
+  // Create new user
+  async createUser(data: {
+    fullname: string
+    username: string
+    email: string
+    password: string
+    role?: string
+  }): Promise<UserDetails> {
+    const response = await api.post('/admin/user-management/user', data)
     return response.data.data
   },
 
@@ -398,6 +435,11 @@ export const adminUserManagementService = {
   async updateUser(userId: string, data: Partial<UserDetails>): Promise<UserDetails> {
     const response = await api.patch(`/admin/user-management/user?userId=${userId}`, data)
     return response.data.data
+  },
+
+  // Delete user
+  async deleteUser(userId: string): Promise<void> {
+    await api.delete(`/admin/user-management/user?userId=${userId}`)
   }
 }
 

@@ -72,7 +72,7 @@ export class AdminSubscriptionController {
             planId: plan?.id || existingSubscription.planId,
             duration: duration || plan?.duration || existingSubscription.duration,
             status: status || "ACTIVE",
-            amount: plan?.amount || existingSubscription.amount,
+            amount:  existingSubscription.amount || 0,
             currentPeriodEnd: periodEnd,
             updatedAt: new Date(),
           },
@@ -97,7 +97,7 @@ export class AdminSubscriptionController {
             duration: duration || plan?.duration || 30,
             status: status || "ACTIVE",
             provider: PaymentProvider.PLATFORM,
-            amount: plan?.amount || 0,
+            amount: 0,
             currentPeriodEnd: periodEnd,
           },
           include: {

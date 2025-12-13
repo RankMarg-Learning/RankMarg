@@ -55,7 +55,7 @@ const SignInForm = () => {
       
       if (response.data.success && response.data.data) {
         const user = response.data.data.user;
-        if (user.role !== 'ADMIN') {
+        if (user.role === 'USER') {
           try {
             await api.post('/auth/sign-out');
           } catch (error) {

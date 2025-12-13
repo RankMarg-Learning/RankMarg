@@ -23,7 +23,7 @@ export async function processImageToQuestion(
   subject: any,
   topicId: string | null,
   subtopics: { id: string; name: string }[],
-  gptModel: string = "gpt-4o-mini",
+  gptModel: string = "gpt-5-mini",
   additionalInstructions: string = ""
 ): Promise<ProcessingResult> {
   try {

@@ -48,11 +48,15 @@ export function SectionForm({
   const [questionCount, setQuestionCount] = useState(10);
   const [selectedSubjectId, setSelectedSubjectId] = useState("");
   const [selectedTopicIds, setSelectedTopicIds] = useState<string[]>([]);
+  const [topicWeightages, setTopicWeightages] = useState<Record<string, number>>({});
   const [difficultyMin, setDifficultyMin] = useState(1);
   const [difficultyMax, setDifficultyMax] = useState(4);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [typeWeightages, setTypeWeightages] = useState<Record<string, number>>({});
   const [selectedFormats, setSelectedFormats] = useState<string[]>([]);
+  const [formatWeightages, setFormatWeightages] = useState<Record<string, number>>({});
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [categoryWeightages, setCategoryWeightages] = useState<Record<string, number>>({});
 
   const normalizedExamCode = examCode && examCode !== "Default" ? examCode : undefined;
 
@@ -63,8 +67,62 @@ export function SectionForm({
   useEffect(() => {
     if (selectedSubjectId) {
       setSelectedTopicIds([]);
+      setTopicWeightages({});
     }
   }, [selectedSubjectId]);
+
+  // Clean up weightages when items are deselected
+  useEffect(() => {
+    setTopicWeightages((prev) => {
+      const updated = { ...prev };
+      selectedTopicIds.forEach((id) => {
+        if (!updated[id]) updated[id] = 0;
+      });
+      Object.keys(updated).forEach((id) => {
+        if (!selectedTopicIds.includes(id)) delete updated[id];
+      });
+      return updated;
+    });
+  }, [selectedTopicIds]);
+
+  useEffect(() => {
+    setTypeWeightages((prev) => {
+      const updated = { ...prev };
+      selectedTypes.forEach((type) => {
+        if (!updated[type]) updated[type] = 0;
+      });
+      Object.keys(updated).forEach((type) => {
+        if (!selectedTypes.includes(type)) delete updated[type];
+      });
+      return updated;
+    });
+  }, [selectedTypes]);
+
+  useEffect(() => {
+    setFormatWeightages((prev) => {
+      const updated = { ...prev };
+      selectedFormats.forEach((format) => {
+        if (!updated[format]) updated[format] = 0;
+      });
+      Object.keys(updated).forEach((format) => {
+        if (!selectedFormats.includes(format)) delete updated[format];
+      });
+      return updated;
+    });
+  }, [selectedFormats]);
+
+  useEffect(() => {
+    setCategoryWeightages((prev) => {
+      const updated = { ...prev };
+      selectedCategories.forEach((category) => {
+        if (!updated[category]) updated[category] = 0;
+      });
+      Object.keys(updated).forEach((category) => {
+        if (!selectedCategories.includes(category)) delete updated[category];
+      });
+      return updated;
+    });
+  }, [selectedCategories]);
 
   const resetForm = useCallback(() => {
     setSectionName("");
@@ -75,11 +133,15 @@ export function SectionForm({
     setQuestionCount(10);
     setSelectedSubjectId("");
     setSelectedTopicIds([]);
+    setTopicWeightages({});
     setDifficultyMin(1);
     setDifficultyMax(4);
     setSelectedTypes([]);
+    setTypeWeightages({});
     setSelectedFormats([]);
+    setFormatWeightages({});
     setSelectedCategories([]);
+    setCategoryWeightages({});
   }, []);
 
   const handleToggleSelection = useCallback(
@@ -139,13 +201,17 @@ export function SectionForm({
       questionCount,
       subjectId: selectedSubjectId,
       topicIds: selectedTopicIds,
+      topicWeightages: Object.keys(topicWeightages).length > 0 ? topicWeightages : undefined,
       difficultyRange: {
         min: difficultyMin,
         max: difficultyMax,
       },
       questionTypes: selectedTypes,
+      questionTypeWeightages: Object.keys(typeWeightages).length > 0 ? typeWeightages : undefined,
       questionFormats: selectedFormats,
+      questionFormatWeightages: Object.keys(formatWeightages).length > 0 ? formatWeightages : undefined,
       questionCategories: selectedCategories,
+      questionCategoryWeightages: Object.keys(categoryWeightages).length > 0 ? categoryWeightages : undefined,
     };
 
     onSubmit(payload);
@@ -162,10 +228,14 @@ export function SectionForm({
     resetForm,
     sectionName,
     selectedCategories,
+    categoryWeightages,
     selectedFormats,
+    formatWeightages,
     selectedSubjectId,
     selectedTopicIds,
+    topicWeightages,
     selectedTypes,
+    typeWeightages,
   ]);
 
   const selectedTopics = useMemo(() => {
@@ -311,19 +381,49 @@ export function SectionForm({
           )}
         </div>
         {selectedTopics.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
+          <div className="space-y-2 mt-2">
+            <Label className="text-xs text-muted-foreground">
+              Assign Weightage (1-100) - Leave empty for equal distribution
+            </Label>
             {selectedTopics.map(
               (topic) =>
                 topic && (
-                  <Badge key={topic.id} variant="secondary" className="flex items-center">
-                    {topic.name}
-                    <X
-                      className="ml-1 h-3 w-3 cursor-pointer"
-                      onClick={() =>
-                        setSelectedTopicIds((prev) => prev.filter((id) => id !== topic.id))
-                      }
+                  <div key={topic.id} className="flex items-center gap-2 p-2 border rounded-md">
+                    <div className="flex-1 flex items-center gap-2">
+                      <span className="text-sm font-medium">{topic.name}</span>
+                      <X
+                        className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground"
+                        onClick={() => {
+                          setSelectedTopicIds((prev) => prev.filter((id) => id !== topic.id));
+                          setTopicWeightages((prev) => {
+                            const updated = { ...prev };
+                            delete updated[topic.id];
+                            return updated;
+                          });
+                        }}
+                      />
+                    </div>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={topicWeightages[topic.id] || ""}
+                      onChange={(e) => {
+                        const value = e.target.value ? parseInt(e.target.value, 10) : 0;
+                        if (value >= 1 && value <= 100) {
+                          setTopicWeightages((prev) => ({ ...prev, [topic.id]: value }));
+                        } else if (value === 0) {
+                          setTopicWeightages((prev) => {
+                            const updated = { ...prev };
+                            delete updated[topic.id];
+                            return updated;
+                          });
+                        }
+                      }}
+                      placeholder="Weightage (1-100)"
+                      className="w-32"
                     />
-                  </Badge>
+                  </div>
                 ),
             )}
           </div>
@@ -388,6 +488,40 @@ export function SectionForm({
             </Badge>
           ))}
         </div>
+        {selectedTypes.length > 0 && (
+          <div className="space-y-2 mt-2">
+            <Label className="text-xs text-muted-foreground">
+              Assign Weightage (1-100) - Leave empty for equal distribution
+            </Label>
+            {selectedTypes.map((type) => (
+              <div key={type} className="flex items-center gap-2 p-2 border rounded-md">
+                <div className="flex-1">
+                  <span className="text-sm font-medium">{TextFormator(type)}</span>
+                </div>
+                <Input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={typeWeightages[type] || ""}
+                  onChange={(e) => {
+                    const value = e.target.value ? parseInt(e.target.value, 10) : 0;
+                    if (value >= 1 && value <= 100) {
+                      setTypeWeightages((prev) => ({ ...prev, [type]: value }));
+                    } else if (value === 0) {
+                      setTypeWeightages((prev) => {
+                        const updated = { ...prev };
+                        delete updated[type];
+                        return updated;
+                      });
+                    }
+                  }}
+                  placeholder="Weightage (1-100)"
+                  className="w-32"
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -406,6 +540,40 @@ export function SectionForm({
             </Badge>
           ))}
         </div>
+        {selectedFormats.length > 0 && (
+          <div className="space-y-2 mt-2">
+            <Label className="text-xs text-muted-foreground">
+              Assign Weightage (1-100) - Leave empty for equal distribution
+            </Label>
+            {selectedFormats.map((format) => (
+              <div key={format} className="flex items-center gap-2 p-2 border rounded-md">
+                <div className="flex-1">
+                  <span className="text-sm font-medium">{TextFormator(format)}</span>
+                </div>
+                <Input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={formatWeightages[format] || ""}
+                  onChange={(e) => {
+                    const value = e.target.value ? parseInt(e.target.value, 10) : 0;
+                    if (value >= 1 && value <= 100) {
+                      setFormatWeightages((prev) => ({ ...prev, [format]: value }));
+                    } else if (value === 0) {
+                      setFormatWeightages((prev) => {
+                        const updated = { ...prev };
+                        delete updated[format];
+                        return updated;
+                      });
+                    }
+                  }}
+                  placeholder="Weightage (1-100)"
+                  className="w-32"
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -424,6 +592,40 @@ export function SectionForm({
             </Badge>
           ))}
         </div>
+        {selectedCategories.length > 0 && (
+          <div className="space-y-2 mt-2">
+            <Label className="text-xs text-muted-foreground">
+              Assign Weightage (1-100) - Leave empty for equal distribution
+            </Label>
+            {selectedCategories.map((category) => (
+              <div key={category} className="flex items-center gap-2 p-2 border rounded-md">
+                <div className="flex-1">
+                  <span className="text-sm font-medium">{TextFormator(category)}</span>
+                </div>
+                <Input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={categoryWeightages[category] || ""}
+                  onChange={(e) => {
+                    const value = e.target.value ? parseInt(e.target.value, 10) : 0;
+                    if (value >= 1 && value <= 100) {
+                      setCategoryWeightages((prev) => ({ ...prev, [category]: value }));
+                    } else if (value === 0) {
+                      setCategoryWeightages((prev) => {
+                        const updated = { ...prev };
+                        delete updated[category];
+                        return updated;
+                      });
+                    }
+                  }}
+                  placeholder="Weightage (1-100)"
+                  className="w-32"
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <Button

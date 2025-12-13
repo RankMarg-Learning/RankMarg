@@ -71,10 +71,10 @@ export class CronManager {
     {
       //Tested
       name: "updateGrade",
-      schedule: "0 2 * * 0", // Every 14 day at 2 AM
+      schedule: "0 2 * * *", // Every day at 2 AM
       job: updateGradeJob,
       enabled: true,
-      description: "Update user grades every 14 days at midnight",
+      description: "Update user grades every day at 2 AM",
     },
     {
       name: "updateUserActivity",

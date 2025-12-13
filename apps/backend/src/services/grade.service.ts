@@ -380,9 +380,9 @@ export class StudentGradeService {
   }
 
   private determineGradeFromScore(score: number): GradeEnum {
-    if (score >= 0.80) return GradeEnum.A_PLUS;
-    if (score >= 0.7) return GradeEnum.A;
-    if (score >= 0.55) return GradeEnum.B;
+    if (score >= 0.7) return GradeEnum.A_PLUS;
+    if (score >= 0.6) return GradeEnum.A;
+    if (score >= 0.5) return GradeEnum.B;
     if (score >= 0.35) return GradeEnum.C;
     return GradeEnum.D;
   }
