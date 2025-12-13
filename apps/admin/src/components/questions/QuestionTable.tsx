@@ -58,6 +58,7 @@ interface QuestionsetProps {
   maxSelectable?: number;
   onSelectionLimitReached?: () => void;
   lockedSubjectId?: string;
+  questionFilter?: "all" | "my-questions";
 }
 
 const Questionset: React.FC<QuestionsetProps> = ({
@@ -69,6 +70,7 @@ const Questionset: React.FC<QuestionsetProps> = ({
   maxSelectable,
   onSelectionLimitReached,
   lockedSubjectId,
+  questionFilter = "all",
 }) => {
   const [subject, setSubject] = useState(() => lockedSubjectId ?? "");
   const [difficulty, setDifficulty] = useState<number | null>(null);
@@ -168,13 +170,13 @@ const Questionset: React.FC<QuestionsetProps> = ({
   };
 
   const { data:questions, isLoading, refetch } = useQuery({
-    queryKey: ["questions", currentPage, subject, difficulty, pyqYear, search, isPublished,  examCode],
-    queryFn: async () => getQuestionByFilter({isPublished, page: currentPage, subjectId: subject, difficulty,  pyqYear, search, type, examCode }),
+    queryKey: ["questions", currentPage, subject, difficulty, pyqYear, search, isPublished,  examCode, questionFilter],
+    queryFn: async () => getQuestionByFilter({isPublished, page: currentPage, subjectId: subject, difficulty,  pyqYear, search, type, examCode, questionFilter }),
   });
 
   useEffect(() => {
     refetch();
-  }, [currentPage, subject, difficulty, pyqYear, search,  type, examCode, refetch]);
+  }, [currentPage, subject, difficulty, pyqYear, search,  type, examCode, questionFilter, refetch]);
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);

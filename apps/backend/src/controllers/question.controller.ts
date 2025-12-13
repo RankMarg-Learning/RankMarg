@@ -89,6 +89,7 @@ export class QuestionController {
         reports,
         page = 1,
         limit = 25,
+        questionFilter = "all",
       } = req.query;
       const userID = req.user.id;
       const userRole = req.user.role;
@@ -96,9 +97,7 @@ export class QuestionController {
       const skip = (Number(page) - 1) * l;
       const whereClause: WhereClauseProps = {};
       
-      if (userRole !== Role.ADMIN) {
-        whereClause.createdBy = userID;
-      }
+     
       
       if (subjectId) whereClause.subjectId = subjectId as string;
       if (topicId) whereClause.topicId = topicId as string;
@@ -126,6 +125,12 @@ export class QuestionController {
         ];
       if (isPublished) {
         whereClause.isPublished = isPublished === "true";
+      }
+      if (userRole !== Role.ADMIN && questionFilter === "my-questions") {
+        whereClause.createdBy = userID;
+        whereClause.isPublished = false;
+      } else if (userRole === Role.ADMIN && questionFilter === "all") {
+        whereClause.isPublished = false;
       }
 
       let reportFilteredSlugs: string[] | null = null;

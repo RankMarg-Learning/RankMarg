@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { testQuestion } from '@/types/typeAdmin';
-import { Button } from '@repo/common-ui';
+import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/common-ui';
 import { Trash2, Check, GripVertical, Search, Filter } from 'lucide-react';
 import { Badge } from '@repo/common-ui';
 import { Input } from '@repo/common-ui';
@@ -32,12 +32,12 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showQuestionBank, setShowQuestionBank] = useState(false);
-
+  const [questionFilter, setQuestionFilter] = useState<"all" | "my-questions">("all");
   // Stable key that only changes when examCode changes
   const questionTableKey = useMemo(() => `question-table-${examCode}`, [examCode]);
-  
+
   // Memoize the selected questions to prevent unnecessary re-renders
-  const memoizedSelectedQuestions = useMemo(() => 
+  const memoizedSelectedQuestions = useMemo(() =>
     selectedQuestions.map((q) => ({
       id: q.id,
       title: q.title || "Unknown Question"
@@ -46,7 +46,7 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
   // Filter selected questions based on search term
   const filteredSelectedQuestions = useMemo(() => {
     if (!searchTerm) return selectedQuestions;
-    return selectedQuestions.filter(q => 
+    return selectedQuestions.filter(q =>
       q.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       q.id.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -109,20 +109,36 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
     <div className="space-y-4">
       {/* Question Bank Toggle */}
       <div className="flex items-center justify-between">
-        <Button
-          type="button"
-          variant={showQuestionBank ? "default" : "outline"}
-          size="sm"
-          onClick={() => setShowQuestionBank(!showQuestionBank)}
-          className="flex items-center gap-2"
-        >
-          <Search className="h-4 w-4" />
-          {showQuestionBank ? "Hide" : "Show"} Question Bank
-        </Button>
-        
         <div className="flex items-center gap-2">
-          <Badge 
-            variant={isComplete ? "default" : "outline"} 
+          <Button
+            type="button"
+            variant={showQuestionBank ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowQuestionBank(!showQuestionBank)}
+            className="flex items-center gap-2"
+          >
+            <Search className="h-4 w-4" />
+            {showQuestionBank ? "Hide" : "Show"} Question Bank
+          </Button>
+          {showQuestionBank && (
+          <Select
+            onValueChange={(value) => setQuestionFilter(value as "all" | "my-questions")}
+            value={questionFilter}
+            
+          >
+            <SelectTrigger className="w-24 text-sm">
+              <SelectValue placeholder="All" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="my-questions">My Questions</SelectItem>
+            </SelectContent>
+          </Select>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge
+            variant={isComplete ? "default" : "outline"}
             className={isComplete ? "bg-green-500" : ""}
           >
             {selectedQuestions.length} / {maxQuestions}
@@ -143,10 +159,9 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
 
       {/* Progress Bar */}
       <div className="w-full bg-secondary rounded-full h-2">
-        <div 
-          className={`h-2 rounded-full transition-all duration-300 ${
-            isComplete ? 'bg-green-500' : 'bg-primary'
-          }`}
+        <div
+          className={`h-2 rounded-full transition-all duration-300 ${isComplete ? 'bg-green-500' : 'bg-primary'
+            }`}
           style={{ width: `${Math.min(progressPercentage, 100)}%` }}
         />
       </div>
@@ -158,7 +173,7 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
             <Filter className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium">Select Questions from Bank</span>
           </div>
-          
+
           <Questionset
             key={questionTableKey}
             onSelectedQuestionsChange={handleQuestionSelect}
@@ -166,6 +181,7 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
             isCheckBox={true}
             isPublished={true}
             examCode={examCode}
+            questionFilter={questionFilter as "all" | "my-questions"}
           />
         </div>
       )}
@@ -179,7 +195,7 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
             Selected Questions
             {isComplete && <Check className="h-4 w-4 text-green-500" />}
           </h4>
-          
+
           {selectedQuestions.length > 5 && (
             <div className="flex items-center gap-2">
               <Search className="h-4 w-4 text-muted-foreground" />
@@ -200,9 +216,8 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
               return (
                 <div
                   key={question.id}
-                  className={`p-3 hover:bg-slate-50 flex justify-between items-center transition-colors ${
-                    draggedItemIndex === originalIndex ? "bg-slate-100" : ""
-                  }`}
+                  className={`p-3 hover:bg-slate-50 flex justify-between items-center transition-colors ${draggedItemIndex === originalIndex ? "bg-slate-100" : ""
+                    }`}
                   draggable={true}
                   onDragStart={() => handleDragStart(originalIndex)}
                   onDragOver={(e) => handleDragOver(e, originalIndex)}

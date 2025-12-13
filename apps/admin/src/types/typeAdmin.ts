@@ -254,4 +254,5 @@ export interface QuestionFilter {
   examCode?: string | null;
   skip: number;
   limit: number;
+  questionFilter?: "all" | "my-questions";
 }
