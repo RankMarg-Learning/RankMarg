@@ -46,25 +46,38 @@ export class TestController {
     try {
       const { sections, examCode, totalQuestions, duration } = req.body;
 
-      // Validate input
       if (!sections || sections.length === 0) {
         ResponseUtil.error(res, "At least one section is required", 400);
         return;
       }
 
-      // Get all used question IDs in a single optimized query
+      if (!req.user?.id) {
+        ResponseUtil.error(res, "User not authenticated", 401);
+        return;
+      }
+
+      const userId = req.user.id;
+
       const usedQuestionIds = await prisma.testQuestion.findMany({
+        where: {
+          testSection: {
+            test: {
+              createdBy: userId,
+            },
+          },
+        },
         select: {
           questionId: true,
         },
+        distinct: ['questionId'],
       });
+      
       const usedQuestionIdSet = new Set(
         usedQuestionIds.map((tq) => tq.questionId)
       );
-      const usedQuestionIdArray = Array.from(usedQuestionIdSet);
 
-      // Process each section and find matching questions
       const processedSections = [];
+      const globalSelectedIds = new Set<string>();
 
       for (const section of sections) {
         const {
@@ -86,64 +99,31 @@ export class TestController {
           questionCategoryWeightages,
         } = section;
 
-        // Build where clause for question filtering
         const whereClause: any = {
           isPublished: true,
+          id: {
+            notIn: [...usedQuestionIdSet, ...globalSelectedIds],
+          },
         };
 
-        // Exclude already used questions (only if there are any)
-        if (usedQuestionIdArray.length > 0) {
-          whereClause.id = {
-            notIn: usedQuestionIdArray,
-          };
-        }
-
-        // Add subject filter
-        if (subjectId) {
-          whereClause.subjectId = subjectId;
-        }
-
-        // Add topic filter
-        if (topicIds && topicIds.length > 0) {
-          whereClause.topicId = {
-            in: topicIds,
-          };
-        }
-
-        // Add difficulty range filter
+        if (subjectId) whereClause.subjectId = subjectId;
+        if (topicIds?.length > 0) whereClause.topicId = { in: topicIds };
         if (difficultyRange) {
           whereClause.difficulty = {
-            gte: difficultyRange.min || 1,
-            lte: difficultyRange.max || 4,
+            gte: difficultyRange.min ?? 1,
+            lte: difficultyRange.max ?? 4,
           };
         }
-
-        // Add question type filter
-        if (questionTypes && questionTypes.length > 0) {
-          whereClause.type = {
-            in: questionTypes,
-          };
-        }
-
-        // Add question format filter
-        if (questionFormats && questionFormats.length > 0) {
-          whereClause.format = {
-            in: questionFormats,
-          };
-        }
-
-        // Add question categories filter
-        if (questionCategories && questionCategories.length > 0) {
+        if (questionTypes?.length > 0) whereClause.type = { in: questionTypes };
+        if (questionFormats?.length > 0) whereClause.format = { in: questionFormats };
+        if (questionCategories?.length > 0) {
           whereClause.category = {
             some: {
-              category: {
-                in: questionCategories,
-              },
+              category: { in: questionCategories },
             },
           };
         }
 
-        // Fetch matching questions with optimized query
         const availableQuestions = await prisma.question.findMany({
           where: whereClause,
           select: {
@@ -191,7 +171,6 @@ export class TestController {
           return;
         }
 
-        // Intelligent question selection algorithm with weightages
         const selectedQuestions = this.selectOptimizedQuestionsWithWeightages(
           availableQuestions,
           questionCount,
@@ -207,6 +186,8 @@ export class TestController {
             questionCategoryWeightages: questionCategoryWeightages || {},
           }
         );
+
+        selectedQuestions.forEach((q) => globalSelectedIds.add(q.id));
 
         processedSections.push({
           name,
@@ -237,59 +218,45 @@ export class TestController {
     }
   };
 
-  // Helper method to normalize weightages and distribute equal weightage to unassigned items
   private normalizeWeightages = (
     items: string[],
     weightages: Record<string, number>
   ): Record<string, number> => {
     if (items.length === 0) return {};
 
-    const normalized: Record<string, number> = {};
-    const assignedItems: string[] = [];
-    const unassignedItems: string[] = [];
     let totalAssignedWeight = 0;
+    const normalized: Record<string, number> = {};
+    const unassignedItems: string[] = [];
 
-    // Separate assigned and unassigned items
-    items.forEach((item) => {
+    for (const item of items) {
       const weight = weightages[item];
-      if (weight && weight > 0 && weight <= 100) {
+      if (weight > 0 && weight <= 100) {
         normalized[item] = weight;
-        assignedItems.push(item);
         totalAssignedWeight += weight;
       } else {
         unassignedItems.push(item);
       }
-    });
+    }
 
-    // If no items have weightages assigned, give equal weight to all
-    if (assignedItems.length === 0) {
+    if (totalAssignedWeight === 0) {
       const equalWeight = 100 / items.length;
-      items.forEach((item) => {
+      for (const item of items) {
         normalized[item] = equalWeight;
-      });
+      }
       return normalized;
     }
 
-    // Distribute remaining weight equally among unassigned items
     if (unassignedItems.length > 0) {
       const remainingWeight = Math.max(0, 100 - totalAssignedWeight);
-      if (remainingWeight > 0) {
-        const equalWeight = remainingWeight / unassignedItems.length;
-        unassignedItems.forEach((item) => {
-          normalized[item] = equalWeight;
-        });
-      } else {
-        // If total assigned weight >= 100, unassigned items get 0
-        unassignedItems.forEach((item) => {
-          normalized[item] = 0;
-        });
+      const equalWeight = remainingWeight > 0 ? remainingWeight / unassignedItems.length : 0;
+      for (const item of unassignedItems) {
+        normalized[item] = equalWeight;
       }
     }
 
     return normalized;
   };
 
-  // Helper method to select optimized questions with weightages
   private selectOptimizedQuestionsWithWeightages = (
     availableQuestions: any[],
     requiredCount: number,
@@ -306,7 +273,6 @@ export class TestController {
     }
   ) => {
     if (!weightageConfig) {
-      // Fallback to old method if no weightage config
       return this.selectOptimizedQuestions(
         availableQuestions,
         requiredCount,
@@ -314,7 +280,6 @@ export class TestController {
       );
     }
 
-    // Normalize weightages
     const topicWeightages = this.normalizeWeightages(
       weightageConfig.topicIds,
       weightageConfig.topicWeightages
@@ -332,163 +297,117 @@ export class TestController {
       weightageConfig.questionCategoryWeightages
     );
 
-    // Calculate scores for each question based on weightages
-    const questionScores = availableQuestions.map((q) => {
-      let score = 0;
+    const minDiff = difficultyRange?.min ?? 1;
+    const maxDiff = difficultyRange?.max ?? 4;
 
-      // Topic weightage (if topic is selected)
-      if (q.topic?.id && topicWeightages[q.topic.id]) {
-        score += topicWeightages[q.topic.id];
-      }
+    const scoredQuestions = availableQuestions
+      .filter((q) => q.difficulty >= minDiff && q.difficulty <= maxDiff)
+      .map((q) => {
+        let score = 0;
 
-      // Type weightage (if type is selected)
-      if (q.type && typeWeightages[q.type]) {
-        score += typeWeightages[q.type];
-      }
+        if (q.topic?.id) score += topicWeightages[q.topic.id] ?? 0;
+        if (q.type) score += typeWeightages[q.type] ?? 0;
+        if (q.format) score += formatWeightages[q.format] ?? 0;
 
-      // Format weightage (if format is selected)
-      if (q.format && formatWeightages[q.format]) {
-        score += formatWeightages[q.format];
-      }
-
-      // Category weightage (if any category matches)
-      if (q.category && q.category.length > 0) {
-        const matchingCategories = q.category.filter(
-          (cat: any) => categoryWeightages[cat.category]
-        );
-        if (matchingCategories.length > 0) {
-          const avgCategoryWeight =
-            matchingCategories.reduce(
-              (sum: number, cat: any) =>
-                sum + (categoryWeightages[cat.category] || 0),
-              0
-            ) / matchingCategories.length;
-          score += avgCategoryWeight;
+        if (q.category?.length > 0) {
+          let categoryScore = 0;
+          let matchCount = 0;
+          for (const cat of q.category) {
+            const weight = categoryWeightages[cat.category];
+            if (weight) {
+              categoryScore += weight;
+              matchCount++;
+            }
+          }
+          if (matchCount > 0) {
+            score += categoryScore / matchCount;
+          }
         }
-      }
 
-      return { question: q, score };
-    });
+        return { question: q, score };
+      });
 
-    // Sort by score (descending) and then shuffle within same score groups
-    questionScores.sort((a, b) => b.score - a.score);
+    if (scoredQuestions.length < requiredCount) {
+      scoredQuestions.push(
+        ...availableQuestions
+          .filter((q) => q.difficulty < minDiff || q.difficulty > maxDiff)
+          .map((q) => ({ question: q, score: 0 }))
+      );
+    }
 
-    // Group by score and shuffle within groups for randomness
+    scoredQuestions.sort((a, b) => b.score - a.score);
+
     const scoreGroups = new Map<number, any[]>();
-    questionScores.forEach(({ question, score }) => {
-      const roundedScore = Math.round(score * 10) / 10; // Round to 1 decimal
+    for (const { question, score } of scoredQuestions) {
+      const roundedScore = Math.round(score * 10) / 10;
       if (!scoreGroups.has(roundedScore)) {
         scoreGroups.set(roundedScore, []);
       }
       scoreGroups.get(roundedScore)!.push(question);
-    });
-
-    // Shuffle each score group
-    const shuffledGroups: any[] = [];
-    Array.from(scoreGroups.entries())
-      .sort((a, b) => b[0] - a[0]) // Sort by score descending
-      .forEach(([_, questions]) => {
-        shuffledGroups.push(...this.shuffleArray(questions));
-      });
-
-    // Apply difficulty range filter if specified
-    const minDiff = difficultyRange?.min || 1;
-    const maxDiff = difficultyRange?.max || 4;
-    let filteredQuestions = shuffledGroups.filter(
-      (q) => q.difficulty >= minDiff && q.difficulty <= maxDiff
-    );
-
-    // If filtered questions are less than required, use all available
-    if (filteredQuestions.length < requiredCount) {
-      filteredQuestions = shuffledGroups;
     }
 
-    // Select questions maintaining diversity
-    const selectedQuestions: any[] = [];
-    const selectedIds = new Set<string>();
-
-    // First pass: select based on weightages
-    for (const question of filteredQuestions) {
-      if (selectedQuestions.length >= requiredCount) break;
-      if (!selectedIds.has(question.id)) {
-        selectedQuestions.push(question);
-        selectedIds.add(question.id);
-      }
+    const finalQuestions: any[] = [];
+    const sortedScores = Array.from(scoreGroups.keys()).sort((a, b) => b - a);
+    
+    for (const score of sortedScores) {
+      const questions = scoreGroups.get(score)!;
+      finalQuestions.push(...this.shuffleArray(questions));
     }
 
-    // If we still need more questions, fill from remaining pool
-    if (selectedQuestions.length < requiredCount) {
-      const remaining = filteredQuestions.filter(
-        (q) => !selectedIds.has(q.id)
-      );
-      const needed = requiredCount - selectedQuestions.length;
-      selectedQuestions.push(...remaining.slice(0, needed));
-    }
-
-    // Final shuffle for randomness
-    return this.shuffleArray(selectedQuestions).slice(0, requiredCount);
+    return this.shuffleArray(finalQuestions.slice(0, requiredCount));
   };
 
-  // Fallback method for backward compatibility
   private selectOptimizedQuestions = (
     availableQuestions: any[],
     requiredCount: number,
     difficultyRange?: { min: number; max: number }
   ) => {
-    // Group questions by difficulty
-    const questionsByDifficulty = {
-      1: availableQuestions.filter((q) => q.difficulty === 1),
-      2: availableQuestions.filter((q) => q.difficulty === 2),
-      3: availableQuestions.filter((q) => q.difficulty === 3),
-      4: availableQuestions.filter((q) => q.difficulty === 4),
+    const minDiff = difficultyRange?.min ?? 1;
+    const maxDiff = difficultyRange?.max ?? 4;
+
+    const questionsByDifficulty: Record<number, any[]> = { 1: [], 2: [], 3: [], 4: [] };
+    for (const q of availableQuestions) {
+      if (q.difficulty >= 1 && q.difficulty <= 4) {
+        questionsByDifficulty[q.difficulty].push(q);
+      }
+    }
+
+    const distribution: Record<number, number> = {
+      1: Math.floor(requiredCount * 0.2),
+      2: Math.floor(requiredCount * 0.4),
+      3: Math.floor(requiredCount * 0.3),
+      4: Math.floor(requiredCount * 0.1),
     };
 
-    // Calculate distribution based on difficulty range
-    const minDiff = difficultyRange?.min || 1;
-    const maxDiff = difficultyRange?.max || 4;
-
-    // Smart distribution: 40% easy-medium, 40% medium, 20% hard-very_hard
-    const distribution = {
-      1: Math.floor(requiredCount * 0.2), // 20% easy
-      2: Math.floor(requiredCount * 0.4), // 40% medium
-      3: Math.floor(requiredCount * 0.3), // 30% hard
-      4: Math.floor(requiredCount * 0.1), // 10% very hard
-    };
-
-    // Adjust distribution based on requested range
     const selectedQuestions: any[] = [];
-    const difficultyLevels = [1, 2, 3, 4].filter(
-      (level) => level >= minDiff && level <= maxDiff
-    );
+    const selectedIds = new Set<string>();
 
-    // Select questions from each difficulty level
-    for (const difficulty of difficultyLevels) {
+    for (let difficulty = minDiff; difficulty <= maxDiff; difficulty++) {
       const questionsAtLevel = questionsByDifficulty[difficulty] || [];
       const countToSelect = Math.min(
         distribution[difficulty],
         questionsAtLevel.length
       );
 
-      // Randomly shuffle and select
       const shuffled = this.shuffleArray(questionsAtLevel);
-      selectedQuestions.push(...shuffled.slice(0, countToSelect));
+      for (let i = 0; i < countToSelect; i++) {
+        selectedQuestions.push(shuffled[i]);
+        selectedIds.add(shuffled[i].id);
+      }
     }
 
-    // If we don't have enough questions, fill from remaining pool
     if (selectedQuestions.length < requiredCount) {
       const remaining = availableQuestions.filter(
-        (q) => !selectedQuestions.find((sq) => sq.id === q.id)
+        (q) => !selectedIds.has(q.id)
       );
-      const shuffled = this.shuffleArray(remaining);
       const needed = requiredCount - selectedQuestions.length;
+      const shuffled = this.shuffleArray(remaining);
       selectedQuestions.push(...shuffled.slice(0, needed));
     }
 
-    // Final shuffle for randomness
     return this.shuffleArray(selectedQuestions).slice(0, requiredCount);
   };
 
-  // Fisher-Yates shuffle algorithm
   private shuffleArray = <T>(array: T[]): T[] => {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
