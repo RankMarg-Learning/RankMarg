@@ -79,20 +79,19 @@ COPY apps/backend/package*.json ./apps/backend/
 COPY packages/db/package*.json ./packages/db/
 COPY packages/suggest-engine/package*.json ./packages/suggest-engine/
 
-# Copy Prisma schema (needed for postinstall script)
+# Copy Prisma schema (needed for generation)
 COPY packages/db/prisma ./packages/db/prisma
 
 # Install only production dependencies
 RUN npm ci --omit=dev
 
+# Generate Prisma client in runtime (cleaner than copying node_modules)
+RUN npm run db:generate --workspace=packages/db
+
 # Copy built artifacts from builder stage
 COPY --from=builder /app/packages/db/dist ./packages/db/dist
 COPY --from=builder /app/packages/suggest-engine/dist ./packages/suggest-engine/dist
 COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
-
-# Copy Prisma schema and generated client
-COPY --from=builder /app/packages/db/prisma ./packages/db/prisma
-COPY --from=builder /app/packages/db/node_modules/.prisma ./packages/db/node_modules/.prisma
 
 # Copy PDF templates package
 COPY --from=builder /app/packages/pdf-templates ./packages/pdf-templates
