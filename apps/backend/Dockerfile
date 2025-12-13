@@ -1,20 +1,19 @@
-# Use the base turbo image for consistency
+# ============================================================================
+# Stage 1: base - Minimal Node.js base
+# ============================================================================
 FROM node:20-alpine AS base
 
-# Install dependencies for native modules and Chromium for puppeteer-core
+# Install minimal dependencies for native modules (no Chromium - not needed for build)
 RUN apk add --no-cache \
     libc6-compat \
     openssl \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
     ca-certificates \
-    ttf-freefont \
-    font-noto-emoji \
-    font-noto-cjk \
     && rm -rf /var/cache/apk/*
+
+# ============================================================================
+# Stage 2: builder - TS builds, Prisma, turbo
+# ============================================================================
+FROM base AS builder
 
 # Set working directory
 WORKDIR /app
@@ -32,7 +31,7 @@ COPY packages/pdf-templates ./packages/pdf-templates
 # Copy Prisma schema first (needed for postinstall script)
 COPY packages/db/prisma ./packages/db/prisma
 
-# Install dependencies
+# Install all dependencies (including dev dependencies for building)
 RUN npm ci
 
 # Copy remaining source code for packages
@@ -52,61 +51,60 @@ COPY apps/backend ./apps/backend
 # Build backend
 RUN npm run build --workspace=backend
 
-# Production stage
-FROM node:20-alpine AS production
+# ============================================================================
+# Stage 3: deps - OS + system libs (Chromium for runtime only)
+# ============================================================================
+FROM base AS deps
 
-# Install dependencies for native modules and Chromium for puppeteer-core
+# Install Chromium and dependencies for puppeteer-core (runtime only)
 RUN apk add --no-cache \
-    libc6-compat \
-    openssl \
     chromium \
     nss \
     freetype \
     freetype-dev \
     harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    font-noto-emoji \
-    font-noto-cjk \
     && rm -rf /var/cache/apk/*
+
+# ============================================================================
+# Stage 4: runtime - minimal Node + deps + dist
+# ============================================================================
+FROM deps AS runtime
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files for production dependency installation
 COPY package*.json ./
 COPY apps/backend/package*.json ./apps/backend/
 COPY packages/db/package*.json ./packages/db/
 COPY packages/suggest-engine/package*.json ./packages/suggest-engine/
 
-# Copy Prisma schema first (needed for postinstall script)
+# Copy Prisma schema (needed for postinstall script)
 COPY packages/db/prisma ./packages/db/prisma
 
 # Install only production dependencies
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
-# Copy built packages from build stage
-COPY --from=base /app/packages/db/dist ./packages/db/dist
-# COPY --from=base /app/packages/db/node_modules ./packages/db/node_modules
-COPY --from=base /app/packages/suggest-engine/dist ./packages/suggest-engine/dist
-
-# Copy built backend
-COPY --from=base /app/apps/backend/dist ./apps/backend/dist
-# COPY --from=base /app/apps/backend/node_modules ./apps/backend/node_modules
+# Copy built artifacts from builder stage
+COPY --from=builder /app/packages/db/dist ./packages/db/dist
+COPY --from=builder /app/packages/suggest-engine/dist ./packages/suggest-engine/dist
+COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
 
 # Copy Prisma schema and generated client
-COPY --from=base /app/packages/db/prisma ./packages/db/prisma
+COPY --from=builder /app/packages/db/prisma ./packages/db/prisma
+COPY --from=builder /app/packages/db/node_modules/.prisma ./packages/db/node_modules/.prisma
 
 # Copy PDF templates package
-COPY --from=base /app/packages/pdf-templates ./packages/pdf-templates
+COPY --from=builder /app/packages/pdf-templates ./packages/pdf-templates
 
-# Set environment variables
+# ============================================================================
+# Environment Variables (Centralized)
+# ============================================================================
 ENV NODE_ENV=production
 ENV PORT=3001
-# Set Chromium path for puppeteer-core (Alpine Linux uses /usr/bin/chromium)
+# Puppeteer/Chromium configuration for Docker
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV CHROME_PATH=/usr/bin/chromium
-# Tell Chromium to run in no-sandbox mode (required for Docker)
 ENV PUPPETEER_ARGS=--no-sandbox,--disable-setuid-sandbox
 
 # Expose port
@@ -119,5 +117,5 @@ WORKDIR /app/apps/backend
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application (direct node execution for reduced overhead)
+CMD ["node", "dist/src/index.js"]
