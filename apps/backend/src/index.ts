@@ -83,6 +83,7 @@ app.use(`${ServerConfig.api.prefix}/topics`, routes.topics);
 app.use(`${ServerConfig.api.prefix}/subjects`, routes.subjects);
 app.use(`${ServerConfig.api.prefix}/subtopics`, routes.subtopics);
 app.use(`${ServerConfig.api.prefix}/question`, routes.question);
+app.use(`${ServerConfig.api.prefix}/report`, routes.report);
 app.use(`${ServerConfig.api.prefix}/suggestion`, routes.suggestion);
 app.use(`${ServerConfig.api.prefix}/user`, routes.user);
 app.use(`${ServerConfig.api.prefix}/m`, routes.misc);

@@ -32,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/common-ui";
-import { getReportsByQuestionSlug, deleteReportQuestion } from "@/services/question.service";
+import { getReportsByQuestionSlug, deleteReport } from "@/services/report.service";
 
 interface ReportDetail {
   id: string;
@@ -56,7 +56,7 @@ function QuestionReportsContent() {
 
   const handleDelete = async (reportId: string) => {
     try {
-      await deleteReportQuestion(reportId);
+      await deleteReport(reportId);
       setIsDeleteDialogOpen(false);
       setDeleteReportId(null);
       refetch();

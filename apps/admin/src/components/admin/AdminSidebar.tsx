@@ -1,6 +1,6 @@
 "use client"
 import { cn } from "@/lib/utils";
-import { Brain,  LayoutDashboard,  LogOut,  TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload, Users } from "lucide-react";
+import { Brain,  LayoutDashboard,  LogOut,  TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload, Users, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useMemo } from "react";
@@ -48,6 +48,7 @@ const AdminSidebar = () => {
     { icon: Upload, label: "Bulk Upload", href: "/admin/bulk-upload" },
     { icon: TestTube, label: "Tests", href: "/admin/tests" },
     { icon: BookOpen, label: "Curriculum", href: "/admin/curriculum" },
+    { icon: MessageSquare, label: "Question Reports", href: "/admin/reports" },
     { icon: CreditCard, label: "Plans", href: "/admin/plans" },
     { icon: Gift, label: "PromoCodes", href: "/admin/promocodes" },
     { icon: Users, label: "User Subscriptions", href: "/admin/user-subscriptions" },

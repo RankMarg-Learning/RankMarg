@@ -32,7 +32,7 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showQuestionBank, setShowQuestionBank] = useState(false);
-  const [questionFilter, setQuestionFilter] = useState<"all" | "my-questions">("all");
+  const [questionFilter, setQuestionFilter] = useState<"all" | "my-questions">("my-questions");
   // Stable key that only changes when examCode changes
   const questionTableKey = useMemo(() => `question-table-${examCode}`, [examCode]);
 
@@ -127,11 +127,11 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
             
           >
             <SelectTrigger className="w-24 text-sm">
-              <SelectValue placeholder="All" />
+              <SelectValue placeholder="My Questions" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All</SelectItem>
               <SelectItem value="my-questions">My Questions</SelectItem>
+              <SelectItem value="all">All</SelectItem>
             </SelectContent>
           </Select>
           )}

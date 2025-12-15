@@ -240,7 +240,7 @@ export interface QuestionTopic {
 
 export interface QuestionFilter {
   page: number;
-  subjectId?: string | null;
+  subjectId?: string | string[] | null;
   topicId?: string | null;
   subtopicId?: string | null;
   difficulty?: number | null;
