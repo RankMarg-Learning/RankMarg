@@ -10,7 +10,6 @@ import {
 } from '@repo/common-ui';
 import MarkdownRenderer from '@/lib/MarkdownRenderer';
 import { QuestionType } from '@repo/db/enums';
-import { TextFormator } from '@/utils/textFormator';
 import { CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { getQuestionBySlug } from '@/services/question.service';
 import { useToast } from '@/hooks/use-toast';
@@ -117,21 +116,6 @@ export const QuestionViewDialog: React.FC<QuestionViewDialogProps> = ({
     return null;
   }
 
-  const getDifficultyText = (difficulty?: number) => {
-    if (!difficulty) return 'Not specified';
-    switch (difficulty) {
-      case 1:
-        return 'Easy';
-      case 2:
-        return 'Medium';
-      case 3:
-        return 'Hard';
-      case 4:
-        return 'Very Hard';
-      default:
-        return 'Not specified';
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
