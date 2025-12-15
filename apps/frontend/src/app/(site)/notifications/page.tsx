@@ -230,17 +230,10 @@ export default function NotificationsPage() {
           <div className="px-6 py-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-semibold text-gray-900">
+                <h1 className="text-xl font-semibold text-gray-900">
                   Notifications
                 </h1>
-                {unreadCount > 0 && (
-                  <Badge 
-                    variant="default" 
-                    className="bg-green-600  text-white rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  >
-                    {unreadCount} new
-                  </Badge>
-                )}
+               
               </div>
 
               <div className="flex items-center gap-2">
