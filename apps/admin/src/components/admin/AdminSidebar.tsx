@@ -52,17 +52,16 @@ const AdminSidebar = () => {
     { icon: CreditCard, label: "Plans", href: "/admin/plans" },
     { icon: Gift, label: "PromoCodes", href: "/admin/promocodes" },
     { icon: Users, label: "User Subscriptions", href: "/admin/user-subscriptions" },
-    // { icon: Settings, label: "Settings", href: "/admin/settings" },
   ];
 
-  // Filter menu items based on user role
-  // Plans, PromoCodes, and User Subscriptions are only for ADMIN, not INSTRUCTOR
+  
   const menuItems = useMemo(() => {
     if (user?.role === Role.INSTRUCTOR) {
       return allMenuItems.filter(item => 
         item.href !== "/admin/plans" && 
         item.href !== "/admin/promocodes" && 
-        item.href !== "/admin/user-subscriptions"
+        item.href !== "/admin/user-subscriptions" &&
+        item.href !== "/admin/reports"
       );
     }
     return allMenuItems;

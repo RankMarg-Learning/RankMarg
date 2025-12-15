@@ -45,7 +45,6 @@ const SectionCard: React.FC<SectionCardProps> = ({
 
   const handleMaxQuestionsChange = (value: number) => {
     setMaxQuestions(value);
-    // Don't update the section here, this is just for the question limit
   };
 
   return (

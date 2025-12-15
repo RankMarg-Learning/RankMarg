@@ -139,7 +139,7 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
         <div className="flex items-center gap-2">
           <Badge
             variant={isComplete ? "default" : "outline"}
-            className={isComplete ? "bg-green-500" : ""}
+            className={isComplete ? "bg-green-500 text-white" : ""}
           >
             {selectedQuestions.length} / {maxQuestions}
           </Badge>
