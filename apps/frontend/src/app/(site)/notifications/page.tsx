@@ -236,7 +236,7 @@ export default function NotificationsPage() {
                 {unreadCount > 0 && (
                   <Badge 
                     variant="default" 
-                    className="bg-primary-600 hover:bg-primary-700 rounded-full px-2.5 py-0.5 text-xs font-medium"
+                    className="bg-green-600  text-white rounded-full px-2.5 py-0.5 text-xs font-medium"
                   >
                     {unreadCount} new
                   </Badge>
@@ -278,7 +278,7 @@ export default function NotificationsPage() {
               <button className="text-sm font-medium text-primary-600 border-b-2 border-primary-600 pb-2">
                 All
               </button>
-              <button className="text-sm font-medium text-gray-500 hover:text-gray-700 pb-2">
+              <button className="text-sm font-medium text-gray-500 hover:text-gray-700 pb-2 hidden">
                 Unread
               </button>
             </div>
