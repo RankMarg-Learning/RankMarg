@@ -53,7 +53,8 @@ export class QuestionSelector {
       }
 
       if (currentTopics.length === 0) {
-        return [];
+        console.log("No current topics found, falling back to medium mastery topics");
+        return this.selectMediumMasteryQuestions(subjectId,count);
       }
 
       const topicIds = currentTopics.map((ct) => ct.topicId);
@@ -181,6 +182,110 @@ export class QuestionSelector {
       return selectedQuestions.slice(0, count);
     } catch (error) {
       console.error("Error selecting current topic questions:", error);
+      return [];
+    }
+  }
+
+  public async selectMediumMasteryQuestions(subjectId: string,count: number): Promise<{id: string; difficulty: number}[]> {
+    try {
+      const mediumMasteryTopics = await this.prisma.topicMastery.findMany({
+        where: {
+          userId: this.userId,
+          topic: {
+            subjectId: subjectId,
+          },
+          masteryLevel: { gte: 40, lte: 60 },
+        },
+        select:{
+          topicId: true,
+        },
+        orderBy: [{ masteryLevel: "asc" }],
+        take: 3,
+      });
+      if (mediumMasteryTopics.length === 0) {
+        return [];
+      }
+      let topicIds = mediumMasteryTopics.map((t) => t.topicId);
+      const { difficulty: difficultyDistribution, categories } = this.getSelectionParameters(count,subjectId);
+      let selectedQuestions: { id: string; difficulty: number }[] = [];
+      for (let difficulty = 1; difficulty <= 4; difficulty++) {
+        const questionsNeededForThisDifficulty = difficultyDistribution[difficulty - 1];
+        if (questionsNeededForThisDifficulty <= 0) continue;
+        const questionsForDifficulty = await this.prisma.question.findMany({
+          where: {
+            topicId: {
+              in: topicIds,
+            },
+            subjectId: subjectId,
+            difficulty: difficulty,
+            id: {
+              notIn: Array.from(this.attempts.questionIds),
+            },
+            OR: [
+              { category: { some: { category: { in: categories } } } },
+              { category: { none: {} } },
+            ],
+            isPublished: true,
+          },
+          select: {
+            id: true,
+            difficulty: true,
+          },
+          take: questionsNeededForThisDifficulty * 3,
+        });
+        selectedQuestions = [
+          ...selectedQuestions,
+          ...questionsForDifficulty.slice(0, questionsNeededForThisDifficulty),
+        ];
+      }
+      if (selectedQuestions.length < count) {
+        const selectedIds = new Set(selectedQuestions.map((q) => q.id));
+        const additionalQuestions = await this.prisma.question.findMany({
+          where: {
+            topicId: {
+              in: topicIds,
+            },
+            subjectId: subjectId,
+            id: {
+              notIn: Array.from(
+                new Set([...selectedIds, ...this.attempts.questionIds])
+              ),
+            },
+            OR: [
+              { category: { some: { category: { in: categories } } } },
+              { category: { none: {} } },
+            ],
+            isPublished: true,
+          },
+          select: {
+            id: true,
+            difficulty: true,
+          },
+          take: count - selectedQuestions.length,
+        });
+        selectedQuestions = [
+          ...selectedQuestions,
+          ...additionalQuestions.slice(0, count - selectedQuestions.length),
+        ];
+      }
+      if (selectedQuestions.length < count) {
+        const remainingCount = count - selectedQuestions.length;
+        const selectedIds = new Set(selectedQuestions.map((q) => q.id));
+        const fallbackQuestions = await this.getFallbackQuestions(
+          topicIds,
+          subjectId,
+          remainingCount,
+          categories,
+          selectedIds
+        );
+        selectedQuestions = [...selectedQuestions, ...fallbackQuestions];
+      }
+
+      return selectedQuestions.slice(0, count);
+
+
+    } catch (error) {
+      console.error("Error selecting medium mastery questions:", error);
       return [];
     }
   }
