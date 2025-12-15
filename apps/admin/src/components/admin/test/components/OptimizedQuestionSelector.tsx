@@ -3,11 +3,12 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { testQuestion } from '@/types/typeAdmin';
 import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/common-ui';
-import { Trash2, Check, GripVertical, Search, Filter } from 'lucide-react';
+import { Trash2, Check, GripVertical, Search, Filter, Eye } from 'lucide-react';
 import { Badge } from '@repo/common-ui';
 import { Input } from '@repo/common-ui';
 import { Separator } from '@repo/common-ui';
 import Questionset from '@/components/questions/QuestionTable';
+import QuestionViewDialog from './QuestionViewDialog';
 
 interface OptimizedQuestionSelectorProps {
   isEditing?: boolean;
@@ -20,6 +21,7 @@ interface OptimizedQuestionSelectorProps {
 interface SelectedQuestion {
   id: string;
   title: string;
+  slug?: string;
 }
 
 const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
@@ -33,17 +35,17 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [showQuestionBank, setShowQuestionBank] = useState(false);
   const [questionFilter, setQuestionFilter] = useState<"all" | "my-questions">("my-questions");
-  // Stable key that only changes when examCode changes
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
+  const [questionSlugMap, setQuestionSlugMap] = useState<Map<string, string>>(new Map());
   const questionTableKey = useMemo(() => `question-table-${examCode}`, [examCode]);
 
-  // Memoize the selected questions to prevent unnecessary re-renders
   const memoizedSelectedQuestions = useMemo(() =>
     selectedQuestions.map((q) => ({
       id: q.id,
       title: q.title || "Unknown Question"
     })), [selectedQuestions]);
 
-  // Filter selected questions based on search term
   const filteredSelectedQuestions = useMemo(() => {
     if (!searchTerm) return selectedQuestions;
     return selectedQuestions.filter(q =>
@@ -89,18 +91,35 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
 
   const handleQuestionSelect = useCallback((questions: SelectedQuestion[]) => {
     const uniqueMap = new Map<string, SelectedQuestion>();
+    const slugMap = new Map<string, string>();
+    
     questions.forEach((q) => {
-      if (!uniqueMap.has(q.id)) uniqueMap.set(q.id, q);
+      if (!uniqueMap.has(q.id)) {
+        uniqueMap.set(q.id, q);
+        
+        const slug = q.slug;
+        if (slug && typeof slug === 'string') {
+          slugMap.set(q.id, slug);
+        }
+      }
     });
+    
     const limited = Array.from(uniqueMap.values())
       .slice(0, Math.max(0, maxQuestions))
       .map((q) => ({ id: q.id, title: q.title }));
+    
+    setQuestionSlugMap(slugMap);
     onQuestionsChange(limited);
   }, [maxQuestions, onQuestionsChange]);
 
   const clearAllQuestions = useCallback(() => {
     onQuestionsChange([]);
   }, [onQuestionsChange]);
+
+  const handleViewQuestion = useCallback((questionId: string) => {
+    setSelectedQuestionId(questionId);
+    setIsPreviewOpen(true);
+  }, []);
 
   const progressPercentage = (selectedQuestions.length / maxQuestions) * 100;
   const isComplete = selectedQuestions.length === maxQuestions;
@@ -231,20 +250,37 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
                       <Badge variant="outline" className="text-xs">
                         {originalIndex + 1}
                       </Badge>
-                      <span className="text-sm truncate flex-1">
+                      <span 
+                        className="text-sm truncate flex-1 cursor-pointer hover:text-primary"
+                        onClick={() => handleViewQuestion(question.id)}
+                        title="Click to view question details"
+                      >
                         {getQuestionTitle(question.id)}
                       </span>
                     </div>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeQuestion(question.id)}
-                    className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleViewQuestion(question.id)}
+                      className="h-8 w-8 p-0 text-primary-500 hover:text-primary-700"
+                      title="View question details"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeQuestion(question.id)}
+                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                      title="Remove question"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               );
             })}
@@ -285,6 +321,13 @@ const OptimizedQuestionSelector: React.FC<OptimizedQuestionSelectorProps> = ({
           </div>
         </div>
       )}
+
+      <QuestionViewDialog
+        open={isPreviewOpen}
+        onOpenChange={setIsPreviewOpen}
+        questionId={selectedQuestionId}
+        questionSlugMap={questionSlugMap}
+      />
     </div>
   );
 };

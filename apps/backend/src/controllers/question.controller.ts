@@ -288,17 +288,24 @@ export class QuestionController {
   ) => {
     const { slug } = req.params;
     try {
-      const question = await prisma.question.findUnique({
-        where: { slug },
+      const question = await prisma.question.findFirst({
+        where: { 
+          OR: [
+            { slug: slug },
+            { id: slug },
+          ]
+        },
         include: {
           options: true,
           topic: { select: { name: true } },
           category: { select: { category: true } },
         },
-      });
+      }) || null;
       if (!question) {
         ResponseUtil.error(res, "Question not found", 404);
+        return;
       }
+
       const formattedQuestion = {
         ...question,
         category: question?.category.map((cat) => cat.category) || [],
