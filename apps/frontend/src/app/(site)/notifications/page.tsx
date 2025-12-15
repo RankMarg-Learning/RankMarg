@@ -13,7 +13,6 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { Button } from "@repo/common-ui";
-import { Badge } from "@repo/common-ui";
 import { Skeleton } from "@repo/common-ui";
 import {
   useNotifications,
