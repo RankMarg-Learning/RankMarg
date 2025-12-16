@@ -60,6 +60,26 @@ async function processAttempt(attempt: any): Promise<void> {
       return;
     }
 
+    // Validate that user exists
+    const userExists = await prisma.user.findUnique({
+      where: { id: attempt.userId },
+      select: { id: true },
+    });
+
+    if (!userExists) {
+      throw new Error(`User ${attempt.userId} does not exist in database`);
+    }
+
+    // Validate that question exists
+    const questionExists = await prisma.question.findUnique({
+      where: { id: attempt.questionId },
+      select: { id: true },
+    });
+
+    if (!questionExists) {
+      throw new Error(`Question ${attempt.questionId} does not exist in database`);
+    }
+
     // Prepare attempt data for insertion
     const attemptData = {
       id: attempt.id,
@@ -98,20 +118,39 @@ async function processBatch(
 
   let successCount = 0;
   let errorCount = 0;
+  const errors: { userId: number; questionId: number; other: number } = {
+    userId: 0,
+    questionId: 0,
+    other: 0,
+  };
 
   for (const attempt of attempts) {
     try {
       await processAttempt(attempt);
       successCount++;
-    } catch (error) {
+    } catch (error: any) {
       errorCount++;
-      console.error(`❌ Error processing attempt ${attempt.id}:`, error);
+      const errorMessage = error?.message || String(error);
+      
+      if (errorMessage.includes("User") && errorMessage.includes("does not exist")) {
+        errors.userId++;
+        console.warn(`⚠️  Skipping attempt ${attempt.id}: User ${attempt.userId} not found`);
+      } else if (errorMessage.includes("Question") && errorMessage.includes("does not exist")) {
+        errors.questionId++;
+        console.warn(`⚠️  Skipping attempt ${attempt.id}: Question ${attempt.questionId} not found`);
+      } else {
+        errors.other++;
+        console.error(`❌ Error processing attempt ${attempt.id}:`, errorMessage);
+      }
     }
   }
 
   console.log(
     `✅ Batch ${batchNumber} completed: ${successCount} successful, ${errorCount} errors`
   );
+  if (errorCount > 0) {
+    console.log(`   📊 Error breakdown: ${errors.userId} user errors, ${errors.questionId} question errors, ${errors.other} other errors`);
+  }
   return successCount;
 }
 
@@ -174,6 +213,30 @@ async function insertGeneratedAttempts(): Promise<void> {
     }
   }
 
+  // Get unique user IDs from attempts to check which ones are missing
+  const uniqueUserIds = [...new Set(attempts.map(a => a.userId))];
+  const validUserIds: string[] = [];
+  const invalidUserIds: string[] = [];
+  
+  console.log("\n🔍 Validating user IDs...");
+  for (const userId of uniqueUserIds) {
+    const userExists = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+    if (userExists) {
+      validUserIds.push(userId);
+    } else {
+      invalidUserIds.push(userId);
+    }
+  }
+  
+  if (invalidUserIds.length > 0) {
+    console.log(`⚠️  Found ${invalidUserIds.length} invalid user IDs:`);
+    invalidUserIds.forEach(id => console.log(`   - ${id}`));
+    console.log(`\n💡 Tip: Make sure these users exist in the database before generating attempts.`);
+  }
+
   // Final summary
   console.log("\n" + "=".repeat(60));
   console.log("📊 INSERTION SUMMARY");
@@ -184,6 +247,10 @@ async function insertGeneratedAttempts(): Promise<void> {
   console.log(
     `📈 Success Rate: ${((totalProcessed / attempts.length) * 100).toFixed(1)}%`
   );
+  console.log(`👤 Valid Users: ${validUserIds.length}/${uniqueUserIds.length}`);
+  if (invalidUserIds.length > 0) {
+    console.log(`⚠️  Invalid Users: ${invalidUserIds.length}`);
+  }
   console.log("=".repeat(60));
 
   if (totalProcessed > 0) {
@@ -215,16 +282,25 @@ async function verifyInsertedData(): Promise<void> {
     console.log(`✅ Correct attempts: ${correctAttempts}`);
     console.log(`❌ Incorrect attempts: ${incorrectAttempts}`);
 
+    // Student IDs from generateAttemptData.ts
+    const studentIds = [
+      "0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5", // Aniket Sudke
+      "12a154d8-4ebc-4f36-839d-200040446c37", // Suyash Dhone
+      "61e6aebc-00e9-4e4d-a379-03b5138c93e6", // Siddhi Sudke
+    ];
+
     // Count attempts by student
-    for (const studentId of [
-      "0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5",
-      "12a154d8-4ebc-4f36-839d-200040446c37",
-      "9cff25aa-f601-449c-be4f-715bdbdd3ee9",
-    ]) {
+    console.log("\n👤 Attempts by student:");
+    for (const studentId of studentIds) {
+      const user = await prisma.user.findUnique({
+        where: { id: studentId },
+        select: { name: true, id: true },
+      });
       const studentAttempts = await prisma.attempt.count({
         where: { userId: studentId },
       });
-      console.log(`👤 Student ${studentId}: ${studentAttempts} attempts`);
+      const studentName = user?.name || "Unknown";
+      console.log(`   ${studentName} (${studentId}): ${studentAttempts} attempts`);
     }
   } catch (error) {
     console.error("❌ Error verifying data:", error);

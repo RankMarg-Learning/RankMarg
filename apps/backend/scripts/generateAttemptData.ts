@@ -12,22 +12,14 @@ const ATTEMPTS_PER_STUDENT = {
 };
 
 const STUDENT_PROFILES = [
-  {
-    id: "0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5", // Aniket Sudke
-    name: "Aniket Sudke",
-    performance: "dull", // Lower performance
-    accuracyRate: 0.45, // 45% accuracy
-    avgTiming: 90, // Slower timing (90-150 seconds)
-    hintUsage: 0.4, // 40% chance of using hints
-  },
-  {
-    id: "12a154d8-4ebc-4f36-839d-200040446c37", // Suyash Dhone
-    name: "Suyash Dhone",
-    performance: "medium", // Average performance
-    accuracyRate: 0.7, // 70% accuracy
-    avgTiming: 60, // Medium timing (40-100 seconds)
-    hintUsage: 0.2, // 20% chance of using hints
-  },
+  // {
+  //   id: "0aad2b65-5334-4ab2-b6c8-1e37d97dc3f5", // Aniket Sudke
+  //   name: "Aniket Sudke",
+  //   performance: "dull", // Lower performance
+  //   accuracyRate: 0.45, // 45% accuracy
+  //   avgTiming: 90, // Slower timing (90-150 seconds)
+  //   hintUsage: 0.4, // 40% chance of using hints
+  // },
   {
     id: "61e6aebc-00e9-4e4d-a379-03b5138c93e6", // Siddhi Sudke
     name: "Siddhi Sudke",
