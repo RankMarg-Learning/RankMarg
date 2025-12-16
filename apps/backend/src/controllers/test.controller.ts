@@ -2204,13 +2204,23 @@ export class TestController {
 
       // Direct generation (synchronous - for backward compatibility)
       // Check S3 cache first
-      const { checkPDFExistsInS3, uploadPDFToS3 } = await import("@/services/pdf/queue/pdf-s3-storage");
+      const { checkPDFExistsInS3, uploadPDFToS3, downloadPDFFromS3 } = await import("@/services/pdf/queue/pdf-s3-storage");
       const checkResult = await checkPDFExistsInS3(test.testId, "test", "pdfs");
       
-      if (checkResult.exists && checkResult.url) {
-        // PDF exists in S3 - redirect to CDN URL
-        res.redirect(302, checkResult.url);
-        return;
+      if (checkResult.exists && checkResult.key) {
+        // PDF exists in S3 - download and proxy through backend to avoid CORS issues
+        try {
+          const pdfBuffer = await downloadPDFFromS3(checkResult.key);
+          const fileName = `${test.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${testId.substring(0, 8)}.pdf`;
+          res.setHeader("Content-Type", "application/pdf");
+          res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+          res.setHeader("Content-Length", pdfBuffer.length.toString());
+          res.send(pdfBuffer);
+          return;
+        } catch (error) {
+          console.error("Error downloading PDF from S3, will generate new one:", error);
+          // Fall through to generate new PDF if download fails
+        }
       }
 
       // Generate PDF

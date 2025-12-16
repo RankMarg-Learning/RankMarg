@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, HeadObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import ServerConfig from "@/config/server.config";
 
 const s3Client = new S3Client({
@@ -120,5 +120,35 @@ export async function uploadPDFToS3(
     };
   } catch (error) {
     throw new Error(`Failed to upload PDF to S3: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+/**
+ * Download PDF from S3 by key
+ */
+export async function downloadPDFFromS3(
+  key: string
+): Promise<Buffer> {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: ServerConfig.s3.bucket!,
+      Key: key,
+    });
+
+    const response = await s3Client.send(command);
+    
+    if (!response.Body) {
+      throw new Error("No body in S3 response");
+    }
+
+    // Convert stream to buffer
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of response.Body as any) {
+      chunks.push(chunk);
+    }
+    
+    return Buffer.concat(chunks);
+  } catch (error) {
+    throw new Error(`Failed to download PDF from S3: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 }

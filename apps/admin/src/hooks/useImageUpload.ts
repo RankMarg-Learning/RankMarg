@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/utils/api";
-import { generateSlug } from "@/lib/generateSlug";
 
 interface UseImageUploadOptions {
   onImageInserted: (markdown: string, fieldName?: string) => void;

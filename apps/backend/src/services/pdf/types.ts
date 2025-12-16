@@ -63,13 +63,41 @@ export interface TestPDFData extends BasePDFData {
 }
 
 /**
+ * DPP Question interface
+ */
+export interface DPPQuestion {
+  questionNumber: number | string;
+  content: string;
+  primaryOptions?: Record<string, string>; // e.g., { "a": "Option A", "b": "Option B", ... }
+  secondaryOptions?: Record<string, string>; // e.g., { "1": "a, b", "2": "b, c", ... }
+  options?: Array<{ // Fallback for simple option format
+    id: string;
+    content: string;
+    isCorrect?: boolean;
+  }>;
+}
+
+/**
  * DPP PDF Data interface
- * (To be extended when DPP is implemented)
  */
 export interface DPPPDFData extends BasePDFData {
   dppId: string;
   title: string;
-  // Add DPP-specific fields here
+  collegeName?: string;
+  subject?: string;
+  class?: string;
+  classInfo?: string; // e.g., "XII-AIIMS"
+  date?: string;
+  teacherName?: string;
+  leftLogo?: string;
+  rightLogo?: string;
+  watermarkText?: string;
+  questions: DPPQuestion[];
+  answerKey?: Record<number | string, number | string>; // e.g., { 1: "2", 2: "4", ... }
+  answerKeyArray?: Array<{ // Alternative format for answer key
+    questionNumber: number | string;
+    answer: number | string;
+  }>;
 }
 
 /**
