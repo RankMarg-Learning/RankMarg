@@ -1,3 +1,3 @@
 export const config = {
-    matcher: ["/((?!_next|favicon|images|.*\\..*).*)"],
+    matcher: ["/((?!_next|_not-found|_error|favicon|images|.*\\..*).*)"],
   };

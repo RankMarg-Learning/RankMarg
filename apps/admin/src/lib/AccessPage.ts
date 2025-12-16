@@ -311,9 +311,9 @@ export function getDefaultRedirectUrl(user: { role?: Role }): string {
     case Role.INSTRUCTOR:
       return "/admin";
     case Role.USER:
-      return `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+      return "/dashboard";
     default:
-      return `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+      return "/dashboard";
   }
 }
 
