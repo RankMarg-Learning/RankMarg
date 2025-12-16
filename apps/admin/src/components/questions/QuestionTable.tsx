@@ -33,8 +33,7 @@ import Link from "next/link";
 import { Button } from "@repo/common-ui";
 import { usePathname } from "next/navigation";
 import {  getQuestionByFilter } from "@/services/question.service";
-import { PYQ_Year } from "@/constant/pyqYear";
-import { array } from "zod";
+
 
 export interface QuestionSelection {
   id: string;
