@@ -46,14 +46,38 @@ export class TestController {
     try {
       const { sections, examCode, totalQuestions, duration } = req.body;
 
-      // Validate input
       if (!sections || sections.length === 0) {
         ResponseUtil.error(res, "At least one section is required", 400);
         return;
       }
 
-      // Process each section and find matching questions
+      if (!req.user?.id) {
+        ResponseUtil.error(res, "User not authenticated", 401);
+        return;
+      }
+
+      const userId = req.user.id;
+
+      const usedQuestionIds = await prisma.testQuestion.findMany({
+        where: {
+          testSection: {
+            test: {
+              createdBy: userId,
+            },
+          },
+        },
+        select: {
+          questionId: true,
+        },
+        distinct: ['questionId'],
+      });
+      
+      const usedQuestionIdSet = new Set(
+        usedQuestionIds.map((tq) => tq.questionId)
+      );
+
       const processedSections = [];
+      const globalSelectedIds = new Set<string>();
 
       for (const section of sections) {
         const {
@@ -65,63 +89,41 @@ export class TestController {
           questionCount,
           subjectId,
           topicIds,
+          topicWeightages,
           difficultyRange,
           questionTypes,
+          questionTypeWeightages,
           questionFormats,
+          questionFormatWeightages,
           questionCategories,
+          questionCategoryWeightages,
         } = section;
 
-        // Build where clause for question filtering
         const whereClause: any = {
           isPublished: true,
+          id: {
+            notIn: [...usedQuestionIdSet, ...globalSelectedIds],
+          },
         };
 
-        // Add subject filter
-        if (subjectId) {
-          whereClause.subjectId = subjectId;
-        }
-
-        // Add topic filter
-        if (topicIds && topicIds.length > 0) {
-          whereClause.topicId = {
-            in: topicIds,
-          };
-        }
-
-        // Add difficulty range filter
+        if (subjectId) whereClause.subjectId = subjectId;
+        if (topicIds?.length > 0) whereClause.topicId = { in: topicIds };
         if (difficultyRange) {
           whereClause.difficulty = {
-            gte: difficultyRange.min || 1,
-            lte: difficultyRange.max || 4,
+            gte: difficultyRange.min ?? 1,
+            lte: difficultyRange.max ?? 4,
           };
         }
-
-        // Add question type filter
-        if (questionTypes && questionTypes.length > 0) {
-          whereClause.type = {
-            in: questionTypes,
-          };
-        }
-
-        // Add question format filter
-        if (questionFormats && questionFormats.length > 0) {
-          whereClause.format = {
-            in: questionFormats,
-          };
-        }
-
-        // Add question categories filter
-        if (questionCategories && questionCategories.length > 0) {
+        if (questionTypes?.length > 0) whereClause.type = { in: questionTypes };
+        if (questionFormats?.length > 0) whereClause.format = { in: questionFormats };
+        if (questionCategories?.length > 0) {
           whereClause.category = {
             some: {
-              category: {
-                in: questionCategories,
-              },
+              category: { in: questionCategories },
             },
           };
         }
 
-        // Fetch matching questions
         const availableQuestions = await prisma.question.findMany({
           where: whereClause,
           select: {
@@ -169,12 +171,23 @@ export class TestController {
           return;
         }
 
-        // Intelligent question selection algorithm
-        const selectedQuestions = this.selectOptimizedQuestions(
+        const selectedQuestions = this.selectOptimizedQuestionsWithWeightages(
           availableQuestions,
           questionCount,
-          difficultyRange
+          difficultyRange,
+          {
+            topicIds: topicIds || [],
+            topicWeightages: topicWeightages || {},
+            questionTypes: questionTypes || [],
+            questionTypeWeightages: questionTypeWeightages || {},
+            questionFormats: questionFormats || [],
+            questionFormatWeightages: questionFormatWeightages || {},
+            questionCategories: questionCategories || [],
+            questionCategoryWeightages: questionCategoryWeightages || {},
+          }
         );
+
+        selectedQuestions.forEach((q) => globalSelectedIds.add(q.id));
 
         processedSections.push({
           name,
@@ -205,66 +218,196 @@ export class TestController {
     }
   };
 
-  // Helper method to select optimized questions
+  private normalizeWeightages = (
+    items: string[],
+    weightages: Record<string, number>
+  ): Record<string, number> => {
+    if (items.length === 0) return {};
+
+    let totalAssignedWeight = 0;
+    const normalized: Record<string, number> = {};
+    const unassignedItems: string[] = [];
+
+    for (const item of items) {
+      const weight = weightages[item];
+      if (weight > 0 && weight <= 100) {
+        normalized[item] = weight;
+        totalAssignedWeight += weight;
+      } else {
+        unassignedItems.push(item);
+      }
+    }
+
+    if (totalAssignedWeight === 0) {
+      const equalWeight = 100 / items.length;
+      for (const item of items) {
+        normalized[item] = equalWeight;
+      }
+      return normalized;
+    }
+
+    if (unassignedItems.length > 0) {
+      const remainingWeight = Math.max(0, 100 - totalAssignedWeight);
+      const equalWeight = remainingWeight > 0 ? remainingWeight / unassignedItems.length : 0;
+      for (const item of unassignedItems) {
+        normalized[item] = equalWeight;
+      }
+    }
+
+    return normalized;
+  };
+
+  private selectOptimizedQuestionsWithWeightages = (
+    availableQuestions: any[],
+    requiredCount: number,
+    difficultyRange?: { min: number; max: number },
+    weightageConfig?: {
+      topicIds: string[];
+      topicWeightages: Record<string, number>;
+      questionTypes: string[];
+      questionTypeWeightages: Record<string, number>;
+      questionFormats: string[];
+      questionFormatWeightages: Record<string, number>;
+      questionCategories: string[];
+      questionCategoryWeightages: Record<string, number>;
+    }
+  ) => {
+    if (!weightageConfig) {
+      return this.selectOptimizedQuestions(
+        availableQuestions,
+        requiredCount,
+        difficultyRange
+      );
+    }
+
+    const topicWeightages = this.normalizeWeightages(
+      weightageConfig.topicIds,
+      weightageConfig.topicWeightages
+    );
+    const typeWeightages = this.normalizeWeightages(
+      weightageConfig.questionTypes,
+      weightageConfig.questionTypeWeightages
+    );
+    const formatWeightages = this.normalizeWeightages(
+      weightageConfig.questionFormats,
+      weightageConfig.questionFormatWeightages
+    );
+    const categoryWeightages = this.normalizeWeightages(
+      weightageConfig.questionCategories,
+      weightageConfig.questionCategoryWeightages
+    );
+
+    const minDiff = difficultyRange?.min ?? 1;
+    const maxDiff = difficultyRange?.max ?? 4;
+
+    const scoredQuestions = availableQuestions
+      .filter((q) => q.difficulty >= minDiff && q.difficulty <= maxDiff)
+      .map((q) => {
+        let score = 0;
+
+        if (q.topic?.id) score += topicWeightages[q.topic.id] ?? 0;
+        if (q.type) score += typeWeightages[q.type] ?? 0;
+        if (q.format) score += formatWeightages[q.format] ?? 0;
+
+        if (q.category?.length > 0) {
+          let categoryScore = 0;
+          let matchCount = 0;
+          for (const cat of q.category) {
+            const weight = categoryWeightages[cat.category];
+            if (weight) {
+              categoryScore += weight;
+              matchCount++;
+            }
+          }
+          if (matchCount > 0) {
+            score += categoryScore / matchCount;
+          }
+        }
+
+        return { question: q, score };
+      });
+
+    if (scoredQuestions.length < requiredCount) {
+      scoredQuestions.push(
+        ...availableQuestions
+          .filter((q) => q.difficulty < minDiff || q.difficulty > maxDiff)
+          .map((q) => ({ question: q, score: 0 }))
+      );
+    }
+
+    scoredQuestions.sort((a, b) => b.score - a.score);
+
+    const scoreGroups = new Map<number, any[]>();
+    for (const { question, score } of scoredQuestions) {
+      const roundedScore = Math.round(score * 10) / 10;
+      if (!scoreGroups.has(roundedScore)) {
+        scoreGroups.set(roundedScore, []);
+      }
+      scoreGroups.get(roundedScore)!.push(question);
+    }
+
+    const finalQuestions: any[] = [];
+    const sortedScores = Array.from(scoreGroups.keys()).sort((a, b) => b - a);
+    
+    for (const score of sortedScores) {
+      const questions = scoreGroups.get(score)!;
+      finalQuestions.push(...this.shuffleArray(questions));
+    }
+
+    return this.shuffleArray(finalQuestions.slice(0, requiredCount));
+  };
+
   private selectOptimizedQuestions = (
     availableQuestions: any[],
     requiredCount: number,
     difficultyRange?: { min: number; max: number }
   ) => {
-    // Group questions by difficulty
-    const questionsByDifficulty = {
-      1: availableQuestions.filter((q) => q.difficulty === 1),
-      2: availableQuestions.filter((q) => q.difficulty === 2),
-      3: availableQuestions.filter((q) => q.difficulty === 3),
-      4: availableQuestions.filter((q) => q.difficulty === 4),
+    const minDiff = difficultyRange?.min ?? 1;
+    const maxDiff = difficultyRange?.max ?? 4;
+
+    const questionsByDifficulty: Record<number, any[]> = { 1: [], 2: [], 3: [], 4: [] };
+    for (const q of availableQuestions) {
+      if (q.difficulty >= 1 && q.difficulty <= 4) {
+        questionsByDifficulty[q.difficulty].push(q);
+      }
+    }
+
+    const distribution: Record<number, number> = {
+      1: Math.floor(requiredCount * 0.2),
+      2: Math.floor(requiredCount * 0.4),
+      3: Math.floor(requiredCount * 0.3),
+      4: Math.floor(requiredCount * 0.1),
     };
 
-    // Calculate distribution based on difficulty range
-    const minDiff = difficultyRange?.min || 1;
-    const maxDiff = difficultyRange?.max || 4;
-
-    // Smart distribution: 40% easy-medium, 40% medium, 20% hard-very_hard
-    const distribution = {
-      1: Math.floor(requiredCount * 0.2), // 20% easy
-      2: Math.floor(requiredCount * 0.4), // 40% medium
-      3: Math.floor(requiredCount * 0.3), // 30% hard
-      4: Math.floor(requiredCount * 0.1), // 10% very hard
-    };
-
-    // Adjust distribution based on requested range
     const selectedQuestions: any[] = [];
-    const difficultyLevels = [1, 2, 3, 4].filter(
-      (level) => level >= minDiff && level <= maxDiff
-    );
+    const selectedIds = new Set<string>();
 
-    // Select questions from each difficulty level
-    for (const difficulty of difficultyLevels) {
+    for (let difficulty = minDiff; difficulty <= maxDiff; difficulty++) {
       const questionsAtLevel = questionsByDifficulty[difficulty] || [];
       const countToSelect = Math.min(
         distribution[difficulty],
         questionsAtLevel.length
       );
 
-      // Randomly shuffle and select
       const shuffled = this.shuffleArray(questionsAtLevel);
-      selectedQuestions.push(...shuffled.slice(0, countToSelect));
+      for (let i = 0; i < countToSelect; i++) {
+        selectedQuestions.push(shuffled[i]);
+        selectedIds.add(shuffled[i].id);
+      }
     }
 
-    // If we don't have enough questions, fill from remaining pool
     if (selectedQuestions.length < requiredCount) {
       const remaining = availableQuestions.filter(
-        (q) => !selectedQuestions.find((sq) => sq.id === q.id)
+        (q) => !selectedIds.has(q.id)
       );
-      const shuffled = this.shuffleArray(remaining);
       const needed = requiredCount - selectedQuestions.length;
+      const shuffled = this.shuffleArray(remaining);
       selectedQuestions.push(...shuffled.slice(0, needed));
     }
 
-    // Final shuffle for randomness
     return this.shuffleArray(selectedQuestions).slice(0, requiredCount);
   };
 
-  // Fisher-Yates shuffle algorithm
   private shuffleArray = <T>(array: T[]): T[] => {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -371,6 +514,9 @@ export class TestController {
   ): Promise<void> => {
     try {
       const tests = await prisma.test.findMany({
+        where: {
+          createdBy: req.user.id,
+        },
         orderBy: {
           createdAt: "desc",
         },
@@ -676,6 +822,166 @@ export class TestController {
         ResponseUtil.error(res, "Unauthorized", 401);
       }
       ResponseUtil.success(res, participant.status, "Ok", 200);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  //[GET] /api/test/:testId/participants
+  getTestParticipants = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const { testId } = req.params;
+    const { status, limit, offset, sortBy, sortOrder } = req.query;
+    
+    try {
+      // Only admins can view all participants
+      if (req.user.role !== Role.ADMIN) {
+        ResponseUtil.error(res, "Unauthorized. Admin access required.", 403);
+        return;
+      }
+      const whereClause: any = {
+        testId: testId,
+      };
+
+      if (status) {
+        whereClause.status = status;
+      }
+
+      const orderBy: any = {};
+      if (sortBy === 'score') {
+        orderBy.score = sortOrder === 'asc' ? 'asc' : 'desc';
+      } else if (sortBy === 'accuracy') {
+        orderBy.accuracy = sortOrder === 'asc' ? 'asc' : 'desc';
+      } else if (sortBy === 'startTime') {
+        orderBy.startTime = sortOrder === 'asc' ? 'asc' : 'desc';
+      } else {
+        orderBy.startTime = 'desc';
+      }
+
+      const limitNum = limit ? parseInt(limit as string) : 100;
+      const offsetNum = offset ? parseInt(offset as string) : 0;
+
+      const [participants, total] = await Promise.all([
+        prisma.testParticipation.findMany({
+          where: whereClause,
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                username: true,
+                email: true,
+                avatar: true,
+                phone: true,
+              },
+            },
+            attempt: {
+              select: {
+                id: true,
+                status: true,
+                timing: true,
+              },
+            },
+          },
+          orderBy,
+          take: limitNum,
+          skip: offsetNum,
+        }),
+        prisma.testParticipation.count({
+          where: whereClause,
+        }),
+      ]);
+
+      // Calculate additional stats
+      const participantsWithStats = participants.map((participant) => {
+        const attempts = participant.attempt || [];
+        const correctCount = attempts.filter((a) => a.status === 'CORRECT').length;
+        const incorrectCount = attempts.filter((a) => a.status === 'INCORRECT').length;
+        const totalAttempts = attempts.length;
+
+        return {
+          ...participant,
+          stats: {
+            totalAttempts,
+            correctCount,
+            incorrectCount,
+            unattemptedCount: totalAttempts - correctCount - incorrectCount,
+          },
+        };
+      });
+
+      ResponseUtil.success(
+        res,
+        {
+          participants: participantsWithStats,
+          total,
+          limit: limitNum,
+          offset: offsetNum,
+        },
+        "Participants fetched successfully",
+        200
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  //[DELETE] /api/test/:testId/participants/:participantId
+  deleteTestParticipant = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const { testId, participantId } = req.params;
+    
+    try {
+      // Only admins can delete participants
+      if (req.user.role !== Role.ADMIN) {
+        ResponseUtil.error(res, "Unauthorized. Admin access required.", 403);
+        return;
+      }
+
+      // Check if participant exists
+      const participant = await prisma.testParticipation.findUnique({
+        where: {
+          id: participantId,
+        },
+        include: {
+          attempt: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+
+      if (!participant) {
+        ResponseUtil.error(res, "Participant not found", 404);
+        return;
+      }
+
+      // Verify participant belongs to the test
+      if (participant.testId !== testId) {
+        ResponseUtil.error(res, "Participant does not belong to this test", 400);
+        return;
+      }
+
+      // Delete participant (attempts will be deleted via cascade)
+      await prisma.testParticipation.delete({
+        where: {
+          id: participantId,
+        },
+      });
+
+      ResponseUtil.success(
+        res,
+        null,
+        "Participant deleted successfully",
+        200
+      );
     } catch (error) {
       next(error);
     }
@@ -1774,5 +2080,172 @@ export class TestController {
       'Take more mock tests',
       'Focus on time management',
     ];
+  };
+
+  //[GET] /api/test/:testId/generate-pdf
+  generateTestPDF = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const { testId } = req.params;
+    const { useQueue = "false" } = req.query; // Optional: ?useQueue=true to use queue system
+
+    try {
+      // Fetch test with all questions and options
+      const test = await prisma.test.findUnique({
+        where: {
+          testId: testId,
+        },
+        include: {
+          testSection: {
+            include: {
+              testQuestion: {
+                include: {
+                  question: {
+                    include: {
+                      options: {
+                        orderBy: {
+                          id: "asc",
+                        },
+                      },
+                      subject: {
+                        select: {
+                          name: true,
+                          shortName: true,
+                        },
+                      },
+                      topic: {
+                        select: {
+                          name: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!test) {
+        ResponseUtil.error(res, "Test not found", 404);
+        return;
+      }
+
+      const testData = {
+        testId: test.testId,
+        title: test.title,
+        description: test.description || undefined,
+        examCode: test.examCode || undefined,
+        testCategory: test.examType?.replace(/_/g, ' ').toUpperCase(),
+        testDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        duration: `${test.duration} Minutes`,
+        testSection: test.testSection.map((section) => ({
+          name: section.name,
+          testQuestion: section.testQuestion.map((tq) => ({
+            question: {
+              id: tq.question.id,
+              title: tq.question.title,
+              content: tq.question.content,
+              options: tq.question.options.map((opt) => ({
+                id: opt.id,
+                content: opt.content,
+                isCorrect: opt.isCorrect,
+              })),
+              subject: tq.question.subject,
+              topic: tq.question.topic,
+            },
+          })),
+        })),
+      };
+
+      // Use queue system if requested
+      if (useQueue === "true" || process.env.PDF_USE_QUEUE === "true") {
+        const { pdfQueueService } = await import("@/services/pdf/queue");
+        const { PDFJobPriority, PDFJobStatus } = await import("@/services/pdf/queue");
+
+        const priorityParam = req.query.priority as string;
+        let priority: typeof PDFJobPriority.NORMAL = PDFJobPriority.NORMAL;
+        
+        if (priorityParam) {
+          const priorityNum = parseInt(priorityParam, 10);
+          // Validate priority is a valid enum value (1-4)
+          if (priorityNum >= PDFJobPriority.LOW && priorityNum <= PDFJobPriority.URGENT) {
+            priority = priorityNum as typeof PDFJobPriority.NORMAL;
+          }
+        }
+
+        const job = await pdfQueueService.queueTestPDF(
+          testData,
+          priority,
+          req.user.id
+        );
+
+        const isExisting = job.status === PDFJobStatus.COMPLETED && job.metadata?.downloadUrl;
+        
+        ResponseUtil.success(
+          res,
+          {
+            jobId: job.id,
+            status: job.status,
+            downloadUrl: job.metadata?.downloadUrl,
+            message: isExisting
+              ? "PDF found in cache. Ready for download."
+              : "PDF generation queued. Use /api/pdf/job/:jobId to check status.",
+          },
+          isExisting
+            ? "PDF ready for download"
+            : "PDF generation job queued successfully"
+        );
+        return;
+      }
+
+      // Direct generation (synchronous - for backward compatibility)
+      // Check S3 cache first
+      const { checkPDFExistsInS3, uploadPDFToS3, downloadPDFFromS3 } = await import("@/services/pdf/queue/pdf-s3-storage");
+      const checkResult = await checkPDFExistsInS3(test.testId, "test", "pdfs");
+      
+      if (checkResult.exists && checkResult.key) {
+        // PDF exists in S3 - download and proxy through backend to avoid CORS issues
+        try {
+          const pdfBuffer = await downloadPDFFromS3(checkResult.key);
+          const fileName = `${test.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${testId.substring(0, 8)}.pdf`;
+          res.setHeader("Content-Type", "application/pdf");
+          res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+          res.setHeader("Content-Length", pdfBuffer.length.toString());
+          res.send(pdfBuffer);
+          return;
+        } catch (error) {
+          console.error("Error downloading PDF from S3, will generate new one:", error);
+          // Fall through to generate new PDF if download fails
+        }
+      }
+
+      // Generate PDF
+      const { PDFService } = await import("@/services/pdf.service");
+      const pdfService = new PDFService();
+      const pdfBuffer = await pdfService.generatePDF(testData);
+
+      // Upload to S3 for future cache hits (async, don't wait)
+      uploadPDFToS3(
+        pdfBuffer,
+        test.title.replace(/[^a-z0-9]/gi, "_"),
+        "pdfs",
+        test.testId,
+        "test"
+      ).catch((error) => console.error("Failed to upload PDF to S3:", error));
+
+      // Return PDF
+      const fileName = `${test.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${testId.substring(0, 8)}.pdf`;
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+      res.setHeader("Content-Length", pdfBuffer.length.toString());
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      next(error);
+    }
   };
 }

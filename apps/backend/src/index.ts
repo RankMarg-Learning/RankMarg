@@ -83,6 +83,7 @@ app.use(`${ServerConfig.api.prefix}/topics`, routes.topics);
 app.use(`${ServerConfig.api.prefix}/subjects`, routes.subjects);
 app.use(`${ServerConfig.api.prefix}/subtopics`, routes.subtopics);
 app.use(`${ServerConfig.api.prefix}/question`, routes.question);
+app.use(`${ServerConfig.api.prefix}/report`, routes.report);
 app.use(`${ServerConfig.api.prefix}/suggestion`, routes.suggestion);
 app.use(`${ServerConfig.api.prefix}/user`, routes.user);
 app.use(`${ServerConfig.api.prefix}/m`, routes.misc);
@@ -97,6 +98,7 @@ app.use(`${ServerConfig.api.prefix}/user-activity`, routes.userActivity);
 app.use(`${ServerConfig.api.prefix}/settings`, routes.setting);
 app.use(`${ServerConfig.api.prefix}/ai-questions`, routes.aiQuestion);
 app.use(`${ServerConfig.api.prefix}/notifications`, routes.notification);
+app.use(`${ServerConfig.api.prefix}/revision`, routes.revision);
 
 // Authentication routes
 app.use(`${ServerConfig.api.prefix}/auth`, routes.auth);
@@ -110,7 +112,16 @@ app.get(ServerConfig.api.routes.health, (_req: Request, res: Response) => {
 // app.use(notFoundHandler);
 app.use(errorHandler);
 
-initializeRedis().then(() => {
+initializeRedis().then(async () => {
+  // Initialize PDF worker pool
+  try {
+    const { pdfQueueService } = await import("@/services/pdf/queue");
+    await pdfQueueService.startWorkers();
+    console.log(`📄 PDF worker pool started`);
+  } catch (error) {
+    console.error("Failed to start PDF worker pool:", error);
+  }
+
   app.listen(ServerConfig.port, () => {
     console.log(`🚀 API running on port ${ServerConfig.port}`);
     console.log(`📊 Redis health check available at /health/redis/health`);
@@ -124,12 +135,30 @@ initializeRedis().then(() => {
 
 process.on("SIGTERM", async () => {
   console.log("SIGTERM received, shutting down gracefully...");
+  
+  // Stop PDF worker pool
+  try {
+    const { pdfQueueService } = await import("@/services/pdf/queue");
+    await pdfQueueService.stopWorkers();
+  } catch (error) {
+    console.error("Error stopping PDF worker pool:", error);
+  }
+  
   await redisService.disconnect();
   process.exit(0);
 });
 
 process.on("SIGINT", async () => {
   console.log("SIGINT received, shutting down gracefully...");
+  
+  // Stop PDF worker pool
+  try {
+    const { pdfQueueService } = await import("@/services/pdf/queue");
+    await pdfQueueService.stopWorkers();
+  } catch (error) {
+    console.error("Error stopping PDF worker pool:", error);
+  }
+  
   await redisService.disconnect();
   process.exit(0);
 });

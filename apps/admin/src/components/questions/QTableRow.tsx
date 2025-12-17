@@ -1,7 +1,6 @@
 import { Badge } from "@repo/common-ui";
 import { TableCell } from "@repo/common-ui";
 import { QuestionTableProps } from "@/types";
-import { CircleCheck } from "lucide-react";
 import Link from "next/link";
 
 const difficultyMap: Record<number, "Easy" | "Medium" | "Hard" | "default"> = {
@@ -13,10 +12,6 @@ const difficultyMap: Record<number, "Easy" | "Medium" | "Hard" | "default"> = {
 export const QTableRow = ({ problem, isPublished }: { problem: QuestionTableProps, isPublished?: boolean }) => {
   return (
     <>
-
-      <TableCell className={`${!isPublished ? "" : "hidden"}`}>{problem.attempts.length > 0 ? (<CircleCheck className="text-green-400" />) : ("")}</TableCell>
-      {/* <TableCell  >{TextFormator(problem.class)}</TableCell> */}
-
       <TableCell >
         <Badge variant={difficultyMap[problem.difficulty] || "default"}>
           {difficultyMap[problem.difficulty] || "Unknown"}
@@ -43,19 +38,11 @@ export const QTableRow = ({ problem, isPublished }: { problem: QuestionTableProp
         </Badge>
       </TableCell>
 
-
       <TableCell className=" md:table-cell">
-        {/* <Badge
-          variant={
-            "secondary"
-          }
-        > */}
         <div className="truncate max-w-[200px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px] xl:max-w-[600px]">
           {problem.topic.name}
         </div>
-        {/* </Badge> */}
       </TableCell>
-      {/* <TableCell className="hidden">{problem.accuracy}%</TableCell> */}
 
 
     </>

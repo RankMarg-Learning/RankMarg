@@ -31,6 +31,30 @@ async function retryRequest(originalConfig: AxiosRequestConfig) {
   return api.request(config);
 } 
 
+
+const paramsSerializer = (params: any): string => {
+  const searchParams = new URLSearchParams();
+  
+  Object.keys(params).forEach((key) => {
+    const value = params[key];
+    if (value === null || value === undefined) {
+      return;
+    }
+    
+    if (Array.isArray(value)) {
+      value.forEach((item) => {
+        if (item !== null && item !== undefined) {
+          searchParams.append(key, String(item));
+        }
+      });
+    } else {
+      searchParams.append(key, String(value));
+    }
+  });
+  
+  return searchParams.toString();
+};
+
 const defaultTimeout = isProd ? 30000 : 10000;
 const api = axios.create({
   baseURL,
@@ -38,6 +62,7 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
   withCredentials: true, 
   timeout: defaultTimeout,
+  paramsSerializer,
 });
 
 api.interceptors.request.use(

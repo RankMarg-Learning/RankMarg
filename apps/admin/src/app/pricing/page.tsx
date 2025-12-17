@@ -21,12 +21,12 @@ export const metadata: Metadata = {
     title: "Pricing | RankMarg",
     description:
       "Explore RankMarg’s subscription plans for JEE & NEET. Access adaptive practice, daily smart questions, test analytics, and mastery tracking at the best price.",
-    url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/pricing`,
+    url: `${process.env.NEXT_PUBLIC_ADMIN_URL}/pricing`,
     type: "website",
     siteName: "RankMarg",
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/pricing-preview.png`,
+        url: `${process.env.NEXT_PUBLIC_ADMIN_URL}/pricing-preview.png`,
         width: 1200,
         height: 630,
         alt: "RankMarg Pricing Plans – Personalized Practice for JEE & NEET",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_WEBSITE_URL),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_ADMIN_URL),
 };
 
 

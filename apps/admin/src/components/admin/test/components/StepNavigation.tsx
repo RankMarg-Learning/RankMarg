@@ -33,7 +33,6 @@ const StepNavigation: React.FC<StepNavigationProps> = ({ onSave, onCancel }) => 
   const progress = ((currentStepIndex + 1) / stepConfig.length) * 100;
 
   const handleStepClick = (step: FormStep) => {
-    // Only allow going to previous steps or current step
     const targetIndex = stepConfig.findIndex(s => s.step === step);
     if (targetIndex <= currentStepIndex) {
       setCurrentStep(step);

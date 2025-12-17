@@ -18,6 +18,16 @@ router.get(
   authenticate,
   testController.getTestParticipantById
 );
+router.get(
+  "/:testId/participants",
+  authenticate,
+  testController.getTestParticipants
+);
+router.delete(
+  "/:testId/participants/:participantId",
+  authenticate,
+  testController.deleteTestParticipant
+);
 router.post("/:testId/submit", authenticate, testController.submitTest);
 router.get("/ai/available", authenticate, testController.getAiAvailableTests);
 router.get(
@@ -28,4 +38,5 @@ router.get(
 router.get("/ai/results", authenticate, testController.getAiTestResults);
 router.get("/ai/scheduled", authenticate, testController.getAiScheduledTests);
 router.get("/:testId/analysis", authenticate, testController.getTestAnalysisById);
+router.get("/:testId/generate-pdf", authenticate, testController.generateTestPDF);
 export default router;

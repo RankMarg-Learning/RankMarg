@@ -13,7 +13,6 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { Button } from "@repo/common-ui";
-import { Badge } from "@repo/common-ui";
 import { Skeleton } from "@repo/common-ui";
 import {
   useNotifications,
@@ -230,17 +229,10 @@ export default function NotificationsPage() {
           <div className="px-6 py-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-semibold text-gray-900">
+                <h1 className="text-xl font-semibold text-gray-900">
                   Notifications
                 </h1>
-                {unreadCount > 0 && (
-                  <Badge 
-                    variant="default" 
-                    className="bg-primary-600 hover:bg-primary-700 rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  >
-                    {unreadCount} new
-                  </Badge>
-                )}
+               
               </div>
 
               <div className="flex items-center gap-2">
@@ -278,7 +270,7 @@ export default function NotificationsPage() {
               <button className="text-sm font-medium text-primary-600 border-b-2 border-primary-600 pb-2">
                 All
               </button>
-              <button className="text-sm font-medium text-gray-500 hover:text-gray-700 pb-2">
+              <button className="text-sm font-medium text-gray-500 hover:text-gray-700 pb-2 hidden">
                 Unread
               </button>
             </div>

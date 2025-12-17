@@ -11,9 +11,9 @@ import { Role } from "@repo/db/enums";
  */
 
 export enum RouteType {
-  EXACT = "exact",           // Exact path match
-  DYNAMIC = "dynamic",       // Contains parameters (:param)
-  WILDCARD = "wildcard",     // Prefix matching (ends with /*)
+  EXACT = "exact",           
+  DYNAMIC = "dynamic",       
+  WILDCARD = "wildcard",     
 }
 
 export enum AccessLevel {
@@ -31,7 +31,6 @@ export interface RouteConfig {
   description?: string;
 }
 
-// All authenticated users (any role)
 const ALL_AUTHENTICATED_ROLES = [Role.USER, Role.ADMIN, Role.INSTRUCTOR];
 const ADMIN_ROLES = [Role.ADMIN, Role.INSTRUCTOR];
 const ADMIN_ONLY = [Role.ADMIN];
@@ -306,16 +305,15 @@ export function checkRouteAccess(
  * Get default redirect URL for authenticated users
  */
 export function getDefaultRedirectUrl(user: { role?: Role }): string {
-  if (!user.role) return `${process.env.NEXT_PUBLIC_APP_URL}/onboarding`;
   
   switch (user.role) {
     case Role.ADMIN:
     case Role.INSTRUCTOR:
       return "/admin";
     case Role.USER:
-      return `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+      return "/dashboard";
     default:
-      return `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+      return "/dashboard";
   }
 }
 

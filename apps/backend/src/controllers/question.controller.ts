@@ -6,12 +6,13 @@ import {
   QCategory,
   QuestionFormat,
   QuestionType,
+  Role,
   SubmitStatus,
 } from "@repo/db/enums";
 import { NextFunction, Response } from "express";
 
 interface WhereClauseProps {
-  subjectId?: string;
+  subjectId?: {in: string[]};
   topicId?: string;
   subtopicId?: string;
   difficulty?: number;
@@ -21,6 +22,7 @@ interface WhereClauseProps {
   pyqYear?: string;
   isPublished?: boolean;
   slug?: { in: string[] };
+  createdBy?: string;
 }
 
 interface Question {
@@ -83,19 +85,46 @@ export class QuestionController {
         pyqYear,
         type,
         search,
+        examCode,
         isPublished,
-        reports,
         page = 1,
         limit = 25,
+        questionFilter = "my-questions",
       } = req.query;
       const userID = req.user.id;
+      const userRole = req.user.role;
       const l = Number(limit) || 25;
       const skip = (Number(page) - 1) * l;
       const whereClause: WhereClauseProps = {};
-      if (subjectId) whereClause.subjectId = subjectId as string;
+      
+      
+      if (subjectId) {
+        const subjectIds  = Array.isArray(subjectId) 
+        ? subjectId as string[]
+        : typeof subjectId === 'string' && subjectId.includes(',')
+        ? subjectId.split(',').map(id => id.trim()).filter(id => id.length > 0)
+        : [subjectId as string];
+        whereClause.subjectId = {
+          in: subjectIds,
+        };
+      }else{
+        if(examCode){
+          const examSubject = await prisma.examSubject.findMany({
+            where: {
+              examCode: examCode as string,
+            },
+            select: {
+              subjectId: true,
+            },
+          });
+          whereClause.subjectId = {
+            in: examSubject.map(subject => subject.subjectId),
+          };
+        }
+      }
       if (topicId) whereClause.topicId = topicId as string;
       if (subtopicId) whereClause.subtopicId = subtopicId as string;
-      if (difficulty) whereClause.difficulty = difficulty as unknown as number;
+      if (difficulty) whereClause.difficulty = Number(difficulty);
       if (category)
         whereClause.category =
           category as Prisma.QuestionCategoryListRelationFilter;
@@ -105,6 +134,11 @@ export class QuestionController {
         whereClause.OR = [
           { content: { contains: search as string, mode: "insensitive" } },
           { title: { contains: search as string, mode: "insensitive" } },
+          {
+            subject:{
+              name: { contains: search as string, mode: "insensitive" },
+            }
+          },
           {
             topic: {
               name: { contains: search as string, mode: "insensitive" },
@@ -119,30 +153,11 @@ export class QuestionController {
       if (isPublished) {
         whereClause.isPublished = isPublished === "true";
       }
-
-      let reportFilteredSlugs: string[] | null = null;
-      if (reports === "reported") {
-        const reportedSlugs = await prisma.reportQuestion.findMany({
-          select: { slug: true },
-          distinct: ["slug"],
-        });
-        reportFilteredSlugs = reportedSlugs.map((r) => r.slug).filter(Boolean);
-        if (reportFilteredSlugs.length === 0) {
-          const payload = {
-            questions: [],
-            currentPage: 1,
-            totalPages: 0,
-            totalCount: 0,
-          };
-          ResponseUtil.success(
-            res,
-            payload,
-            "Questions fetched successfully",
-            200
-          );
-          
-        }
-        whereClause.slug = { in: reportFilteredSlugs };
+      if (userRole !== Role.ADMIN && questionFilter === "my-questions") {
+        whereClause.createdBy = userID;
+        whereClause.isPublished = false;
+      } else if (userRole === Role.ADMIN && questionFilter === "all") {
+        whereClause.isPublished = false;
       }
 
       const [questions] = await Promise.all([
@@ -158,16 +173,8 @@ export class QuestionController {
             difficulty: true,
             isPublished: true,
             pyqYear: true,
-            createdBy: true,
-            createdAt: true,
-            attempts: {
-              where: { userId: userID, status: SubmitStatus.CORRECT }, // TODO: WATCHDOG
-              select: { id: true },
-            },
+            
             topic: {
-              select: { name: true },
-            },
-            subTopic: {
               select: { name: true },
             },
             subject: {
@@ -178,34 +185,8 @@ export class QuestionController {
         }),
       ]);
 
-      const questionSlugs = questions.map((q) => q.slug);
-      const reportCounts = await prisma.reportQuestion.groupBy({
-        by: ["slug"],
-        where: {
-          slug: { in: questionSlugs },
-        },
-        _count: {
-          slug: true,
-        },
-      });
-
-      const reportCountMap = new Map(
-        reportCounts.map((rc) => [rc.slug, rc._count.slug])
-      );
-
-      let questionsWithReportCount = questions.map((question) => ({
-        ...question,
-        reportCount: reportCountMap.get(question.slug) || 0,
-      }));
-
-      if (reports === "not-reported") {
-        questionsWithReportCount = questionsWithReportCount.filter(
-          (q) => q.reportCount === 0
-        );
-      }
-
-      const totalFiltered = questionsWithReportCount.length;
-      const paginatedQuestions = questionsWithReportCount.slice(skip, skip + l);
+      const totalFiltered = questions.length;
+      const paginatedQuestions = questions.slice(skip, skip + l);
 
       const currentPage = Number(page);
       const totalPages = Math.ceil(totalFiltered / l);
@@ -214,6 +195,7 @@ export class QuestionController {
         currentPage,
         totalPages,
         totalCount: totalFiltered,
+        accessRole: userRole,
       };
       ResponseUtil.success(res, payload, "Questions fetched successfully", 200);
     } catch (error) {
@@ -261,7 +243,7 @@ export class QuestionController {
 
       const userID = req.user.id;
       
-      const question = await prisma.question.create({
+      await prisma.question.create({
         data: {
           slug,
           title,
@@ -293,7 +275,7 @@ export class QuestionController {
           },
         },
       });
-      ResponseUtil.success(res, question, "Question created successfully", 200);
+      ResponseUtil.success(res, null, "Question created successfully", 200);
     } catch (error) {
       console.error("Error creating question:", error);
       next(error);
@@ -306,17 +288,24 @@ export class QuestionController {
   ) => {
     const { slug } = req.params;
     try {
-      const question = await prisma.question.findUnique({
-        where: { slug },
+      const question = await prisma.question.findFirst({
+        where: { 
+          OR: [
+            { slug: slug },
+            { id: slug },
+          ]
+        },
         include: {
           options: true,
           topic: { select: { name: true } },
           category: { select: { category: true } },
         },
-      });
+      }) || null;
       if (!question) {
         ResponseUtil.error(res, "Question not found", 404);
+        return;
       }
+
       const formattedQuestion = {
         ...question,
         category: question?.category.map((cat) => cat.category) || [],

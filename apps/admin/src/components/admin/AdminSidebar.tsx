@@ -1,11 +1,13 @@
 "use client"
 import { cn } from "@/lib/utils";
-import { Brain,  LayoutDashboard,  LogOut, Settings, TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload, Users } from "lucide-react";
+import { Brain,  LayoutDashboard,  LogOut,  TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload, Users, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@repo/common-ui";
 import api from "@/utils/api";
+import { useUserData } from "@/context/ClientContextProvider";
+import { Role } from "@repo/db/enums";
 
 interface SidebarItemProps {
   icon: React.ElementType;
@@ -38,18 +40,32 @@ const AdminSidebar = () => {
   const currentPath = usePathname()
   const [collapsed, setCollapsed] = useState(false);
   const router = useRouter();
+  const { user } = useUserData();
   
-  const menuItems = [
+  const allMenuItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/admin", exact: true },
     { icon: Brain, label: "Questions", href: "/admin/questions" },
     { icon: Upload, label: "Bulk Upload", href: "/admin/bulk-upload" },
     { icon: TestTube, label: "Tests", href: "/admin/tests" },
     { icon: BookOpen, label: "Curriculum", href: "/admin/curriculum" },
+    { icon: MessageSquare, label: "Question Reports", href: "/admin/reports" },
     { icon: CreditCard, label: "Plans", href: "/admin/plans" },
     { icon: Gift, label: "PromoCodes", href: "/admin/promocodes" },
     { icon: Users, label: "User Subscriptions", href: "/admin/user-subscriptions" },
-    { icon: Settings, label: "Settings", href: "/admin/settings" },
   ];
+
+  
+  const menuItems = useMemo(() => {
+    if (user?.role === Role.INSTRUCTOR) {
+      return allMenuItems.filter(item => 
+        item.href !== "/admin/plans" && 
+        item.href !== "/admin/promocodes" && 
+        item.href !== "/admin/user-subscriptions" &&
+        item.href !== "/admin/reports"
+      );
+    }
+    return allMenuItems;
+  }, [user?.role]);
 
   const handleSignOut = async() => {
     try {

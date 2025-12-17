@@ -45,7 +45,6 @@ const SectionCard: React.FC<SectionCardProps> = ({
 
   const handleMaxQuestionsChange = (value: number) => {
     setMaxQuestions(value);
-    // Don't update the section here, this is just for the question limit
   };
 
   return (
@@ -283,7 +282,7 @@ const SectionsForm: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={addSection}
-              className="flex items-center gap-2"
+              className="gap-2"
             >
               <PlusCircle className="h-4 w-4 mr-2" />
               Create your first section

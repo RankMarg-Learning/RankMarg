@@ -25,8 +25,7 @@ import {
   AlertCircle,
   Search,
   Filter,
-  X,
-  MessageSquare
+  X
 } from "lucide-react";
 import { Badge } from "@repo/common-ui";
 import { Input } from "@repo/common-ui";
@@ -42,35 +41,43 @@ import { useQuery } from "@tanstack/react-query";
 import { deleteQuestion, getQuestionByFilter } from "@/services/question.service";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
-import { QuestionType } from "@repo/db/enums";
+import { QuestionType, Role } from "@repo/db/enums";
 
 
 function QuestionsContent() {
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [deleteQuestionSlug, setDeleteQuestionSlug] = useState(null);
+  const limit = 25;
+
   const router = useRouter()
   const searchParams = useSearchParams();
   const pathname = usePathname();
+
   const initialPageFromUrl = Number(searchParams.get("page") || "1");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchParams.get("search") || "");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteQuestionSlug, setDeleteQuestionSlug] = useState(null);
+  const [publishFilter, setPublishFilter] = useState(searchParams.get("published") || "all");
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; question: any } | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(
     Number.isNaN(initialPageFromUrl) || initialPageFromUrl < 1 ? 1 : initialPageFromUrl
   );
-  const limit = 25;
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; question: any } | null>(null);
   
-  // Filter states
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
-  const [publishFilter, setPublishFilter] = useState(searchParams.get("published") || "all");
-  const [reportFilter, setReportFilter] = useState(searchParams.get("reports") || "all");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const { data: questions, refetch ,isLoading } = useQuery({
-    queryKey: ["questions", currentPage, searchQuery, publishFilter, reportFilter],
+    queryKey: ["questions", currentPage, debouncedSearchQuery, publishFilter],
     queryFn: () => getQuestionByFilter({ 
       page: currentPage, 
       limit,
-      search: searchQuery || undefined,
-      isPublished: publishFilter === "all" ? undefined : publishFilter === "published",
-      reports: reportFilter === "all" ? undefined : reportFilter
+      search: debouncedSearchQuery || undefined,
+      isPublished: publishFilter === "all" ? undefined : publishFilter === "published"
     })
   });
   
@@ -85,7 +92,7 @@ function QuestionsContent() {
     router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
   };
 
-  const updateFiltersInUrl = (search: string, published: string, reports: string) => {
+  const updateFiltersInUrl = (search: string, published: string) => {
     const params = new URLSearchParams(searchParams);
     
     if (search.trim()) {
@@ -100,12 +107,6 @@ function QuestionsContent() {
       params.delete("published");
     }
     
-    if (reports !== "all") {
-      params.set("reports", reports);
-    } else {
-      params.delete("reports");
-    }
-    
     params.delete("page");
     
     const next = params.toString();
@@ -115,25 +116,19 @@ function QuestionsContent() {
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     setCurrentPage(1);
-    updateFiltersInUrl(value, publishFilter, reportFilter);
+    // Don't update URL immediately - let debounce handle it
   };
 
   const handlePublishFilterChange = (value: string) => {
     setPublishFilter(value);
     setCurrentPage(1);
-    updateFiltersInUrl(searchQuery, value, reportFilter);
-  };
-
-  const handleReportFilterChange = (value: string) => {
-    setReportFilter(value);
-    setCurrentPage(1);
-    updateFiltersInUrl(searchQuery, publishFilter, value);
+    updateFiltersInUrl(searchQuery, value);
   };
 
   const clearFilters = () => {
     setSearchQuery("");
+    setDebouncedSearchQuery("");
     setPublishFilter("all");
-    setReportFilter("all");
     setCurrentPage(1);
     router.replace(pathname, { scroll: false });
   };
@@ -156,20 +151,21 @@ function QuestionsContent() {
   }, [searchParams]);
 
   useEffect(() => {
+    updateFiltersInUrl(debouncedSearchQuery, publishFilter);
+  }, [debouncedSearchQuery, publishFilter]);
+
+  useEffect(() => {
     const searchFromUrl = searchParams.get("search") || "";
     const publishedFromUrl = searchParams.get("published") || "all";
-    const reportsFromUrl = searchParams.get("reports") || "all";
     
     if (searchFromUrl !== searchQuery) {
       setSearchQuery(searchFromUrl);
+      setDebouncedSearchQuery(searchFromUrl);
     }
     if (publishedFromUrl !== publishFilter) {
       setPublishFilter(publishedFromUrl);
     }
-    if (reportsFromUrl !== reportFilter) {
-      setReportFilter(reportsFromUrl);
-    }
-  }, [searchParams, searchQuery, publishFilter, reportFilter]);
+  }, [searchParams]);
   
   
 
@@ -282,25 +278,10 @@ function QuestionsContent() {
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Reports Filter */}
-            <div className="flex items-center space-x-2">
-              <MessageSquare className="h-4 w-4 text-gray-400" />
-              <Select value={reportFilter} onValueChange={handleReportFilterChange}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by reports" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Questions</SelectItem>
-                  <SelectItem value="reported">Reported Questions</SelectItem>
-                  <SelectItem value="not-reported">Not Reported</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           
           {/* Clear Filters Button */}
-          {(searchQuery || publishFilter !== "all" || reportFilter !== "all") && (
+          {(searchQuery || publishFilter !== "all") && (
             <Button
               variant="outline"
               size="sm"
@@ -314,7 +295,7 @@ function QuestionsContent() {
         </div>
         
         {/* Active Filters Display */}
-        {(searchQuery || publishFilter !== "all" || reportFilter !== "all") && (
+        {(searchQuery || publishFilter !== "all") && (
           <div className="mt-3 flex flex-wrap gap-2">
             {searchQuery && (
               <Badge variant="secondary" className="flex items-center gap-1">
@@ -338,17 +319,6 @@ function QuestionsContent() {
                 </button>
               </Badge>
             )}
-            {reportFilter !== "all" && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                Reports: {reportFilter === "reported" ? "Reported" : "Not Reported"}
-                <button
-                  onClick={() => handleReportFilterChange("all")}
-                  className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
           </div>
         )}
       </div>
@@ -364,15 +334,14 @@ function QuestionsContent() {
                 <TableHead>Difficulty</TableHead>
                 <TableHead>Subject</TableHead>
                 <TableHead className="text-center">Topic</TableHead>
-                <TableHead className="text-center">Published</TableHead>
-                <TableHead className="text-center">Reports</TableHead>
+                <TableHead className={`text-center ${questions?.data?.accessRole === Role.ADMIN ? "" : "hidden"}`}>Published</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-10">
+                  <TableCell colSpan={8} className="text-center py-10">
                     <div className="flex flex-col items-center justify-center text-gray-500">
                       <span className="animate-spin h-6 w-6 border-2 border-edu-blue border-t-transparent rounded-full mb-2"></span>
                       <span>Loading questions...</span>
@@ -381,7 +350,7 @@ function QuestionsContent() {
                 </TableRow>
               ) : questions?.data?.questions?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-10">
+                  <TableCell colSpan={8} className="text-center py-10">
                     <div className="flex flex-col items-center justify-center text-gray-500">
                       <AlertCircle className="h-10 w-10 mb-2" />
                       <span className="text-lg font-medium">No questions found</span>
@@ -415,20 +384,11 @@ function QuestionsContent() {
                       <TableCell className="max-w-[150px] truncate">
                       {question?.topic?.name || "-"}
                       </TableCell>
-                      <TableCell className="text-center">
+                      <TableCell className={`text-center ${questions?.data?.accessRole === Role.ADMIN ? "" : "hidden"}`}>
                         {question.isPublished ? (
                           <Badge variant="Easy">Yes</Badge>
                         ) : (
                           <Badge variant="outline">No</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {question.reportCount > 0 ? (
-                          <Badge className="bg-red-500 text-white">
-                            {question.reportCount}
-                          </Badge>
-                        ) : (
-                          <span className="text-gray-400">-</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -440,17 +400,9 @@ function QuestionsContent() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            {question.reportCount > 0 && (
-                              <DropdownMenuItem
-                                className="flex items-center gap-2"
-                                onClick={() => router.push(`/admin/questions/${question.slug}/reports`)}
-                              >
-                                <MessageSquare className="h-4 w-4" /> View Reports ({question.reportCount})
-                              </DropdownMenuItem>
-                            )}
                             <DropdownMenuItem
                               className="flex items-center gap-2"
-                              onClick={() => router.push(`/admin/questions/${question.slug}/edit?page=${currentPage}&published=${publishFilter}&reports=${reportFilter}`)}
+                              onClick={() => router.push(`/admin/questions/${question.slug}/edit?page=${currentPage}&published=${publishFilter}&search=${searchQuery}`)}
                             >
                               <Edit className="h-4 w-4" /> Edit
                             </DropdownMenuItem>
@@ -475,7 +427,7 @@ function QuestionsContent() {
         <div className="flex items-center justify-between px-4 py-3 border-t">
           <div className="text-sm text-gray-500">
             Showing <span className="font-medium">{(currentPage - 1) * limit + 1}</span> to <span className="font-medium">{(currentPage - 1) * limit + (questions?.data?.questions?.length || 0)}</span> of <span className="font-medium">{questions?.data?.totalCount || 0}</span> results
-            {(searchQuery || publishFilter !== "all" || reportFilter !== "all") && (
+            {(searchQuery || publishFilter !== "all") && (
               <span className="ml-2 text-xs text-gray-400">
                 (filtered)
               </span>
@@ -504,7 +456,7 @@ function QuestionsContent() {
           <DropdownMenuItem 
             className="flex items-center gap-2"
             onClick={() => {
-              router.push(`/admin/questions/${contextMenu.question.slug}/edit?page=${currentPage}&published=${publishFilter}&reports=${reportFilter}`);
+              router.push(`/admin/questions/${contextMenu.question.slug}/edit?page=${currentPage}&published=${publishFilter}&search=${searchQuery}`);
               setContextMenu(null);
             }}
           >

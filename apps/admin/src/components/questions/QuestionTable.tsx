@@ -33,7 +33,7 @@ import Link from "next/link";
 import { Button } from "@repo/common-ui";
 import { usePathname } from "next/navigation";
 import {  getQuestionByFilter } from "@/services/question.service";
-import { PYQ_Year } from "@/constant/pyqYear";
+
 
 export interface QuestionSelection {
   id: string;
@@ -58,6 +58,7 @@ interface QuestionsetProps {
   maxSelectable?: number;
   onSelectionLimitReached?: () => void;
   lockedSubjectId?: string;
+  questionFilter?: "all" | "my-questions";
 }
 
 const Questionset: React.FC<QuestionsetProps> = ({
@@ -69,10 +70,10 @@ const Questionset: React.FC<QuestionsetProps> = ({
   maxSelectable,
   onSelectionLimitReached,
   lockedSubjectId,
+  questionFilter = "all",
 }) => {
-  const [subject, setSubject] = useState(() => lockedSubjectId ?? "");
+  const [subjects, setSubjects] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState<number | null>(null);
-  const [pyqYear, setPyqYear] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [type, setType] = useState<QuestionType | null>(null);
@@ -82,11 +83,11 @@ const Questionset: React.FC<QuestionsetProps> = ({
   const { subjects: subjectOptions, isLoading: isSubjectLoading } = useSubjects(examCode);
 
   useEffect(() => {
-    if (lockedSubjectId && lockedSubjectId !== subject) {
-      setSubject(lockedSubjectId);
+    if (lockedSubjectId && !subjects.includes(lockedSubjectId)) {
+      setSubjects([lockedSubjectId]);
       setCurrentPage(1);
     }
-  }, [lockedSubjectId, subject]);
+  }, [lockedSubjectId, subjects]);
 
 
   const handleDifficulty = (value: string[]) => {
@@ -103,14 +104,14 @@ const Questionset: React.FC<QuestionsetProps> = ({
     setCurrentPage(1);
   };
 
-  const activeTab = subject || (lockedSubjectId ? lockedSubjectId : "all");
+  const activeTab = subjects.length > 0 ? subjects.join(",") : (lockedSubjectId ? lockedSubjectId : "all");
 
   const handleTabChange = (value: string) => {
     if (lockedSubjectId) return;
     if (value === "all") {
-      setSubject("");
+      setSubjects(subjectOptions.map((sub) => sub.id));
     } else {
-      setSubject(value);
+      setSubjects([value]);
     }
     setCurrentPage(1);
   };
@@ -162,19 +163,25 @@ const Questionset: React.FC<QuestionsetProps> = ({
     );
   };
 
-  const handlePyqYear = (value: string[]) => {
-    setPyqYear(value[0] === "Default" ? "" : value[0]);
-    setCurrentPage(1);
-  };
+ 
 
   const { data:questions, isLoading, refetch } = useQuery({
-    queryKey: ["questions", currentPage, subject, difficulty, pyqYear, search, isPublished,  examCode],
-    queryFn: async () => getQuestionByFilter({isPublished, page: currentPage, subjectId: subject, difficulty,  pyqYear, search, type, examCode }),
+    queryKey: ["questions", currentPage, subjects, difficulty, search, isPublished,  examCode, questionFilter],
+    queryFn: async () => getQuestionByFilter({
+      isPublished, 
+      page: currentPage, 
+      subjectId: subjects.length > 0 ? (subjects as string[]) : undefined, 
+      difficulty,  
+      search, 
+      type, 
+      examCode, 
+      questionFilter 
+    }),
   });
 
   useEffect(() => {
     refetch();
-  }, [currentPage, subject, difficulty, pyqYear, search,  type, examCode, refetch]);
+  }, [currentPage, subjects, difficulty, search,  type, examCode, questionFilter, refetch]);
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
@@ -197,7 +204,6 @@ const Questionset: React.FC<QuestionsetProps> = ({
     difficulty: question.difficulty,
     type: question.type,
     format: question.format,
-    pyqYear: question.pyqYear,
     topic: question.topic ? { name: question.topic.name } : undefined,
     subTopic: question.subTopic ? { name: question.subTopic.name } : undefined,
     subject: question.subject ? { name: question.subject.name } : undefined,
@@ -246,12 +252,6 @@ const Questionset: React.FC<QuestionsetProps> = ({
               placeholder="Difficulty"
               selectName={["Default", "Easy", "Medium", "Hard","Very Hard"]}
               onChange={handleDifficulty}
-            />
-            <SelectFilter
-              width={"[100px]"}
-              placeholder="PYQ Year"
-              selectName={PYQ_Year}
-              onChange={handlePyqYear}
             />
             <SelectFilter
               width={"[100px]"}

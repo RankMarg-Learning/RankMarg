@@ -83,3 +83,33 @@ export const getTestResults = async (resultsLimit: number) => {
     };
   }
 }
+
+export const downloadTestPDF = async (testId: string) => {
+  try {
+    const response = await api.get(`/test/${testId}/generate-pdf`, {
+      responseType: 'blob',
+    });
+    
+    // Create blob URL and trigger download
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `test_${testId.substring(0, 8)}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    return {
+      success: true,
+      message: "PDF downloaded successfully",
+    };
+  } catch (error) {
+    console.error("Error downloading PDF:", error);
+    return {
+      success: false,
+      message: "Error downloading PDF",
+    };
+  }
+}

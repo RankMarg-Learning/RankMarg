@@ -38,5 +38,8 @@
             "types": "./dist/enums.d.ts",
             "default": "./dist/enums.js"
         }
+    },
+    "devDependencies": {
+        "@types/node": "^25.0.2"
     }
 }

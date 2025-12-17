@@ -20,6 +20,7 @@
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@prisma/client": "^5.20.0",
+    "@repo/common-ui": "*",
     "@repo/db": "*",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query": "^5.56.2",
@@ -29,8 +30,6 @@
     "@types/redis": "^4.0.10",
     "@types/uuid": "^10.0.0",
     "axios": "^1.7.7",
-    "bcrypt": "^5.1.1",
-    "cloudinary": "^2.5.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "firebase": "^10.13.1",
@@ -42,7 +41,6 @@
     "next-auth": "^4.24.7",
     "openai": "^5.16.0",
     "prisma": "^5.12.0",
-    "razorpay": "^2.9.6",
     "react": "^18",
     "react-calendar-heatmap": "^1.9.0",
     "react-dom": "^18",
@@ -56,15 +54,12 @@
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "slugify": "^1.6.6",
-    "smiles-drawer": "^2.1.7",
     "swr": "^2.3.6",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
     "zod": "^3.23.8",
-    "zustand": "^5.0.3",
-    "@repo/common-ui": "*",
-    "@repo/curriculum": "*"
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@repo/eslint-config": "^0.0.0",

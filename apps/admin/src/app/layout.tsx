@@ -26,12 +26,12 @@ export const metadata: Metadata = {
     title: "RankMarg | Administrator Panel",
     description:
       "Boost your JEE/NEET rank with AI-powered practice, dynamic tests, and mastery tracking. Experience India's most personalized exam preparation platform.",
-    url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}`,
+    url: `${process.env.NEXT_PUBLIC_ADMIN_URL}`,
     type: "website",
     siteName: "RankMarg",
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/Logo.svg`, 
+        url: `${process.env.NEXT_PUBLIC_ADMIN_URL}/Logo.svg`, 
         width: 1200,
         height: 630,
         alt: "RankMarg – Administrator Panel",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_WEBSITE_URL),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_ADMIN_URL),
 };
 
 export default function RootLayout({

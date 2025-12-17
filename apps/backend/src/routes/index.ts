@@ -27,6 +27,8 @@ import userActivityRoutes from "./userActivity.routes";
 import settingRoutes from "./setting.routes";
 import aiQuestionRoutes from "./aiQuestion.routes";
 import notificationRoutes from "./notification.routes";
+import reportRoutes from "./report.routes";
+import revisionRoutes from "./revision.routes";
 // Add new routes here
 export const routes = {
   auth: authRoutes,
@@ -58,4 +60,6 @@ export const routes = {
   setting: settingRoutes,
   aiQuestion: aiQuestionRoutes,
   notification: notificationRoutes,
+  report: reportRoutes,
+  revision: revisionRoutes,
 };
