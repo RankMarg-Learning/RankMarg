@@ -15,26 +15,26 @@ export const metadata: Metadata = {
     "Adaptive Learning Platform"
   ],
   openGraph: {
-    title: "Sign In | RankMarg – Personalized Practice for JEE & NEET",
+    title: "Sign In | RankMarg – Administrator Panel",
     description:
-      "Log in to RankMarg and unlock personalized practice sessions, dynamic mock tests, and performance insights designed to boost your JEE/NEET rank.",
+      "Log in to RankMarg administrator panel and manage your content, users, and settings.",
     url: `${process.env.NEXT_PUBLIC_ADMIN_URL}/sign-in`,
     type: "website",
     siteName: "RankMarg",
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_ADMIN_URL}/Logo.svg`,
+        url: "https://cdn.rankmarg.in/assets/og-cover.png", 
         width: 1200,
         height: 630,
-        alt: "RankMarg Student Sign In – Personalized JEE & NEET Practice",
+        alt: "RankMarg Administrator Sign In – Administrator Panel",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sign In | RankMarg – Personalized Practice for JEE & NEET",
+    title: "Sign In | RankMarg – Administrator Panel",
     description:
-      "Continue your JEE/NEET preparation with RankMarg. Sign in to access AI-powered practice, mastery tracking, and adaptive learning.",
+      "Log in to RankMarg administrator panel and manage your content, users, and settings.",
   },
   icons: {
     icon: "/favicon.ico",

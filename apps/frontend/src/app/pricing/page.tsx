@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     "Personalized Practice Plans",
   ],
   openGraph: {
-    title: "Pricing | RankMarg",
+    title: "Pricing | RankMarg - Your Personal AI Coach for JEE & NEET ",
     description:
       "Explore RankMarg’s subscription plans for JEE & NEET. Access adaptive practice, daily smart questions, test analytics, and mastery tracking at the best price.",
     url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/pricing`,
@@ -26,18 +26,18 @@ export const metadata: Metadata = {
     siteName: "RankMarg",
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/pricing-preview.png`,
+        url: "https://cdn.rankmarg.in/assets/og-cover.png", 
         width: 1200,
         height: 630,
-        alt: "RankMarg Pricing Plans – Personalized Practice for JEE & NEET",
+        alt: "RankMarg – Your Personal AI Coach for JEE & NEET ",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "RankMarg Pricing | Personalized JEE & NEET Practice Plans",
+    title: "Pricing | RankMarg - Your Personal AI Coach for JEE & NEET ",
     description:
-      "Unlock your personalized JEE & NEET practice journey with RankMarg’s affordable plans. Get AI-driven insights, adaptive learning, and daily practice for exam success.",
+      "Choose the best plan to boost your JEE/NEET preparation with RankMarg. Get AI-powered personalized practice, dynamic tests, mastery tracking, and progress insights—all at an affordable price.",
   },
   icons: {
     icon: "/favicon.ico",

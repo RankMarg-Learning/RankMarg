@@ -5,11 +5,25 @@ export const metadata = {
   description:
     'Learn how Rankmarg collects, uses, and protects your data. Our Privacy Policy ensures transparency and safeguards your personal information as you prepare for JEE & NEET.',
   openGraph: {
-    title: 'Privacy Policy – Rankmarg',
+    title: 'Privacy Policy | RankMarg - Your Personal AI Coach for JEE & NEET ',
     description:
       'Understand how your data is handled on Rankmarg. We are committed to protecting your privacy while delivering a secure and personalized learning experience for JEE & NEET preparation.',
     url: 'https://rankmarg.in/privacy-policy',
     type: 'website',
+    images: [
+      {
+        url: "https://cdn.rankmarg.in/assets/og-cover.png", 
+        width: 1200,
+        height: 630,
+        alt: "RankMarg – Your Personal AI Coach for JEE & NEET ",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: 'Privacy Policy | RankMarg - Your Personal AI Coach for JEE & NEET ',
+    description:
+      'Learn how Rankmarg collects, uses, and protects your data. Our Privacy Policy ensures transparency and safeguards your personal information as you prepare for JEE & NEET.',
   },
   icons: {
     icon: '/favicon.ico',

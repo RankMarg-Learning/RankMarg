@@ -25,11 +25,25 @@ export const metadata = {
     description:
       'Need assistance with Rankmarg? Access our Help & Support page for quick answers, troubleshooting guides, and personalized support for your JEE & NEET preparation journey.',
     openGraph: {
-      title: 'Rankmarg Help & Support – Assistance for JEE & NEET Students',
+      title: 'Help & Support | RankMarg - Your Personal AI Coach for JEE & NEET ',
       description:
         'Find solutions to common issues, get guidance on using Rankmarg’s AI-powered practice platform, and connect with our support team to resolve your queries quickly.',
       url: 'https://rankmarg.in/help-support',
       type: 'website',
+      images: [
+        {
+          url: "https://cdn.rankmarg.in/assets/og-cover.png", 
+          width: 1200,
+          height: 630,
+          alt: "RankMarg – Your Personal AI Coach for JEE & NEET ",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: 'Help & Support | RankMarg - Your Personal AI Coach for JEE & NEET ',
+      description:
+        'Need assistance with Rankmarg? Access our Help & Support page for quick answers, troubleshooting guides, and personalized support for your JEE & NEET preparation journey.',
     },
     icons: {
       icon: '/favicon.ico',

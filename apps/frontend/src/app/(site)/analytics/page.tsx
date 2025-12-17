@@ -7,11 +7,25 @@ export const metadata = {
     description:
       'Track and analyze your JEE & NEET performance with Rankmarg’s AI-powered analytics. Get deep insights into accuracy, speed, mastery, and weak areas to improve your ranking efficiently.',
     openGraph: {
-      title: 'JEE & NEET Performance Analytics – Rankmarg',
+      title: 'Performance Analytics | RankMarg - Your Personal AI Coach for JEE & NEET ',
       description:
-        'Boost your exam preparation with AI-driven performance analytics. Identify weak areas, track mastery progress, and optimize your learning for better accuracy and speed!',
+        'Track and analyze your JEE & NEET performance with Rankmarg’s AI-powered analytics. Get deep insights into accuracy, speed, mastery, and weak areas to improve your ranking efficiently.',
       url: 'https://rankmarg.in/analytics',
       type: 'website',
+      images: [
+        {
+          url: "https://cdn.rankmarg.in/assets/og-cover.png", 
+          width: 1200,
+          height: 630,
+          alt: "RankMarg – Your Personal AI Coach for JEE & NEET ",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: 'Performance Analytics | RankMarg - Your Personal AI Coach for JEE & NEET ',
+      description:
+        'Track and analyze your JEE & NEET performance with Rankmarg’s AI-powered analytics. Get deep insights into accuracy, speed, mastery, and weak areas to improve your ranking efficiently.',
     },
     icons: {
       icon: '/favicon.ico',

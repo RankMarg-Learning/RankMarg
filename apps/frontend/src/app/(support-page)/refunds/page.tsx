@@ -5,11 +5,25 @@ export const metadata = {
   description:
     'Learn about RankMarg\'s refund and cancellation policy for subscriptions. Understand your rights and our terms for requesting refunds on JEE & NEET preparation plans.',
   openGraph: {
-    title: 'Refund & Cancellation Policy – RankMarg',
+    title: 'Refund & Cancellation Policy | RankMarg - Your Personal AI Coach for JEE & NEET ',
     description:
       'Understand RankMarg\'s refund and cancellation terms. Learn about eligibility criteria, refund process, and cancellation procedures for our educational services.',
     url: 'https://rankmarg.in/refund-policy',
     type: 'website',
+    images: [
+      {
+        url: "https://cdn.rankmarg.in/assets/og-cover.png", 
+        width: 1200,
+        height: 630,
+        alt: "RankMarg – Your Personal AI Coach for JEE & NEET ",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: 'Refund & Cancellation Policy | RankMarg - Your Personal AI Coach for JEE & NEET ',
+    description:
+      'Learn about RankMarg\'s refund and cancellation policy for subscriptions. Understand your rights and our terms for requesting refunds on JEE & NEET preparation plans.',
   },
   icons: {
     icon: '/favicon.ico',
