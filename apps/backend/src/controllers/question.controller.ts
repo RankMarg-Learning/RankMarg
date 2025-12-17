@@ -155,9 +155,12 @@ export class QuestionController {
       }
       if (userRole !== Role.ADMIN && questionFilter === "my-questions") {
         whereClause.createdBy = userID;
-        whereClause.isPublished = false;
+        
       } else if (userRole === Role.ADMIN && questionFilter === "all") {
-        whereClause.isPublished = false;
+        whereClause.OR = [
+          { isPublished: true },
+          { createdBy: userID },
+        ];
       }
 
       const [questions] = await Promise.all([
