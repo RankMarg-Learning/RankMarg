@@ -14,11 +14,13 @@ const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 
 export const metadata: Metadata = {
-  title: "RankMarg | Personalized Practice for JEE & NEET",
-  description:
-    "Boost your JEE/NEET rank with AI-powered practice, dynamic tests, and mastery tracking. Experience India's most personalized exam preparation platform.",
+  title: "RankMarg | Your Personal AI Coach for JEE & NEET ",
+  description: "RankMarg acts as your personal AI coach for JEE & NEET—analyzing mistakes, tracking mastery, planning revisions, and guiding daily practice to maximize rank improvement.",
   keywords: [
     "RankMarg",
+    "RankMarg AI Coach",
+    "JEE Personal Coach",
+    "NEET AI Coach",
     "JEE Practice",
     "NEET Preparation",
     "Personalized Learning",
@@ -26,29 +28,30 @@ export const metadata: Metadata = {
     "Topic-wise Practice",
     "Adaptive Learning",
     "Spaced Repetition",
-    "Gamified Learning"
+    "Gamified Learning",
+    "Adaptive Learning",
   ],
   openGraph: {
-    title: "RankMarg | Personalized Practice for JEE & NEET",
+    title: "RankMarg | Your Personal AI Coach for JEE & NEET ",
     description:
-      "Boost your JEE/NEET rank with AI-powered practice, dynamic tests, and mastery tracking. Experience India's most personalized exam preparation platform.",
+    "An AI-driven personal coach for JEE & NEET aspirants—guiding what to practice, when to revise, and how to fix mistakes for consistent rank growth.",
     url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}`,
     type: "website",
     siteName: "RankMarg",
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/Logo.svg`, 
+        url: "https://cdn.rankmarg.in/assets/og-cover.png", 
         width: 1200,
         height: 630,
-        alt: "RankMarg – Personalized Practice Platform for JEE & NEET",
+        alt: "RankMarg – Your Personal AI Coach for JEE & NEET ",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "RankMarg | Personalized Practice for JEE & NEET",
+    title: "RankMarg | Your Personal AI Coach for JEE & NEET ",
     description:
-      "Crack JEE & NEET with adaptive practice, smart tests, mastery insights, and motivational challenges. Practice smarter, rank higher with RankMarg.",
+    "Stop guessing. Start improving. RankMarg is your AI coach that tracks mastery, diagnoses mistakes, and plans daily practice to boost JEE & NEET ranks.",
   },
   icons: {
     icon: "/favicon.ico",

@@ -17,26 +17,26 @@ export const metadata: Metadata = {
     "RankMarg Student Registration"
   ],
   openGraph: {
-    title: "Sign Up | RankMarg – Start Your Personalized JEE & NEET Practice",
+    title: "Sign Up | RankMarg – Administrator Panel",
     description:
-      "Create your free RankMarg account and unlock AI-powered practice, smart mock tests, and adaptive learning designed to help you crack JEE & NEET.",
+      "Create your free RankMarg administrator account and manage your content, users, and settings.",
     url: `${process.env.NEXT_PUBLIC_ADMIN_URL}/sign-up`,
     type: "website",
     siteName: "RankMarg",
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_ADMIN_URL}/Logo.svg`,
+        url: "https://cdn.rankmarg.in/assets/og-cover.png", 
         width: 1200,
         height: 630,
-        alt: "RankMarg Sign Up – Personalized JEE & NEET Practice Platform",
+        alt: "RankMarg Administrator Sign Up – Administrator Panel",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sign Up | RankMarg – Start Your Personalized JEE & NEET Practice",
+    title: "Sign Up | RankMarg – Administrator Panel",
     description:
-      "Join thousands of JEE/NEET aspirants on RankMarg. Sign up to access adaptive practice, mastery tracking, and motivational learning journeys.",
+      "Create your free RankMarg administrator account and manage your content, users, and settings.",
   },
   icons: {
     icon: "/favicon.ico",

@@ -83,11 +83,11 @@ function QuestionReportsContent() {
   };
 
   const handleEditQuestion = () => {
-    router.push(`/admin/questions/${slug}/edit`);
+    window.open(`/admin/questions/${slug}/edit`, '_blank');
   };
 
   const handleViewQuestion = () => {
-    window.open(`/question/${slug}`, '_blank');
+    window.open(`${process.env.NEXT_PUBLIC_WEBSITE_URL}/question/${slug}?solution=true`, '_blank', 'noopener,noreferrer');
   };
 
   if (!reportDetails?.success && !isLoading) {

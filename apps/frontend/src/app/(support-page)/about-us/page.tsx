@@ -21,11 +21,25 @@ export const metadata = {
     description:
       'Learn about RankMarg - India\'s leading AI-powered practice platform for JEE & NEET preparation. Discover our mission, vision, and commitment to transforming exam preparation.',
     openGraph: {
-      title: 'About RankMarg – Revolutionizing JEE & NEET Preparation',
+      title: 'About Us | RankMarg - Your Personal AI Coach for JEE & NEET ',
       description:
         'Discover how RankMarg is empowering thousands of students with intelligent practice, personalized analytics, and AI-driven insights for JEE & NEET success.',
       url: 'https://rankmarg.in/about',
       type: 'website',
+      images: [
+        {
+          url: "https://cdn.rankmarg.in/assets/og-cover.png", 
+          width: 1200,
+          height: 630,
+          alt: "RankMarg – Your Personal AI Coach for JEE & NEET ",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: 'About Us | RankMarg - Your Personal AI Coach for JEE & NEET ',
+      description:
+        'Learn about RankMarg - India\'s leading AI-powered practice platform for JEE & NEET preparation. Discover our mission, vision, and commitment to transforming exam preparation.',
     },
     icons: {
       icon: '/favicon.ico',

@@ -113,15 +113,6 @@ app.get(ServerConfig.api.routes.health, (_req: Request, res: Response) => {
 app.use(errorHandler);
 
 initializeRedis().then(async () => {
-  // Initialize PDF worker pool
-  try {
-    const { pdfQueueService } = await import("@/services/pdf/queue");
-    await pdfQueueService.startWorkers();
-    console.log(`📄 PDF worker pool started`);
-  } catch (error) {
-    console.error("Failed to start PDF worker pool:", error);
-  }
-
   app.listen(ServerConfig.port, () => {
     console.log(`🚀 API running on port ${ServerConfig.port}`);
     console.log(`📊 Redis health check available at /health/redis/health`);
@@ -136,28 +127,12 @@ initializeRedis().then(async () => {
 process.on("SIGTERM", async () => {
   console.log("SIGTERM received, shutting down gracefully...");
   
-  // Stop PDF worker pool
-  try {
-    const { pdfQueueService } = await import("@/services/pdf/queue");
-    await pdfQueueService.stopWorkers();
-  } catch (error) {
-    console.error("Error stopping PDF worker pool:", error);
-  }
-  
   await redisService.disconnect();
   process.exit(0);
 });
 
 process.on("SIGINT", async () => {
   console.log("SIGINT received, shutting down gracefully...");
-  
-  // Stop PDF worker pool
-  try {
-    const { pdfQueueService } = await import("@/services/pdf/queue");
-    await pdfQueueService.stopWorkers();
-  } catch (error) {
-    console.error("Error stopping PDF worker pool:", error);
-  }
   
   await redisService.disconnect();
   process.exit(0);

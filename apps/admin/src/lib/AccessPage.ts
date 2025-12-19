@@ -58,8 +58,8 @@ export const routeConfigs: RouteConfig[] = [
   { path: "/terms", type: RouteType.EXACT, access: AccessLevel.PUBLIC, description: "Terms of service" },
   
   // Blog routes
-  { path: "/posts", type: RouteType.EXACT, access: AccessLevel.PROTECTED,roles:ADMIN_ONLY, description: "Blog posts list" },
-  { path: "/post/:slugs", type: RouteType.DYNAMIC, access: AccessLevel.PROTECTED,roles:ADMIN_ONLY, description: "Individual blog post" },
+  { path: "/articles", type: RouteType.EXACT, access: AccessLevel.PROTECTED,roles:ADMIN_ONLY, description: "Blog posts list" },
+  { path: "/article/:slugs", type: RouteType.DYNAMIC, access: AccessLevel.PROTECTED,roles:ADMIN_ONLY, description: "Individual blog post" },
 
   // ==================== AUTHENTICATED ROUTES ====================
   // Special routes for all authenticated users

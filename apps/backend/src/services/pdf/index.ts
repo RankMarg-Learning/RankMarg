@@ -18,3 +18,12 @@ export type {
 export { TestPDFGenerator } from "./generators/test-pdf-generator";
 export { DPPPDFGenerator } from "./generators/dpp-pdf-generator";
 export { TestAnalysisPDFGenerator } from "./generators/test-analysis-pdf-generator";
+
+// Export S3 storage utilities
+export {
+  checkPDFExistsInS3,
+  uploadPDFToS3,
+  downloadPDFFromS3,
+  generatePDFKey,
+} from "./pdf-s3-storage";
+export type { PDFUploadResult, PDFCheckResult } from "./pdf-s3-storage";

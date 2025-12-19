@@ -58,6 +58,24 @@ export abstract class BasePDFGenerator<TData = any> {
   }
 
   /**
+   * Resolve template path from a relative path within packages/pdf-templates/
+   * This method handles path resolution for both development and production environments
+   * 
+   * @param relativePath - Path relative to packages/pdf-templates/ (e.g., "question-paper/sample-2.hbs")
+   * @returns Absolute path to the template file
+   */
+  protected resolveTemplatePath(relativePath: string): string {
+    let projectRoot = process.cwd();
+    
+    // If we're in apps/backend directory, go up to project root
+    if (projectRoot.endsWith('apps/backend') || projectRoot.endsWith('apps\\backend')) {
+      projectRoot = path.join(projectRoot, '../..');
+    }
+    
+    return path.join(projectRoot, "packages/pdf-templates", relativePath);
+  }
+
+  /**
    * Get the template path for this PDF type
    * Must be implemented by subclasses
    */

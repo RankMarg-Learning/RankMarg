@@ -6,7 +6,7 @@ export const metadata = {
   description:
     'Track your mistakes and improve your performance with RankMarg’s Mistake Tracker. Get detailed analysis of your mistakes and improve your performance with RankMarg’s Mistake Tracker.',
   openGraph: {
-    title: 'RankMarg Mistake Tracker | Track Your Mistakes',
+    title: 'Mistake Tracker | RankMarg - Your Personal AI Coach for JEE & NEET ',
     description:
       'RankMarg Mistake Tracker provides a comprehensive analysis of your mistakes and improve your performance with RankMarg’s Mistake Tracker.',
     url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/mistakes-tracker`,
@@ -14,12 +14,18 @@ export const metadata = {
     siteName: 'RankMarg',
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/Logo.svg`,
+        url: "https://cdn.rankmarg.in/assets/og-cover.png", 
         width: 1200,
         height: 630,
-        alt: 'RankMarg Mistake Tracker | Track Your Mistakes',
+        alt: "RankMarg – Your Personal AI Coach for JEE & NEET ",
       },
     ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: 'Mistake Tracker | RankMarg - Your Personal AI Coach for JEE & NEET ',
+    description:
+      'Track your mistakes and improve your performance with RankMarg’s Mistake Tracker. Get detailed analysis of your mistakes and improve your performance with RankMarg’s Mistake Tracker.',
   },
   icons: {
     icon: '/favicon.ico',

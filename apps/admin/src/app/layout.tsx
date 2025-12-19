@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     siteName: "RankMarg",
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_ADMIN_URL}/Logo.svg`, 
+        url: "https://cdn.rankmarg.in/assets/og-cover.png", 
         width: 1200,
         height: 630,
         alt: "RankMarg – Administrator Panel",
