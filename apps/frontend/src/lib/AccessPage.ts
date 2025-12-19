@@ -58,9 +58,9 @@ export const routeConfigs: RouteConfig[] = [
   { path: "/refunds", type: RouteType.EXACT, access: AccessLevel.PUBLIC, description: "Refunds policy" },
   { path: "/terms", type: RouteType.EXACT, access: AccessLevel.PUBLIC, description: "Terms of service" },
   
-  // Blog routes
-  { path: "/posts", type: RouteType.EXACT, access: AccessLevel.PROTECTED,roles:ADMIN_ONLY, description: "Blog posts list" },
-  { path: "/post/:slugs", type: RouteType.DYNAMIC, access: AccessLevel.PROTECTED,roles:ADMIN_ONLY, description: "Individual blog post" },
+  // Articles routes
+  { path: "/articles", type: RouteType.EXACT, access: AccessLevel.PUBLIC, description: "Articles list" },
+  { path: "/article/:slugs", type: RouteType.DYNAMIC, access: AccessLevel.PUBLIC, description: "Individual article" },
 
   // ==================== AUTHENTICATED ROUTES ====================
   // Special routes for all authenticated users
