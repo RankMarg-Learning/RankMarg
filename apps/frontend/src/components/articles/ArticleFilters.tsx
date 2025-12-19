@@ -1,10 +1,9 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { ArticleCategory } from "@/types/article.types";
 
 interface ArticleFiltersProps {
-  categories: ArticleCategory[];
+  categories: string[];
   selectedCategory: string | null;
   onCategoryChange: (category: string | null) => void;
   searchQuery: string;

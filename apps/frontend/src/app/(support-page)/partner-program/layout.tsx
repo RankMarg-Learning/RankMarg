@@ -23,3 +23,11 @@ export const metadata: Metadata = {
     description: 'Join the RankMarg Partner Program and help students succeed while earning rewards.',
   },
 };
+
+export default function PartnerProgramLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return <>{children}</>;
+}
