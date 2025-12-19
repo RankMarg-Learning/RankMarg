@@ -63,7 +63,7 @@ COPY --from=builder /app/packages/db/dist ./packages/db/dist
 COPY --from=builder /app/packages/suggest-engine/dist ./packages/suggest-engine/dist
 COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
 
-COPY --from=builder /app/packages/pdf-templates ./apps/packages/pdf-templates
+COPY --from=builder /app/packages/pdf-templates ./packages/pdf-templates
 
 ENV NODE_ENV=production
 ENV PORT=3001

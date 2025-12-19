@@ -1,4 +1,3 @@
-import path from "path";
 import { BasePDFGenerator } from "../base-pdf-generator";
 import { TestAnalysisPDFData } from "../types";
 
@@ -8,11 +7,7 @@ import { TestAnalysisPDFData } from "../types";
  */
 export class TestAnalysisPDFGenerator extends BasePDFGenerator<TestAnalysisPDFData> {
   protected getTemplatePath(): string {
-    // TODO: Update this path when Test Analysis template is created
-    return path.join(
-      __dirname,
-      "../../../../../../packages/pdf-templates/test-analysis/template.hbs"
-    );
+    return this.resolveTemplatePath("test-analysis/template.hbs");
   }
 
   protected transformData(data: TestAnalysisPDFData): Record<string, any> {

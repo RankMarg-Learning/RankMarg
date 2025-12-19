@@ -1,4 +1,3 @@
-import path from "path";
 import { BasePDFGenerator } from "../base-pdf-generator";
 import { DPPPDFData } from "../types";
 
@@ -8,10 +7,7 @@ import { DPPPDFData } from "../types";
  */
 export class DPPPDFGenerator extends BasePDFGenerator<DPPPDFData> {
   protected getTemplatePath(): string {
-    return path.join(
-      __dirname,
-      "../../../../../../packages/pdf-templates/question-paper/sample-3.hbs"
-    );
+    return this.resolveTemplatePath("question-paper/sample-3.hbs");
   }
 
   protected transformData(data: DPPPDFData): Record<string, any> {
