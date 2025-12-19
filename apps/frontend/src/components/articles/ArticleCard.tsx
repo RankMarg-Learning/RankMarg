@@ -7,6 +7,7 @@ import { Article } from "@/types/article.types";
 import { Calendar, ArrowRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { TextFormator } from "@/utils/textFormator";
+import { click_article } from "@/utils/analytics";
 
 interface ArticleCardProps {
   article: Article;
@@ -18,8 +19,12 @@ export default function ArticleCard({ article, featured = false }: ArticleCardPr
     addSuffix: true,
   });
 
+  const handleArticleClick = () => {
+    click_article(article.id, article.slug, article.title, featured ? 'featured' : 'grid');
+  };
+
   return (
-    <Link href={`/articles/${article.slug}`}>
+    <Link href={`/articles/${article.slug}`} onClick={handleArticleClick}>
       <Card
         className={`group overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-200 hover:border-primary-300 bg-white ${
           featured

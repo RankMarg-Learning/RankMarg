@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@repo/common-ui";
+import { view_articles_page, filter_articles } from "@/utils/analytics";
 
 // Use Next.js API route to avoid CORS issues
 async function fetchArticles(params: ArticlesQueryParams): Promise<ArticlesResponse> {
@@ -55,6 +56,19 @@ export default function ArticlesPage() {
     setPage(1);
   }, [selectedCategory]);
 
+  // Track filter changes
+  useEffect(() => {
+    if (selectedCategory) {
+      filter_articles('category', selectedCategory);
+    }
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    if (debouncedSearch) {
+      filter_articles('search', debouncedSearch);
+    }
+  }, [debouncedSearch]);
+
   const queryParams: ArticlesQueryParams = {
     page,
     limit: 20,
@@ -68,6 +82,13 @@ export default function ArticlesPage() {
     queryFn: () => fetchArticles(queryParams),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Track page view
+  useEffect(() => {
+    if (data) {
+      view_articles_page(page, data.pagination.total);
+    }
+  }, [data, page]);
 
   // Extract unique categories from articles
   const categories = useMemo(() => {
