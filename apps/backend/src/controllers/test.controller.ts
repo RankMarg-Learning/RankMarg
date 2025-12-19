@@ -626,7 +626,6 @@ export class TestController {
         (total, section) => total + section.testQuestion.length,
         0
       );
-      // Check if test is being made live
       const existingTest = await prisma.test.findUnique({
         where: { testId },
         select: { status: true, visibility: true },
@@ -649,9 +648,8 @@ export class TestController {
           startTime,
           endTime,
 
-          // Handle TestSection updates
           testSection: {
-            deleteMany: {}, // Remove existing sections
+            deleteMany: {}, 
             create: testSection.map((section: TestSection) => ({
               name: section.name,
               isOptional: section.isOptional,
@@ -668,7 +666,6 @@ export class TestController {
         },
       });
 
-      // Send notification if test is now live (PUBLIC and ACTIVE)
       const isNowLive = 
         visibility === "PUBLIC" && 
         status === "ACTIVE" &&
@@ -676,14 +673,13 @@ export class TestController {
 
       if (isNowLive) {
         try {
-          // Get all users (or users based on examCode if needed)
           const users = await prisma.user.findMany({
             where: {
               onboardingCompleted: true,
               ...(examCode ? { examRegistrations: { some: { examCode } } } : {}),
             },
             select: { id: true },
-            take: 1000, // Limit to prevent overload
+            take: 1000, 
           });
 
           if (users.length > 0) {
@@ -837,7 +833,6 @@ export class TestController {
     const { status, limit, offset, sortBy, sortOrder } = req.query;
     
     try {
-      // Only admins can view all participants
       if (req.user.role !== Role.ADMIN) {
         ResponseUtil.error(res, "Unauthorized. Admin access required.", 403);
         return;
@@ -895,7 +890,6 @@ export class TestController {
         }),
       ]);
 
-      // Calculate additional stats
       const participantsWithStats = participants.map((participant) => {
         const attempts = participant.attempt || [];
         const correctCount = attempts.filter((a) => a.status === 'CORRECT').length;
@@ -938,13 +932,11 @@ export class TestController {
     const { testId, participantId } = req.params;
     
     try {
-      // Only admins can delete participants
       if (req.user.role !== Role.ADMIN) {
         ResponseUtil.error(res, "Unauthorized. Admin access required.", 403);
         return;
       }
 
-      // Check if participant exists
       const participant = await prisma.testParticipation.findUnique({
         where: {
           id: participantId,
@@ -963,13 +955,11 @@ export class TestController {
         return;
       }
 
-      // Verify participant belongs to the test
       if (participant.testId !== testId) {
         ResponseUtil.error(res, "Participant does not belong to this test", 400);
         return;
       }
 
-      // Delete participant (attempts will be deleted via cascade)
       await prisma.testParticipation.delete({
         where: {
           id: participantId,
@@ -1390,7 +1380,6 @@ export class TestController {
     try {
       const userId = req.user.id;
 
-      // Check if user has participated in this test
       const participant = await prisma.testParticipation.findFirst({
         where: {
           testId: testId,
@@ -1403,7 +1392,6 @@ export class TestController {
         return;
       }
 
-      // Get comprehensive test data with all relations
       const testData = await prisma.testParticipation.findFirst({
         where: {
           userId: userId,
@@ -1500,7 +1488,6 @@ export class TestController {
         return;
       }
 
-      // Generate comprehensive analysis
       const analysis = this.generateTestAnalysis(testData);
 
       ResponseUtil.success(res, analysis, "Test analysis generated successfully", 200);
@@ -1509,32 +1496,23 @@ export class TestController {
     }
   };
 
-  // Helper method to generate comprehensive test analysis
   private generateTestAnalysis = (testData: any) => {
     const { test, attempt, score, accuracy, timing, startTime, endTime } = testData;
     
-    // Section A: Test Overview & Performance Summary
     const sectionA = this.generateSectionA(testData);
     
-    // Section B: Performance Metrics & Statistics
     const sectionB = this.generateSectionB(testData);
     
-    // Section C: Time Analysis
     const sectionC = this.generateSectionC(testData);
     
-    // Section D: Difficulty Analysis
     const sectionD = this.generateSectionD(testData);
     
-    // Section E: Subject-wise Analysis
     const sectionE = this.generateSectionE(testData);
     
-    // Section F: Question-wise Analysis
     const sectionF = this.generateSectionF(testData);
     
-    // Section G: Improvement Recommendations
     const sectionG = this.generateSectionG(testData);
     
-    // Section H: Comparative Analysis
     const sectionH = this.generateSectionH(testData);
 
     return {
@@ -1556,7 +1534,6 @@ export class TestController {
     };
   };
 
-  // Section A: Test Overview & Performance Summary
   private generateSectionA = (testData: any) => {
     const { test, attempt, score, accuracy, timing, startTime, endTime } = testData;
     
@@ -1564,7 +1541,6 @@ export class TestController {
     const totalMarks = test.totalMarks;
     const testDuration = test.duration;
     
-    // Calculate section-wise performance
     const sectionPerformance = test.testSection.map((section: any) => {
       const sectionQuestionIds = section.testQuestion.map((q: any) => q.questionId);
       const sectionAttempts = attempt.filter((att: any) => 
@@ -1596,11 +1572,10 @@ export class TestController {
       testDuration: testDuration,
       timeSaved: testDuration - (timing || 0),
       sectionPerformance,
-      overallRank: null, // Will be calculated if needed
+      overallRank: null, 
     };
   };
 
-  // Section B: Performance Metrics & Statistics
   private generateSectionB = (testData: any) => {
     const { test, attempt } = testData;
     
@@ -1609,7 +1584,6 @@ export class TestController {
     const incorrect = attempt.filter((att: any) => att.status === 'INCORRECT').length;
     const unattempted = totalQuestions - correct - incorrect;
     
-    // Difficulty-wise analysis
     const difficultyAnalysis = {
       easy: { total: 0, correct: 0, incorrect: 0, unattempted: 0 },
       medium: { total: 0, correct: 0, incorrect: 0, unattempted: 0 },
@@ -1633,7 +1607,6 @@ export class TestController {
       }
     });
 
-    // Generate AI feedback
     const accuracy = (correct / totalQuestions) * 100;
     let feedback = '';
     let performanceLevel = '';
@@ -1671,7 +1644,6 @@ export class TestController {
     };
   };
 
-  // Section C: Time Analysis
   private generateSectionC = (testData: any) => {
     const { test, attempt } = testData;
     
@@ -1696,7 +1668,6 @@ export class TestController {
       const timing = att.timing || 0;
       const subject = att.question.subject.name.toLowerCase();
       
-      // Update section timings
       const sectionIndex = sectionTimings.findIndex(
         (section: any) => section.name.toLowerCase() === subject
       );
@@ -1705,14 +1676,12 @@ export class TestController {
         sectionTimings[sectionIndex].questions++;
       }
 
-      // Track subject-wise timing
       if (!subjectTimeMap[subject]) {
         subjectTimeMap[subject] = { totalTime: 0, questionCount: 0 };
       }
       subjectTimeMap[subject].totalTime += timing;
       subjectTimeMap[subject].questionCount++;
 
-      // Create question timing record
       const questionTiming: any = {
         question: questionNumber,
         physics: 0,
@@ -1739,7 +1708,6 @@ export class TestController {
       questionTimings.push(questionTiming);
     });
 
-    // Calculate time efficiency
     const timeEfficiency = sectionTimings.map((section: any) => ({
       ...section,
       efficiency: section.questions > 0 ? (section.totalTime / section.questions) : 0,
@@ -1754,7 +1722,6 @@ export class TestController {
     };
   };
 
-  // Section D: Difficulty Analysis
   private generateSectionD = (testData: any) => {
     const { attempt } = testData;
     
@@ -1799,7 +1766,6 @@ export class TestController {
     };
   };
 
-  // Section E: Subject-wise Analysis
   private generateSectionE = (testData: any) => {
     const { test, attempt } = testData;
     
@@ -1846,7 +1812,6 @@ export class TestController {
     };
   };
 
-  // Section F: Question-wise Analysis
   private generateSectionF = (testData: any) => {
     const { test, attempt } = testData;
     
@@ -1890,7 +1855,6 @@ export class TestController {
     };
   };
 
-  // Section G: Improvement Recommendations
   private generateSectionG = (testData: any) => {
     const { test, attempt } = testData;
     
@@ -1946,28 +1910,23 @@ export class TestController {
     };
   };
 
-  // Section H: Comparative Analysis
   private generateSectionH = (testData: any) => {
     const { test, attempt } = testData;
-    
-    // This would typically compare with other students or previous attempts
-    // For now, we'll provide basic comparative metrics
     
     const accuracy = (attempt.filter((att: any) => att.status === 'CORRECT').length / attempt.length) * 100;
     
     return {
-      percentile: null, // Would need more data to calculate
-      rank: null, // Would need more data to calculate
+      percentile: null, 
+      rank: null, 
       comparisonWithAverage: {
         accuracy: accuracy,
-        averageAccuracy: 65, // Placeholder
+        averageAccuracy: 65, 
         performance: accuracy > 65 ? 'above' : 'below',
       },
-      historicalComparison: null, // Would need previous test data
+      historicalComparison: null, 
     };
   };
 
-  // Helper methods for analysis
   private identifyStrengths = (difficultyAnalysis: any) => {
     const strengths = [];
     Object.keys(difficultyAnalysis).forEach(difficulty => {
@@ -2089,10 +2048,8 @@ export class TestController {
     next: NextFunction
   ): Promise<void> => {
     const { testId } = req.params;
-    const { useQueue = "false" } = req.query; // Optional: ?useQueue=true to use queue system
 
     try {
-      // Fetch test with all questions and options
       const test = await prisma.test.findUnique({
         where: {
           testId: testId,
@@ -2161,54 +2118,11 @@ export class TestController {
         })),
       };
 
-      // Use queue system if requested
-      if (useQueue === "true" || process.env.PDF_USE_QUEUE === "true") {
-        const { pdfQueueService } = await import("@/services/pdf/queue");
-        const { PDFJobPriority, PDFJobStatus } = await import("@/services/pdf/queue");
-
-        const priorityParam = req.query.priority as string;
-        let priority: typeof PDFJobPriority.NORMAL = PDFJobPriority.NORMAL;
-        
-        if (priorityParam) {
-          const priorityNum = parseInt(priorityParam, 10);
-          // Validate priority is a valid enum value (1-4)
-          if (priorityNum >= PDFJobPriority.LOW && priorityNum <= PDFJobPriority.URGENT) {
-            priority = priorityNum as typeof PDFJobPriority.NORMAL;
-          }
-        }
-
-        const job = await pdfQueueService.queueTestPDF(
-          testData,
-          priority,
-          req.user.id
-        );
-
-        const isExisting = job.status === PDFJobStatus.COMPLETED && job.metadata?.downloadUrl;
-        
-        ResponseUtil.success(
-          res,
-          {
-            jobId: job.id,
-            status: job.status,
-            downloadUrl: job.metadata?.downloadUrl,
-            message: isExisting
-              ? "PDF found in cache. Ready for download."
-              : "PDF generation queued. Use /api/pdf/job/:jobId to check status.",
-          },
-          isExisting
-            ? "PDF ready for download"
-            : "PDF generation job queued successfully"
-        );
-        return;
-      }
-
-      // Direct generation (synchronous - for backward compatibility)
-      // Check S3 cache first
-      const { checkPDFExistsInS3, uploadPDFToS3, downloadPDFFromS3 } = await import("@/services/pdf/queue/pdf-s3-storage");
+      
+      const { checkPDFExistsInS3, uploadPDFToS3, downloadPDFFromS3 } = await import("@/services/pdf/pdf-s3-storage");
       const checkResult = await checkPDFExistsInS3(test.testId, "test", "pdfs");
       
       if (checkResult.exists && checkResult.key) {
-        // PDF exists in S3 - download and proxy through backend to avoid CORS issues
         try {
           const pdfBuffer = await downloadPDFFromS3(checkResult.key);
           const fileName = `${test.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${testId.substring(0, 8)}.pdf`;
@@ -2219,16 +2133,13 @@ export class TestController {
           return;
         } catch (error) {
           console.error("Error downloading PDF from S3, will generate new one:", error);
-          // Fall through to generate new PDF if download fails
         }
       }
 
-      // Generate PDF
       const { PDFService } = await import("@/services/pdf.service");
       const pdfService = new PDFService();
       const pdfBuffer = await pdfService.generatePDF(testData);
 
-      // Upload to S3 for future cache hits (async, don't wait)
       uploadPDFToS3(
         pdfBuffer,
         test.title.replace(/[^a-z0-9]/gi, "_"),
@@ -2237,7 +2148,6 @@ export class TestController {
         "test"
       ).catch((error) => console.error("Failed to upload PDF to S3:", error));
 
-      // Return PDF
       const fileName = `${test.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${testId.substring(0, 8)}.pdf`;
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
