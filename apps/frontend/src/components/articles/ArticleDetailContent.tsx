@@ -389,7 +389,7 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
             {relatedArticles && relatedArticles.length > 0 && (
               <div className="mt-8 sm:mt-12 md:mt-16">
                 <div className="mb-4 sm:mb-6 md:mb-8">
-                  <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
+                  <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
                     Related Articles
                   </h2>
                   <p className="text-xs sm:text-sm md:text-base text-gray-600">
@@ -417,7 +417,7 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
                       <div className="p-3 sm:p-4">
                         {article.category && (
                           <Badge className="bg-primary-100 text-primary-700 border-primary-300 text-xs mb-2">
-                            {article.category}
+                            {TextFormator(article.category)}
                           </Badge>
                         )}
                         <h3 className="text-gray-900 font-semibold text-sm mb-1 sm:mb-2 line-clamp-2">

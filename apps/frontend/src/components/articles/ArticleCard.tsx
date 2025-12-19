@@ -73,7 +73,7 @@ export default function ArticleCard({ article, featured = false }: ArticleCardPr
                     variant="outline"
                     className="text-xs border-gray-300 hover:border-primary-400 hover:text-primary-600 transition-colors"
                   >
-                    {tag.name}
+                    {TextFormator(tag.name)}
                   </Badge>
                 ))}
                 {article.tags.length > 2 && (
