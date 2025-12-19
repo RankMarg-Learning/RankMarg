@@ -11,6 +11,7 @@ import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import { Skeleton } from "@repo/common-ui";
 import { TextFormator } from "@/utils/textFormator";
 import { useEffect, useState, useMemo } from "react";
+import { view_article_detail, share_article, click_related_article } from "@/utils/analytics";
 
 // Use Next.js API routes to avoid CORS issues
 async function fetchArticleBySlug(slug: string): Promise<Article> {
@@ -75,6 +76,24 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
   const [activeHeading, setActiveHeading] = useState<string | null>(null);
   // Mobile timeline drawer state
   const [isTimelineOpen, setIsTimelineOpen] = useState(false);
+
+  // Track article view
+  useEffect(() => {
+    if (article) {
+      const wordCount = article.content?.split(/\s+/).length || 0;
+      const readingTime = Math.ceil(wordCount / 200);
+      const tags = article.tags.map(tag => tag.name);
+      
+      view_article_detail(
+        article.id,
+        article.slug,
+        article.title,
+        article.category || undefined,
+        tags.length > 0 ? tags : undefined,
+        readingTime
+      );
+    }
+  }, [article]);
 
   // Add IDs to headings and set up intersection observer
   useEffect(() => {
@@ -166,9 +185,12 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
       url: window.location.href,
     };
 
+    let shareMethod = 'clipboard';
+
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
       try {
         await navigator.share(shareData);
+        shareMethod = 'native_share';
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
           try {
@@ -185,6 +207,9 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
         console.error('Failed to copy to clipboard:', err);
       }
     }
+
+    // Track share event
+    share_article(article.id, article.slug, article.title, shareMethod);
   };
 
   return (
@@ -397,17 +422,23 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
                   </p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-                  {relatedArticles.map((article) => (
+                  {relatedArticles.map((relatedArticle) => (
                     <Link
-                      key={article.id}
-                      href={`/articles/${article.slug}`}
+                      key={relatedArticle.id}
+                      href={`/articles/${relatedArticle.slug}`}
+                      onClick={() => click_related_article(
+                        relatedArticle.id,
+                        relatedArticle.slug,
+                        relatedArticle.title,
+                        article.id
+                      )}
                       className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-primary-300 transition-all hover:shadow-lg"
                     >
-                      {article.thumbnail && (
+                      {relatedArticle.thumbnail && (
                         <div className="relative aspect-video">
                           <Image
-                            src={article.thumbnail}
-                            alt={article.title}
+                            src={relatedArticle.thumbnail}
+                            alt={relatedArticle.title}
                             fill
                             className="object-cover"
                           />
@@ -415,17 +446,17 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
                         </div>
                       )}
                       <div className="p-3 sm:p-4">
-                        {article.category && (
+                        {relatedArticle.category && (
                           <Badge className="bg-primary-100 text-primary-700 border-primary-300 text-xs mb-2">
-                            {TextFormator(article.category)}
+                            {TextFormator(relatedArticle.category)}
                           </Badge>
                         )}
                         <h3 className="text-gray-900 font-semibold text-sm mb-1 sm:mb-2 line-clamp-2">
-                          {article.title}
+                          {relatedArticle.title}
                         </h3>
-                        {article.seo.metaDesc && (
+                        {relatedArticle.seo.metaDesc && (
                           <p className="text-gray-600 text-xs line-clamp-2">
-                            {article.seo.metaDesc}
+                            {relatedArticle.seo.metaDesc}
                           </p>
                         )}
                       </div>
