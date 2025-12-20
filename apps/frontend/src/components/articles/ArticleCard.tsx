@@ -35,22 +35,49 @@ export default function ArticleCard({ article, featured = false }: ArticleCardPr
           }`}
         >
           {article.thumbnail ? (
-          <Image
-            src={
-              article.thumbnail ||
-              "https://cdn.rankmarg.in/assets/article-placeholder.jpg"
-            }
-            alt={article.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes={featured ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, 33vw"}
-          />
-          ):(
-            <div className="absolute inset-0 bg-gray-200">
-              <div className="absolute inset-0     bg-[radial-gradient(120%_100%_at_0%_0%,#f5c400_0%,#d1a800_35%,#6b6f3f_65%,#2e3b40_100%)]"></div>
+            <Image
+              src={
+                article.thumbnail ||
+                "https://cdn.rankmarg.in/assets/article-placeholder.jpg"
+              }
+              alt={article.title}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes={featured ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, 33vw"}
+            />
+          ) : (
+            <div 
+              className="absolute inset-0 w-full h-full"
+              style={{
+                background: "radial-gradient(120% 100% at 0% 0%, #f5c400 0%, #d1a800 35%, #6b6f3f 65%, #2e3b40 100%)"
+              }}
+            >
+              {/* Content overlay */}
+              <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-5 md:p-6 z-10">
+                {/* Category Badge */}
+                {article.category && (
+                  <div className="mb-2 sm:mb-3">
+                    <Badge className="bg-white/20 backdrop-blur-sm text-white border-0 px-2 py-1 text-xs sm:text-sm font-medium">
+                      {TextFormator(article.category)}
+                    </Badge>
+                  </div>
+                )}
+                
+                {/* Title */}
+                <h3 className={`font-bold text-white drop-shadow-lg line-clamp-2 leading-tight ${
+                  featured 
+                    ? "text-lg sm:text-xl md:text-2xl" 
+                    : "text-base sm:text-lg"
+                }`}>
+                  {article.title}
+                </h3>
+              </div>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          {/* Gradient overlay - only show on thumbnail images */}
+          {article.thumbnail && (
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          )}
         </div>
 
         <div className={`p-4 sm:p-5 md:p-6 ${featured ? "" : "flex-1 flex flex-col"}`}>

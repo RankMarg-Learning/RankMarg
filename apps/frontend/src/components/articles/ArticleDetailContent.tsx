@@ -222,9 +222,11 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
         <div
           className="
     w-full aspect-[16/9]
-    bg-[radial-gradient(120%_100%_at_0%_0%,#f5c400_0%,#d1a800_35%,#6b6f3f_65%,#2e3b40_100%)]
     relative overflow-hidden
   "
+          style={{
+            background: "radial-gradient(120% 100% at 0% 0%, #f5c400 0%, #d1a800 35%, #6b6f3f 65%, #2e3b40 100%)"
+          }}
         >
           <div className="absolute inset-0 opacity-[0.04] " />
         </div>
@@ -243,7 +245,7 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
               {/* Category Badge */}
               {article.category && (
                 <div className="mb-3 sm:mb-4">
-                  <Badge className="bg-white/10 text-white border-0 px-3 py-1 text-xs sm:text-sm font-medium backdrop-blur-sm">
+                  <Badge className="bg-gray-800 text-white border-0 px-3 py-1 text-xs sm:text-sm font-medium backdrop-blur-sm">
                     {TextFormator(article.category)}
                   </Badge>
                 </div>
