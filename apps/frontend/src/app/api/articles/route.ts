@@ -20,9 +20,9 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         "Authorization": API_KEY,
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
       },
-      // Add cache control for better performance
-      next: { revalidate: 300 }, // Revalidate every 5 minutes
+      cache: "no-store" as RequestCache,
     });
 
     if (!response.ok) {
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
       },
     });
   } catch (error) {
