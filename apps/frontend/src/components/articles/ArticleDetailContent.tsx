@@ -252,7 +252,7 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
               )}
 
               {/* Title */}
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-4 sm:mb-6 drop-shadow-lg">
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-tight mb-4 sm:mb-6 drop-shadow-lg ">
                 {article.title}
               </h1>
 
