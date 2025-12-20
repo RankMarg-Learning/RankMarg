@@ -83,7 +83,7 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
       const wordCount = article.content?.split(/\s+/).length || 0;
       const readingTime = Math.ceil(wordCount / 200);
       const tags = article.tags.map(tag => tag.name);
-      
+
       view_article_detail(
         article.id,
         article.slug,
@@ -216,22 +216,24 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
     <div className="min-h-screen ">
 
       {/* Hero Section with Image */}
-      <div className="relative w-full h-[180px] sm:h-[240px] md:h-[300px] lg:h-[340px] mx-auto overflow-hidden border-b-4 border-primary-500">
-        {article.thumbnail ? (
-          <Image
-            src={article.thumbnail}
-            alt={article.title}
-            fill
-            className="object-cover"
-            priority
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-primary-100 via-primary-200 to-primary-300" />
-        )}
+      <div
+        className="relative w-full h-[180px] md:h-[280px]  mx-auto overflow-hidden  border-b-4 border-primary-500"
+      >
+        <div
+          className="
+    w-full aspect-[16/9]
+    relative overflow-hidden
+  "
+          style={{
+            background: "radial-gradient(120% 100% at 0% 0%, #f5c400 0%, #d1a800 35%, #6b6f3f 65%, #2e3b40 100%)"
+          }}
+        >
+          <div className="absolute inset-0 opacity-[0.04] " />
+        </div>
 
         {/* Enhanced gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
-        
+
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-600/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
@@ -243,7 +245,7 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
               {/* Category Badge */}
               {article.category && (
                 <div className="mb-3 sm:mb-4">
-                  <Badge className="bg-primary-500/90 text-white border-0 px-3 py-1 text-xs sm:text-sm font-medium backdrop-blur-sm">
+                  <Badge className="bg-gray-800 text-white border-0 px-3 py-1 text-xs sm:text-sm font-medium backdrop-blur-sm">
                     {TextFormator(article.category)}
                   </Badge>
                 </div>
@@ -344,17 +346,15 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
                         setIsTimelineOpen(false);
                       }
                     }}
-                    className={`block py-2 px-3 rounded-md text-sm transition-all duration-200 ${
-                      heading.level === 1
-                        ? 'font-semibold'
-                        : heading.level === 2
+                    className={`block py-2 px-3 rounded-md text-sm transition-all duration-200 ${heading.level === 1
+                      ? 'font-semibold'
+                      : heading.level === 2
                         ? 'font-medium pl-4'
                         : 'font-normal pl-6 text-xs'
-                    } ${
-                      isActive
+                      } ${isActive
                         ? 'text-primary-600 bg-primary-50'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
+                      }`}
                   >
                     {heading.text}
                   </a>
@@ -370,7 +370,7 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 xl:gap-12">
           {/* Main Article Content */}
           <article className="flex-1 min-w-0">
-           
+
             {/* Main Content */}
             <div className="bg-white  shadow-sm p-4 sm:p-6 md:p-8 lg:p-10 mb-6 sm:mb-8 md:mb-12">
               <div className="prose prose-sm max-w-none text-gray-900">
@@ -501,10 +501,10 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
                             }
                           }}
                           className={`block py-1.5 px-2 rounded-md text-xs sm:text-sm transition-all duration-200 ${heading.level === 1
-                              ? 'font-semibold'
-                              : heading.level === 2
-                                ? 'font-medium pl-3'
-                                : 'font-normal pl-5 text-xs'
+                            ? 'font-semibold'
+                            : heading.level === 2
+                              ? 'font-medium pl-3'
+                              : 'font-normal pl-5 text-xs'
                             } ${isActive
                               ? 'text-primary-600 bg-primary-50'
                               : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'

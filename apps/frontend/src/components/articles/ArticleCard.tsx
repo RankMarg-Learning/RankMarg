@@ -4,8 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Card, Badge } from "@repo/common-ui";
 import { Article } from "@/types/article.types";
-import { Calendar, ArrowRight } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { ArrowRight } from "lucide-react";
 import { TextFormator } from "@/utils/textFormator";
 import { click_article } from "@/utils/analytics";
 
@@ -15,9 +14,7 @@ interface ArticleCardProps {
 }
 
 export default function ArticleCard({ article, featured = false }: ArticleCardProps) {
-  const formattedDate = formatDistanceToNow(new Date(article.createdAt), {
-    addSuffix: true,
-  });
+ 
 
   const handleArticleClick = () => {
     click_article(article.id, article.slug, article.title, featured ? 'featured' : 'grid');
@@ -37,39 +34,56 @@ export default function ArticleCard({ article, featured = false }: ArticleCardPr
             featured ? "aspect-[21/9]" : "aspect-video"
           }`}
         >
-          <Image
-            src={
-              article.thumbnail ||
-              "https://cdn.rankmarg.in/assets/article-placeholder.jpg"
-            }
-            alt={article.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes={featured ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, 33vw"}
-          />
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          
-          {/* Category badge */}
-          {article.category && (
-            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10">
-              <Badge
-                variant="secondary"
-                className=" backdrop-blur-sm text-xs sm:text-sm bg-white"
-              >
-                {TextFormator(article.category)}
-              </Badge>
+          {article.thumbnail ? (
+            <Image
+              src={
+                article.thumbnail ||
+                "https://cdn.rankmarg.in/assets/article-placeholder.jpg"
+              }
+              alt={article.title}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes={featured ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, 33vw"}
+            />
+          ) : (
+            <div 
+              className="absolute inset-0 w-full h-full"
+              style={{
+                background: "radial-gradient(120% 100% at 0% 0%, #f5c400 0%, #d1a800 35%, #6b6f3f 65%, #2e3b40 100%)"
+              }}
+            >
+              {/* Content overlay */}
+              <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-5 md:p-6 z-10">
+                {/* Category Badge */}
+                {article.category && (
+                  <div className="mb-2 sm:mb-3">
+                    <Badge className="bg-white/20 backdrop-blur-sm text-white border-0 px-2 py-1 text-xs sm:text-sm font-medium">
+                      {TextFormator(article.category)}
+                    </Badge>
+                  </div>
+                )}
+                
+                {/* Title */}
+                <h3 className={`font-bold text-white drop-shadow-lg line-clamp-2 leading-tight ${
+                  featured 
+                    ? "text-lg sm:text-xl md:text-2xl" 
+                    : "text-base sm:text-lg"
+                }`}>
+                  {article.title}
+                </h3>
+              </div>
             </div>
+          )}
+          {/* Gradient overlay - only show on thumbnail images */}
+          {article.thumbnail && (
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
           )}
         </div>
 
         <div className={`p-4 sm:p-5 md:p-6 ${featured ? "" : "flex-1 flex flex-col"}`}>
           {/* Meta information */}
           <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-            <div className="flex items-center gap-1.5">
-              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>{formattedDate}</span>
-            </div>
+            
             {article.tags.length > 0 && (
               <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                 {article.tags.slice(0, 2).map((tag) => (
