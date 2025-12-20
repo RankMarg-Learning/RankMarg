@@ -17,8 +17,9 @@ export async function GET(
       headers: {
         "Content-Type": "application/json",
         "Authorization": API_KEY,
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
       },
-      next: { revalidate: 600 }, // Revalidate every 10 minutes for individual articles
+      cache: "no-store" as RequestCache,
     });
 
     if (!response.ok) {
@@ -42,7 +43,7 @@ export async function GET(
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200",
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
       },
     });
   } catch (error) {
