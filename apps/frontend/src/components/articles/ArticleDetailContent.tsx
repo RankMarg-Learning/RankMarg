@@ -10,7 +10,6 @@ import { Calendar, ArrowLeft, BookOpen, Tag, Share2, Hash, X } from "lucide-reac
 import MarkdownRenderer from "@/lib/MarkdownRenderer";
 import { Skeleton } from "@repo/common-ui";
 import { TextFormator } from "@/utils/textFormator";
-import { getCategoryGradient, getCategoryBorderColor } from "@/utils/getCategoryGradient";
 import { useEffect, useState, useMemo } from "react";
 import { view_article_detail, share_article, click_related_article } from "@/utils/analytics";
 
@@ -217,17 +216,15 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
     <div className="min-h-screen ">
 
       {/* Hero Section with Image */}
-      <div 
-        className="relative w-full h-[200px] sm:h-[280px] md:h-[300px] lg:h-[340px] mx-auto overflow-hidden border-b-4 mt-8"
-        style={{
-          borderBottomColor: getCategoryBorderColor(article?.category || null)
-        }}
+      <div
+        className="relative w-full h-[180px] md:h-[280px]  mx-auto overflow-hidden  border-b-4 border-primary-500"
       >
         <div
-          className="absolute inset-0 w-full h-full"
-          style={{
-            background: getCategoryGradient(article?.category || null)
-          }}
+          className="
+    w-full aspect-[16/9]
+    bg-[radial-gradient(120%_100%_at_0%_0%,#f5c400_0%,#d1a800_35%,#6b6f3f_65%,#2e3b40_100%)]
+    relative overflow-hidden
+  "
         >
           <div className="absolute inset-0 opacity-[0.04] " />
         </div>
@@ -348,10 +345,10 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
                       }
                     }}
                     className={`block py-2 px-3 rounded-md text-sm transition-all duration-200 ${heading.level === 1
-                        ? 'font-semibold'
-                        : heading.level === 2
-                          ? 'font-medium pl-4'
-                          : 'font-normal pl-6 text-xs'
+                      ? 'font-semibold'
+                      : heading.level === 2
+                        ? 'font-medium pl-4'
+                        : 'font-normal pl-6 text-xs'
                       } ${isActive
                         ? 'text-primary-600 bg-primary-50'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
