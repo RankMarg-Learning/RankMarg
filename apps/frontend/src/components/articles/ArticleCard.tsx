@@ -4,8 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Card, Badge } from "@repo/common-ui";
 import { Article } from "@/types/article.types";
-import { Calendar, ArrowRight } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { ArrowRight } from "lucide-react";
 import { TextFormator } from "@/utils/textFormator";
 import { click_article } from "@/utils/analytics";
 
@@ -15,9 +14,7 @@ interface ArticleCardProps {
 }
 
 export default function ArticleCard({ article, featured = false }: ArticleCardProps) {
-  const formattedDate = formatDistanceToNow(new Date(article.createdAt), {
-    addSuffix: true,
-  });
+ 
 
   const handleArticleClick = () => {
     click_article(article.id, article.slug, article.title, featured ? 'featured' : 'grid');
@@ -37,6 +34,7 @@ export default function ArticleCard({ article, featured = false }: ArticleCardPr
             featured ? "aspect-[21/9]" : "aspect-video"
           }`}
         >
+          {article.thumbnail ? (
           <Image
             src={
               article.thumbnail ||
@@ -47,29 +45,18 @@ export default function ArticleCard({ article, featured = false }: ArticleCardPr
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes={featured ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, 33vw"}
           />
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          
-          {/* Category badge */}
-          {article.category && (
-            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10">
-              <Badge
-                variant="secondary"
-                className=" backdrop-blur-sm text-xs sm:text-sm bg-white"
-              >
-                {TextFormator(article.category)}
-              </Badge>
+          ):(
+            <div className="absolute inset-0 bg-gray-200">
+              <div className="absolute inset-0     bg-[radial-gradient(120%_100%_at_0%_0%,#f5c400_0%,#d1a800_35%,#6b6f3f_65%,#2e3b40_100%)]"></div>
             </div>
           )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         </div>
 
         <div className={`p-4 sm:p-5 md:p-6 ${featured ? "" : "flex-1 flex flex-col"}`}>
           {/* Meta information */}
           <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-            <div className="flex items-center gap-1.5">
-              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>{formattedDate}</span>
-            </div>
+            
             {article.tags.length > 0 && (
               <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                 {article.tags.slice(0, 2).map((tag) => (
