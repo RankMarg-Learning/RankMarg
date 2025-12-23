@@ -297,9 +297,11 @@ function Row({ status, topic, isCompleted, onMakeCurrent, onToggleDone, disableM
 					<Switch checked={isCompleted} onCheckedChange={onToggleDone} />
 					<span className="text-xs">Done</span>
 				</div>
+				{!isCurrent && (
 				<Button variant={isCurrent ? "default" : "outline"} disabled={isCurrent || !!disableMakeCurrent} onClick={onMakeCurrent}>
 					{isCurrent ? "Current" : "Make Current"}
 				</Button>
+				)}
 			</div>
 		</div>
 	);
