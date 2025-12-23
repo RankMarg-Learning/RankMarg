@@ -45,12 +45,35 @@
         /* Base styles with counter */
         html, body {
             counter-reset: page;
+            background-color: #f3f4f6;
         }
 
         /* Print-specific overrides */
         @media print {
             .no-print {
                 display: none;
+            }
+            html, body {
+                background-color: white;
+            }
+        }
+
+        /* Page layout borders - visible page boundaries */
+        .page-layout {
+            border: 2px solid #6b7280;
+            min-height: 277mm; /* A4 height minus margins (297mm - 20mm) */
+            position: relative;
+            box-sizing: border-box;
+            background-color: white;
+            /* Add box shadow to make border more visible */
+            box-shadow: 0 0 0 2px #6b7280;
+        }
+
+        /* Ensure border is visible in PDF and screen */
+        @media print, screen {
+            .page-layout {
+                border: 2px solid #6b7280 !important;
+                outline: 1px solid #9ca3af;
             }
         }
 
@@ -274,8 +297,8 @@
     </script>
 </head>
 
-<body class="m-0 p-0 h-full font-['Inter',sans-serif] text-[11px] bg-gray-200 print:bg-white">
-    <div class="w-[210mm] min-h-[297mm] mx-auto p-0 bg-white border-[3px] border-black relative box-border">
+<body class="m-0 p-0 h-full font-['Inter',sans-serif] text-[10px] bg-gray-200 print:bg-white">
+    <div class="w-[210mm] min-h-[297mm] mx-auto p-0 bg-white relative box-border page-layout">
 
         <!-- Watermark (text comes from Handlebars data) -->
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-30 text-[140px] font-black text-black/[0.06] whitespace-nowrap -z-10 select-none pointer-events-none">
@@ -313,13 +336,13 @@
                     <!-- CENTER INFO -->
                     <div class="text-center px-4">
                         {{#if examCode}}
-                        <p class="text-[11px] font-bold uppercase tracking-wide font-['Inter',sans-serif]">
+                        <p class="text-[10px] font-bold uppercase tracking-wide font-['Inter',sans-serif]">
                             {{examCode}}
                         </p>
                         {{/if}}
 
                         {{#if testCategory}}
-                        <p class="text-[11px] font-semibold uppercase tracking-wide font-['Inter',sans-serif]">
+                        <p class="text-[10px] font-semibold uppercase tracking-wide font-['Inter',sans-serif]">
                             {{testCategory}}
                         </p>
                         {{/if}}
@@ -366,18 +389,18 @@
 
                     {{#each testSection}}
                     {{#if name}}
-                    <div class="col-span-2 font-bold text-[11px] my-[10px] mb-2 uppercase tracking-[0.06em] px-2 py-1 bg-gray-200 border-l-[3px] border-black section-header font-['Inter',sans-serif]">
+                    <div class="col-span-2 font-bold text-[10px] my-[10px] mb-2 uppercase tracking-[0.06em] px-2 py-1 bg-gray-200 border-l-[3px] border-black section-header font-['Inter',sans-serif]">
                         {{name}}
                     </div>
                     {{/if}}
 
                     {{#each testQuestion}}
                     {{#with question}}
-                    <div class="question-item mb-4 text-[11px] leading-[1.5] font-['Inter',sans-serif] inline-block w-full">
+                    <div class="question-item mb-4 text-[10px] leading-[1.5] font-['Inter',sans-serif] inline-block w-full">
                         <div class="flex items-start leading-[1.6] gap-1">
-                            <span class="font-bold shrink-0 align-top leading-[1.6]">Q{{inc @index}}.</span>
-                            <div class="flex-1 min-w-0 leading-[1.6] font-['Inter',sans-serif] text-[11px] break-words align-top q-content">
-                                <div class="[&>p]:m-0 [&>p]:p-0 [&>p]:leading-[1.6] [&>p]:text-[11px] [&>p]:font-['Inter',sans-serif] [&>span]:inline [&>strong]:inline [&>strong]:font-bold [&>em]:inline [&>em]:italic [&>code]:inline [&>code]:bg-gray-100 [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded [&>code]:text-[10px] [&>code]:font-mono [&>pre]:bg-gray-100 [&>pre]:p-2 [&>pre]:rounded [&>pre]:overflow-x-auto [&>pre]:my-2 [&>pre]:text-[10px] [&>ul]:my-1 [&>ul]:pl-5 [&>ol]:my-1 [&>ol]:pl-5 [&>li]:my-0.5 [&>div]:inline-block">
+                            <span class="font-bold shrink-0 align-top leading-[1.6]">Q{{questionNumber}}.</span>
+                            <div class="flex-1 min-w-0 leading-[1.6] font-['Inter',sans-serif] text-[10px] break-words align-top q-content">
+                                <div class="[&>p]:m-0 [&>p]:p-0 [&>p]:leading-[1.6] [&>p]:text-[10px] [&>p]:font-['Inter',sans-serif] [&>span]:inline [&>strong]:inline [&>strong]:font-normal [&>em]:inline [&>em]:italic [&>code]:inline [&>code]:bg-gray-100 [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded [&>code]:text-[9px] [&>code]:font-mono [&>pre]:bg-gray-100 [&>pre]:p-2 [&>pre]:rounded [&>pre]:overflow-x-auto [&>pre]:my-2 [&>pre]:text-[9px] [&>ul]:my-1 [&>ul]:pl-5 [&>ol]:my-1 [&>ol]:pl-5 [&>li]:my-0.5 [&>div]:inline-block">
                                     {{{content}}}
                                 </div>
                             </div>
@@ -386,9 +409,9 @@
                         {{#if options}}
                         <div class="mt-1.5 ml-[18px] flex flex-wrap gap-y-2 gap-x-3 items-start options">
                             {{#each options}}
-                            <div class="mb-0.5 leading-[1.5] font-['Inter',sans-serif] text-[11px] break-words flex items-start gap-1 box-border option-item">
+                            <div class="mb-0.5 leading-[1.5] font-['Inter',sans-serif] text-[10px] break-words flex items-start gap-1 box-border option-item">
                                 <span class="shrink-0 font-medium align-top leading-[1.5]">({{optLabel @index}})</span>
-                                <span class="flex-1 min-w-0 break-words align-top leading-[1.5] option-content [&>p]:m-0 [&>p]:p-0 [&>p]:leading-[1.5] [&>span]:inline [&>strong]:inline [&>strong]:font-bold [&>em]:inline [&>em]:italic [&>code]:inline [&>code]:bg-gray-100 [&>code]:px-0.5 [&>code]:py-0 [&>code]:rounded-sm [&>code]:text-[9px] [&>code]:font-mono [&>div]:inline-block">
+                                <span class="flex-1 min-w-0 break-words align-top leading-[1.5] option-content [&>p]:m-0 [&>p]:p-0 [&>p]:leading-[1.5] [&>p]:text-[10px] [&>span]:inline [&>strong]:inline [&>strong]:font-normal [&>em]:inline [&>em]:italic [&>code]:inline [&>code]:bg-gray-100 [&>code]:px-0.5 [&>code]:py-0 [&>code]:rounded-sm [&>code]:text-[9px] [&>code]:font-mono [&>div]:inline-block">
                                     {{{content}}}
                                 </span>
                             </div>

@@ -2118,8 +2118,9 @@ export class TestController {
         })),
       };
 
-      
       const { checkPDFExistsInS3, uploadPDFToS3, downloadPDFFromS3 } = await import("@/services/pdf/pdf-s3-storage");
+      if(process.env.NODE_ENV === "production") {
+        // Check if PDF exists in S3
       const checkResult = await checkPDFExistsInS3(test.testId, "test", "pdfs");
       
       if (checkResult.exists && checkResult.key) {
@@ -2135,6 +2136,7 @@ export class TestController {
           console.error("Error downloading PDF from S3, will generate new one:", error);
         }
       }
+    }
 
       const { PDFService } = await import("@/services/pdf.service");
       const pdfService = new PDFService();
