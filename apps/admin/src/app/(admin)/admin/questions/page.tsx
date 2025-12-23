@@ -1,5 +1,5 @@
 "use client"
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,  DialogDescription, DialogClose } from "@repo/common-ui";
 
 import { Button } from "@repo/common-ui";
@@ -62,6 +62,7 @@ function QuestionsContent() {
     Number.isNaN(initialPageFromUrl) || initialPageFromUrl < 1 ? 1 : initialPageFromUrl
   );
   
+  const isSyncingFromUrl = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -92,7 +93,7 @@ function QuestionsContent() {
     router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
   };
 
-  const updateFiltersInUrl = (search: string, published: string) => {
+  const updateFiltersInUrl = (search: string, published: string, preservePage = false) => {
     const params = new URLSearchParams(searchParams);
     
     if (search.trim()) {
@@ -107,7 +108,9 @@ function QuestionsContent() {
       params.delete("published");
     }
     
-    params.delete("page");
+    if (!preservePage) {
+      params.delete("page");
+    }
     
     const next = params.toString();
     router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
@@ -151,12 +154,25 @@ function QuestionsContent() {
   }, [searchParams]);
 
   useEffect(() => {
-    updateFiltersInUrl(debouncedSearchQuery, publishFilter);
-  }, [debouncedSearchQuery, publishFilter]);
+    if (isSyncingFromUrl.current) {
+      return;
+    }
+    
+    const currentSearchInUrl = searchParams.get("search") || "";
+    const currentPublishedInUrl = searchParams.get("published") || "all";
+    const searchMatches = (debouncedSearchQuery || "") === currentSearchInUrl;
+    const publishedMatches = publishFilter === currentPublishedInUrl;
+    
+    if (!searchMatches || !publishedMatches) {
+      updateFiltersInUrl(debouncedSearchQuery, publishFilter);
+    }
+  }, [debouncedSearchQuery, publishFilter, searchParams]);
 
   useEffect(() => {
     const searchFromUrl = searchParams.get("search") || "";
     const publishedFromUrl = searchParams.get("published") || "all";
+    
+    isSyncingFromUrl.current = true;
     
     if (searchFromUrl !== searchQuery) {
       setSearchQuery(searchFromUrl);
@@ -165,6 +181,13 @@ function QuestionsContent() {
     if (publishedFromUrl !== publishFilter) {
       setPublishFilter(publishedFromUrl);
     }
+    
+    
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        isSyncingFromUrl.current = false;
+      }, 100);
+    });
   }, [searchParams]);
   
   
