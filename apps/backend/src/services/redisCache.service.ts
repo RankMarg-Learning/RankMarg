@@ -204,7 +204,10 @@ export class RedisCacheService {
   static async cacheCurrentTopics(
     userId: string,
     subjectId: string,
-    topics: Array<Record<string, any>>
+    topics: Array<{
+      topicId: string;
+      startedAt: number;
+    }>
   ): Promise<boolean> {
     if (!Array.isArray(topics)) return false;
 

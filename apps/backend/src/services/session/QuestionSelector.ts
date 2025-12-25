@@ -4,6 +4,9 @@ import { getDifficultyDistributionByGrade } from "./SessionConfig";
 import { SelectedQuestion, SessionConfig } from "../../types/session.api.types";
 import { RedisCacheService } from "../redisCache.service";
 
+const DAILY_TEACHING_HOURS = 60 //minutes
+const BUFFER_FACTOR = 0.75 
+
 export class QuestionSelector {
   private config: SessionConfig;
   private userId: string;
@@ -42,6 +45,7 @@ export class QuestionSelector {
           },
           select: {
             topicId: true,
+            startedAt:true,
           },
         });
 
@@ -52,13 +56,44 @@ export class QuestionSelector {
         );
       }
 
+      
+
       if (currentTopics.length === 0) {
         console.log("No current topics found, falling back to medium mastery topics");
         return this.selectMediumMasteryQuestions(subjectId,count);
       }
 
-      const topicIds = currentTopics.map((ct) => ct.topicId);
-
+      const availableTimeMinutes = DAILY_TEACHING_HOURS * BUFFER_FACTOR; 
+      
+      const subTopicIds: string[] = [];
+      for (const topic of currentTopics) {
+        const timeSpentOnTopic = Date.now() - topic.startedAt.getTime();
+        const timeSpentDays = timeSpentOnTopic / (1000 * 60 * 60 * 24);
+        
+        const subTopics = await this.prisma.subTopic.findMany({
+          where: {
+            topicId: topic.topicId,
+          },
+          select: {
+            id: true,
+            estimatedMinutes: true,
+          },
+          orderBy: {
+            orderIndex: "asc",
+          },
+        });
+        let accumulatedTime = 0;
+        for (const subTopic of subTopics) {
+          if (timeSpentDays * availableTimeMinutes > accumulatedTime && subTopic.estimatedMinutes < availableTimeMinutes) {
+            subTopicIds.push(subTopic.id);
+            accumulatedTime += subTopic.estimatedMinutes;
+          }
+        }
+      }
+      if (subTopicIds.length === 0) {
+        return [];
+      }
+      
       const { difficulty: difficultyDistribution, categories } =
         this.getSelectionParameters(count,subjectId);
 
@@ -68,7 +103,7 @@ export class QuestionSelector {
 
       const questions = await this.prisma.question.findMany({
         where: {
-          topicId: { in: topicIds },
+          subtopicId: { in: subTopicIds },
           subjectId: subjectId,
           isPublished: true,
           id: {
@@ -136,7 +171,7 @@ export class QuestionSelector {
         const additionalQuestions = await this.prisma.question.findMany({
           where: {
             topicId: {
-              in: topicIds,
+              in: subTopicIds,
             },
             subjectId: subjectId,
             id: {
@@ -169,7 +204,7 @@ export class QuestionSelector {
         const selectedIds = new Set(selectedQuestions.map((q) => q.id));
 
         const fallbackQuestions = await this.getFallbackQuestions(
-          topicIds,
+          subTopicIds,
           subjectId,
           remainingCount,
           categories,
@@ -610,7 +645,7 @@ export class QuestionSelector {
   }
 
   private async getFallbackQuestions(
-    topicIds: string[],
+    subTopicIds: string[],
     subjectId: string,
     count: number,
     categories: QCategory[],
@@ -619,7 +654,7 @@ export class QuestionSelector {
     try {
       const questionsWithAttempts = await this.prisma.question.findMany({
         where: {
-          topicId: { in: topicIds },
+          subtopicId: { in: subTopicIds },
           subjectId: subjectId,
           isPublished: true,
           id: {

@@ -49,7 +49,7 @@ export class CronManager {
     },
     {
       name: "updateReview",
-      schedule: "* * * * *", // Every minute
+      schedule: ServerConfig.cron.weekly.updateReview, 
       job: updateReviewJob,
       enabled: true,
       description: "Update review schedules weekly on Sunday at midnight",
