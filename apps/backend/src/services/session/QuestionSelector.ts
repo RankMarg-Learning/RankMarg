@@ -67,9 +67,10 @@ export class QuestionSelector {
       
       const subTopicIds: string[] = [];
       for (const topic of currentTopics) {
+
         const timeSpentOnTopic = Date.now() - topic.startedAt.getTime();
-        const timeSpentDays = timeSpentOnTopic / (1000 * 60 * 60 * 24);
-        
+        const timeSpentDays = timeSpentOnTopic / (1000 * 60 * 24);
+
         const subTopics = await this.prisma.subTopic.findMany({
           where: {
             topicId: topic.topicId,
@@ -82,14 +83,23 @@ export class QuestionSelector {
             orderIndex: "asc",
           },
         });
+        
         let accumulatedTime = 0;
+
         for (const subTopic of subTopics) {
-          if (timeSpentDays * availableTimeMinutes > accumulatedTime && subTopic.estimatedMinutes < availableTimeMinutes) {
-            subTopicIds.push(subTopic.id);
-            accumulatedTime += subTopic.estimatedMinutes;
+          if (
+            accumulatedTime >= timeSpentDays * availableTimeMinutes ||
+            subTopic.estimatedMinutes > availableTimeMinutes
+          ) {
+            break;
           }
+          
+          subTopicIds.push(subTopic.id);
+          accumulatedTime += subTopic.estimatedMinutes;
         }
       }
+
+      
       if (subTopicIds.length === 0) {
         return [];
       }
