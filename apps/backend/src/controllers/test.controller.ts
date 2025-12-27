@@ -1496,6 +1496,124 @@ export class TestController {
     }
   };
 
+  //[GET] /api/test/:testId/review
+  getTestReviewById = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const { testId } = req.params;
+    try {
+      const userId = req.user.id;
+
+      const participant = await prisma.testParticipation.findFirst({
+        where: {
+          testId: testId,
+          userId: userId,
+        },
+      });
+
+      if (!participant) {
+        ResponseUtil.error(res, "You haven't participated in this test", 403);
+        return;
+      }
+
+      // Get test with full question details including solutions
+      const test = await prisma.test.findUnique({
+        where: {
+          testId: testId,
+        },
+        include: {
+          testSection: {
+            include: {
+              testQuestion: {
+                include: {
+                  question: {
+                    include: {
+                      options: true,
+                      topic: {
+                        select: {
+                          id: true,
+                          name: true,
+                          slug: true,
+                        },
+                      },
+                      subject: {
+                        select: {
+                          id: true,
+                          name: true,
+                          shortName: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!test) {
+        ResponseUtil.error(res, "Test not found", 404);
+        return;
+      }
+
+      // Get all attempts for this test
+      const attempts = await prisma.attempt.findMany({
+        where: {
+          testParticipationId: participant.id,
+        },
+        select: {
+          id: true,
+          questionId: true,
+          answer: true,
+          status: true,
+          timing: true,
+        },
+      });
+
+      // Flatten questions from sections
+      const questions = test.testSection.flatMap((section) =>
+        section.testQuestion.map((tq) => tq.question)
+      );
+
+      // Build test section config
+      let questionStartIndex = 1;
+      const testSectionConfig: Record<string, any> = {};
+      test.testSection.forEach((section) => {
+        const questionCount = section.testQuestion.length;
+        const keyName = `${section.name}_${questionStartIndex}-${questionStartIndex + questionCount - 1}`;
+        testSectionConfig[keyName] = {
+          correctMarks: +section.correctMarks,
+          negativeMarks: section.negativeMarks > 0 ? section.negativeMarks : 0,
+          isOptional: section.isOptional,
+          maxQuestions: section.maxQuestions,
+        };
+        questionStartIndex += questionCount;
+      });
+
+      ResponseUtil.success(
+        res,
+        {
+          questions,
+          attempts,
+          testSection: testSectionConfig,
+          testInfo: {
+            testId: test.testId,
+            testTitle: test.title,
+            duration: test.duration,
+            totalMarks: test.totalMarks,
+          },
+        },
+        "Test review data fetched successfully",
+        200
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
   private generateTestAnalysis = (testData: any) => {
     const { test, attempt, score, accuracy, timing, startTime, endTime } = testData;
     

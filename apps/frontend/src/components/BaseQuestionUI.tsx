@@ -1,11 +1,11 @@
 "use client";
 import React, { useEffect, useState, useMemo } from 'react'
-import { Button } from '@repo/common-ui'
+import { Button, Badge } from '@repo/common-ui'
 import MarkdownRenderer from '@/lib/MarkdownRenderer'
 import { useToast } from '@/hooks/use-toast';
 import { attempDataProps, QuestionProps } from '@/types';
 import Options from './Options';
-import { AlertCircle, BookOpen, Lightbulb, AlertTriangle, Lock, EyeOff, Settings } from 'lucide-react';
+import { AlertCircle, BookOpen, Lightbulb, AlertTriangle, Lock, EyeOff, Settings, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { getDifficultyLabel } from '@/utils/getDifficultyLabel';
 import { Motion } from '@repo/common-ui';
 import Timer from './Timer';
@@ -29,11 +29,16 @@ interface QuestionShowProps extends Omit<QuestionProps, "attempts" | "createdAt"
 interface QuestionUIProps {
   question: QuestionShowProps;
   isSolutionShow?: boolean;
-  handleAttempt: (attemptData: attempDataProps) => void;
+  handleAttempt?: (attemptData: attempDataProps) => void;
   answer?: string | null;
   attemptId?: string;
   isUnlocked?: boolean;
   markAsMistake?: boolean;
+  // Review mode props
+  reviewMode?: boolean;
+  questionNumber?: number;
+  status?: 'correct' | 'incorrect' | 'unattempted';
+  timeTaken?: number;
 }
 const QuestionUI = ({
   question,
@@ -42,12 +47,17 @@ const QuestionUI = ({
   answer,
   attemptId,
   isUnlocked = true,
-  markAsMistake = false
+  markAsMistake = false,
+  reviewMode = false,
+  questionNumber,
+  status,
+  timeTaken,
 }: QuestionUIProps) => {
   const { toast } = useToast();
   const router = useRouter();
-  const isAnswered = useMemo(() => Boolean(answer) || isSolutionShow, [answer, isSolutionShow]);
+  const isAnswered = useMemo(() => Boolean(answer) || isSolutionShow || reviewMode, [answer, isSolutionShow, reviewMode]);
 
+  
   const initialSelectedValues = useMemo(() => {
     if (!answer) return [];
     if (question.type === "INTEGER") return [];
@@ -160,6 +170,10 @@ const QuestionUI = ({
 
   const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!handleAttempt || reviewMode) return; // Don't submit in review mode
+
+   
+    
     setIsRunning(false);
     setIsSubmitting(true);
 
@@ -236,14 +250,49 @@ const QuestionUI = ({
     }
   };
 
+  // Review mode status helpers
+  const getStatusIcon = () => {
+    if (!reviewMode || !status) return null;
+    switch (status) {
+      case 'correct':
+        return <CheckCircle2 className="h-5 w-5 text-green-600" />;
+      case 'incorrect':
+        return <XCircle className="h-5 w-5 text-red-600" />;
+      case 'unattempted':
+        return <Clock className="h-5 w-5 text-gray-400" />;
+      default:
+        return null;
+    }
+  };
+
+  const getStatusBadge = () => {
+    if (!reviewMode || !status) return null;
+    switch (status) {
+      case 'correct':
+        return <Badge className="bg-green-100 text-green-800">Correct</Badge>;
+      case 'incorrect':
+        return <Badge className="bg-red-100 text-red-800">Incorrect</Badge>;
+      case 'unattempted':
+        return <Badge className="bg-gray-100 text-gray-800">Unattempted</Badge>;
+      default:
+        return null;
+    }
+  };
+
+
   return (
-    <div className="min-h-[calc(100vh-120px)] flex flex-col bg-white" id="fullscreen">
+    <div className="min-h-[calc(100vh-120px)] flex flex-col bg-white" id={reviewMode ? "review-question" : "fullscreen"}>
       <div className="flex flex-wrap md:flex-row flex-1 p-2 rounded-lg overflow-hidden ">
         {/* Left side: Question */}
         <div className="w-full md:w-1/2 md:p-6 p-2 border-b md:border-b-0 md:border-r">
         <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
-
-          <h1 className="text-lg font-bold mb-2">Question</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-bold mb-2">
+              {reviewMode && questionNumber ? `Question ${questionNumber}` : 'Question'}
+            </h1>
+            {reviewMode && getStatusIcon()}
+            {reviewMode && getStatusBadge()}
+          </div>
           <button
                 className="px-2 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-full text-xs font-medium flex items-center gap-1 transition-colors border border-purple-200"
                 onClick={() => setIsSettingsOpen(true)}
@@ -254,8 +303,8 @@ const QuestionUI = ({
               </button>
           </div>
 
-          {/* Timer - Hidden when answered */}
-          {!isAnswered && (
+          {/* Timer - Hidden when answered or in review mode */}
+          {!isAnswered && !reviewMode && (
             <Timer
               questionId={question.id}
               defaultTime={time}
@@ -274,14 +323,20 @@ const QuestionUI = ({
               <span className="px-2 py-0.5 md:py-1 border border-amber-500 text-amber-500 rounded-full text-xs font-medium">
                 {getDifficultyLabel(question?.difficulty)}
               </span>
-              
-              <span
-                className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium flex items-center gap-1 hover:underline cursor-pointer"
-                onClick={() => setIsReportOpen(true)}
-              >
-                Report
-              </span>
-              
+              {reviewMode && timeTaken !== undefined && (
+                <span className="px-2 py-0.5 md:py-1 border border-gray-300 text-gray-600 rounded-full text-xs font-medium flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {Math.floor(timeTaken / 60)}m {timeTaken % 60}s
+                </span>
+              )}
+              {!reviewMode && (
+                <span
+                  className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium flex items-center gap-1 hover:underline cursor-pointer"
+                  onClick={() => setIsReportOpen(true)}
+                >
+                  Report
+                </span>
+              )}
             </div>
           </div>
 
@@ -290,8 +345,8 @@ const QuestionUI = ({
             <MarkdownRenderer content={question?.content} className='md:text-base text-sm' />
           </div>
 
-          {/* Hint button */}
-          {!isAnswered && !isHintUsed && uiPreferences.showHint && (
+          {/* Hint button - Hidden in review mode */}
+          {!reviewMode && !isAnswered && !isHintUsed && uiPreferences.showHint && (
             <Button
               variant="link"
               className="text-sm mt-2 underline"
@@ -316,8 +371,8 @@ const QuestionUI = ({
             correctNumericalValue={question.isNumerical}
           />
 
-          {/* Submit button*/}
-          {(!isAnswered && !isSubmitting) && (
+          {/* Submit button - Hidden in review mode */}
+          {!reviewMode && (!isAnswered && !isSubmitting) && (
             <div className="flex justify-center mt-4 gap-2">
               <form onSubmit={handleOnSubmit}>
                 <Button
@@ -350,8 +405,8 @@ const QuestionUI = ({
         </div>
       )}
 
-      {/* Hint section */}
-      {!isAnswered && isHintUsed && uiPreferences.showHint && (
+      {/* Hint section - Hidden in review mode */}
+      {!reviewMode && !isAnswered && isHintUsed && uiPreferences.showHint && (
         <Motion animation='fade-in' className="w-full p-2">
           <div className="mt-3 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg border border-yellow-200 p-3">
             <div className="flex items-center gap-2 mb-2">
@@ -372,8 +427,8 @@ const QuestionUI = ({
         </Motion>
       )}
 
-      {/* Solution section  */}
-      {(isAnswered || isSubmitting) && uiPreferences.showDetailedSolution && (
+      {/* Solution section - Always show in review mode if enabled */}
+      {(reviewMode || isAnswered || isSubmitting) && uiPreferences.showDetailedSolution && (
         <Motion animation="fade-in" className="w-full p-2 ">
           <Accordion type="single" collapsible defaultValue="solution" >
             <AccordionItem value="solution" >
@@ -462,7 +517,7 @@ const QuestionUI = ({
       )}
       
       {/* Solution Hidden Message */}
-      {(isAnswered || isSubmitting) && !uiPreferences.showDetailedSolution && (
+      {(reviewMode || isAnswered || isSubmitting) && !uiPreferences.showDetailedSolution && (
         <Motion animation="fade-in" className="w-full p-2">
           <div className="mt-3 p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
             <EyeOff className="h-8 w-8 text-gray-400 mx-auto mb-2" />

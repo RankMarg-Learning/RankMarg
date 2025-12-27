@@ -62,7 +62,7 @@ interface TestContextType {
   setMinimizeCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const TestContext = createContext<TestContextType | undefined>(undefined);
+export const TestContext = createContext<TestContextType | undefined>(undefined);
 
 export const TestProvider = ({ children }: { children: ReactNode }) => {
 
@@ -236,7 +236,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
             } catch (error) {
               console.log("Could not exit fullscreen:", error);
             }
-            router.push(`/analysis/${testId}`);
+            router.push(`/t/${testId}/analysis`);
           }
           
           sessionStorage.clear();

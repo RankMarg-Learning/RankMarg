@@ -63,7 +63,7 @@ const SubjectCard = ({ subject, tests }: { subject: string, tests: Test[] }) => 
             </div>
             {
               test.hasAttempted ? (
-                <Link href={`/analysis/${test.testId}`}>
+                <Link href={`/t/${test.testId}/analysis`}>
                     <Button className={`w-full bg-gray-600 hover:bg-gray-700 text-white mt-4`}>
                     View Analysis
                   </Button>

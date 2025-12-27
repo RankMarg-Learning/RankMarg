@@ -50,7 +50,7 @@ const RecentTestResults: React.FC<RecentTestResultsProps> = ({ results, allResul
   const router = useRouter();
 
   const handleAnalysis = (testId: string) => {
-    router.push(`/analysis/${testId}/`);
+    router.push(`/t/${testId}/analysis`);
   }
 
 

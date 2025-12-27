@@ -50,7 +50,7 @@ const TestsCard = ({ title, description, duration, totalQuestions, testId, hasAt
           </div>
           {
             hasAttempted ? (
-              <Link href={`/analysis/${testId}`}>
+              <Link href={`/t/${testId}/analysis`}>
                 <Button className={`w-full bg-gray-600 hover:bg-gray-700 text-white mt-4`}>
                   View Analysis
                 </Button>
