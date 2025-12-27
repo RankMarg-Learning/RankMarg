@@ -18,7 +18,7 @@ interface SectionBAnalysis {
     correct: number;
     incorrect: number;
     unattempted: number;
-    accuracy: string;
+    percentage: string;
     performanceLevel: string;
   };
   difficultyAnalysis: {
@@ -115,8 +115,8 @@ const SectionB = ({ analysis }: { analysis: SectionBAnalysis }) => {
           
           <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <Award className="w-6 h-6 text-blue-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-blue-600">{statistics.accuracy}%</div>
-            <div className="text-sm text-blue-700">Accuracy</div>
+            <div className="text-2xl font-bold text-blue-600">{statistics.percentage}%</div>
+            <div className="text-sm text-blue-700">Percentage</div>
           </div>
         </div>
 

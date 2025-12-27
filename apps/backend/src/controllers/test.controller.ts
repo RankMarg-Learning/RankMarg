@@ -1607,25 +1607,25 @@ export class TestController {
       }
     });
 
-    const accuracy = (correct / totalQuestions) * 100;
+    const percentage = (correct / totalQuestions) * 100;
     let feedback = '';
     let performanceLevel = '';
 
-    if (accuracy >= 90) {
+    if (percentage >= 90) {
       performanceLevel = 'Excellent';
-      feedback = `Outstanding performance! Your ${accuracy.toFixed(1)}% accuracy demonstrates exceptional understanding. You're well-prepared for the actual exam.`;
-    } else if (accuracy >= 75) {
+      feedback = `Outstanding performance! Your ${percentage.toFixed(1)}% percentage demonstrates exceptional understanding. You're well-prepared for the actual exam.`;
+    } else if (percentage >= 75) {
       performanceLevel = 'Very Good';
-      feedback = `Great job! Your ${accuracy.toFixed(1)}% accuracy shows strong preparation. Focus on the ${unattempted} unattempted questions to maximize your score.`;
-    } else if (accuracy >= 60) {
+      feedback = `Great job! Your ${percentage.toFixed(1)}% percentage shows strong preparation. Focus on the ${unattempted} unattempted questions to maximize your score.`;
+    } else if (percentage >= 60) {
       performanceLevel = 'Good';
-      feedback = `Good effort! Your ${accuracy.toFixed(1)}% accuracy indicates decent preparation. Review incorrect answers and practice more to improve.`;
-    } else if (accuracy >= 40) {
+      feedback = `Good effort! Your ${percentage.toFixed(1)}% percentage indicates decent preparation. Review incorrect answers and practice more to improve.`;
+    } else if (percentage >= 40) {
       performanceLevel = 'Average';
-      feedback = `Keep practicing! Your ${accuracy.toFixed(1)}% accuracy suggests you need more preparation. Focus on fundamentals and easier questions first.`;
+      feedback = `Keep practicing! Your ${percentage.toFixed(1)}% percentage suggests you need more preparation. Focus on fundamentals and easier questions first.`;
     } else {
       performanceLevel = 'Needs Improvement';
-      feedback = `Don't give up! Your ${accuracy.toFixed(1)}% accuracy indicates you need to strengthen your basics. Start with easier concepts and build up gradually.`;
+      feedback = `Don't give up! Your ${percentage.toFixed(1)}% percentage indicates you need to strengthen your basics. Start with easier concepts and build up gradually.`;
     }
 
     return {
@@ -1634,7 +1634,7 @@ export class TestController {
         correct,
         incorrect,
         unattempted,
-        accuracy: accuracy.toFixed(1),
+        percentage: percentage.toFixed(1),
         performanceLevel,
       },
       difficultyAnalysis,
@@ -1913,7 +1913,12 @@ export class TestController {
   private generateSectionH = (testData: any) => {
     const { test, attempt } = testData;
     
-    const accuracy = (attempt.filter((att: any) => att.status === 'CORRECT').length / attempt.length) * 100;
+    const attemptedQuestions = attempt.filter((att: any) => att.status === 'CORRECT' || att.status === 'INCORRECT');
+    const correctCount = attempt.filter((att: any) => att.status === 'CORRECT').length;
+    const accuracy = attemptedQuestions.length > 0 
+      ? (correctCount / (attemptedQuestions.length )) * 100 
+      : 0;
+      
     
     return {
       percentile: null, 
