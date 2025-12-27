@@ -634,7 +634,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                 <CategoryMultiSelect control={control} errors={errors} />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="questionTime" className="text-sm">Time to Answer (minutes)</Label>
+                <Label htmlFor="questionTime" className="text-sm">Time to Answer (seconds)</Label>
                 <Controller
                   name="questionTime"
                   control={control}
@@ -644,7 +644,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
                       id="questionTime"
                       type="number"
                       min="1"
-                      placeholder="Time in minutes"
+                      placeholder="Time in seconds"
                       className="h-9"
                       onChange={(e) => {
                         const value = parseInt(e.target.value, 10);
