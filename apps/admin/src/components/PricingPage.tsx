@@ -165,7 +165,7 @@ const SaasPricing = () => {
             <div className="text-center sm:text-left">
               <div className="text-sm text-gray-600 mb-1">Starting from</div>
               <div className="text-2xl font-bold text-gray-900">
-                ₹2,499<span className="text-sm font-normal text-gray-500">/year</span>
+                ₹1,499<span className="text-sm font-normal text-gray-500">/year</span>
               </div>
             </div>
             <button
