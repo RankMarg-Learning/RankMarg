@@ -187,7 +187,7 @@ export class QuestionSelector {
             id: {
               notIn: Array.from(
                 new Set([...selectedIds, ...attemptedQuestionIds])
-              ), // Exclude both selected and attempted
+              ), 
             },
             OR: [
               { category: { some: { category: { in: categories } } } },
@@ -208,7 +208,6 @@ export class QuestionSelector {
         ];
       }
 
-      // If we still don't have enough questions, use fallback
       if (selectedQuestions.length < count) {
         const remainingCount = count - selectedQuestions.length;
         const selectedIds = new Set(selectedQuestions.map((q) => q.id));
@@ -224,6 +223,9 @@ export class QuestionSelector {
         selectedQuestions = [...selectedQuestions, ...fallbackQuestions];
       }
 
+      if(selectedQuestions.length < 0) {
+        return this.selectMediumMasteryQuestions(subjectId,count);
+      }
       return selectedQuestions.slice(0, count);
     } catch (error) {
       console.error("Error selecting current topic questions:", error);
