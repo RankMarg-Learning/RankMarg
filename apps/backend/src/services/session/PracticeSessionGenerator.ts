@@ -21,7 +21,7 @@ export class PracticeSessionGenerator {
   constructor(
     private readonly prisma: PrismaClient,
     private readonly config: SessionConfig
-  ) {}
+  ) { }
 
   async generate(): Promise<void> {
     try {
@@ -47,6 +47,18 @@ export class PracticeSessionGenerator {
           }
         })
       );
+      
+      try {
+        const template = NotificationService.templates.practiceSessionCreated();
+        await NotificationService.createAndDeliverToUser(
+          this.config.userId,
+          template.type,
+          template.title,
+          template.message
+        );
+      } catch (notificationError) {
+        console.error("Error sending notification:", notificationError);
+      }
     } catch (error) {
       console.error("Error generating practice session:", error);
       throw error;
@@ -71,6 +83,7 @@ export class PracticeSessionGenerator {
       const finalQuestions = Array.from(questionMap.values());
       const shuffledQuestions = this.shuffleArray(finalQuestions);
       await this.createPracticeSession(shuffledQuestions, subjectId);
+
     } catch (error) {
       console.error("Error generating practice session:", error);
       throw error;
@@ -83,7 +96,7 @@ export class PracticeSessionGenerator {
     try {
       const totalQuestionsForSubject = this.config.subjectwiseQuestions.find(subject => subject.subjectId === subjectId)?.questions || 18;
       const questionMap = new Map<string, { id: string }>();
-      
+
       const distributions = this.calculateDistribution(
         totalQuestionsForSubject
       );
@@ -104,6 +117,7 @@ export class PracticeSessionGenerator {
 
       const shuffledQuestions = this.shuffleArray(finalQuestions);
       await this.createPracticeSession(shuffledQuestions, subjectId);
+
     } catch (error) {
       console.error("Error generating practice session:", error);
       throw error;
@@ -112,8 +126,8 @@ export class PracticeSessionGenerator {
 
   private calculateDistribution(
     totalQuestions: number
-  ): QuestionDistribution[] {  
-    
+  ): QuestionDistribution[] {
+
     const date = new Date().getDate();
     return [
       {
@@ -191,28 +205,6 @@ export class PracticeSessionGenerator {
           },
         },
       });
-
-      // Send notification for new practice session
-      try {
-        // Fetch subject name separately
-        const subject = await this.prisma.subject.findUnique({
-          where: { id: subjectId },
-          select: { name: true },
-        });
-
-        const template = NotificationService.templates.practiceSessionCreated(
-          subject?.name || "Practice Session"
-        );
-        await NotificationService.createAndDeliverToUser(
-          this.config.userId,
-          template.type,
-          template.title,
-          template.message
-        );
-      } catch (notificationError) {
-        // Log error but don't fail session creation
-        console.error("Error sending notification:", notificationError);
-      }
 
       return session;
     } catch (error) {

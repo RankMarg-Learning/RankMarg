@@ -207,10 +207,10 @@ export class NotificationService {
    * Notification Templates
    */
   static templates = {
-    practiceSessionCreated: (sessionName: string) => ({
+    practiceSessionCreated: () => ({
       type: "PRACTICE_SESSION" as NotificationType,
       title: "New Practice Session Created",
-      message: `Your practice session "${sessionName}" is ready. Start practicing now!`,
+      message: `Your practice session  is ready. Start practicing now!`,
     }),
 
     testLive: (testName: string) => ({
