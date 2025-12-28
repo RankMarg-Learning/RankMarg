@@ -219,10 +219,10 @@ export class NotificationService {
       message: `"${testName}" is now available. Take the test to evaluate your knowledge!`,
     }),
 
-    masteryUpdated: (subjectName: string, masteryLevel: string) => ({
+    masteryUpdated: () => ({
       type: "MASTERY_UPDATE" as NotificationType,
       title: "Mastery Level Updated",
-      message: `Your ${subjectName} mastery has been updated to ${masteryLevel}. Keep up the great work!`,
+      message: `Your mastery has been updated. Keep up the great work!`,
     }),
 
     welcomeUser: (userName: string) => ({

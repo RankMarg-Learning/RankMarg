@@ -127,35 +127,15 @@ export class MasteryProcessor {
           context
         );
 
-        // Send notification for mastery update
         try {
-          // Get the highest mastery subject to notify about
-          const subjectMasteries = await prisma.subjectMastery.findMany({
-            where: { 
-              userId,
-              subjectId: { in: Array.from(allSubjectIds) }
-            },
-            include: {
-              subject: { select: { name: true } }
-            },
-            orderBy: { masteryLevel: 'desc' },
-            take: 1,
-          });
-
-          if (subjectMasteries.length > 0) {
-            const topSubject = subjectMasteries[0];
-            const masteryLevel = topSubject.masteryLevel.toFixed(1);
-            const template = NotificationService.templates.masteryUpdated(
-              topSubject.subject.name,
-              masteryLevel
-            );
+            const template = NotificationService.templates.masteryUpdated();
             await NotificationService.createAndDeliverToUser(
               userId,
               template.type,
               template.title,
               template.message
             );
-          }
+          
         } catch (notificationError) {
           console.error("Error sending mastery notification:", notificationError);
         }
