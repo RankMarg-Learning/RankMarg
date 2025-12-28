@@ -30,13 +30,13 @@ export class MasteryCalculator {
   ): number {
     const { userProfile, performanceTrend, streamConfig } = context;
 
-    // Base accuracy score (30% of total)
+    // Base accuracy score (45% of total)
     const baseScore =
       data.totalAttempts > 0
-        ? (data.correctAttempts / data.totalAttempts) * 30
+        ? (data.correctAttempts / data.totalAttempts) * 45
         : 0;
 
-    // Streak bonus with adaptive learning (15% of total)
+    // Streak bonus with adaptive learning (5% of total)
     const streakBonus = this.calculateAdaptiveStreakBonus(
       data.streak,
       userProfile
@@ -60,9 +60,6 @@ export class MasteryCalculator {
     // Forgetting curve factor (5% of total)
     const forgettingCurveScore = this.calculateForgettingCurveScore(data);
 
-    // User profile adaptation (5% of total)
-    const userProfileScore = this.calculateUserProfileScore(userProfile, data);
-
     // Mistake analysis penalty
     const mistakePenalty = this.calculateMistakePenalty(data.mistakeAnalysis);
 
@@ -75,8 +72,7 @@ export class MasteryCalculator {
           difficultyScore +
           consistencyScore +
           spacedRepetitionScore +
-          forgettingCurveScore +
-          userProfileScore -
+          forgettingCurveScore -
           mistakePenalty,
         100
       )
@@ -221,20 +217,19 @@ export class MasteryCalculator {
     return Math.round(strengthIndex);
   }
 
-  // Enhanced helper methods
+
   private calculateAdaptiveStreakBonus(
     streak: number,
     userProfile: UserProfileData
   ): number {
-    const baseStreakBonus = Math.min(Math.log2(streak + 1) * 3, 15);
+    const baseStreakBonus = Math.min(Math.log2(streak + 1) * 3, 5);
 
-    // Adjust based on user's study pattern
     const studyHoursFactor = userProfile.studyHoursPerDay
-      ? Math.min(userProfile.studyHoursPerDay / 8, 1.2)
+      ? Math.min(userProfile.studyHoursPerDay / 8, 1.0)
       : 1.0;
 
     const targetYearFactor = userProfile.targetYear
-      ? Math.min((userProfile.targetYear - new Date().getFullYear()) / 2, 1.1)
+      ? Math.min((userProfile.targetYear - new Date().getFullYear()) / 2, 1.0)
       : 1.0;
 
     return baseStreakBonus * studyHoursFactor * targetYearFactor;
@@ -247,7 +242,6 @@ export class MasteryCalculator {
     const idealTime = streamConfig.idealTimePerQuestion;
     const speedRatio = data.avgTime > 0 ? idealTime / data.avgTime : 1;
 
-    // Reward optimal speed range (not too fast, not too slow)
     const optimalSpeedRange = 0.5 <= speedRatio && speedRatio <= 1.5;
     const speedScore = optimalSpeedRange
       ? 10
@@ -303,22 +297,7 @@ export class MasteryCalculator {
     return data.forgettingCurveFactor * 5;
   }
 
-  private calculateUserProfileScore(
-    userProfile: UserProfileData,
-    _data: EnhancedMasteryData
-  ): number {
-    const studyHoursScore = userProfile.studyHoursPerDay
-      ? Math.min(userProfile.studyHoursPerDay / 10, 2)
-      : 0;
-
-    const questionsPerDayScore = userProfile.questionsPerDay
-      ? Math.min(userProfile.questionsPerDay / 20, 2)
-      : 0;
-
-    const activityScore = userProfile.isActive ? 1 : 0;
-
-    return studyHoursScore + questionsPerDayScore + activityScore;
-  }
+  
 
   private calculateMistakePenalty(mistakeAnalysis: any): number {
     const conceptualPenalty = mistakeAnalysis.conceptual * 2;

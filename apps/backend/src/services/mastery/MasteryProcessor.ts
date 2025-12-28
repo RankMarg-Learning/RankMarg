@@ -180,15 +180,7 @@ export class MasteryProcessor {
       where: { id: { in: Array.from(subtopicIds) } },
       select: {
         id: true,
-        name: true,
         topicId: true,
-        topic: {
-          select: {
-            id: true,
-            name: true,
-            weightage: true,
-          },
-        },
       },
     });
 
@@ -234,19 +226,19 @@ export class MasteryProcessor {
           enhancedMasteryData,
           context
         );
-        const newStrengthIndex = this.masteryCalculator.calculateStrengthIndex(
-          {
-            totalAttempts: enhancedMasteryData.totalAttempts,
-            correctAttempts: enhancedMasteryData.correctAttempts,
-            streak: enhancedMasteryData.streak,
-            lastCorrectDate: enhancedMasteryData.lastCorrectDate,
-            avgTime: enhancedMasteryData.avgTime,
-          },
-          context
-        );
+        // const newStrengthIndex = this.masteryCalculator.calculateStrengthIndex(
+        //   {
+        //     totalAttempts: enhancedMasteryData.totalAttempts,
+        //     correctAttempts: enhancedMasteryData.correctAttempts,
+        //     streak: enhancedMasteryData.streak,
+        //     lastCorrectDate: enhancedMasteryData.lastCorrectDate,
+        //     avgTime: enhancedMasteryData.avgTime,
+        //   },
+        //   context
+        // );
 
         let masteryLevel = newMasteryLevel;
-        let strengthIndex = newStrengthIndex;
+        let strengthIndex = 0;
 
         const existingMastery = existingMasteriesMap.get(subtopicId);
 
@@ -260,7 +252,7 @@ export class MasteryProcessor {
           );
           strengthIndex = Math.round(
             existingMastery.strengthIndex * oldWeight +
-              newStrengthIndex * newWeight
+              strengthIndex * newWeight
           );
         }
 
