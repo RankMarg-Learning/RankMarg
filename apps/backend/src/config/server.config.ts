@@ -71,7 +71,7 @@ export const ServerConfig = {
       createSuggestion: "0 0 * * *",
     },
     weekly: {
-      updateReview: "0 0 * * 0",
+      updateReview: "0 1 * * 0",
       updateMastery: "0 0 * * 0",
       updateLearningProgress: "0 1 * * 0",
     },
