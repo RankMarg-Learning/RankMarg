@@ -89,6 +89,26 @@ export const updateQuestion = async (slug: string, question: Partial<Question>) 
   }
 };
 
+export const migrateAttempts = async (sourceQuestionId: string, targetQuestionId: string) => {
+  try {
+    const response = await api.post('/question/migrate-attempts', {
+      sourceQuestionId,
+      targetQuestionId,
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Error migrating attempts:", error);
+    const errorMessage = error.response?.data?.message || 
+                        error.response?.data?.error || 
+                        error.message || 
+                        "Error migrating attempts";
+    return {
+      success: false,
+      message: errorMessage,
+    };
+  }
+};
+
 export const deleteQuestion = async (slug: string) => {
   try {
     const response = await api.delete(`/question/${slug}`);
