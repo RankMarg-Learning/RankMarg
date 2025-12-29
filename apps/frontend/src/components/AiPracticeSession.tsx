@@ -8,7 +8,7 @@ import { addAttempt, getAiPracticeSession } from '@/services';
 import { attempDataProps } from '@/types';
 import { useUserData } from '@/context/ClientContextProvider';
 import {
-    QuestionSessionNavigation,
+    QuestionTFNavigation,
     STALE_TIME,
     GC_TIME,
     renderLoadingState,
@@ -265,7 +265,7 @@ const AiPracticeSession: React.FC<AiPracticeSessionProps> = ({ sessionId }) => {
     return (
         <div className="min-h-screen bg-white">
             {renderMainContent()}
-            <QuestionSessionNavigation
+            <QuestionTFNavigation
                 canGoPrev={canGoPrev}
                 canGoNext={canGoNext}
                 isSubmitting={isSubmitting}

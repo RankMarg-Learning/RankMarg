@@ -25,7 +25,7 @@ import {
     LOG_LEVELS,
 } from '@/constant/adaptiveLearning';
 import {
-    QuestionSessionNavigation,
+    QuestionTFNavigation,
     STALE_TIME,
     GC_TIME,
     renderLoadingState,
@@ -499,7 +499,7 @@ const AiTopicQuestionSession: React.FC<AiTopicQuestionSessionProps> = ({
     return (
         <div className="min-h-screen bg-white">
             {renderMainContent()}
-            <QuestionSessionNavigation
+            <QuestionTFNavigation
                 canGoPrev={canGoPrev}
                 canGoNext={canGoNext}
                 isSubmitting={isSubmitting}

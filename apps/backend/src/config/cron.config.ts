@@ -24,7 +24,6 @@ export class CronManager {
   private jobs: Map<string, ScheduledTask> = new Map();
   private jobConfigs: CronJob[] = [
     {
-      //Tested
       name: "streak",
       schedule: ServerConfig.cron.daily.streak,
       job: streakJob, // Every day at midnight
@@ -32,7 +31,6 @@ export class CronManager {
       description: "Reset user streaks daily at midnight",
     },
     {
-      //Tested
       name: "updatePerformance",
       schedule: ServerConfig.cron.daily.updatePerformance,
       job: updatePerformanceJob, // Every day at midnight
@@ -40,7 +38,6 @@ export class CronManager {
       description: "Update user performance metrics daily at midnight",
     },
     {
-      //Tested
       name: "createSuggestion",
       schedule: ServerConfig.cron.daily.createSuggestion,
       job: createSuggestion, // Every day at midnight
@@ -49,7 +46,7 @@ export class CronManager {
     },
     {
       name: "updateReview",
-      schedule: ServerConfig.cron.weekly.updateReview,
+      schedule: ServerConfig.cron.weekly.updateReview, 
       job: updateReviewJob,
       enabled: true,
       description: "Update review schedules weekly on Sunday at midnight",
@@ -69,7 +66,6 @@ export class CronManager {
       description: "Create practice sessions every 3 minutes",
     },
     {
-      //Tested
       name: "updateGrade",
       schedule: "0 2 * * *", // Every day at 2 AM
       job: updateGradeJob,

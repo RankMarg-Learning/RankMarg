@@ -5,27 +5,26 @@ import { ArrowLeft, ArrowRight, SkipForward } from 'lucide-react';
 import { Progress } from '@repo/common-ui';
 import { cn } from '@/lib/utils';
 
-interface QuestionSessionNavigationProps {
+interface QuestionTFNavigationProps {
     canGoPrev: boolean;
     canGoNext: boolean;
-    isSubmitting: boolean;
+    isSubmitting?: boolean;
     onPrev: () => void;
     onNext: () => void;
     mobileMenuOpen?: boolean;
-    // Progress section props (optional)
     showProgress?: boolean;
     progressPercentage?: number;
     attemptedCount?: number;
     totalCount?: number;
-    // Next unattempted button props (optional)
     showNextUnattempted?: boolean;
     onNextUnattempted?: () => void;
+    variant?: 'session' | 'review';
 }
 
-export const QuestionSessionNavigation: React.FC<QuestionSessionNavigationProps> = ({
+export const QuestionTFNavigation: React.FC<QuestionTFNavigationProps> = ({
     canGoPrev,
     canGoNext,
-    isSubmitting,
+    isSubmitting = false,
     onPrev,
     onNext,
     mobileMenuOpen = false,
@@ -35,6 +34,7 @@ export const QuestionSessionNavigation: React.FC<QuestionSessionNavigationProps>
     totalCount = 0,
     showNextUnattempted = false,
     onNextUnattempted,
+    variant = 'session',
 }) => {
     const renderProgressSection = () => {
         if (!showProgress) return null;
@@ -70,25 +70,29 @@ export const QuestionSessionNavigation: React.FC<QuestionSessionNavigationProps>
         );
     };
 
-    const renderNavigationButtons = () => (
-        <div className="flex items-center gap-3">
-            <button
-                onClick={onPrev}
-                disabled={!canGoPrev || isSubmitting}
-                className="inline-flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-                <ArrowLeft className="h-4 w-4" />
-            </button>
+    const renderNavigationButtons = () => {
+        return (
+            <div className="flex items-center gap-3">
+                <button
+                    onClick={onPrev}
+                    disabled={!canGoPrev || isSubmitting}
+                    className="inline-flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                </button>
+                <button
+                    onClick={onNext}
+                    disabled={!canGoNext || isSubmitting}
+                    className="inline-flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                    <ArrowRight className="h-4 w-4" />
+                </button>
+            </div>
+        );
+    };
 
-            <button
-                onClick={onNext}
-                disabled={!canGoNext || isSubmitting}
-                className="inline-flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-                <ArrowRight className="h-4 w-4" />
-            </button>
-        </div>
-    );
+
+
 
     return (
         <div className={cn(
@@ -98,7 +102,7 @@ export const QuestionSessionNavigation: React.FC<QuestionSessionNavigationProps>
             <div className="max-w-8xl mx-auto px-4 sm:px-6">
                 <div className={cn(
                     "flex items-center h-14",
-                    showProgress ? "justify-between" : "justify-end"
+                    showProgress ? "justify-between" : variant === 'review' ? "justify-center" : "justify-end"
                 )}>
                     {/* Left Side - Progress and Controls */}
                     {showProgress && (
@@ -107,7 +111,10 @@ export const QuestionSessionNavigation: React.FC<QuestionSessionNavigationProps>
                         </div>
                     )}
                     {/* Right Side - Navigation Buttons */}
-                    <div className="flex-shrink-0">
+                    <div className={cn(
+                        "flex-shrink-0",
+                        variant === 'review' && showProgress && "ml-4"
+                    )}>
                         {renderNavigationButtons()}
                     </div>
                 </div>

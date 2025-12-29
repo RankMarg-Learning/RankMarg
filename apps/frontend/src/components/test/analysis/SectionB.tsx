@@ -18,7 +18,7 @@ interface SectionBAnalysis {
     correct: number;
     incorrect: number;
     unattempted: number;
-    accuracy: string;
+    percentage: string;
     performanceLevel: string;
   };
   difficultyAnalysis: {
@@ -115,8 +115,8 @@ const SectionB = ({ analysis }: { analysis: SectionBAnalysis }) => {
           
           <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <Award className="w-6 h-6 text-blue-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-blue-600">{statistics.accuracy}%</div>
-            <div className="text-sm text-blue-700">Accuracy</div>
+            <div className="text-2xl font-bold text-blue-600">{statistics.percentage}%</div>
+            <div className="text-sm text-blue-700">Percentage</div>
           </div>
         </div>
 
@@ -130,7 +130,7 @@ const SectionB = ({ analysis }: { analysis: SectionBAnalysis }) => {
         </div>
 
         {/* Difficulty-wise Analysis */}
-        <div className="space-y-4">
+        <div className="space-y-4 hidden">
           <h4 className="font-semibold">Difficulty-wise Performance</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {Object.entries(difficultyAnalysis).map(([difficulty, data]) => {
@@ -160,7 +160,7 @@ const SectionB = ({ analysis }: { analysis: SectionBAnalysis }) => {
         </div>
 
         {/* Strengths and Weaknesses */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className=" grid-cols-1 md:grid-cols-2 gap-4 hidden">
           {strengths.length > 0 && (
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
               <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
@@ -178,7 +178,7 @@ const SectionB = ({ analysis }: { analysis: SectionBAnalysis }) => {
           )}
 
           {weaknesses.length > 0 && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg hidden">
               <h4 className="font-semibold text-red-800 mb-2 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
                 Areas for Improvement

@@ -36,7 +36,7 @@ const Footer = () => {
                     <div className="lg:mx-auto text-left">
                         <h4 className="text-lg text-gray-900 font-medium mb-4">Resources</h4>
                         <ul className="text-sm  transition-all duration-500">
-                            <li className="mb-2"><Link href="/get-started" className=" text-gray-600 hover:text-gray-900">Quick Start</Link></li>
+                            <li className="mb-2"><Link href="/articles" className=" text-gray-600 hover:text-gray-900">Articles</Link></li>
                             <li className="mb-2"><Link href="/faqs" className="text-gray-600 hover:text-gray-900">FAQs</Link></li>
                             <li className="mb-2"><Link href="/help-support" className=" text-gray-600 hover:text-gray-900">Help & Support</Link></li>
                             <li><Link href="/refunds" className=" text-gray-600 hover:text-gray-900">Refund Policy</Link></li>

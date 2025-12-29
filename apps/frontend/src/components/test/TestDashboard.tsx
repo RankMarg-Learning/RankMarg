@@ -182,26 +182,18 @@ const TestDashboard = () => {
         )}
 
         {/* Scheduled Tests Section */}
+        {schedule?.data && schedule.data.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="h-1 w-8 bg-orange-500 rounded-full"></div>
             <h2 className="text-lg font-semibold text-gray-900">Upcoming Tests</h2>
           </div>
-          {schedule?.data && schedule.data.length > 0 ? (
             <ScheduledTests
               tests={schedule.data}
               onStartTest={handleStartTest}
             />
-          ) : (
-            <Card className="bg-gray-50 border-0 shadow-sm">
-              <CardContent className="p-4 text-center">
-                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-base font-medium text-gray-900 mb-2">No Scheduled Tests</h3>
-                <p className="text-gray-600 text-sm">You don't have any upcoming tests scheduled. Check out available tests below!</p>
-              </CardContent>
-            </Card>
-          )}
         </section>
+        )}
 
         {/* Available Tests Section */}
         <section className="space-y-4">

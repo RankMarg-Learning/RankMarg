@@ -41,7 +41,7 @@ const RevisionSubtopicsCard = ({ revisionData, onViewAll }) => {
         <div className="flex items-center justify-between">
           <h3 className="font-medium text-sm text-purple-800 flex items-center gap-1">
             <ListTodo className="h-4 w-4" />
-            Today's Top Concepts
+            Today's Study Concepts
           </h3>
           {groupedData.length > 0 && (
             <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-purple-600 hover:text-purple-700">

@@ -39,7 +39,8 @@ export class AnalyticsController {
         metrics,
         performance,
         questionsByDifficulty,
-        avgTimingByDifficulty
+        avgTimingByDifficulty,
+        req.user.examCode
       );
       ResponseUtil.success(
         res,
@@ -280,7 +281,8 @@ const processRecommendationData = (
   metrics: any[],
   performance: any,
   questionsByDifficulty: any,
-  avgTimingByDifficulty: any
+  avgTimingByDifficulty: any,
+  examCode: string
 ) => {
   try {
     const overview = getMetricCardData(metrics || []);
@@ -291,7 +293,7 @@ const processRecommendationData = (
       questionsByDifficulty || {}
     );
     const timeLabel = getStreamTimingSuggestion(
-      "JEE",
+      examCode,
       avgTimingByDifficulty || {}
     );
 

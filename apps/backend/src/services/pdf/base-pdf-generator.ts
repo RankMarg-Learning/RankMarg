@@ -20,7 +20,7 @@ export abstract class BasePDFGenerator<TData = any> {
     this.md = new MarkdownIt({
       html: true,
       linkify: true,
-      typographer: true,
+      typographer: false, // Disabled to prevent (B) -> © and (R) -> ® conversion
       breaks: false,
     });
 
@@ -46,6 +46,9 @@ export abstract class BasePDFGenerator<TData = any> {
       processedContent = processedContent.replace(/\\\\/g, '\\');
     }
 
+    // Remove bold markdown formatting (**text** becomes text)
+    processedContent = processedContent.replace(/\*\*([^*]+)\*\*/g, '$1');
+
     // Convert single-line $$...$$ to $...$ for inline math
     processedContent = processedContent.replace(/\$\$([^$\n]+)\$\$/g, (match, mathContent) => {
       if (!mathContent.includes('\n')) {
@@ -54,7 +57,13 @@ export abstract class BasePDFGenerator<TData = any> {
       return match;
     });
 
-    return this.md.render(processedContent);
+    let rendered = this.md.render(processedContent);
+    
+    // Remove <strong> and <b> tags (strip bold formatting from HTML)
+    rendered = rendered.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '$1');
+    rendered = rendered.replace(/<b[^>]*>(.*?)<\/b>/gi, '$1');
+
+    return rendered;
   }
 
   /**
@@ -92,6 +101,9 @@ export abstract class BasePDFGenerator<TData = any> {
    * Override this in subclasses to add custom helpers
    */
   protected registerHandlebarsHelpers(): void {
+    // Global question counter that continues across all sections
+    let globalQuestionCounter = 0;
+    
     // Register common helpers
     Handlebars.registerHelper("inc", function(value) {
       return parseInt(String(value), 10) + 1;
@@ -101,9 +113,15 @@ export abstract class BasePDFGenerator<TData = any> {
       return String.fromCharCode(65 + Number(i));
     });
     
-    // Register markdown helper
+    
     Handlebars.registerHelper("markdown", (content: string) => {
       return new Handlebars.SafeString(this.renderMarkdown(content));
+    });
+    
+    
+    Handlebars.registerHelper("questionNumber", function() {
+      globalQuestionCounter++;
+      return globalQuestionCounter;
     });
   }
 
@@ -251,8 +269,9 @@ export abstract class BasePDFGenerator<TData = any> {
   /**
    * Get PDF options
    * Override this to customize PDF generation options
+   * @param data - The data used to generate the PDF (optional, for accessing footer text, etc.)
    */
-  protected getPDFOptions(): puppeteer.PDFOptions {
+  protected getPDFOptions(data?: TData): puppeteer.PDFOptions {
     return {
       format: "A4",
       printBackground: true,
@@ -269,8 +288,13 @@ export abstract class BasePDFGenerator<TData = any> {
         </div>
       `,
       footerTemplate: `
-        <div style="font-size:8px; width:100%; text-align:center; margin:0 auto;">
-          Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+        <div style="font-size:8px; width:100%; display:flex; justify-content:space-between; align-items:center; padding:0 20px;">
+          <div style="text-align:left; flex:1;">
+            <!-- Left footer text will be injected here -->
+          </div>
+          <div style="text-align:right; flex:1;">
+            Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+          </div>
         </div>
       `,
     };
@@ -320,7 +344,7 @@ export abstract class BasePDFGenerator<TData = any> {
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Generate PDF
-      const pdfOptions = this.getPDFOptions();
+      const pdfOptions = this.getPDFOptions(data);
       const pdf = await page.pdf(pdfOptions);
 
       return Buffer.from(pdf);

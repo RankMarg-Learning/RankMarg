@@ -210,7 +210,7 @@ export default UserProfile;
 //                     {
 //                       profile?.basicProfile?.isSelf && (
 //                         <div className="flex items-center gap-2">
-//                           <Link href={`/analysis/${test.testId}`} target="_blank">
+//                           <Link href={`/t/${test.testId}/analysis`} target="_blank">
 //                             <Button variant="outline" className="hover:border-yellow-400 hover:text-yellow-400" >View Analysis</Button>
 //                           </Link>
 //                         </div>

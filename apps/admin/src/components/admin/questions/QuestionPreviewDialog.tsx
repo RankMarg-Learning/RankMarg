@@ -134,7 +134,7 @@ export const QuestionPreviewDialog = ({ open, onOpenChange, watch }: QuestionPre
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600">Time</p>
-                <p className="text-sm text-gray-800">{watch("questionTime")} min</p>
+                <p className="text-sm text-gray-800">{watch("questionTime")} sec</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600">Status</p>

@@ -18,6 +18,13 @@ import {
 import { SectioncQuestionTiming } from "@/types/typeTest"
 
 
+const formatTime = (seconds: number): string => {
+  if (seconds < 60) {
+    return `${seconds.toFixed(0)}s`;
+  }
+  return `${(seconds / 60).toFixed(1)} min`;
+};
+
 const chartConfig = {
   time: {
     label: "Time (minutes)",
@@ -55,12 +62,32 @@ export function TimeSpendChart({data}:{data:SectioncQuestionTiming[]}) {
   );
 
   const total = React.useMemo(
-    () => availableSubjects.reduce((acc, subject) => ({
-      ...acc,
-      [subject]: data?.reduce((sum, curr) => sum + (curr[subject] || 0), 0) as number,
-    }), {} as Record<string, number>),
+    () => availableSubjects.reduce((acc, subject) => {
+      const subjectData = data?.filter(item => (item[subject] as number) > 0) || [];
+      const totalTime = subjectData.reduce((sum, curr) => sum + (curr[subject] || 0), 0);
+      const times = subjectData.map(item => item[subject] as number).filter(t => t > 0);
+      return {
+        ...acc,
+        [subject]: {
+          total: totalTime,
+          count: subjectData.length,
+          average: subjectData.length > 0 ? totalTime / subjectData.length : 0,
+          max: times.length > 0 ? Math.max(...times) : 0,
+          min: times.length > 0 ? Math.min(...times) : 0,
+        }
+      };
+    }, {} as Record<string, { total: number; count: number; average: number; max: number; min: number }>),
     [data, availableSubjects]
   );
+
+  
+  const filteredData = React.useMemo(() => {
+    if (!data || !activeSubject) return [];
+    return data.filter(item => {
+      const value = item[activeSubject] as number | undefined;
+      return value !== undefined && value !== null && value > 0;
+    });
+  }, [data, activeSubject]);
 
   return (
     <Card className="rounded-md shadow-sm">
@@ -68,28 +95,50 @@ export function TimeSpendChart({data}:{data:SectioncQuestionTiming[]}) {
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
           <CardTitle>Question Time Analysis</CardTitle>
           <CardDescription>
-            Time taken per question in each subject
+            Time taken per question in {chartConfig[activeSubject]?.label || activeSubject}
           </CardDescription>
         </div>
-        <div className="flex flex-wrap ">
+        <div className="flex flex-wrap gap-0 border-t sm:border-t-0 sm:border-l">
           {availableSubjects.map((subject) => {
             const chart = subject as keyof typeof chartConfig
+            const stats = total[chart];
+            if (!stats || stats.count === 0 || stats.total === 0) return null;
+            
+            const isActive = activeSubject === chart;
+            
             return (
               <button
                 key={chart}
-                data-active={activeSubject === chart}
-                className={`relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-yellow-300/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6 ${total[chart] === 0 ? 'hidden' : ''}`}
+                data-active={isActive}
+                className={`relative flex flex-col justify-center gap-1.5 px-6 py-5 text-left transition-all duration-200 border-l first:border-l-0 sm:first:border-l sm:border-l hover:bg-muted/30 ${
+                  isActive 
+                    ? 'bg-yellow-300/50 border-yellow-400/50 shadow-sm' 
+                    : 'bg-background'
+                } min-w-[140px] flex-1 sm:min-w-[160px]`}
                 onClick={() => setActiveSubject(chart)}
               >
-                <span className="text-sm font-semibold text-muted-foreground">
-                  {chartConfig[chart]?.label}
-                </span>
-                <span className="text-base font-bold leading-none ">
-                  {`${(((total[chart] as number)/60) / (data?.length || 1)).toFixed(1)} min`}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  avg. time
-                </span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`text-sm font-semibold ${
+                    isActive ? 'text-foreground' : 'text-muted-foreground'
+                  }`}>
+                    {chartConfig[chart]?.label}
+                  </span>
+                  {isActive && chartConfig[chart] && 'color' in chartConfig[chart] && (
+                    <div 
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: (chartConfig[chart] as { color: string }).color }}
+                    />
+                  )}
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-lg font-bold leading-tight text-foreground">
+                    {formatTime(stats.average)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Average time
+                  </span>
+                </div>
+               
               </button>
             )
           })}
@@ -103,7 +152,7 @@ export function TimeSpendChart({data}:{data:SectioncQuestionTiming[]}) {
           >
             <BarChart
               accessibilityLayer
-              data={data}
+              data={filteredData}
               margin={{
                 left: 12,
                 right: 12,
@@ -117,30 +166,48 @@ export function TimeSpendChart({data}:{data:SectioncQuestionTiming[]}) {
                 tickMargin={8}
               />
               <ChartTooltip
-                content={({ payload, label }) => (
-                  <div className="rounded-lg border bg-background p-2 shadow-sm bg-white">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="flex flex-col">
-                        <span className="text-[0.70rem] uppercase text-muted-foreground">
-                          Question
-                        </span>
-                        <span className="font-bold">
-                          {`${label}`}
-                        </span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[0.70rem] uppercase text-muted-foreground">
-                          Time
-                        </span>
-                        <span className="font-bold">
-                          {((payload?.[0]?.value as number)/60).toFixed(1)} minutes
-                        </span>
+                content={({ payload, label, active }) => {
+                  if (!active || !payload || payload.length === 0) return null;
+                  
+                  const value = payload[0].value as number;
+                  
+                  return (
+                    <div className="rounded-lg border bg-background p-2 shadow-sm bg-white">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="flex flex-col">
+                          <span className="text-[0.70rem] uppercase text-muted-foreground">
+                            Question
+                          </span>
+                          <span className="font-bold">
+                            {label}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[0.70rem] uppercase text-muted-foreground">
+                            Subject
+                          </span>
+                          <span className="font-bold">
+                            {chartConfig[activeSubject]?.label || activeSubject}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[0.70rem] uppercase text-muted-foreground">
+                            Time
+                          </span>
+                          <span className="font-bold">
+                            {formatTime(value)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  );
+                }}
               />
-              <Bar dataKey={activeSubject} fill={`var(--color-${activeSubject})`} />
+              <Bar 
+                dataKey={activeSubject} 
+                fill={`var(--color-${activeSubject})`}
+                radius={[4, 4, 0, 0]}
+              />
             </BarChart>
           </ChartContainer>
         </div>

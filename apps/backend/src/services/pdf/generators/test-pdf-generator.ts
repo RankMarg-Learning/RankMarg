@@ -1,5 +1,6 @@
 import { BasePDFGenerator } from "../base-pdf-generator";
 import { TestPDFData, Question, TestSection } from "../types";
+import * as puppeteer from "puppeteer-core";
 
 /**
  * PDF Generator for Test/Question Paper type
@@ -43,6 +44,28 @@ export class TestPDFGenerator extends BasePDFGenerator<TestPDFData> {
         "Rankmarg – Personalized Practice & Test Analytics",
       watermarkText: processedTestData.watermarkText,
       testSection: processedTestData.testSection,
+    };
+  }
+
+  /**
+   * Override getPDFOptions to include customFooter in footer template
+   */
+  protected getPDFOptions(data?: TestPDFData): puppeteer.PDFOptions {
+    const baseOptions = super.getPDFOptions(data);
+    const customFooter = data?.customFooter || "Rankmarg – Personalized Practice & Test Analytics";
+    
+    return {
+      ...baseOptions,
+      footerTemplate: `
+        <div style="font-size:8px; width:100%; display:flex; justify-content:space-between; align-items:center; padding:0 20px;">
+          <div style="text-align:left; flex:1;">
+            ${customFooter}
+          </div>
+          <div style="text-align:right; flex:1;">
+            Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+          </div>
+        </div>
+      `,
     };
   }
 }

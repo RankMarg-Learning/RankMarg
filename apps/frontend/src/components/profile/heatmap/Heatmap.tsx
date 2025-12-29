@@ -82,7 +82,7 @@ function shiftDate(date: Date, numDays: number) {
   return newDate;
 }
 
-const RANKMARG_THRESHOLDS = [5, 10, 20, 30, 40]; 
+const RANKMARG_THRESHOLDS = [12, 20, 30, 40, 50]; 
 function classForValue(value: { count: number }) {
   if (!value || typeof value.count !== "number" || isNaN(value.count) || value.count <= 0) {
     return "color-empty"; 

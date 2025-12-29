@@ -35,10 +35,10 @@ export default function TestDetail({ testId }: { testId: string }) {
     queryFn: async () => getTestDetails(testId)
   })
 
-  console.log("test", test)
+  
   useEffect(() => {
     if(test?.data?.testStatus === TestStatus.COMPLETED){
-      router.push(`/analysis/${testId}`)
+      router.push(`/t/${testId}/analysis`)
     }
     setTestId(testId)
     if (test) {

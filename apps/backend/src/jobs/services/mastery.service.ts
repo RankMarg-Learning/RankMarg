@@ -1,5 +1,5 @@
 import prisma from "@repo/db";
-import { MetricType } from "@repo/db/enums";
+import { MetricType, Role } from "@repo/db/enums";
 import { MasteryProcessor } from "../../services/mastery/MasteryProcessor";
 import { BaseJobService, UserBatch, JobConfig } from "./BaseJobService";
 
@@ -38,7 +38,7 @@ export class MasteryService extends BaseJobService {
         user: { select: { isActive: true, updatedAt: true } },
       },
       where: {
-        user: { isActive: true },
+        user: { isActive: true , role: { notIn: [Role.ADMIN, Role.INSTRUCTOR] } },
       },
       skip: offset,
       take: batchSize,

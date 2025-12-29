@@ -1496,6 +1496,124 @@ export class TestController {
     }
   };
 
+  //[GET] /api/test/:testId/review
+  getTestReviewById = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const { testId } = req.params;
+    try {
+      const userId = req.user.id;
+
+      const participant = await prisma.testParticipation.findFirst({
+        where: {
+          testId: testId,
+          userId: userId,
+        },
+      });
+
+      if (!participant) {
+        ResponseUtil.error(res, "You haven't participated in this test", 403);
+        return;
+      }
+
+      // Get test with full question details including solutions
+      const test = await prisma.test.findUnique({
+        where: {
+          testId: testId,
+        },
+        include: {
+          testSection: {
+            include: {
+              testQuestion: {
+                include: {
+                  question: {
+                    include: {
+                      options: true,
+                      topic: {
+                        select: {
+                          id: true,
+                          name: true,
+                          slug: true,
+                        },
+                      },
+                      subject: {
+                        select: {
+                          id: true,
+                          name: true,
+                          shortName: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!test) {
+        ResponseUtil.error(res, "Test not found", 404);
+        return;
+      }
+
+      // Get all attempts for this test
+      const attempts = await prisma.attempt.findMany({
+        where: {
+          testParticipationId: participant.id,
+        },
+        select: {
+          id: true,
+          questionId: true,
+          answer: true,
+          status: true,
+          timing: true,
+        },
+      });
+
+      // Flatten questions from sections
+      const questions = test.testSection.flatMap((section) =>
+        section.testQuestion.map((tq) => tq.question)
+      );
+
+      // Build test section config
+      let questionStartIndex = 1;
+      const testSectionConfig: Record<string, any> = {};
+      test.testSection.forEach((section) => {
+        const questionCount = section.testQuestion.length;
+        const keyName = `${section.name}_${questionStartIndex}-${questionStartIndex + questionCount - 1}`;
+        testSectionConfig[keyName] = {
+          correctMarks: +section.correctMarks,
+          negativeMarks: section.negativeMarks > 0 ? section.negativeMarks : 0,
+          isOptional: section.isOptional,
+          maxQuestions: section.maxQuestions,
+        };
+        questionStartIndex += questionCount;
+      });
+
+      ResponseUtil.success(
+        res,
+        {
+          questions,
+          attempts,
+          testSection: testSectionConfig,
+          testInfo: {
+            testId: test.testId,
+            testTitle: test.title,
+            duration: test.duration,
+            totalMarks: test.totalMarks,
+          },
+        },
+        "Test review data fetched successfully",
+        200
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
   private generateTestAnalysis = (testData: any) => {
     const { test, attempt, score, accuracy, timing, startTime, endTime } = testData;
     
@@ -1607,25 +1725,25 @@ export class TestController {
       }
     });
 
-    const accuracy = (correct / totalQuestions) * 100;
+    const percentage = (correct / totalQuestions) * 100;
     let feedback = '';
     let performanceLevel = '';
 
-    if (accuracy >= 90) {
+    if (percentage >= 90) {
       performanceLevel = 'Excellent';
-      feedback = `Outstanding performance! Your ${accuracy.toFixed(1)}% accuracy demonstrates exceptional understanding. You're well-prepared for the actual exam.`;
-    } else if (accuracy >= 75) {
+      feedback = `Outstanding performance! Your ${percentage.toFixed(1)}% percentage demonstrates exceptional understanding. You're well-prepared for the actual exam.`;
+    } else if (percentage >= 75) {
       performanceLevel = 'Very Good';
-      feedback = `Great job! Your ${accuracy.toFixed(1)}% accuracy shows strong preparation. Focus on the ${unattempted} unattempted questions to maximize your score.`;
-    } else if (accuracy >= 60) {
+      feedback = `Great job! Your ${percentage.toFixed(1)}% percentage shows strong preparation. Focus on the ${unattempted} unattempted questions to maximize your score.`;
+    } else if (percentage >= 60) {
       performanceLevel = 'Good';
-      feedback = `Good effort! Your ${accuracy.toFixed(1)}% accuracy indicates decent preparation. Review incorrect answers and practice more to improve.`;
-    } else if (accuracy >= 40) {
+      feedback = `Good effort! Your ${percentage.toFixed(1)}% percentage indicates decent preparation. Review incorrect answers and practice more to improve.`;
+    } else if (percentage >= 40) {
       performanceLevel = 'Average';
-      feedback = `Keep practicing! Your ${accuracy.toFixed(1)}% accuracy suggests you need more preparation. Focus on fundamentals and easier questions first.`;
+      feedback = `Keep practicing! Your ${percentage.toFixed(1)}% percentage suggests you need more preparation. Focus on fundamentals and easier questions first.`;
     } else {
       performanceLevel = 'Needs Improvement';
-      feedback = `Don't give up! Your ${accuracy.toFixed(1)}% accuracy indicates you need to strengthen your basics. Start with easier concepts and build up gradually.`;
+      feedback = `Don't give up! Your ${percentage.toFixed(1)}% percentage indicates you need to strengthen your basics. Start with easier concepts and build up gradually.`;
     }
 
     return {
@@ -1634,7 +1752,7 @@ export class TestController {
         correct,
         incorrect,
         unattempted,
-        accuracy: accuracy.toFixed(1),
+        percentage: percentage.toFixed(1),
         performanceLevel,
       },
       difficultyAnalysis,
@@ -1913,7 +2031,12 @@ export class TestController {
   private generateSectionH = (testData: any) => {
     const { test, attempt } = testData;
     
-    const accuracy = (attempt.filter((att: any) => att.status === 'CORRECT').length / attempt.length) * 100;
+    const attemptedQuestions = attempt.filter((att: any) => att.status === 'CORRECT' || att.status === 'INCORRECT');
+    const correctCount = attempt.filter((att: any) => att.status === 'CORRECT').length;
+    const accuracy = attemptedQuestions.length > 0 
+      ? (correctCount / (attemptedQuestions.length )) * 100 
+      : 0;
+      
     
     return {
       percentile: null, 
@@ -2118,8 +2241,9 @@ export class TestController {
         })),
       };
 
-      
       const { checkPDFExistsInS3, uploadPDFToS3, downloadPDFFromS3 } = await import("@/services/pdf/pdf-s3-storage");
+      if(process.env.NODE_ENV === "production") {
+        // Check if PDF exists in S3
       const checkResult = await checkPDFExistsInS3(test.testId, "test", "pdfs");
       
       if (checkResult.exists && checkResult.key) {
@@ -2135,6 +2259,7 @@ export class TestController {
           console.error("Error downloading PDF from S3, will generate new one:", error);
         }
       }
+    }
 
       const { PDFService } = await import("@/services/pdf.service");
       const pdfService = new PDFService();

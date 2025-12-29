@@ -88,7 +88,8 @@ export const routeConfigs: RouteConfig[] = [
   { path: "/question/:slug", type: RouteType.DYNAMIC, access: AccessLevel.PROTECTED, roles: ALL_AUTHENTICATED_ROLES, description: "Individual question" },
   
   // Analytics and progress tracking
-  { path: "/analysis/:testId", type: RouteType.DYNAMIC, access: AccessLevel.PROTECTED, roles: ALL_AUTHENTICATED_ROLES, description: "Test analysis" },
+  { path: "/t/:testId/analysis", type: RouteType.DYNAMIC, access: AccessLevel.PROTECTED, roles: ALL_AUTHENTICATED_ROLES, description: "Test analysis" },
+  { path: "/t/:testId/review", type: RouteType.DYNAMIC, access: AccessLevel.PROTECTED, roles: ALL_AUTHENTICATED_ROLES, description: "Test review" },
   { path: "/analytics", type: RouteType.EXACT, access: AccessLevel.PROTECTED, roles: ALL_AUTHENTICATED_ROLES, description: "User analytics" },
   { path: "/mastery", type: RouteType.EXACT, access: AccessLevel.PROTECTED, roles: ALL_AUTHENTICATED_ROLES, description: "Mastery overview" },
   { path: "/mastery/:subjectId", type: RouteType.DYNAMIC, access: AccessLevel.PROTECTED, roles: ALL_AUTHENTICATED_ROLES, description: "Subject mastery" },

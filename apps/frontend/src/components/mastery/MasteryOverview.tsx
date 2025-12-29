@@ -34,21 +34,21 @@ const MasteryOverview = ({ overview }: { overview: MasteryOverviewProps }) => {
                   return (
                     <div className="flex items-center text-green-600">
                       <ArrowUp className="h-4 w-4" />
-                      <span>+{improvement} since last month</span>
+                      <span>+{improvement} since last week</span>
                     </div>
                   );
                 } else if (improvement < 0) {
                   return (
                     <div className="flex items-center text-red-600">
                       <ArrowDown className="h-4 w-4" />
-                      <span>{improvement} since last month</span>
+                      <span>{improvement} since last week</span>
                     </div>
                   );
                 } else {
                   return (
                     <div className="flex items-center text-gray-500">
                       <Minus className="h-4 w-4" />
-                      <span>No change since last month</span>
+                      <span>No change since last week</span>
                     </div>
                   );
                 }

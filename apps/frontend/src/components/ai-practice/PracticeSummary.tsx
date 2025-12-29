@@ -101,10 +101,6 @@ const PracticeSummary = ({ overview ,suggestions}: { overview: PracticeSummaryPr
                     <h2 className="text-base font-semibold text-gray-800">
                       No subject-wise breakdown available
                     </h2>
-                    <p className="mt-2 text-xs text-gray-600 max-w-xs">
-                      Today's practice session hasn't been generated yet. Check back soon!
-                    </p>
-
                   </div>
                 )}
               </div>
