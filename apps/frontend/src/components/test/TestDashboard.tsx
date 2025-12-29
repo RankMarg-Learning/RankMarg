@@ -75,7 +75,7 @@ const TestDashboard = () => {
   }
 
   // Enhanced error state
-  if (isError) return <ErrorCTA message={'Something went wrong while loading your test dashboard.'} />
+  if (isError || !recommended?.success) return <ErrorCTA message={'Something went wrong while loading your test dashboard.'} />
 
   // Data validation
   const hasValidData = available?.success && recommended?.success && results?.success && schedule?.success

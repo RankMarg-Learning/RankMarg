@@ -64,7 +64,7 @@ const PracticeSummary = ({ overview ,suggestions}: { overview: PracticeSummaryPr
                 <ListChecks className='w-5 h-5 text-primary-400' />
                 <span className="text-gray-700" id="el-0ify9m9f">Total Questions Solved:</span>
               </div>
-              <span className=" font-bold text-gray-800" id="el-rg3ii8i3">{overview?.overallSummary?.attempted}</span>
+              <span className=" font-bold text-gray-800" id="el-rg3ii8i3">{overview?.overallSummary?.attempted || 0}</span>
             </div>
 
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg" id="el-r6i7wtcn">
@@ -72,7 +72,7 @@ const PracticeSummary = ({ overview ,suggestions}: { overview: PracticeSummaryPr
                 <Hourglass className='w-5 h-5 text-primary-400' />
                 <span className="text-gray-700 " id="el-tsn2booa">Time Spent:</span>
               </div>
-              <span className=" font-bold text-gray-800" id="el-xr2n4kfm">{overview?.overallSummary?.timeSpent} min</span>
+              <span className=" font-bold text-gray-800" id="el-xr2n4kfm">{overview?.overallSummary?.timeSpent || 0} min</span>
             </div>
 
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg" id="el-tmiyczck">
@@ -80,7 +80,7 @@ const PracticeSummary = ({ overview ,suggestions}: { overview: PracticeSummaryPr
                 <Goal className='w-5 h-5 text-primary-400' />
                 <span className="text-gray-700 " id="el-b06x4zpa">Accuracy Rate:</span>
               </div>
-              <span className=" font-bold text-gray-800" id="el-dtkpces9">{overview?.overallSummary?.accuracyRate}%</span>
+              <span className=" font-bold text-gray-800" id="el-dtkpces9">{overview?.overallSummary?.accuracyRate || 0}%</span>
             </div>
           </div>
 
