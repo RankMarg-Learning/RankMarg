@@ -32,7 +32,8 @@ const TestDashboard = () => {
     schedule,
     isLoading,
     isError,
-  } = useTestDashboardData({
+    isSubscriptionError,
+    } = useTestDashboardData({
     availableLimit: 6,
     availableType: activeFilter,
     resultsLimit: 5
@@ -75,7 +76,7 @@ const TestDashboard = () => {
   }
 
   // Enhanced error state
-  if (isError || !recommended?.success) return <ErrorCTA message={'Something went wrong while loading your test dashboard.'} />
+  if (isError && !isSubscriptionError) return <ErrorCTA message={'Something went wrong while loading your test dashboard.'} />
 
   // Data validation
   const hasValidData = available?.success && recommended?.success && results?.success && schedule?.success
@@ -161,7 +162,7 @@ const TestDashboard = () => {
         </div>
 
         {/* Recommended Test Section */}
-        {recommended?.data && (
+        {recommended?.data && !isSubscriptionError && (
           <section className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="h-1 w-8 bg-primary-500 rounded-full"></div>
