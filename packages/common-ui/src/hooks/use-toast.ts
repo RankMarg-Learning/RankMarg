@@ -143,7 +143,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ className, ...props }: Toast) {
+function toast({ className, duration = 1000, ...props }: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -158,6 +158,7 @@ function toast({ className, ...props }: Toast) {
     toast: {
       ...props,
       className: cn("bg-white", className),
+      duration,
       id,
       open: true,
       onOpenChange: (open) => {
