@@ -531,7 +531,7 @@ const UserSubscriptionsPage = () => {
                 <Label htmlFor="password">Password *</Label>
                 <Input
                   id="password"
-                  type="password"
+                  type="text"
                   value={createUserForm.password}
                   onChange={(e) => setCreateUserForm(prev => ({ ...prev, password: e.target.value }))}
                   placeholder="Minimum 6 characters"
