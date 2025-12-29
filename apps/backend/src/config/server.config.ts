@@ -129,6 +129,11 @@ export const ServerConfig = {
     requestTimeout: 30000, // 30 seconds
     maxPayloadSize: "10mb",
   },
+
+  sentry: {
+    dsn: process.env.SENTRY_DSN,
+    release: process.env.SENTRY_RELEASE,
+  },
 } as const;
 
 export default ServerConfig;

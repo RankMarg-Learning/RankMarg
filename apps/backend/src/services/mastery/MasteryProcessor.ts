@@ -9,6 +9,7 @@ import {
   HierarchicalMasteryData,
 } from "../../types/mastery.api.types";
 import { NotificationService } from "../notification.service";
+import { captureServiceError } from "../../lib/sentry";
 
 export interface MasteryResult {
   masteryLevel: number;
@@ -146,6 +147,16 @@ export class MasteryProcessor {
       console.log(`Successfully updated mastery for user ${userId}`);
     } catch (error) {
       console.error(`Error updating mastery for user ${userId}:`, error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "MasteryProcessor",
+          method: "updateUserMastery",
+          userId,
+          additionalData: {
+            examCode,
+          },
+        });
+      }
       throw error;
     }
   }
@@ -267,6 +278,17 @@ export class MasteryProcessor {
           `Error processing subtopic ${subtopicId} for user ${userId}:`,
           error
         );
+        if (error instanceof Error) {
+          captureServiceError(error, {
+            service: "MasteryProcessor",
+            method: "calculateSubtopicMastery",
+            userId,
+            additionalData: {
+              subtopicId,
+              attemptsCount: attempts.length,
+            },
+          });
+        }
       }
     }
 
@@ -668,6 +690,13 @@ export class MasteryProcessor {
         `Error updating mastery history for user ${userId}:`,
         error
       );
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "MasteryProcessor",
+          method: "updateMasteryHistory",
+          userId,
+        });
+      }
     }
   }
 

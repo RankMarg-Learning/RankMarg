@@ -2,6 +2,7 @@ import prisma from "@repo/db";
 import { MetricType, Role } from "@repo/db/enums";
 import { MasteryProcessor } from "../../services/mastery/MasteryProcessor";
 import { BaseJobService, UserBatch, JobConfig } from "./BaseJobService";
+import { captureServiceError } from "../../lib/sentry";
 
 export class MasteryService extends BaseJobService {
   private MasteryProcessor: MasteryProcessor;
@@ -131,6 +132,16 @@ export class MasteryService extends BaseJobService {
         `Error updating metric ${metricType} for user ${userId}:`,
         error
       );
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "MasteryService",
+          method: "UpdateMetrics",
+          userId,
+          additionalData: {
+            metricType,
+          },
+        });
+      }
     }
   }
 

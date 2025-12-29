@@ -3,6 +3,7 @@ import { QCategory, GradeEnum } from "@repo/db/enums";
 import { getDifficultyDistributionByGrade } from "./SessionConfig";
 import { SelectedQuestion, SessionConfig } from "../../types/session.api.types";
 import { RedisCacheService } from "../redisCache.service";
+import { captureServiceError } from "../../lib/sentry";
 
 const DAILY_TEACHING_HOURS = 60 //minutes
 const BUFFER_FACTOR = 0.75 
@@ -229,6 +230,17 @@ export class QuestionSelector {
       return selectedQuestions.slice(0, count);
     } catch (error) {
       console.error("Error selecting current topic questions:", error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "QuestionSelector",
+          method: "selectCurrentTopicQuestions",
+          userId: this.userId,
+          additionalData: {
+            subjectId,
+            count,
+          },
+        });
+      }
       return [];
     }
   }
@@ -333,6 +345,17 @@ export class QuestionSelector {
 
     } catch (error) {
       console.error("Error selecting medium mastery questions:", error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "QuestionSelector",
+          method: "selectMediumMasteryQuestions",
+          userId: this.userId,
+          additionalData: {
+            subjectId,
+            count,
+          },
+        });
+      }
       return [];
     }
   }
@@ -486,6 +509,17 @@ export class QuestionSelector {
       return selectedQuestions.slice(0, count);
     } catch (error) {
       console.error("Error selecting weak concept questions:", error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "QuestionSelector",
+          method: "selectWeakConceptQuestions",
+          userId: this.userId,
+          additionalData: {
+            subjectId,
+            count,
+          },
+        });
+      }
       return [];
     }
   }
@@ -652,6 +686,17 @@ export class QuestionSelector {
       return selectedQuestions.slice(0, count);
     } catch (error) {
       console.error("Error selecting revision questions:", error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "QuestionSelector",
+          method: "selectRevisionQuestions",
+          userId: this.userId,
+          additionalData: {
+            subjectId,
+            count,
+          },
+        });
+      }
       return [];
     }
   }
@@ -711,6 +756,18 @@ export class QuestionSelector {
       return sortedQuestions.slice(0, count);
     } catch (error) {
       console.error("Error getting fallback questions:", error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "QuestionSelector",
+          method: "getFallbackQuestions",
+          userId: this.userId,
+          additionalData: {
+            subTopicIds: subTopicIds.length,
+            subjectId,
+            count,
+          },
+        });
+      }
       return [];
     }
   }
@@ -746,6 +803,16 @@ export class QuestionSelector {
       this.attempts.questionIds = attemptedQuestionIds.map((a) => a.questionId);
     } catch (error) {
       console.error("Error getting attempted question ids:", error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "QuestionSelector",
+          method: "getAttemptedQuestionIds",
+          userId: this.userId,
+          additionalData: {
+            nDays: this.attempts.nDays,
+          },
+        });
+      }
       this.attempts.questionIds = [];
     }
   }

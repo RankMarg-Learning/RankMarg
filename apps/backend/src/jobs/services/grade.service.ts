@@ -7,6 +7,7 @@ import {
 } from "./BaseJobService";
 import { StudentGradeService } from "@/services/grade.service";
 import { GradeEnum, Role, SubscriptionStatus } from "@repo/db/enums";
+import { captureServiceError } from "../../lib/sentry";
 
 interface GradeResult {
   userId: string;
@@ -248,6 +249,15 @@ export class GradeService extends BaseJobService {
       );
     } catch (error) {
       this.logger.error(`Failed to store grades in batch:`, error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "GradeService",
+          method: "storeGradesInBatch",
+          additionalData: {
+            gradeResultsCount: gradeResults.length,
+          },
+        });
+      }
       throw error;
     }
   }

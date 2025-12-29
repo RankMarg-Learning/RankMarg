@@ -1,6 +1,7 @@
 import prisma from "../../lib/prisma";
 import { GradeEnum } from "@repo/db/enums";
 import { AttemptsConfig } from "../attempt.config";
+import { captureServiceError } from "../../lib/sentry";
 // import { UserConfig } from "../attempt.config";
 
 export class StudentGradeCalculator {
@@ -29,6 +30,13 @@ export class StudentGradeCalculator {
       const data = userConfig.getAttemptsData();
     } catch (error) {
       console.error("Error calculating student grade:", error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "StudentGradeCalculator",
+          method: "calculateGrade",
+          userId,
+        });
+      }
       return GradeEnum.C;
     }
   }

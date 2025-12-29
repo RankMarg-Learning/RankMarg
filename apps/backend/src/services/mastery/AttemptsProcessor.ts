@@ -11,6 +11,7 @@ import {
   PerformanceTrend,
 } from "../../types/mastery.api.types";
 import { subDays, startOfDay } from "date-fns";
+import { captureServiceError } from "../../lib/sentry";
 
 export class AttemptsProcessor {
   async attempts(userId: string, cutoffDate: Date): Promise<MasteryAttempt[]> {
@@ -66,7 +67,13 @@ export class AttemptsProcessor {
     });
 
     if (!user) {
-      throw new Error(`User ${userId} not found`);
+      const error = new Error(`User ${userId} not found`);
+      captureServiceError(error, {
+        service: "AttemptsProcessor",
+        method: "getUserProfile",
+        userId,
+      });
+      throw error;
     }
 
     return {

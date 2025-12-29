@@ -11,6 +11,7 @@ import { subscriptionExpiredJob } from "../jobs/tasks/userActivity.job";
 import { updateGradeJob } from "@/jobs/tasks/grade.job";
 import { updatePromocodeJob } from "@/jobs/tasks/promocode.job";
 import { updateQuestionsPerDayJob } from "@/jobs/tasks/questionsPerDay.update.job";
+import { initSentryForCronJobs, captureCronJobError } from "../lib/sentry";
 
 export interface CronJob {
   name: string;
@@ -107,6 +108,8 @@ export class CronManager {
   public initialize(): void {
     console.log("🕐 Initializing cron jobs...");
 
+    initSentryForCronJobs();
+
     this.jobConfigs.forEach((jobConfig) => {
       if (jobConfig.enabled) {
         this.scheduleJob(jobConfig);
@@ -136,6 +139,29 @@ export class CronManager {
               `❌ Cron job ${jobConfig.name} failed after ${duration}ms:`,
               error
             );
+            
+            if (error instanceof Error) {
+              captureCronJobError(error, {
+                jobName: jobConfig.name,
+                additionalData: {
+                  schedule: jobConfig.schedule,
+                  description: jobConfig.description,
+                  duration,
+                },
+              });
+            } else {
+              captureCronJobError(
+                new Error(String(error)),
+                {
+                  jobName: jobConfig.name,
+                  additionalData: {
+                    schedule: jobConfig.schedule,
+                    description: jobConfig.description,
+                    duration,
+                  },
+                }
+              );
+            }
           }
         },
         {
@@ -197,13 +223,55 @@ export class CronManager {
     this.jobs.clear();
   }
 
-  public runJobNow(jobName: string): Promise<void> {
+  public async runJobNow(jobName: string): Promise<void> {
     const jobConfig = this.jobConfigs.find((j) => j.name === jobName);
     if (jobConfig) {
       console.log(`🚀 Manually running cron job: ${jobName}`);
-      return Promise.resolve(jobConfig.job());
+      const startTime = Date.now();
+      
+      try {
+        await jobConfig.job();
+        const duration = Date.now() - startTime;
+        console.log(
+          `✅ Manually triggered cron job ${jobName} completed in ${duration}ms`
+        );
+      } catch (error) {
+        const duration = Date.now() - startTime;
+        console.error(
+          `❌ Manually triggered cron job ${jobName} failed after ${duration}ms:`,
+          error
+        );
+        
+        if (error instanceof Error) {
+          captureCronJobError(error, {
+            jobName: jobConfig.name,
+            additionalData: {
+              schedule: jobConfig.schedule,
+              description: jobConfig.description,
+              duration,
+              manuallyTriggered: true,
+            },
+          });
+        } else {
+          captureCronJobError(
+            new Error(String(error)),
+            {
+              jobName: jobConfig.name,
+              additionalData: {
+                schedule: jobConfig.schedule,
+                description: jobConfig.description,
+                duration,
+                manuallyTriggered: true,
+              },
+            }
+          );
+        }
+        
+        throw error;
+      }
+    } else {
+      throw new Error(`Job ${jobName} not found`);
     }
-    throw new Error(`Job ${jobName} not found`);
   }
 }
 

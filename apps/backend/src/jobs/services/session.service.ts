@@ -3,6 +3,7 @@ import { GradeEnum, Role, SubscriptionStatus } from "@repo/db/enums";
 import { createDefaultSessionConfig } from "../../services/session/SessionConfig";
 import { PracticeSessionGenerator } from "../../services/session/PracticeSessionGenerator";
 import { BaseJobService, UserBatch, JobConfig } from "./BaseJobService";
+import { captureServiceError } from "../../lib/sentry";
 
 export class PracticeService extends BaseJobService {
   constructor(config: Partial<JobConfig> = {}) {
@@ -80,7 +81,13 @@ export class PracticeService extends BaseJobService {
     });
 
     if (!user) {
-      console.error(`User with ID ${userId} not found`);
+      const error = new Error(`User with ID ${userId} not found`);
+      console.error(error.message);
+      captureServiceError(error, {
+        service: "PracticeService",
+        method: "generateSessionForUser",
+        userId,
+      });
       return;
     }
 

@@ -1,4 +1,5 @@
 import { Logger } from "../../lib/logger";
+import { captureCronJobError } from "../../lib/sentry";
 
 export interface JobConfig {
   batchSize: number;
@@ -26,6 +27,7 @@ export abstract class BaseJobService {
   protected readonly config: JobConfig;
   protected readonly logger: Logger;
   private cache: Map<string, { data: any; timestamp: number }> = new Map();
+  protected readonly jobName: string;
 
   constructor(config: Partial<JobConfig> = {}) {
     this.config = {
@@ -38,6 +40,7 @@ export abstract class BaseJobService {
       ...config,
     };
     this.logger = new Logger(this.constructor.name);
+    this.jobName = this.constructor.name;
   }
 
   /**
@@ -85,6 +88,20 @@ export abstract class BaseJobService {
     } catch (error) {
       const duration = Date.now() - startTime;
       this.logger.error(`Fatal error during processing:`, error);
+      
+     
+      if (error instanceof Error) {
+        captureCronJobError(error, {
+          jobName: this.jobName,
+          additionalData: {
+            totalProcessed,
+            totalFailed,
+            duration,
+            errorCount: errors.length,
+          },
+        });
+      }
+      
       return {
         success: false,
         processed: totalProcessed,
@@ -136,6 +153,20 @@ export abstract class BaseJobService {
             const errorMsg = `User ${user.userId}: ${error instanceof Error ? error.message : String(error)}`;
             errors.push(errorMsg);
             this.logger.error(errorMsg);
+            
+            
+            if (error instanceof Error) {
+              captureCronJobError(error, {
+                jobName: this.jobName,
+                userId: user.userId,
+                batchOffset: offset,
+                additionalData: {
+                  batchSize,
+                  processed,
+                  failed,
+                },
+              });
+            }
           }
         });
 
@@ -147,6 +178,21 @@ export abstract class BaseJobService {
     } catch (error) {
       const duration = Date.now() - startTime;
       this.logger.error(`Error processing batch at offset ${offset}:`, error);
+      
+      
+      if (error instanceof Error) {
+        captureCronJobError(error, {
+          jobName: this.jobName,
+          batchOffset: offset,
+          additionalData: {
+            batchSize,
+            processed,
+            failed,
+            duration,
+          },
+        });
+      }
+      
       return {
         success: false,
         processed,
