@@ -32,15 +32,13 @@ const EditQuestion = ({ params }: { params: { id: string } }) => {
     const handleSave = async (questionData: Partial<Question>) => {
         if (!id) return;
         try {
-            console.log("id", id);
-            console.log("questionData", questionData);
+            
             setLoading(true);
            const res =  await updateQuestion(id, questionData);
             if(!res.success){
                 toast({
                     title: res.message,
                     variant: "default",
-                    duration: 3000,
                     className: "bg-red-500 text-white",
                   })
                 return;
@@ -48,7 +46,6 @@ const EditQuestion = ({ params }: { params: { id: string } }) => {
             toast({
                 title: "Question updated successfully",
                 variant: "default",
-                duration: 3000,
                 className: "bg-gray-100 text-gray-800",
               })
 

@@ -1,6 +1,7 @@
 // hooks/useTestDashboardData.ts
 import api from '@/utils/api'
 import { useQueries } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 
 type QueryParams = {
     availableLimit?: number
@@ -53,6 +54,7 @@ export function useTestDashboardData({
         schedule: schedule.data,
         isLoading: queries.some(q => q.isLoading),
         isError: queries.some(q => q.isError),
+        isSubscriptionError: queries.some(q => (q.error as AxiosError | undefined)?.response?.status === 403),
         refetch,
     }
 }

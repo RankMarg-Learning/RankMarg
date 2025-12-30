@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { QuestionSelector } from "./QuestionSelector";
 import { SessionConfig } from "@/types/session.api.types";
 import { NotificationService } from "@/services/notification.service";
+import { captureServiceError } from "../../lib/sentry";
 
 type QuestionSource =
   | "currentTopic"
@@ -61,6 +62,17 @@ export class PracticeSessionGenerator {
       }
     } catch (error) {
       console.error("Error generating practice session:", error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "PracticeSessionGenerator",
+          method: "generate",
+          userId: this.config.userId,
+          additionalData: {
+            examCode: this.config.examCode,
+            isPaidUser: this.config.isPaidUser,
+          },
+        });
+      }
       throw error;
     }
   }
@@ -86,6 +98,17 @@ export class PracticeSessionGenerator {
 
     } catch (error) {
       console.error("Error generating practice session:", error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "PracticeSessionGenerator",
+          method: "generateSubjectSession",
+          userId: this.config.userId,
+          additionalData: {
+            subjectId,
+            examCode: this.config.examCode,
+          },
+        });
+      }
       throw error;
     }
   }
@@ -120,6 +143,17 @@ export class PracticeSessionGenerator {
 
     } catch (error) {
       console.error("Error generating practice session:", error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "PracticeSessionGenerator",
+          method: "generateSubjectSessionAdaptive",
+          userId: this.config.userId,
+          additionalData: {
+            subjectId,
+            examCode: this.config.examCode,
+          },
+        });
+      }
       throw error;
     }
   }
@@ -209,6 +243,17 @@ export class PracticeSessionGenerator {
       return session;
     } catch (error) {
       console.error("Error creating practice session:", error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "PracticeSessionGenerator",
+          method: "createPracticeSession",
+          userId: this.config.userId,
+          additionalData: {
+            subjectId,
+            questionCount: questions.length,
+          },
+        });
+      }
       throw error;
     }
   }

@@ -522,7 +522,7 @@ Returns difficulty adjustment (+1, 0, or -1).
 For questions or issues:
 - Check debug logs with `DEBUG_MODE = true`
 - Review this documentation
-- Contact: dev@rankmarg.com
+- Contact: dev@rankmarg.in
 
 ---
 

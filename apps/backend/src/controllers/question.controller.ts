@@ -387,6 +387,52 @@ export class QuestionController {
       next(error);
     }
   };
+  migrateAttempts = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { sourceQuestionId, targetQuestionId } = req.body;
+
+      if (!sourceQuestionId || !targetQuestionId) {
+        ResponseUtil.error(res, "Both sourceQuestionId and targetQuestionId are required", 400);
+        return;
+      }
+
+      if (sourceQuestionId === targetQuestionId) {
+        ResponseUtil.error(res, "Source and target question IDs must be different", 400);
+        return;
+      }
+
+      // Verify both questions exist
+      const [sourceQuestion, targetQuestion] = await Promise.all([
+        prisma.question.findUnique({ where: { id: sourceQuestionId } }),
+        prisma.question.findUnique({ where: { id: targetQuestionId } }),
+      ]);
+
+      if (!sourceQuestion) {
+        ResponseUtil.error(res, "Source question not found", 404);
+        return;
+      }
+
+      if (!targetQuestion) {
+        ResponseUtil.error(res, "Target question not found", 404);
+        return;
+      }
+
+      await prisma.attempt.updateMany({
+        where: { questionId: sourceQuestionId },
+        data: { questionId: targetQuestionId },
+      });
+
+      ResponseUtil.success(res, null, "Attempts migrated successfully", 200);
+    } catch (error) {
+      console.error("Error migrating attempts:", error);
+      next(error);
+    }
+  };
+
   deleteQuestionById = async (
     req: AuthenticatedRequest,
     res: Response,

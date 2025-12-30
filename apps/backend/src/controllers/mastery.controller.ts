@@ -143,12 +143,11 @@ export class MasteryController {
       const examCode = req.user.examCode;
       const plan = req.user.plan;
       if (
-        plan.status === SubscriptionStatus.EXPIRED ||
-        new Date(plan.endAt) < new Date()
+        plan.status !== SubscriptionStatus.ACTIVE && plan.status !== SubscriptionStatus.TRIAL
       ) {
         ResponseUtil.error(
           res,
-          "Your subscription has expired. Please upgrade to access Mastery Dashboard.",
+          "Your subscription is not active. Please upgrade to access Mastery Dashboard.",
           403
         );
       }
@@ -195,12 +194,11 @@ export class MasteryController {
       }
       const plan = req.user.plan;
       if (
-        plan.status === SubscriptionStatus.EXPIRED ||
-        new Date(plan.endAt) < new Date()
+        plan.status !== SubscriptionStatus.ACTIVE && plan.status !== SubscriptionStatus.TRIAL
       ) {
         ResponseUtil.error(
           res,
-          "Your subscription has expired. Please upgrade to access Subject Mastery.",
+          "Your subscription is not active. Please upgrade to access Subject Mastery.",
           403
         );
       }

@@ -68,8 +68,11 @@ const SubjectMasteryCard = ({ sbt }: { sbt: SubjectMasteryProps }) => {
               </p>
             </div>
             <Link href="/ai-practice" className="block">
-              <Button className="w-full bg-gradient-to-tr from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-3 sm:py-4 rounded-md shadow-lg hover:shadow-xl transition-all duration-200 transform  text-sm sm:text-base">
-                <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+              <Button 
+                variant="outline"
+                className="w-full flex items-center justify-center gap-1 text-primary-600 border-primary-200 hover:bg-primary-50 text-sm sm:text-base"
+              >
+                <BookOpen className="h-4 w-4 " />
                 Begin Practice
               </Button>
             </Link>

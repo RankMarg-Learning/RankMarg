@@ -15,6 +15,7 @@ import {
   DateCalculator,
   ExamDateService,
 } from "./reviewSchedule";
+import { captureServiceError } from "../../lib/sentry";
 
 /**
  * ============================================================================
@@ -336,13 +337,31 @@ export class ReviewScheduleService extends BaseJobService {
     const { topicMastery, currentSchedule, user, topic } = scheduleData;
 
     if (!topicMastery) {
-      throw new Error(
+      const error = new Error(
         `No mastery data found for user ${userId} and topic ${topicId}`
       );
+      captureServiceError(error, {
+        service: "ReviewScheduleService",
+        method: "updateReviewSchedule",
+        userId,
+        additionalData: {
+          topicId,
+        },
+      });
+      throw error;
     }
 
     if (!topic) {
-      throw new Error(`Topic ${topicId} not found`);
+      const error = new Error(`Topic ${topicId} not found`);
+      captureServiceError(error, {
+        service: "ReviewScheduleService",
+        method: "updateReviewSchedule",
+        userId,
+        additionalData: {
+          topicId,
+        },
+      });
+      throw error;
     }
 
     const subjectId = topic.subjectId;

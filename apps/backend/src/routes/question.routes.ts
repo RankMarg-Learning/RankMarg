@@ -1,5 +1,5 @@
 import { QuestionController } from "@/controllers/question.controller";
-import { authenticate, isInstructor } from "@/middleware/auth.middleware";
+import { authenticate, isAdmin, isInstructor } from "@/middleware/auth.middleware";
 import { Router } from "express";
 
 const router = Router();
@@ -7,6 +7,7 @@ const questionController = new QuestionController();
 
 router.get("/", authenticate, questionController.getQuestions);
 router.post("/", authenticate, isInstructor, questionController.createQuestion);
+router.post("/migrate-attempts", authenticate, isAdmin, questionController.migrateAttempts);
 router.get("/:slug", authenticate, questionController.getQuestionById);
 router.put("/:slug", authenticate, isInstructor, questionController.updateQuestionById);
 router.delete("/:slug", authenticate, questionController.deleteQuestionById);

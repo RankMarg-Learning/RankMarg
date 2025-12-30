@@ -10,6 +10,7 @@ import {
   TrendMetrics,
 } from "@/types/grade.type";
 import { AttemptsConfig } from "./attempt.config";
+import { captureServiceError } from "../lib/sentry";
 
 export class StudentGradeService {
   public attemptsData: attemptsData;
@@ -62,6 +63,17 @@ export class StudentGradeService {
       return this.determineGradeFromScore(accuracy);
     } catch (error) {
       console.error("Error calculating user grade:", error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "StudentGradeService",
+          method: "calculateUserGradeShallow",
+          additionalData: {
+            examCode: this.examCode,
+            isPaidUser: this.isPaidUser,
+            attemptsCount: this.attempts.length,
+          },
+        });
+      }
       return GradeEnum.C;
     }
   }
@@ -90,6 +102,17 @@ export class StudentGradeService {
       return this.determineGradeFromScore(finalScore);
     } catch (error) {
       console.error("Error calculating user grade:", error);
+      if (error instanceof Error) {
+        captureServiceError(error, {
+          service: "StudentGradeService",
+          method: "calculateUserGradeDeep",
+          additionalData: {
+            examCode: this.examCode,
+            isPaidUser: this.isPaidUser,
+            attemptsCount: this.attempts.length,
+          },
+        });
+      }
       return GradeEnum.C;
     }
   }
