@@ -129,14 +129,14 @@ export class MasteryProcessor {
         );
 
         try {
-            const template = NotificationService.templates.masteryUpdated();
-            await NotificationService.createAndDeliverToUser(
-              userId,
-              template.type,
-              template.title,
-              template.message
-            );
-          
+          const template = NotificationService.templates.masteryUpdated();
+          await NotificationService.createAndDeliverToUser(
+            userId,
+            template.type,
+            template.title,
+            template.message
+          );
+
         } catch (notificationError) {
           console.error("Error sending mastery notification:", notificationError);
         }
@@ -239,11 +239,11 @@ export class MasteryProcessor {
 
           masteryLevel = Math.round(
             existingMastery.masteryLevel * oldWeight +
-              newMasteryLevel * newWeight
+            newMasteryLevel * newWeight
           );
           strengthIndex = Math.round(
             existingMastery.strengthIndex * oldWeight +
-              strengthIndex * newWeight
+            strengthIndex * newWeight
           );
         }
 
@@ -264,11 +264,11 @@ export class MasteryProcessor {
               strengthIndex,
               totalAttempts: existingMastery
                 ? existingMastery.totalAttempts +
-                  enhancedMasteryData.totalAttempts
+                enhancedMasteryData.totalAttempts
                 : enhancedMasteryData.totalAttempts,
               correctAttempts: existingMastery
                 ? existingMastery.correctAttempts +
-                  enhancedMasteryData.correctAttempts
+                enhancedMasteryData.correctAttempts
                 : enhancedMasteryData.correctAttempts,
             },
           })
@@ -499,13 +499,11 @@ export class MasteryProcessor {
       let masteredTopicCount = 0;
       let attemptedTopicCount = 0;
 
-      // Process ALL topics (attempted and unattempted)
       for (const topic of subject.topics) {
         const mastery = masteryByTopicId.get(topic.id);
         const topicWeight = topic.weightage || 1;
 
         if (mastery) {
-          // Topic has been attempted
           totalAttempts += mastery.totalAttempts;
           correctAttempts += mastery.correctAttempts;
           weightedMasterySum += mastery.masteryLevel * topicWeight;
@@ -575,6 +573,7 @@ export class MasteryProcessor {
     return results;
   }
 
+  //!NOTE: Not used anywhere
   // private calculateConfidenceLevel(
   //   masteryData: any,
   //   context: MasteryCalculationContext
@@ -606,18 +605,7 @@ export class MasteryProcessor {
   //   return Math.min(confidence, 100);
   // }
 
-  private calculateSubjectConfidence(
-    masteries: any[],
-    context: MasteryCalculationContext
-  ): number {
-    if (masteries.length === 0) return 0;
 
-    const avgStrengthIndex =
-      masteries.reduce((sum, m) => sum + m.strengthIndex, 0) / masteries.length;
-    const consistencyScore = context.performanceTrend.consistencyScore;
-
-    return Math.min((avgStrengthIndex + consistencyScore * 50) / 2, 100);
-  }
 
   public async updateMasteryHistory(
     userId: string,
@@ -651,21 +639,19 @@ export class MasteryProcessor {
 
       const historyRecords = [];
 
-      // Create subject mastery history
       for (const mastery of subjectMasteries) {
         historyRecords.push({
           userId: mastery.userId,
           subjectId: mastery.subjectId,
           masteryLevel: mastery.masteryLevel,
-          strengthIndex: 0, // Subjects don't have strength index
+          strengthIndex: 0,
           totalAttempts: mastery.totalAttempts,
           correctAttempts: mastery.correctAttempts,
-          totalTimeSpent: 0, // Calculate if needed
+          totalTimeSpent: 0,
           recordedAt: new Date(),
         });
       }
 
-      // Create topic mastery history (as subject-level records)
       for (const mastery of topicMasteries) {
         historyRecords.push({
           userId: mastery.userId,
@@ -674,7 +660,7 @@ export class MasteryProcessor {
           strengthIndex: mastery.strengthIndex,
           totalAttempts: mastery.totalAttempts,
           correctAttempts: mastery.correctAttempts,
-          totalTimeSpent: 0, // Calculate if needed
+          totalTimeSpent: 0,
           recordedAt: new Date(),
         });
       }
@@ -700,6 +686,21 @@ export class MasteryProcessor {
     }
   }
 
+  //!NOTE: Not used anywhere
+  private calculateSubjectConfidence(
+    masteries: any[],
+    context: MasteryCalculationContext
+  ): number {
+    if (masteries.length === 0) return 0;
+
+    const avgStrengthIndex =
+      masteries.reduce((sum, m) => sum + m.strengthIndex, 0) / masteries.length;
+    const consistencyScore = context.performanceTrend.consistencyScore;
+
+    return Math.min((avgStrengthIndex + consistencyScore * 50) / 2, 100);
+  }
+
+  //!NOTE: Not used anywhere
   public async getHierarchicalMastery(
     userId: string,
     subjectId?: string
@@ -792,58 +793,59 @@ export class MasteryProcessor {
         },
         topic: topicData[0]
           ? {
-              id: topicData[0].id,
-              name: topicData[0].name,
-              masteryLevel: topicData[0].mastery,
-              strengthIndex: 0,
-              totalAttempts: 0,
-              correctAttempts: 0,
-              subtopicCount: topicData[0].subtopics.length,
-              masteredSubtopicCount: topicData[0].subtopics.filter(
-                (s) => s.masteredCount > 0
-              ).length,
-              weightage: topicData[0].weightage,
-            }
+            id: topicData[0].id,
+            name: topicData[0].name,
+            masteryLevel: topicData[0].mastery,
+            strengthIndex: 0,
+            totalAttempts: 0,
+            correctAttempts: 0,
+            subtopicCount: topicData[0].subtopics.length,
+            masteredSubtopicCount: topicData[0].subtopics.filter(
+              (s) => s.masteredCount > 0
+            ).length,
+            weightage: topicData[0].weightage,
+          }
           : {
-              id: "",
-              name: "",
-              masteryLevel: 0,
-              strengthIndex: 0,
-              totalAttempts: 0,
-              correctAttempts: 0,
-              subtopicCount: 0,
-              masteredSubtopicCount: 0,
-              weightage: 0,
-            },
+            id: "",
+            name: "",
+            masteryLevel: 0,
+            strengthIndex: 0,
+            totalAttempts: 0,
+            correctAttempts: 0,
+            subtopicCount: 0,
+            masteredSubtopicCount: 0,
+            weightage: 0,
+          },
         subtopic: topicData[0]?.subtopics[0]
           ? {
-              id: topicData[0].subtopics[0].id,
-              name: topicData[0].subtopics[0].name,
-              masteryLevel: topicData[0].subtopics[0].mastery,
-              strengthIndex: 0,
-              totalAttempts: topicData[0].subtopics[0].totalAttempts,
-              correctAttempts: 0,
-              lastPracticed: topicData[0].subtopics[0].lastPracticed
-                ? new Date(topicData[0].subtopics[0].lastPracticed)
-                : null,
-              confidenceLevel: 0,
-            }
+            id: topicData[0].subtopics[0].id,
+            name: topicData[0].subtopics[0].name,
+            masteryLevel: topicData[0].subtopics[0].mastery,
+            strengthIndex: 0,
+            totalAttempts: topicData[0].subtopics[0].totalAttempts,
+            correctAttempts: 0,
+            lastPracticed: topicData[0].subtopics[0].lastPracticed
+              ? new Date(topicData[0].subtopics[0].lastPracticed)
+              : null,
+            confidenceLevel: 0,
+          }
           : {
-              id: "",
-              name: "",
-              masteryLevel: 0,
-              strengthIndex: 0,
-              totalAttempts: 0,
-              correctAttempts: 0,
-              lastPracticed: null,
-              confidenceLevel: 0,
-            },
+            id: "",
+            name: "",
+            masteryLevel: 0,
+            strengthIndex: 0,
+            totalAttempts: 0,
+            correctAttempts: 0,
+            lastPracticed: null,
+            confidenceLevel: 0,
+          },
       });
     }
 
     return results;
   }
 
+  //!NOTE: Not used anywhere
   public async oldMasterySubTopic(
     userId: string,
     subtopicId: string

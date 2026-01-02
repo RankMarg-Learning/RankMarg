@@ -13,7 +13,6 @@ export interface MasteryConfigOptions {
   spaceReviewBonus: number;
   maxSpaceReviewBonusPerWindow: number;
   examCode?: string;
-  // New parameters for enhanced algorithm
   adaptiveLearningFactor: number;
   difficultyWeighting: {
     easy: number;
@@ -62,7 +61,6 @@ export class MasteryConfig {
   public readonly maxSpaceReviewBonusPerWindow: number;
   public examCode: string;
 
-  // Enhanced parameters
   public readonly adaptiveLearningFactor: number;
   public readonly difficultyWeighting: {
     easy: number;
@@ -105,8 +103,6 @@ export class MasteryConfig {
     this.spaceReviewBonus = options.spaceReviewBonus;
     this.maxSpaceReviewBonusPerWindow = options.maxSpaceReviewBonusPerWindow;
     this.examCode = options.examCode ?? "DEFAULT";
-
-    // Enhanced parameters
     this.adaptiveLearningFactor = options.adaptiveLearningFactor;
     this.difficultyWeighting = options.difficultyWeighting;
     this.userProfileWeighting = options.userProfileWeighting;
@@ -115,7 +111,6 @@ export class MasteryConfig {
     this.examSpecificConfig = options.examSpecificConfig;
   }
 
-  // Helper methods for dynamic configuration
   public getDifficultyWeight(difficulty: number): number {
     if (difficulty <= 2) return this.difficultyWeighting.easy;
     if (difficulty <= 4) return this.difficultyWeighting.medium;
@@ -154,8 +149,6 @@ export const masteryConfig = new MasteryConfig({
   spaceReviewBonus: 0.1,
   maxSpaceReviewBonusPerWindow: 0.25,
   examCode: "NEET",
-
-  // Enhanced parameters
   adaptiveLearningFactor: 0.3,
   difficultyWeighting: {
     easy: 0.8,

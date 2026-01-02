@@ -30,13 +30,13 @@ export class MasteryCalculator {
   ): number {
     const { userProfile, performanceTrend, streamConfig } = context;
 
-    // Base accuracy score (45% of total)
+    // Base accuracy score (59% of total)
     const baseScore =
       data.totalAttempts > 0
-        ? (data.correctAttempts / data.totalAttempts) * 45
+        ? (data.correctAttempts / data.totalAttempts) * 59
         : 0;
 
-    // Streak bonus with adaptive learning (5% of total)
+    // Streak bonus with adaptive learning (1% of total)
     const streakBonus = this.calculateAdaptiveStreakBonus(
       data.streak,
       userProfile
@@ -45,7 +45,7 @@ export class MasteryCalculator {
     // Time-based performance (10% of total)
     const timeScore = this.calculateTimeBasedScore(data, streamConfig);
 
-    // Difficulty mastery (15% of total)
+    // Difficulty mastery (10% of total)
     const difficultyScore = this.calculateDifficultyMastery(data, userProfile);
 
     // Consistency and improvement (10% of total)
@@ -54,7 +54,7 @@ export class MasteryCalculator {
       performanceTrend
     );
 
-    // Spaced repetition effectiveness (10% of total)
+    // Spaced repetition effectiveness (5% of total)
     const spacedRepetitionScore = this.calculateSpacedRepetitionScore(data);
 
     // Forgetting curve factor (5% of total)
@@ -232,7 +232,8 @@ export class MasteryCalculator {
       ? Math.min((userProfile.targetYear - new Date().getFullYear()) / 2, 1.0)
       : 1.0;
 
-    return baseStreakBonus * studyHoursFactor * targetYearFactor;
+    const calculatedBonus = baseStreakBonus * studyHoursFactor * targetYearFactor;
+    return Math.min(calculatedBonus * 0.2, 1.0);
   }
 
   private calculateTimeBasedScore(
@@ -260,16 +261,14 @@ export class MasteryCalculator {
     const accuracy =
       data.totalAttempts > 0 ? data.correctAttempts / data.totalAttempts : 0;
 
-    // Higher difficulty questions get more weight
-    const difficultyScore = accuracy * difficultyWeight * 15;
+    const difficultyScore = accuracy * difficultyWeight * 10;
 
-    // Bonus for handling harder questions well
     const hardQuestionBonus =
       data.difficultyDistribution.hard > 0
-        ? Math.min(data.difficultyDistribution.hard * 2, 5)
+        ? Math.min(data.difficultyDistribution.hard * 1.0, 3)
         : 0;
 
-    return Math.min(difficultyScore + hardQuestionBonus, 15);
+    return Math.min(difficultyScore + hardQuestionBonus, 10);
   }
 
   private calculateConsistencyScore(
@@ -286,8 +285,8 @@ export class MasteryCalculator {
     const repetitionEffectiveness = Math.min(
       ((data.oneDayRepetitions * 0.5 + data.threeDayRepetitions * 0.8) /
         Math.max(data.totalAttempts, 1)) *
-        20,
-      10
+        10,
+      5
     );
 
     return repetitionEffectiveness;
@@ -297,7 +296,6 @@ export class MasteryCalculator {
     return data.forgettingCurveFactor * 5;
   }
 
-  
 
   private calculateMistakePenalty(mistakeAnalysis: any): number {
     const conceptualPenalty = mistakeAnalysis.conceptual * 2;
@@ -382,7 +380,6 @@ export class MasteryCalculator {
   private calculateSpacedRepetitionEffectiveness(
     attempts: MasteryAttempt[]
   ): number {
-    // Calculate how well spaced repetition is working
     const questionAttempts: Record<string, MasteryAttempt[]> = {};
 
     for (const attempt of attempts) {
