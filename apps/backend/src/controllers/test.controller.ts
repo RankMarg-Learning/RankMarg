@@ -776,7 +776,11 @@ export class TestController {
                 include: {
                   question: {
                     include: {
-                      options: true,
+                      options: {
+                        orderBy: {
+                          id: "asc",
+                        },
+                      },
                     },
                   },
                 },
@@ -1438,6 +1442,9 @@ export class TestController {
                               content: true,
                               isCorrect: true,
                             },
+                            orderBy: {
+                              id: "asc",
+                            },
                           },
                         },
                       },
@@ -1530,7 +1537,11 @@ export class TestController {
                 include: {
                   question: {
                     include: {
-                      options: true,
+                      options: {
+                        orderBy: {
+                          id: "asc",
+                        },
+                      },
                       topic: {
                         select: {
                           id: true,
