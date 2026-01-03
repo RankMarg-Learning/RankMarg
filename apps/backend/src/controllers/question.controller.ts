@@ -299,7 +299,11 @@ export class QuestionController {
           ]
         },
         include: {
-          options: true,
+          options: {
+            orderBy: {
+              id: "asc",
+            },
+          },
           topic: { select: { name: true } },
           category: { select: { category: true } },
         },
