@@ -5,6 +5,7 @@ import {
   authenticateGoogleCallback,
 } from "@/middleware/passport.middleware";
 import { authenticate } from "@/middleware/auth.middleware";
+import { checkUsernameLimiter, forgotPasswordLimiter, signinLimiter, signupLimiter } from "@/config/rate.config";
 
 const router = express.Router();
 
@@ -13,21 +14,21 @@ const router = express.Router();
  * @desc Register a new user
  * @access Public
  */
-router.post("/sign-up", authController.signUp);
+router.post("/sign-up", signupLimiter, authController.signUp);
 
 /**
  * @route POST /auth/sign-in
  * @desc Authenticate a user & get token
  * @access Public
  */
-router.post("/sign-in", authController.signIn);
+router.post("/sign-in", signinLimiter, authController.signIn);
 
 /**
  * @route GET /auth/check-username
  * @desc Check if username is available
  * @access Public
  */
-router.get("/check-username", authController.checkUsername);
+router.get("/check-username",checkUsernameLimiter, authController.checkUsername);
 
 /**
  * @route GET /auth/google
@@ -61,7 +62,7 @@ router.get("/profile", authenticate, authController.getProfile);
  */
 router.post("/sign-out", authController.signOut);
 
-router.post("/forgot-password", authController.forgotPassword);
+router.post("/forgot-password", forgotPasswordLimiter, authController.forgotPassword);
 router.post("/reset-password", authController.resetPassword);
 
 export default router;
