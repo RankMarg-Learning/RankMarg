@@ -147,37 +147,20 @@ function getSolutionRules(subjectName: string): string {
   }
 }
 
-/**
- * Creates a comprehensive system prompt for GPT-4 Vision
- * 
- * This function generates a detailed prompt that instructs the AI on how to:
- * - Analyze question images
- * - Determine appropriate difficulty levels
- * - Format mathematical content
- * - Generate solutions, strategies, and hints
- * - Return structured JSON data
- * 
- * @param subject - Subject information (id and name)
- * @param topicId - Optional topic ID to associate with the question
- * @param subtopics - Array of available subtopics
- * @returns Complete system prompt string
- */
+
 export function createSystemPrompt(
   subject: Subject,
   topicId: string | null,
   subtopics: Subtopic[]
 ): string {
-  // Format subtopics list
   const subtopicsList = subtopics
     .map((st) => `- ${st.name} (ID: ${st.id})`)
     .join("\n");
 
-  // Get subject-specific rules using helper functions
   const difficultyGuidelines = getDifficultyGuidelines(subject.name);
   const formatRules = getSubjectSpecificFormatRules(subject.name);
   const solutionRules = getSolutionRules(subject.name);
 
-  // Build the comprehensive system prompt
   return `Role: Expert of ${subject.name} NEET/JEE question author for RankMarg. Write ONE exam-ready question and reply ONLY with the JSON below.
 
 SUBJECT: ${subject.name} (ID:${subject.id})
@@ -201,6 +184,7 @@ ${formatRules}
     $$
     use for calculation steps (Centered) and $$...$$ for logical steps (Not Centered)
 - Do NOT use \\( \\) or \\[ \\].
+- Use \\dfrac for fractions.
 - Use proper bracket format like this: (eg. 1,1 --> (1,1) , f x --> f(x) , etc)
 - Control characters or invalid escapes must not appear.
 - Don't wrap text inside $..$.

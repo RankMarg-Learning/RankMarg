@@ -35,7 +35,7 @@ import { CategoryMultiSelect } from "./CategoryMultiSelect";
 import { SearchableSelect } from "@repo/common-ui";
 import { useUserData } from "@/context/ClientContextProvider";
 import { useImageUpload } from "@/hooks/useImageUpload";
-import { replaceLatexDelimiters as replaceLatex } from "@/utils/questionUtils";
+import { replaceLatexDelimiters as replaceLatex, replaceQuestionContent } from "@/utils/questionUtils";
 import { QuestionPreviewDialog } from "./QuestionPreviewDialog";
 import { QuestionOptionsSection } from "./QuestionOptionsSection";
 
@@ -222,6 +222,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
   const replaceLatexDelimiters = () => {
     const fields = ['content', 'hint', 'solution', 'commonMistake', 'strategy'] as const;
 
+
     fields.forEach(fieldName => {
       const currentValue = getValues(fieldName);
       if (currentValue && typeof currentValue === 'string') {
@@ -229,7 +230,10 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
         setValue(fieldName, updatedValue);
 
         if (fieldName === 'content') {
-          setLocalContent(updatedValue);
+          const updatedContent = replaceQuestionContent(updatedValue);
+          console.log("updatedContent", updatedContent);
+          setValue("content", updatedContent);
+          setLocalContent(updatedContent);
         } else if (fieldName === 'solution') {
           setLocalSolution(updatedValue);
         }
@@ -240,7 +244,9 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
     if (currentOptions && Array.isArray(currentOptions)) {
       const updatedOptions = currentOptions.map(option => {
         if (option.content && typeof option.content === 'string') {
-          return { ...option, content: replaceLatex(option.content) };
+          const updatedContent = replaceQuestionContent(option.content);
+          console.log("updatedContent", updatedContent);
+          return { ...option, content: updatedContent };
         }
         return option;
       });
@@ -248,7 +254,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
     }
 
     toast({
-      title: "LaTeX delimiters replaced successfully!",
+      title: "Question formatted successfully!",
       variant: "default",
       duration: 500,
       className: "bg-green-500 text-white",
@@ -992,7 +998,7 @@ const QuestionForm = ({ initialQuestion, onSave, onCancel, loading }: QuestionFo
               className="flex items-center gap-2 bg-primary-50 border-primary-200 text-primary-700 hover:bg-primary-100"
             >
               <RefreshCw className="h-4 w-4" />
-              Replace LaTeX Delimiters
+              Format Question
             </Button>
           </div>
         </CardContent>

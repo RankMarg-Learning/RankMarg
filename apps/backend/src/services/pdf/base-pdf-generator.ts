@@ -16,28 +16,23 @@ export abstract class BasePDFGenerator<TData = any> {
   protected md: MarkdownIt;
 
   constructor() {
-    // Initialize markdown-it with plugins similar to the frontend
     this.md = new MarkdownIt({
       html: true,
       linkify: true,
-      typographer: false, // Disabled to prevent (B) -> © and (R) -> ® conversion
+      typographer: false,
       breaks: false,
     });
 
-    // Add GFM-like features
-    this.md.use(markdownItMark); // ==marked text==
-    this.md.use(markdownItIns);  // ++inserted text++
-    this.md.use(markdownItSub);  // H~2~O
-    this.md.use(markdownItSup);  // x^2^
+    this.md.use(markdownItMark); 
+    this.md.use(markdownItIns);  
+    this.md.use(markdownItSub);  
+    this.md.use(markdownItSup);  
   }
 
-  /**
-   * Render markdown content to HTML with math support
-   */
+  
   protected renderMarkdown(content: string): string {
     if (!content) return '';
     
-    // Process escaped characters similar to frontend
     let processedContent = content;
     if (processedContent.includes('\\n')) {
       processedContent = processedContent.replace(/\\n/g, '\n');
@@ -45,38 +40,25 @@ export abstract class BasePDFGenerator<TData = any> {
     if (processedContent.includes('\\\\')) {
       processedContent = processedContent.replace(/\\\\/g, '\\');
     }
-
-    // Remove bold markdown formatting (**text** becomes text)
+    if(processedContent.includes(';')) {
+      processedContent = processedContent.replace(/;/g, '');
+    }
     processedContent = processedContent.replace(/\*\*([^*]+)\*\*/g, '$1');
 
-    // Convert single-line $$...$$ to $...$ for inline math
-    processedContent = processedContent.replace(/\$\$([^$\n]+)\$\$/g, (match, mathContent) => {
-      if (!mathContent.includes('\n')) {
-        return `$${mathContent}$`;
-      }
-      return match;
-    });
+    processedContent = processedContent.replace(/\$\$([^$\n]+)\$\$/g, (_, expr) => `$${expr}$`);
 
     let rendered = this.md.render(processedContent);
     
-    // Remove <strong> and <b> tags (strip bold formatting from HTML)
-    rendered = rendered.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '$1');
-    rendered = rendered.replace(/<b[^>]*>(.*?)<\/b>/gi, '$1');
+    rendered = rendered.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '$1'); 
+    rendered = rendered.replace(/<b[^>]*>(.*?)<\/b>/gi, '$1'); 
 
     return rendered;
   }
 
-  /**
-   * Resolve template path from a relative path within packages/pdf-templates/
-   * This method handles path resolution for both development and production environments
-   * 
-   * @param relativePath - Path relative to packages/pdf-templates/ (e.g., "question-paper/sample-2.hbs")
-   * @returns Absolute path to the template file
-   */
+  
   protected resolveTemplatePath(relativePath: string): string {
     let projectRoot = process.cwd();
     
-    // If we're in apps/backend directory, go up to project root
     if (projectRoot.endsWith('apps/backend') || projectRoot.endsWith('apps\\backend')) {
       projectRoot = path.join(projectRoot, '../..');
     }
@@ -84,27 +66,13 @@ export abstract class BasePDFGenerator<TData = any> {
     return path.join(projectRoot, "packages/pdf-templates", relativePath);
   }
 
-  /**
-   * Get the template path for this PDF type
-   * Must be implemented by subclasses
-   */
   protected abstract getTemplatePath(): string;
 
-  /**
-   * Transform input data to template data format
-   * Must be implemented by subclasses
-   */
   protected abstract transformData(data: TData): Record<string, any>;
 
-  /**
-   * Register custom Handlebars helpers
-   * Override this in subclasses to add custom helpers
-   */
   protected registerHandlebarsHelpers(): void {
-    // Global question counter that continues across all sections
     let globalQuestionCounter = 0;
     
-    // Register common helpers
     Handlebars.registerHelper("inc", function(value) {
       return parseInt(String(value), 10) + 1;
     });
@@ -113,11 +81,9 @@ export abstract class BasePDFGenerator<TData = any> {
       return String.fromCharCode(65 + Number(i));
     });
     
-    
     Handlebars.registerHelper("markdown", (content: string) => {
       return new Handlebars.SafeString(this.renderMarkdown(content));
     });
-    
     
     Handlebars.registerHelper("questionNumber", function() {
       globalQuestionCounter++;
@@ -125,28 +91,18 @@ export abstract class BasePDFGenerator<TData = any> {
     });
   }
 
-  /**
-   * Generate HTML from template and data
-   */
   protected generateHTML(data: TData): string {
-    // Register helpers
     this.registerHandlebarsHelpers();
 
-    // Transform data
     const templateData = this.transformData(data);
 
-    // Load and compile template
     const templatePath = this.getTemplatePath();
     const templateSource = fs.readFileSync(templatePath, "utf8");
     const template = Handlebars.compile(templateSource);
 
-    // Generate HTML
     return template(templateData);
   }
 
-  /**
-   * Get Chrome/Chromium executable path
-   */
   private getExecutablePath(): string | undefined {
     if (process.env.CHROME_PATH) {
       return process.env.CHROME_PATH;
@@ -167,10 +123,8 @@ export abstract class BasePDFGenerator<TData = any> {
     return undefined;
   }
 
-  /**
-   * Wait for MathJax to load and render
-   */
-  private async waitForMathJax(page: puppeteer.Page): Promise<void> {
+  //Deprecated function
+  private async waitForMathJax1(page: puppeteer.Page): Promise<void> {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -216,7 +170,6 @@ export abstract class BasePDFGenerator<TData = any> {
         return;
       }
 
-      // Wait for MathJax typesetting
       try {
         await Promise.race([
           page.evaluate(async () => {
@@ -266,11 +219,120 @@ export abstract class BasePDFGenerator<TData = any> {
     }
   }
 
-  /**
-   * Get PDF options
-   * Override this to customize PDF generation options
-   * @param data - The data used to generate the PDF (optional, for accessing footer text, etc.)
-   */
+  //Deprecated function
+  private async waitForMathJax(page: puppeteer.Page): Promise<void> {
+    try {
+      // Strategy: Use event-based detection instead of polling
+      await page.evaluate(() => {
+        return new Promise<void>((resolve) => {
+          const w = (globalThis as any).window || globalThis;
+          
+          // Check if MathJax is already ready
+          if (w.MathJax && typeof w.MathJax.typesetPromise === 'function') {
+            resolve();
+            return;
+          }
+          
+          // Listen for MathJax load event
+          const checkInterval = setInterval(() => {
+            if (w.MathJax && typeof w.MathJax.typesetPromise === 'function') {
+              clearInterval(checkInterval);
+              resolve();
+            }
+          }, 50); // Check every 50ms instead of 500ms
+          
+          // Timeout after 10 seconds
+          setTimeout(() => {
+            clearInterval(checkInterval);
+            resolve(); // Resolve anyway to continue
+          }, 10000);
+        });
+      });
+  
+      // Now typeset with proper error handling
+      const typesetResult = await Promise.race([
+        page.evaluate(async () => {
+          const MJ = (globalThis as any).MathJax;
+          if (!MJ || typeof MJ.typesetPromise !== 'function') {
+            return { success: false, reason: 'MathJax not available' };
+          }
+          
+          try {
+            // Wait for startup if needed
+            if (MJ.startup?.promise) {
+              await MJ.startup.promise;
+            }
+            
+            // Typeset all math
+            await MJ.typesetPromise();
+            
+            // Verify rendering completed by checking for rendered elements
+            const mathElements = (globalThis as any).document.querySelectorAll('.MathJax, mjx-container');
+            return { 
+              success: true, 
+              mathCount: mathElements.length 
+            };
+          } catch (error) {
+            return { 
+              success: false, 
+              reason: error instanceof Error ? error.message : 'Unknown error' 
+            };
+          }
+        }),
+        new Promise<{ success: boolean; reason?: string }>((resolve) => 
+          setTimeout(() => resolve({ success: false, reason: 'Timeout' }), 15000)
+        )
+      ]);
+  
+      if (!typesetResult.success) {
+        console.warn(`MathJax rendering incomplete: ${typesetResult.reason}`);
+      } else {
+        console.log(`MathJax rendered ${(typesetResult as any).mathCount} math elements`);
+      }
+  
+      // Small buffer for final layout stabilization
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+    } catch (error) {
+      console.warn('MathJax initialization error, proceeding with PDF generation:', 
+        error instanceof Error ? error.message : error);
+    }
+  }
+
+  private async waitForMathJaxAlternative(page: puppeteer.Page): Promise<void> {
+    try {
+      // Wait for MathJax to be available (max 10s)
+      await page.waitForFunction(
+        () => {
+          const w = (globalThis as any).window || globalThis;
+          return w.MathJax && typeof w.MathJax.typesetPromise === 'function';
+        },
+        { timeout: 10000, polling: 100 } // Check every 100ms
+      ).catch(() => {
+        console.warn('MathJax not detected, continuing anyway');
+      });
+  
+      // Typeset math
+      await page.evaluate(async () => {
+        const MJ = (globalThis as any).MathJax;
+        if (MJ?.typesetPromise) {
+          await MJ.startup?.promise;
+          await MJ.typesetPromise();
+        }
+      }).catch((error) => {
+        console.warn('MathJax typesetting failed:', error.message);
+      });
+  
+      // Minimal stabilization wait
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+    } catch (error) {
+      console.warn('MathJax error:', error instanceof Error ? error.message : error);
+    }
+  }
+  
+  
+
   protected getPDFOptions(data?: TData): puppeteer.PDFOptions {
     return {
       format: "A4",
@@ -300,10 +362,70 @@ export abstract class BasePDFGenerator<TData = any> {
     };
   }
 
-  /**
-   * Generate PDF from data
-   */
   async generatePDF(data: TData): Promise<Buffer> {
+    let browser;
+    try {
+      const executablePath = this.getExecutablePath();
+  
+      const launchOptions: Parameters<typeof puppeteer.launch>[0] = {
+        headless: true,
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-accelerated-2d-canvas",
+          "--disable-gpu",
+        ],
+      };
+  
+      if (executablePath) {
+        launchOptions.executablePath = executablePath;
+      }
+  
+      browser = await puppeteer.launch(launchOptions);
+      const page = await browser.newPage();
+  
+      await page.setViewport({ 
+        width: 1240, 
+        height: 1754, 
+        deviceScaleFactor: 2 
+      });
+      
+      page.setDefaultTimeout(60000);
+  
+      // Generate HTML
+      console.log("Generating HTML...");
+      const html = this.generateHTML(data);
+      console.log("html", html);
+  
+      // Set content and wait for network idle (more reliable than 'load')
+      await page.setContent(html, {
+        waitUntil: ['load', 'networkidle0'], // Wait for network to be idle
+        timeout: 60000,
+      });
+  
+      // Wait for MathJax with optimized method
+      await this.waitForMathJaxAlternative(page);
+  
+      // Generate PDF
+      const pdfOptions = this.getPDFOptions(data);
+      const pdf = await page.pdf(pdfOptions);
+  
+      return Buffer.from(pdf);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      throw new Error(
+        `Failed to generate PDF: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    } finally {
+      if (browser) {
+        await browser.close();
+      }
+    }
+  }
+
+  //Deprecated function
+  async generatePDFAlternative(data: TData): Promise<Buffer> {
     let browser;
     try {
       const executablePath = this.getExecutablePath();
@@ -329,7 +451,6 @@ export abstract class BasePDFGenerator<TData = any> {
       await page.setViewport({ width: 1240, height: 1754, deviceScaleFactor: 2 });
       page.setDefaultTimeout(60000);
 
-      // Generate HTML
       const html = this.generateHTML(data);
 
       await page.setContent(html, {
@@ -337,13 +458,10 @@ export abstract class BasePDFGenerator<TData = any> {
         timeout: 60000,
       });
 
-      // Wait for MathJax
-      await this.waitForMathJax(page);
+      await this.waitForMathJaxAlternative(page);
 
-      // Final wait for rendering
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Generate PDF
       const pdfOptions = this.getPDFOptions(data);
       const pdf = await page.pdf(pdfOptions);
 
