@@ -71,7 +71,7 @@ export class TestController {
         },
         distinct: ['questionId'],
       });
-      
+
       const usedQuestionIdSet = new Set(
         usedQuestionIds.map((tq) => tq.questionId)
       );
@@ -348,7 +348,7 @@ export class TestController {
 
     const finalQuestions: any[] = [];
     const sortedScores = Array.from(scoreGroups.keys()).sort((a, b) => b - a);
-    
+
     for (const score of sortedScores) {
       const questions = scoreGroups.get(score)!;
       finalQuestions.push(...this.shuffleArray(questions));
@@ -649,7 +649,7 @@ export class TestController {
           endTime,
 
           testSection: {
-            deleteMany: {}, 
+            deleteMany: {},
             create: testSection.map((section: TestSection) => ({
               name: section.name,
               isOptional: section.isOptional,
@@ -666,8 +666,8 @@ export class TestController {
         },
       });
 
-      const isNowLive = 
-        visibility === "PUBLIC" && 
+      const isNowLive =
+        visibility === "PUBLIC" &&
         status === "ACTIVE" &&
         (existingTest?.visibility !== "PUBLIC" || existingTest?.status !== "ACTIVE");
 
@@ -679,7 +679,7 @@ export class TestController {
               ...(examCode ? { examRegistrations: { some: { examCode } } } : {}),
             },
             select: { id: true },
-            take: 1000, 
+            take: 1000,
           });
 
           if (users.length > 0) {
@@ -835,7 +835,7 @@ export class TestController {
   ): Promise<void> => {
     const { testId } = req.params;
     const { status, limit, offset, sortBy, sortOrder } = req.query;
-    
+
     try {
       if (req.user.role !== Role.ADMIN) {
         ResponseUtil.error(res, "Unauthorized. Admin access required.", 403);
@@ -934,7 +934,7 @@ export class TestController {
     next: NextFunction
   ): Promise<void> => {
     const { testId, participantId } = req.params;
-    
+
     try {
       if (req.user.role !== Role.ADMIN) {
         ResponseUtil.error(res, "Unauthorized. Admin access required.", 403);
@@ -1160,10 +1160,10 @@ export class TestController {
         ...(type
           ? { examType: type }
           : {
-              examType: {
-                in: [ExamType.FULL_LENGTH, ExamType.SUBJECT_WISE, ExamType.PYQ],
-              },
-            }),
+            examType: {
+              in: [ExamType.FULL_LENGTH, ExamType.SUBJECT_WISE, ExamType.PYQ],
+            },
+          }),
         ...(examCode && { examCode }),
       };
 
@@ -1245,20 +1245,20 @@ export class TestController {
         where: {
           ...(weakestSubjectId
             ? {
-                testSection: {
-                  some: {
-                    testQuestion: {
-                      some: {
-                        question: {
-                          subjectId: weakestSubjectId,
-                        },
+              testSection: {
+                some: {
+                  testQuestion: {
+                    some: {
+                      question: {
+                        subjectId: weakestSubjectId,
                       },
                     },
                   },
                 },
-              }
+              },
+            }
             : {}),
-            ...(examCode && { examCode }),
+          ...(examCode && { examCode }),
           visibility: Visibility.PUBLIC,
         },
         orderBy: { createdAt: "desc" },
@@ -1627,21 +1627,21 @@ export class TestController {
 
   private generateTestAnalysis = (testData: any) => {
     const { test, attempt, score, accuracy, timing, startTime, endTime } = testData;
-    
+
     const sectionA = this.generateSectionA(testData);
-    
+
     const sectionB = this.generateSectionB(testData);
-    
+
     const sectionC = this.generateSectionC(testData);
-    
+
     const sectionD = this.generateSectionD(testData);
-    
+
     const sectionE = this.generateSectionE(testData);
-    
+
     const sectionF = this.generateSectionF(testData);
-    
+
     const sectionG = this.generateSectionG(testData);
-    
+
     const sectionH = this.generateSectionH(testData);
 
     return {
@@ -1665,21 +1665,21 @@ export class TestController {
 
   private generateSectionA = (testData: any) => {
     const { test, attempt, score, accuracy, timing, startTime, endTime } = testData;
-    
+
     const totalQuestions = test.totalQuestions;
     const totalMarks = test.totalMarks;
     const testDuration = test.duration;
-    
+
     const sectionPerformance = test.testSection.map((section: any) => {
       const sectionQuestionIds = section.testQuestion.map((q: any) => q.questionId);
-      const sectionAttempts = attempt.filter((att: any) => 
+      const sectionAttempts = attempt.filter((att: any) =>
         sectionQuestionIds.includes(att.questionId)
       );
-      
+
       const correctAttempts = sectionAttempts.filter((att: any) => att.status === 'CORRECT');
-      const sectionScore = correctAttempts.length * (section.correctMarks || 0) - 
+      const sectionScore = correctAttempts.length * (section.correctMarks || 0) -
         (sectionAttempts.length - correctAttempts.length) * (section.negativeMarks || 0);
-      
+
       return {
         sectionName: section.name,
         participantScore: sectionScore,
@@ -1701,18 +1701,18 @@ export class TestController {
       testDuration: testDuration,
       timeSaved: testDuration - (timing || 0),
       sectionPerformance,
-      overallRank: null, 
+      overallRank: null,
     };
   };
 
   private generateSectionB = (testData: any) => {
     const { test, attempt } = testData;
-    
+
     const totalQuestions = test.totalQuestions;
     const correct = attempt.filter((att: any) => att.status === 'CORRECT').length;
     const incorrect = attempt.filter((att: any) => att.status === 'INCORRECT').length;
     const unattempted = totalQuestions - correct - incorrect;
-    
+
     const difficultyAnalysis = {
       easy: { total: 0, correct: 0, incorrect: 0, unattempted: 0 },
       medium: { total: 0, correct: 0, incorrect: 0, unattempted: 0 },
@@ -1722,10 +1722,10 @@ export class TestController {
 
     attempt.forEach((att: any) => {
       const difficulty = att.question.difficulty;
-      const difficultyKey = difficulty === 1 ? 'easy' : 
-                           difficulty === 2 ? 'medium' : 
-                           difficulty === 3 ? 'hard' : 'very_hard';
-      
+      const difficultyKey = difficulty === 1 ? 'easy' :
+        difficulty === 2 ? 'medium' :
+          difficulty === 3 ? 'hard' : 'very_hard';
+
       difficultyAnalysis[difficultyKey].total++;
       if (att.status === 'CORRECT') {
         difficultyAnalysis[difficultyKey].correct++;
@@ -1775,19 +1775,19 @@ export class TestController {
 
   private generateSectionC = (testData: any) => {
     const { test, attempt } = testData;
-    
+
     const examCode = test.examCode;
-    const sectionTimings = examCode === "JEE" 
+    const sectionTimings = examCode === "JEE"
       ? [
-          { name: "Physics", totalTime: 0, maxTime: 60, questions: 0 },
-          { name: "Chemistry", totalTime: 0, maxTime: 60, questions: 0 },
-          { name: "Mathematics", totalTime: 0, maxTime: 60, questions: 0 }
-        ]
+        { name: "Physics", totalTime: 0, maxTime: 60, questions: 0 },
+        { name: "Chemistry", totalTime: 0, maxTime: 60, questions: 0 },
+        { name: "Mathematics", totalTime: 0, maxTime: 60, questions: 0 }
+      ]
       : [
-          { name: "Physics", totalTime: 0, maxTime: 60, questions: 0 },
-          { name: "Chemistry", totalTime: 0, maxTime: 60, questions: 0 },
-          { name: "Biology", totalTime: 0, maxTime: 60, questions: 0 }
-        ];
+        { name: "Physics", totalTime: 0, maxTime: 60, questions: 0 },
+        { name: "Chemistry", totalTime: 0, maxTime: 60, questions: 0 },
+        { name: "Biology", totalTime: 0, maxTime: 60, questions: 0 }
+      ];
 
     const questionTimings: any[] = [];
     const subjectTimeMap: any = {};
@@ -1796,7 +1796,7 @@ export class TestController {
       const questionNumber = `Q${index + 1}`;
       const timing = att.timing || 0;
       const subject = att.question.subject.name.toLowerCase();
-      
+
       const sectionIndex = sectionTimings.findIndex(
         (section: any) => section.name.toLowerCase() === subject
       );
@@ -1853,7 +1853,7 @@ export class TestController {
 
   private generateSectionD = (testData: any) => {
     const { attempt } = testData;
-    
+
     const difficultyAnalysis = {
       easy: { total: 0, correct: 0, incorrect: 0, unattempted: 0, avgTime: 0 },
       medium: { total: 0, correct: 0, incorrect: 0, unattempted: 0, avgTime: 0 },
@@ -1869,7 +1869,7 @@ export class TestController {
       if (difficulty) {
         difficultyAnalysis[difficulty].total++;
         timeByDifficulty[difficulty].push(att.timing || 0);
-        
+
         if (att.status === 'CORRECT') {
           difficultyAnalysis[difficulty].correct++;
         } else if (att.status === 'INCORRECT') {
@@ -1883,8 +1883,8 @@ export class TestController {
     // Calculate average time for each difficulty
     Object.keys(timeByDifficulty).forEach(difficulty => {
       const times = timeByDifficulty[difficulty];
-      difficultyAnalysis[difficulty].avgTime = times.length > 0 
-        ? times.reduce((sum: number, time: number) => sum + time, 0) / times.length 
+      difficultyAnalysis[difficulty].avgTime = times.length > 0
+        ? times.reduce((sum: number, time: number) => sum + time, 0) / times.length
         : 0;
     });
 
@@ -1897,9 +1897,9 @@ export class TestController {
 
   private generateSectionE = (testData: any) => {
     const { test, attempt } = testData;
-    
+
     const subjectAnalysis: any = {};
-    
+
     attempt.forEach((att: any) => {
       const subjectName = att.question.subject.name;
       if (!subjectAnalysis[subjectName]) {
@@ -1913,10 +1913,10 @@ export class TestController {
           accuracy: 0,
         };
       }
-      
+
       subjectAnalysis[subjectName].total++;
       subjectAnalysis[subjectName].totalTime += att.timing || 0;
-      
+
       if (att.status === 'CORRECT') {
         subjectAnalysis[subjectName].correct++;
       } else if (att.status === 'INCORRECT') {
@@ -1943,20 +1943,20 @@ export class TestController {
 
   private generateSectionF = (testData: any) => {
     const { test, attempt } = testData;
-    
-    const allQuestions = test.testSection.flatMap((section: any) => 
+
+    const allQuestions = test.testSection.flatMap((section: any) =>
       section.testQuestion.map((q: any) => q.question)
     );
 
     const questionAnalysis = allQuestions.map((question: any, index: number) => {
       const submission = attempt.find((att: any) => att.questionId === question.id);
-      
+
       let status: 'correct' | 'incorrect' | 'unattempted' = 'unattempted';
       let timeTaken = 0;
-      
+
       if (submission) {
-        status = submission.status === 'CORRECT' ? 'correct' : 
-                submission.status === 'INCORRECT' ? 'incorrect' : 'unattempted';
+        status = submission.status === 'CORRECT' ? 'correct' :
+          submission.status === 'INCORRECT' ? 'incorrect' : 'unattempted';
         timeTaken = submission.timing || 0;
       }
 
@@ -1986,10 +1986,10 @@ export class TestController {
 
   private generateSectionG = (testData: any) => {
     const { test, attempt } = testData;
-    
+
     const recommendations = [];
     const accuracy = (attempt.filter((att: any) => att.status === 'CORRECT').length / attempt.length) * 100;
-    
+
     if (accuracy < 60) {
       recommendations.push({
         type: 'fundamentals',
@@ -2041,23 +2041,23 @@ export class TestController {
 
   private generateSectionH = (testData: any) => {
     const { test, attempt } = testData;
-    
+
     const attemptedQuestions = attempt.filter((att: any) => att.status === 'CORRECT' || att.status === 'INCORRECT');
     const correctCount = attempt.filter((att: any) => att.status === 'CORRECT').length;
-    const accuracy = attemptedQuestions.length > 0 
-      ? (correctCount / (attemptedQuestions.length )) * 100 
+    const accuracy = attemptedQuestions.length > 0
+      ? (correctCount / (attemptedQuestions.length)) * 100
       : 0;
-      
-    
+
+
     return {
-      percentile: null, 
-      rank: null, 
+      percentile: null,
+      rank: null,
       comparisonWithAverage: {
         accuracy: accuracy,
-        averageAccuracy: 65, 
+        averageAccuracy: 65,
         performance: accuracy > 65 ? 'above' : 'below',
       },
-      historicalComparison: null, 
+      historicalComparison: null,
     };
   };
 
@@ -2253,24 +2253,24 @@ export class TestController {
       };
 
       const { checkPDFExistsInS3, uploadPDFToS3, downloadPDFFromS3 } = await import("@/services/pdf/pdf-s3-storage");
-      if(process.env.NODE_ENV === "production") {
+      if (process.env.NODE_ENV === "production") {
         // Check if PDF exists in S3
-      const checkResult = await checkPDFExistsInS3(test.testId, "test", "pdfs");
-      
-      if (checkResult.exists && checkResult.key) {
-        try {
-          const pdfBuffer = await downloadPDFFromS3(checkResult.key);
-          const fileName = `${test.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${testId.substring(0, 8)}.pdf`;
-          res.setHeader("Content-Type", "application/pdf");
-          res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-          res.setHeader("Content-Length", pdfBuffer.length.toString());
-          res.send(pdfBuffer);
-          return;
-        } catch (error) {
-          console.error("Error downloading PDF from S3, will generate new one:", error);
+        const checkResult = await checkPDFExistsInS3(test.testId, "test", "pdfs");
+
+        if (checkResult.exists && checkResult.key) {
+          try {
+            const pdfBuffer = await downloadPDFFromS3(checkResult.key);
+            const fileName = `${test.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${testId.substring(0, 8)}.pdf`;
+            res.setHeader("Content-Type", "application/pdf");
+            res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+            res.setHeader("Content-Length", pdfBuffer.length.toString());
+            res.send(pdfBuffer);
+            return;
+          } catch (error) {
+            console.error("Error downloading PDF from S3, will generate new one:", error);
+          }
         }
       }
-    }
 
       const { PDFService } = await import("@/services/pdf.service");
       const pdfService = new PDFService();
