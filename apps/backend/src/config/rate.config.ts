@@ -7,60 +7,60 @@ export const getIp = (req: Request) => {
 };
 
 export const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 120,           
+  windowMs: 15 * 60 * 1000,
+  max: 120,
   keyGenerator: (req: Request) => {
     return getIp(req);
-  }, 
+  },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 export const signinLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 5,
-    keyGenerator: (req: Request) =>
-      `${getIp(req)}:${req.body.email || "unknown"}`,
-    message: {
-      error: "Too many login attempts. Please wait.",
-    },
-  });
-  export const signupLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 3,
-    message: {
-      error: "Too many signup attempts. Try again later.",
-    },
-  });
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  keyGenerator: (req: Request) =>
+    `${getIp(req)}:${req.body?.email || "unknown"}`,
+  message: {
+    error: "Too many login attempts. Please wait.",
+  },
+});
+export const signupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  message: {
+    error: "Too many signup attempts. Try again later.",
+  },
+});
 
-  export const checkUsernameLimiter = rateLimit({
-    windowMs: 5 * 60 * 1000,
-    max: 30,
-    message: { error: "Too many requests. Try later." },
-  });
+export const checkUsernameLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 30,
+  message: { error: "Too many requests. Try later." },
+});
 
-  export const forgotPasswordLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000,
-    max: 3,
-    message: {
-      error: "Too many requests. Try later.",
-    },
-  });
+export const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  message: {
+    error: "Too many requests. Try later.",
+  },
+});
 
-  export const attemptLimiter = rateLimit({
-    windowMs: 60 * 1000,
-    max: 30,
-    keyGenerator: (req: AuthenticatedRequest) => {
-      const userId = req.user.id;
-      const ip = getIp(req);
-  
-      return `${userId}:${ip}`;
-    },
-  
-    message: {
-      error: "Too many attempts. Please wait 1 minute.",
-    },
-  
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
+export const attemptLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  keyGenerator: (req: AuthenticatedRequest) => {
+    const userId = req.user?.id;
+    const ip = getIp(req);
+
+    return userId ? `${userId}:${ip}` : ip;
+  },
+
+  message: {
+    error: "Too many attempts. Please wait 1 minute.",
+  },
+
+  standardHeaders: true,
+  legacyHeaders: false,
+});
