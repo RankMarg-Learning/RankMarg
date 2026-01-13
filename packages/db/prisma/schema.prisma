@@ -37,6 +37,7 @@ model User {
   attempts          Attempt[]
   testParticipated  TestParticipation[]
   userPerformance   UserPerformance?
+  userSettings      UserSettings?
   metric            Metric[]
   subjectMastery    SubjectMastery[]
   topicMastery      TopicMastery[]
@@ -447,6 +448,7 @@ model TestSection {
   id            String  @id @default(uuid())
   testId        String
   name          String
+  orderIndex    Int?
   isOptional    Boolean @default(false)
   maxQuestions  Int?
   correctMarks  Float?

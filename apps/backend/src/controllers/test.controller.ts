@@ -2250,6 +2250,14 @@ export class TestController {
             },
           })),
         })),
+        // Layout configuration - auto-detected based on exam type
+        layoutConfig: {
+          showSubjectTags: test.examCode?.includes("NEET") || test.examCode?.includes("AIIMS"),
+          showMarksPerQuestion: true,
+          showMarkingScheme: true,
+          columnCount: 2 as 1 | 2,
+          headerStyle: "detailed" as "minimal" | "detailed" | "branded",
+        },
       };
 
       const { checkPDFExistsInS3, uploadPDFToS3, downloadPDFFromS3 } = await import("@/services/pdf/pdf-s3-storage");

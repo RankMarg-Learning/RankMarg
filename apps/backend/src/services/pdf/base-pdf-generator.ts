@@ -14,6 +14,7 @@ import markdownItSup from "markdown-it-sup";
  */
 export abstract class BasePDFGenerator<TData = any> {
   protected md: MarkdownIt;
+  protected currentLayoutType?: string; // Track current layout for context
 
   constructor() {
     this.md = new MarkdownIt({
@@ -23,16 +24,16 @@ export abstract class BasePDFGenerator<TData = any> {
       breaks: false,
     });
 
-    this.md.use(markdownItMark); 
-    this.md.use(markdownItIns);  
-    this.md.use(markdownItSub);  
-    this.md.use(markdownItSup);  
+    this.md.use(markdownItMark);
+    this.md.use(markdownItIns);
+    this.md.use(markdownItSub);
+    this.md.use(markdownItSup);
   }
 
-  
+
   protected renderMarkdown(content: string): string {
     if (!content) return '';
-    
+
     let processedContent = content;
     if (processedContent.includes('\\n')) {
       processedContent = processedContent.replace(/\\n/g, '\n');
@@ -40,7 +41,7 @@ export abstract class BasePDFGenerator<TData = any> {
     if (processedContent.includes('\\\\')) {
       processedContent = processedContent.replace(/\\\\/g, '\\');
     }
-    if(processedContent.includes(';')) {
+    if (processedContent.includes(';')) {
       processedContent = processedContent.replace(/;/g, '');
     }
     processedContent = processedContent.replace(/\*\*([^*]+)\*\*/g, '$1');
@@ -48,55 +49,100 @@ export abstract class BasePDFGenerator<TData = any> {
     processedContent = processedContent.replace(/\$\$([^$\n]+)\$\$/g, (_, expr) => `$${expr}$`);
 
     let rendered = this.md.render(processedContent);
-    
-    rendered = rendered.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '$1'); 
-    rendered = rendered.replace(/<b[^>]*>(.*?)<\/b>/gi, '$1'); 
+
+    rendered = rendered.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '$1');
+    rendered = rendered.replace(/<b[^>]*>(.*?)<\/b>/gi, '$1');
 
     return rendered;
   }
 
-  
+
   protected resolveTemplatePath(relativePath: string): string {
     let projectRoot = process.cwd();
-    
+
     if (projectRoot.endsWith('apps/backend') || projectRoot.endsWith('apps\\backend')) {
       projectRoot = path.join(projectRoot, '../..');
     }
-    
+
     return path.join(projectRoot, "packages/pdf-templates", relativePath);
   }
 
-  protected abstract getTemplatePath(): string;
+  /**
+   * Get template path for the current layout
+   * Can be overridden to support dynamic layout selection
+   * @param layoutType - Optional layout type for dynamic selection
+   */
+  protected abstract getTemplatePath(layoutType?: string): string;
 
+  /**
+   * Transform input data to template-compatible format
+   * @param data - Input data
+   */
   protected abstract transformData(data: TData): Record<string, any>;
 
-  protected registerHandlebarsHelpers(): void {
+  /**
+   * Register Handlebars helpers
+   * Can be extended by subclasses for layout-specific helpers
+   * @param layoutType - Optional layout type for layout-specific helpers
+   */
+  protected registerHandlebarsHelpers(layoutType?: string): void {
     let globalQuestionCounter = 0;
-    
-    Handlebars.registerHelper("inc", function(value) {
+
+    Handlebars.registerHelper("inc", function (value) {
       return parseInt(String(value), 10) + 1;
     });
-    
-    Handlebars.registerHelper("optLabel", function(i) {
+
+    Handlebars.registerHelper("optLabel", function (i) {
       return String.fromCharCode(65 + Number(i));
     });
-    
+
     Handlebars.registerHelper("markdown", (content: string) => {
       return new Handlebars.SafeString(this.renderMarkdown(content));
     });
-    
-    Handlebars.registerHelper("questionNumber", function() {
+
+    Handlebars.registerHelper("questionNumber", function () {
       globalQuestionCounter++;
       return globalQuestionCounter;
     });
+
+    // Layout-specific helpers can be registered by subclasses
+    this.registerLayoutHelpers(layoutType);
   }
 
-  protected generateHTML(data: TData): string {
-    this.registerHandlebarsHelpers();
+  /**
+   * Register layout-specific Handlebars helpers
+   * Override in subclasses to add custom helpers per layout
+   * @param layoutType - Layout type
+   */
+  protected registerLayoutHelpers(layoutType?: string): void {
+    // Helper to check if string contains substring
+    Handlebars.registerHelper("contains", function (str: string, substring: string) {
+      if (!str || !substring) return false;
+      return str.toLowerCase().includes(substring.toLowerCase());
+    });
+
+    // Helper for equality comparison
+    Handlebars.registerHelper("eq", function (a: any, b: any) {
+      return a === b;
+    });
+
+    // Subclasses can override to add more custom helpers
+  }
+
+  /**
+   * Generate HTML from template and data
+   * @param data - Input data
+   * @param layoutType - Optional layout type
+   */
+  protected generateHTML(data: TData, layoutType?: string): string {
+    // Store layout type for context
+    this.currentLayoutType = layoutType;
+
+    this.registerHandlebarsHelpers(layoutType);
 
     const templateData = this.transformData(data);
 
-    const templatePath = this.getTemplatePath();
+    const templatePath = this.getTemplatePath(layoutType);
     const templateSource = fs.readFileSync(templatePath, "utf8");
     const template = Handlebars.compile(templateSource);
 
@@ -131,32 +177,32 @@ export abstract class BasePDFGenerator<TData = any> {
       let mathJaxReady = false;
       let attempts = 0;
       const maxAttempts = 40;
-      
+
       while (!mathJaxReady && attempts < maxAttempts) {
         try {
           const result = await Promise.race([
             page.evaluate(() => {
               const w = (globalThis as any).window || globalThis;
-              return w && 
-                     w.MathJax && 
-                     typeof w.MathJax.typesetPromise === "function";
+              return w &&
+                w.MathJax &&
+                typeof w.MathJax.typesetPromise === "function";
             }),
-            new Promise<boolean>((_, reject) => 
+            new Promise<boolean>((_, reject) =>
               setTimeout(() => reject(new Error('evaluate timeout')), 1000)
             )
           ]) as boolean;
-          
+
           mathJaxReady = result;
-          
+
           if (!mathJaxReady) {
             await new Promise(resolve => setTimeout(resolve, 500));
             attempts++;
           }
         } catch (error) {
-          if (error instanceof Error && 
-              (error.message.includes('detached') || 
-               error.message.includes('Target closed') ||
-               error.message.includes('Session closed'))) {
+          if (error instanceof Error &&
+            (error.message.includes('detached') ||
+              error.message.includes('Target closed') ||
+              error.message.includes('Session closed'))) {
             console.warn('Page frame detached during MathJax wait');
             break;
           }
@@ -175,43 +221,43 @@ export abstract class BasePDFGenerator<TData = any> {
           page.evaluate(async () => {
             const MJ = (globalThis as any).MathJax;
             if (!MJ) return;
-            
+
             try {
               if (MJ.startup && MJ.startup.promise) {
                 await MJ.startup.promise;
               }
-              
+
               await new Promise(resolve => setTimeout(resolve, 100));
-              
+
               if (typeof MJ.typesetPromise === 'function') {
                 await MJ.typesetPromise();
               }
-              
+
               await new Promise(resolve => setTimeout(resolve, 500));
             } catch (error) {
               console.error('MathJax typesetting error:', error);
             }
           }),
-          new Promise((_, reject) => 
+          new Promise((_, reject) =>
             setTimeout(() => reject(new Error('typeset timeout')), 30000)
           )
         ]);
       } catch (error) {
-        if (error instanceof Error && 
-            (error.message.includes('detached') || 
-             error.message.includes('Target closed') ||
-             error.message.includes('Session closed') ||
-             error.message.includes('timeout'))) {
+        if (error instanceof Error &&
+          (error.message.includes('detached') ||
+            error.message.includes('Target closed') ||
+            error.message.includes('Session closed') ||
+            error.message.includes('timeout'))) {
           console.warn('MathJax typesetting interrupted');
         } else {
           console.error('MathJax typesetting error:', error);
         }
       }
     } catch (error) {
-      if (error instanceof Error && 
-          (error.message.includes('detached') || 
-           error.message.includes('Target closed') ||
-           error.message.includes('Session closed'))) {
+      if (error instanceof Error &&
+        (error.message.includes('detached') ||
+          error.message.includes('Target closed') ||
+          error.message.includes('Session closed'))) {
         console.warn('Frame detached during MathJax wait');
       } else if (error instanceof Error) {
         console.warn('Error waiting for MathJax:', error.message);
@@ -226,13 +272,13 @@ export abstract class BasePDFGenerator<TData = any> {
       await page.evaluate(() => {
         return new Promise<void>((resolve) => {
           const w = (globalThis as any).window || globalThis;
-          
+
           // Check if MathJax is already ready
           if (w.MathJax && typeof w.MathJax.typesetPromise === 'function') {
             resolve();
             return;
           }
-          
+
           // Listen for MathJax load event
           const checkInterval = setInterval(() => {
             if (w.MathJax && typeof w.MathJax.typesetPromise === 'function') {
@@ -240,7 +286,7 @@ export abstract class BasePDFGenerator<TData = any> {
               resolve();
             }
           }, 50); // Check every 50ms instead of 500ms
-          
+
           // Timeout after 10 seconds
           setTimeout(() => {
             clearInterval(checkInterval);
@@ -248,7 +294,7 @@ export abstract class BasePDFGenerator<TData = any> {
           }, 10000);
         });
       });
-  
+
       // Now typeset with proper error handling
       const typesetResult = await Promise.race([
         page.evaluate(async () => {
@@ -256,45 +302,45 @@ export abstract class BasePDFGenerator<TData = any> {
           if (!MJ || typeof MJ.typesetPromise !== 'function') {
             return { success: false, reason: 'MathJax not available' };
           }
-          
+
           try {
             // Wait for startup if needed
             if (MJ.startup?.promise) {
               await MJ.startup.promise;
             }
-            
+
             // Typeset all math
             await MJ.typesetPromise();
-            
+
             // Verify rendering completed by checking for rendered elements
             const mathElements = (globalThis as any).document.querySelectorAll('.MathJax, mjx-container');
-            return { 
-              success: true, 
-              mathCount: mathElements.length 
+            return {
+              success: true,
+              mathCount: mathElements.length
             };
           } catch (error) {
-            return { 
-              success: false, 
-              reason: error instanceof Error ? error.message : 'Unknown error' 
+            return {
+              success: false,
+              reason: error instanceof Error ? error.message : 'Unknown error'
             };
           }
         }),
-        new Promise<{ success: boolean; reason?: string }>((resolve) => 
+        new Promise<{ success: boolean; reason?: string }>((resolve) =>
           setTimeout(() => resolve({ success: false, reason: 'Timeout' }), 15000)
         )
       ]);
-  
+
       if (!typesetResult.success) {
         console.warn(`MathJax rendering incomplete: ${typesetResult.reason}`);
       } else {
         console.log(`MathJax rendered ${(typesetResult as any).mathCount} math elements`);
       }
-  
+
       // Small buffer for final layout stabilization
       await new Promise(resolve => setTimeout(resolve, 200));
-      
+
     } catch (error) {
-      console.warn('MathJax initialization error, proceeding with PDF generation:', 
+      console.warn('MathJax initialization error, proceeding with PDF generation:',
         error instanceof Error ? error.message : error);
     }
   }
@@ -311,7 +357,7 @@ export abstract class BasePDFGenerator<TData = any> {
       ).catch(() => {
         console.warn('MathJax not detected, continuing anyway');
       });
-  
+
       // Typeset math
       await page.evaluate(async () => {
         const MJ = (globalThis as any).MathJax;
@@ -322,16 +368,16 @@ export abstract class BasePDFGenerator<TData = any> {
       }).catch((error) => {
         console.warn('MathJax typesetting failed:', error.message);
       });
-  
+
       // Minimal stabilization wait
       await new Promise(resolve => setTimeout(resolve, 200));
-      
+
     } catch (error) {
       console.warn('MathJax error:', error instanceof Error ? error.message : error);
     }
   }
-  
-  
+
+
 
   protected getPDFOptions(data?: TData): puppeteer.PDFOptions {
     return {
@@ -366,7 +412,7 @@ export abstract class BasePDFGenerator<TData = any> {
     let browser;
     try {
       const executablePath = this.getExecutablePath();
-  
+
       const launchOptions: Parameters<typeof puppeteer.launch>[0] = {
         headless: true,
         args: [
@@ -377,40 +423,41 @@ export abstract class BasePDFGenerator<TData = any> {
           "--disable-gpu",
         ],
       };
-  
+
       if (executablePath) {
         launchOptions.executablePath = executablePath;
       }
-  
+
       browser = await puppeteer.launch(launchOptions);
       const page = await browser.newPage();
-  
-      await page.setViewport({ 
-        width: 1240, 
-        height: 1754, 
-        deviceScaleFactor: 2 
+
+      await page.setViewport({
+        width: 1240,
+        height: 1754,
+        deviceScaleFactor: 2
       });
-      
+
       page.setDefaultTimeout(60000);
-  
-      // Generate HTML
+
+      // Generate HTML with optional layout type
       console.log("Generating HTML...");
-      const html = this.generateHTML(data);
+      const layoutType = this.currentLayoutType;
+      const html = this.generateHTML(data, layoutType);
       console.log("html", html);
-  
+
       // Set content and wait for network idle (more reliable than 'load')
       await page.setContent(html, {
         waitUntil: ['load', 'networkidle0'], // Wait for network to be idle
         timeout: 60000,
       });
-  
+
       // Wait for MathJax with optimized method
       await this.waitForMathJaxAlternative(page);
-  
+
       // Generate PDF
       const pdfOptions = this.getPDFOptions(data);
       const pdf = await page.pdf(pdfOptions);
-  
+
       return Buffer.from(pdf);
     } catch (error) {
       console.error("Error generating PDF:", error);

@@ -9,6 +9,18 @@ export enum PDFType {
 }
 
 /**
+ * Test Paper Layout Types
+ * Defines different layout templates for test papers
+ */
+export enum TestPaperLayout {
+  DEFAULT = "default",           // sample-2.hbs - Standard two-column layout
+  PCB = "pcb",                   // Physics-Chemistry-Biology focused layout
+  JEE_ADVANCED = "jee_advanced", // JEE Advanced style layout
+  NEET = "neet",                 // NEET style layout
+  CUSTOM = "custom",             // Custom layouts
+}
+
+/**
  * Base interface for all PDF data
  */
 export interface BasePDFData {
@@ -47,6 +59,19 @@ export interface TestSection {
 }
 
 /**
+ * Layout Configuration Options
+ */
+export interface LayoutConfig {
+  showSubjectTags?: boolean;      // Show subject labels on questions
+  showDifficultyLevel?: boolean;  // Show difficulty indicators
+  showMarksPerQuestion?: boolean; // Display marks for each question
+  columnCount?: 1 | 2;            // Number of columns for questions
+  headerStyle?: "minimal" | "detailed" | "branded"; // Header style variant
+  showInstructions?: boolean;     // Display instructions section
+  showMarkingScheme?: boolean;    // Display marking scheme
+}
+
+/**
  * Test PDF Data interface
  */
 export interface TestPDFData extends BasePDFData {
@@ -60,6 +85,8 @@ export interface TestPDFData extends BasePDFData {
   duration?: string;
   customFooter?: string;
   watermarkText?: string;
+  layoutType?: TestPaperLayout;   // Layout template selector
+  layoutConfig?: LayoutConfig;    // Layout-specific configuration
 }
 
 /**
