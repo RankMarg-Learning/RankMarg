@@ -1,4 +1,4 @@
-import { Crown, LogOut, Menu,  Settings, User } from 'lucide-react';
+import { Crown, LogOut, Menu, Settings, User } from 'lucide-react';
 import { Button } from '@repo/common-ui';
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/common-ui';
 import {
@@ -13,7 +13,7 @@ import { useUserData } from '@/context/ClientContextProvider';
 import api from '@/utils/api';
 import { Skeleton } from '@repo/common-ui';
 import { useRouter } from 'next/navigation';
-import HeaderTrialBadge from './upgrade/trial';
+// import HeaderTrialBadge from './upgrade/trial';
 import { NotificationDropdown } from './notifications/NotificationDropdown';
 
 interface HeaderProps {
@@ -65,31 +65,31 @@ export function Header({ onMenuClick }: HeaderProps) {
           {/* Right Section - Trial Badge, Notifications, Upgrade & User Menu */}
           <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
             {/* Trial Badge */}
-            <HeaderTrialBadge 
+            {/* <HeaderTrialBadge 
               endDate={user?.plan?.endAt} 
               status={user?.plan?.status} 
               isLoading={isLoading}
               onUpgrade={() => window.location.href = `/pricing?ref=header_upgrade&id=${user?.id}&current_plan=${user?.plan?.status}`}
-            />
+            /> */}
 
             {/* Notifications */}
             {!isLoading && <NotificationDropdown />}
 
             {/* Upgrade Button */}
             {user?.plan?.status !== "ACTIVE" && !isLoading && (
-               <Link href={`/pricing?ref=header_upgrade&id=${user?.id}&current_plan=${user?.plan?.status}`} className="flex items-center">
-               <Button
-                 variant="outline"
-                 size="sm"
-                 className="relative bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border-amber-300 transition-all duration-300 transform font-semibold h-8 px-2 sm:h-9 sm:px-3"
-               >
-                 <span className="relative z-10 flex items-center gap-1">
-                   <Crown size={10} className="text-amber-600 sm:w-3 sm:h-3" />
-                   <span className="text-xs sm:text-sm">Upgrade</span>
-                 </span>
-                 <div className="absolute inset-0 bg-gradient-to-r from-amber-200/20 to-yellow-200/20 rounded-md animate-pulse"></div>
-               </Button>
-             </Link>
+              <Link href={`/pricing?ref=header_upgrade&id=${user?.id}&current_plan=${user?.plan?.status}`} className="flex items-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="relative bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border-amber-300 transition-all duration-300 transform font-semibold h-8 px-2 sm:h-9 sm:px-3"
+                >
+                  <span className="relative z-10 flex items-center gap-1">
+                    <Crown size={10} className="text-amber-600 sm:w-3 sm:h-3" />
+                    <span className="text-xs sm:text-sm">Upgrade</span>
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-200/20 to-yellow-200/20 rounded-md animate-pulse"></div>
+                </Button>
+              </Link>
             )}
 
             {/* User Profile */}
@@ -153,7 +153,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="py-1">
                     <DropdownMenuItem asChild>
                       <Link href={`/u/${user?.name}`} className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-gray-50 cursor-pointer">
@@ -168,7 +168,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                       </Link>
                     </DropdownMenuItem>
                   </div>
-                  
+
                   <div className="border-t border-gray-100 pt-1">
                     <DropdownMenuItem
                       className="flex items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md cursor-pointer"
