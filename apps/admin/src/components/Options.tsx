@@ -2,9 +2,9 @@
 import React, { useMemo } from 'react';
 import Select from './Select';
 import { Input } from '@repo/common-ui';
-import { Option } from '@prisma/client';
-import {QuestionType} from "@repo/db/enums"
-import { cn } from '../lib/utils'; 
+import { Option } from '@/types';
+import { QuestionType } from "@repo/db/enums"
+import { cn } from '../lib/utils';
 
 interface OptionsProps {
   isAnswered?: boolean;
@@ -15,7 +15,7 @@ interface OptionsProps {
   numericalValue: number | null;
   onNumericalChange: (value: number | null) => void;
   correctOptions?: number[];
-  correctNumericalValue?: number | null; 
+  correctNumericalValue?: number | null;
 }
 
 const Options: React.FC<OptionsProps> = ({
@@ -75,7 +75,7 @@ const Options: React.FC<OptionsProps> = ({
           </div>
         </>
       )}
-      
+
       {type === "INTEGER" && (
         <>
           <h1 className="md:text-lg font-bold mb-2">Numerical</h1>
@@ -93,8 +93,8 @@ const Options: React.FC<OptionsProps> = ({
               value={numericalValue ?? ""}
               onChange={(e) => onNumericalChange(parseFloat(e.target.value) || null)}
             />
-            
-            {isAnswered  && correctNumericalValue !== undefined && (
+
+            {isAnswered && correctNumericalValue !== undefined && (
               <div className="text-sm text-gray-600 ml-2 mt-1">
                 Correct answer: {correctNumericalValue}
               </div>
