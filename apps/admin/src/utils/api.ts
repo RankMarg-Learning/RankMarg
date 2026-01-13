@@ -29,18 +29,18 @@ async function retryRequest(originalConfig: AxiosRequestConfig) {
   const backoff = 200 * Math.pow(2, config.__retryCount);
   await new Promise((res) => setTimeout(res, backoff));
   return api.request(config);
-} 
+}
 
 
 const paramsSerializer = (params: any): string => {
   const searchParams = new URLSearchParams();
-  
+
   Object.keys(params).forEach((key) => {
     const value = params[key];
     if (value === null || value === undefined) {
       return;
     }
-    
+
     if (Array.isArray(value)) {
       value.forEach((item) => {
         if (item !== null && item !== undefined) {
@@ -51,16 +51,16 @@ const paramsSerializer = (params: any): string => {
       searchParams.append(key, String(value));
     }
   });
-  
+
   return searchParams.toString();
 };
 
-const defaultTimeout = isProd ? 30000 : 10000;
+const defaultTimeout = isProd ? 30000 : 20000;
 const api = axios.create({
   baseURL,
   httpsAgent,
   headers: { "Content-Type": "application/json" },
-  withCredentials: true, 
+  withCredentials: true,
   timeout: defaultTimeout,
   paramsSerializer,
 });
@@ -76,7 +76,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  
+
   (error) => {
     return Promise.reject(error);
   }
@@ -89,16 +89,16 @@ api.interceptors.response.use(
     }
     return response;
   },
-  async(error:AxiosError) => {
+  async (error: AxiosError) => {
     if (shouldRetry(error) && error.config) {
       try {
-        if(!isProd) {
+        if (!isProd) {
           console.debug("[api] retrying request", { url: error.config.url, retryCount: (error.config as any).__retryCount || 0 });
         }
         return await retryRequest(error.config);
       } catch (error) {
-        if(!isProd) console.warn("[api] retries exhausted for", error.config?.url);
-    }
+        if (!isProd) console.warn("[api] retries exhausted for", error.config?.url);
+      }
     }
     return Promise.reject(error);
   }

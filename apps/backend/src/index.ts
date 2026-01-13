@@ -20,12 +20,15 @@ import redisService from "./lib/redis";
 import { RedisCacheService } from "./services/redisCache.service";
 import { errorHandler } from "./middleware/error.middleware";
 import { routes } from "./routes";
+import { globalLimiter } from "./config/rate.config";
 
 const app = express();
 
 app.use(cors(ServerConfig.cors));
 app.use(express.json({ limit: ServerConfig.performance.maxPayloadSize }));
 app.use(cookieParser(ServerConfig.security.session.secret));
+
+app.use(globalLimiter);
 
 // Configure session
 app.use(expressSession(ServerConfig.security.session));

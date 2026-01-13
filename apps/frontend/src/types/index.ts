@@ -1,5 +1,5 @@
-import { Question} from "@prisma/client";
-import  {QuestionFormat, QuestionType } from "@repo/db/enums"
+import { Question } from "@prisma/client";
+import { QuestionFormat, QuestionType } from "@repo/db/enums"
 
 export * from "./typeAPI";
 export * from "./mastery.api.types"
@@ -30,28 +30,29 @@ export interface QuestionProps {
   type: QuestionType;
   content: string;
   difficulty: number;
-  topic: {id:string,name:string};
+  topic: { id: string, name: string };
   subject: string;
   class: string;
   tag?: string;
-  hint?:string;
+  hint?: string;
   options: Option[];
   isNumerical?: number;
   attempts: Attempt[];
-  solution?:string;
-  strategy?:string;
-  commonMistake?:string;
+  solution?: string;
+  strategy?: string;
+  commonMistake?: string;
   challenge: ChallengeProps[];
   accuracy?: number;
   questionTime?: number;
   createdAt: string;
-  ActiveCooldown:number;
+  ActiveCooldown: number;
 }
 export interface Option {
   id: string;
   content: string;
   isCorrect: boolean;
   questionId: string;
+  label: string | null;
 }
 
 export interface Attempt {
@@ -81,7 +82,7 @@ export interface ContributeFormProps {
   slug: string;
   title: string;
   topicTitle: string;
-  questionType: "MCQ" | "NUM" ;
+  questionType: "MCQ" | "NUM";
   std: string;
   difficulty: string;
   subject: string;
@@ -100,7 +101,7 @@ export interface ContributeFormProps {
 
 export interface QuestionTableProps {
   id: string;
-  title:string;
+  title: string;
   slug: string;
   type: QuestionType;
   format: QuestionFormat
@@ -110,7 +111,7 @@ export interface QuestionTableProps {
   pyqYear: string;
   createdBy: string;
   createdAt: string;
-  attempts: { id: string }[]; 
+  attempts: { id: string }[];
   topic: {
     name: string;
   };
@@ -152,11 +153,11 @@ export type DetailsProps = {
 //====IN USE====//
 export interface attempDataProps {
   questionId: string;
-  answer:string;
+  answer: string;
   timing: number;
   isCorrect: boolean;
-  reactionTime?:number;
-  isHintUsed:boolean;
+  reactionTime?: number;
+  isHintUsed: boolean;
 }
 
 
