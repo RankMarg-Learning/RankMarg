@@ -102,6 +102,7 @@ app.use(`${ServerConfig.api.prefix}/settings`, routes.setting);
 app.use(`${ServerConfig.api.prefix}/ai-questions`, routes.aiQuestion);
 app.use(`${ServerConfig.api.prefix}/notifications`, routes.notification);
 app.use(`${ServerConfig.api.prefix}/revision`, routes.revision);
+app.use(`${ServerConfig.api.prefix}/coach`, routes.coach);
 
 // Authentication routes
 app.use(`${ServerConfig.api.prefix}/auth`, routes.auth);
@@ -129,14 +130,14 @@ initializeRedis().then(async () => {
 
 process.on("SIGTERM", async () => {
   console.log("SIGTERM received, shutting down gracefully...");
-  
+
   await redisService.disconnect();
   process.exit(0);
 });
 
 process.on("SIGINT", async () => {
   console.log("SIGINT received, shutting down gracefully...");
-  
+
   await redisService.disconnect();
   process.exit(0);
 });
