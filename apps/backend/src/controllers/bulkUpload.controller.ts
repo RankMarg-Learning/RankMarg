@@ -16,7 +16,7 @@ export class BulkUploadController {
       const {
         subjectId,
         topicId,
-        gptModel = "gpt-4o-mini",
+        gptModel = "gpt-5-mini",
         urls,
         additionalInstructions = "",
       } = req.body;
@@ -365,7 +365,7 @@ async function saveQuestionToDatabase(
   userId: string
 ): Promise<string> {
   try {
-   
+
     // Validate relationships first
     if (questionData.subtopicId) {
       // Check if subtopic exists and belongs to the correct topic
@@ -474,7 +474,8 @@ async function saveQuestionToDatabase(
         createdBy: userId,
         options: {
           create:
-            questionData.options?.map((option: any) => ({
+            questionData.options?.map((option: any, index: number) => ({
+              label: String.fromCharCode(65 + index),
               content: option.content,
               isCorrect: option.isCorrect || false,
             })) || [],
