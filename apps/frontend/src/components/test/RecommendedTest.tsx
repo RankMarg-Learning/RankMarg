@@ -85,7 +85,7 @@ const RecommendedTest: React.FC<RecommendedTestProps> = ({
           </div>
         </div>
         <Button
-          className="bg-primary-600 hover:bg-primary-700 text-white whitespace-nowrap"
+          className="bg-primary-600 hover:bg-primary-700 text-white whitespace-nowrap rounded-full"
           onClick={() => onStartTest(testId)}
         >
           Start Recommended Test

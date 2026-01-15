@@ -7,13 +7,13 @@ import api from "@/utils/api";
 import { Card } from "@repo/common-ui";
 import { Button } from "@repo/common-ui";
 import { Badge } from "@repo/common-ui";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@repo/common-ui";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@repo/common-ui";
 import { Separator } from "@repo/common-ui";
 import { Switch } from "@repo/common-ui";
 import { toast } from "@/hooks/use-toast";
 import { useSubjects } from "@/hooks/useSubject";
 import { useTopics } from "@/hooks/useTopics";
-import { CheckCircle2, Circle, PlayCircle } from "lucide-react";
+import { CheckCircle2, Circle, PlayCircle, BookOpen } from "lucide-react";
 import CurriculumSkeleton from "@/components/skeleton/curriculum.skeleton";
 import { useUser } from "@/hooks/useUser";
 import { Skeleton } from "@repo/common-ui";
@@ -137,123 +137,128 @@ function MyCurriculumContent() {
 
 	return (
 		<div className="container mx-auto md:px-4 px-2 py-6 space-y-6">
-			<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-				<h1 className="text-lg font-semibold sm:text-xl">My Curriculum</h1>
-				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3 w-full sm:w-auto">
+			<div className="flex flex-col gap-3">
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+					<h1 className="text-lg font-semibold sm:text-xl">My Curriculum</h1>
 					<Badge className="w-full sm:w-auto justify-center" variant="outline">Current in subject: {splitByStatus.current.length}/2</Badge>
-					<div className="w-full sm:w-64">
-						{
-							!isLoadingSubjects ? (
-
-								<Select value={selectedSubjectId} onValueChange={setSelectedSubjectId}>
-									<SelectTrigger className="w-full">
-										<SelectValue placeholder="Select subject" />
-									</SelectTrigger>
-									<SelectContent>
-										{subjects?.map((s: any) => (
-											<SelectItem key={s.id} value={s.id}>{s.name} </SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							) : (
-								<Skeleton className="w-full h-10" />
-							)
-						}
-					</div>
 				</div>
-			</div>
 
-			<Card className="p-4">
-				<div className="flex items-center justify-between">
-					<h2 className="font-medium">Topics</h2>
-					<span className="sr-only">Topics list</span>
-				</div>
-				<Separator className="my-3" />
-				{splitByStatus.current.length >= 2 && (
-					<div className="mb-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-800 text-xs">
-						You already have 2 current topics in this subject. You must mark one as done before selecting another current topic.
-					</div>
+				{!isLoadingSubjects ? (
+					<Tabs value={selectedSubjectId} onValueChange={setSelectedSubjectId} className="w-full space-y-6">
+						<div className="border-b border-gray-200">
+							<TabsList className="bg-transparent p-0 h-auto justify-start w-full overflow-x-auto flex-nowrap">
+								{subjects?.map((s: any) => (
+									<TabsTrigger
+										key={s.id}
+										value={s.id}
+										className="flex items-center gap-2 px-4 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary shrink-0 transition-colors hover:text-primary/80"
+									>
+										<BookOpen className="w-4 h-4" />
+										<span className="hidden sm:inline">{s.name}</span>
+										<span className="sm:hidden">{s.name.slice(0, 3)}</span>
+									</TabsTrigger>
+								))}
+							</TabsList>
+						</div>
+
+						<TabsContent value={selectedSubjectId} className="m-0 border-none p-0">
+							<Card className="p-4">
+								<div className="flex items-center justify-between">
+									<h2 className="font-medium">Topics</h2>
+									<span className="sr-only">Topics list</span>
+								</div>
+								<Separator className="my-3" />
+								{splitByStatus.current.length >= 2 && (
+									<div className="mb-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-800 text-xs text-left">
+										You already have 2 current topics in this subject. You must mark one as done before selecting another current topic.
+									</div>
+								)}
+								<div className="space-y-6">
+									{/* Current */}
+									<div>
+										<div className="flex items-center gap-2 mb-2">
+											<PlayCircle className="h-4 w-4 text-green-600" />
+											<h3 className="text-sm font-medium text-green-700">Current</h3>
+											<Badge variant="outline">{splitByStatus.current.length}</Badge>
+										</div>
+										<div className="space-y-2">
+											{splitByStatus.current.length === 0 ? (
+												<p className="text-xs text-muted-foreground">No current topic selected.</p>
+											) : (
+												splitByStatus.current.map((t: any) => (
+													<Row
+														key={t.id}
+														status="current"
+														topic={t}
+														isCompleted={!!currentMap.get(t.id)?.isCompleted}
+														onMakeCurrent={() => setCurrentMutation.mutate({ subjectId: selectedSubjectId, topicId: t.id })}
+														onToggleDone={(checked) => setCompletedMutation.mutate({ subjectId: selectedSubjectId, topicId: t.id, isCompleted: checked })}
+														disableMakeCurrent={false}
+													/>
+												))
+											)}
+										</div>
+									</div>
+
+									{/* Pending */}
+									<div>
+										<div className="flex items-center gap-2 mb-2">
+											<Circle className="h-4 w-4 text-amber-600" />
+											<h3 className="text-sm font-medium text-amber-700">Pending</h3>
+											<Badge variant="outline">{splitByStatus.pending.length}</Badge>
+										</div>
+										<div className="space-y-2">
+											{splitByStatus.pending.length === 0 ? (
+												<p className="text-xs text-muted-foreground">Nothing pending.</p>
+											) : (
+												splitByStatus.pending.map((t: any) => (
+													<Row
+														key={t.id}
+														status="pending"
+														topic={t}
+														isCompleted={!!currentMap.get(t.id)?.isCompleted}
+														onMakeCurrent={() => setCurrentMutation.mutate({ subjectId: selectedSubjectId, topicId: t.id })}
+														onToggleDone={(checked) => setCompletedMutation.mutate({ subjectId: selectedSubjectId, topicId: t.id, isCompleted: checked })}
+														disableMakeCurrent={splitByStatus.current.length >= 2}
+													/>
+												))
+											)}
+										</div>
+									</div>
+
+									{/* Completed */}
+									<div>
+										<div className="flex items-center gap-2 mb-2">
+											<CheckCircle2 className="h-4 w-4 text-gray-600" />
+											<h3 className="text-sm font-medium text-gray-700">Completed</h3>
+											<Badge variant="outline">{splitByStatus.completed.length}</Badge>
+										</div>
+										<div className="space-y-2">
+											{splitByStatus.completed.length === 0 ? (
+												<p className="text-xs text-muted-foreground">No completed topics yet.</p>
+											) : (
+												splitByStatus.completed.map((t: any) => (
+													<Row
+														key={t.id}
+														status="completed"
+														topic={t}
+														isCompleted={true}
+														onMakeCurrent={() => setCurrentMutation.mutate({ subjectId: selectedSubjectId, topicId: t.id })}
+														onToggleDone={(checked) => setCompletedMutation.mutate({ subjectId: selectedSubjectId, topicId: t.id, isCompleted: checked })}
+														disableMakeCurrent={splitByStatus.current.length >= 2}
+													/>
+												))
+											)}
+										</div>
+									</div>
+								</div>
+							</Card>
+						</TabsContent>
+					</Tabs>
+				) : (
+					<Skeleton className="w-full h-[500px]" />
 				)}
-				<div className="space-y-6">
-					{/* Current */}
-					<div>
-						<div className="flex items-center gap-2 mb-2">
-							<PlayCircle className="h-4 w-4 text-green-600" />
-							<h3 className="text-sm font-medium text-green-700">Current</h3>
-							<Badge variant="outline">{splitByStatus.current.length}</Badge>
-						</div>
-						<div className="space-y-2">
-							{splitByStatus.current.length === 0 ? (
-								<p className="text-xs text-muted-foreground">No current topic selected.</p>
-							) : (
-								splitByStatus.current.map((t: any) => (
-									<Row
-										key={t.id}
-										status="current"
-										topic={t}
-										isCompleted={!!currentMap.get(t.id)?.isCompleted}
-										onMakeCurrent={() => setCurrentMutation.mutate({ subjectId: selectedSubjectId, topicId: t.id })}
-										onToggleDone={(checked) => setCompletedMutation.mutate({ subjectId: selectedSubjectId, topicId: t.id, isCompleted: checked })}
-										disableMakeCurrent={false}
-									/>
-								))
-							)}
-						</div>
-					</div>
-
-					{/* Pending */}
-					<div>
-						<div className="flex items-center gap-2 mb-2">
-							<Circle className="h-4 w-4 text-amber-600" />
-							<h3 className="text-sm font-medium text-amber-700">Pending</h3>
-							<Badge variant="outline">{splitByStatus.pending.length}</Badge>
-						</div>
-						<div className="space-y-2">
-							{splitByStatus.pending.length === 0 ? (
-								<p className="text-xs text-muted-foreground">Nothing pending.</p>
-							) : (
-								splitByStatus.pending.map((t: any) => (
-									<Row
-										key={t.id}
-										status="pending"
-										topic={t}
-										isCompleted={!!currentMap.get(t.id)?.isCompleted}
-										onMakeCurrent={() => setCurrentMutation.mutate({ subjectId: selectedSubjectId, topicId: t.id })}
-										onToggleDone={(checked) => setCompletedMutation.mutate({ subjectId: selectedSubjectId, topicId: t.id, isCompleted: checked })}
-										disableMakeCurrent={splitByStatus.current.length >= 2}
-									/>
-								))
-							)}
-						</div>
-					</div>
-
-					{/* Completed */}
-					<div>
-						<div className="flex items-center gap-2 mb-2">
-							<CheckCircle2 className="h-4 w-4 text-gray-600" />
-							<h3 className="text-sm font-medium text-gray-700">Completed</h3>
-							<Badge variant="outline">{splitByStatus.completed.length}</Badge>
-						</div>
-						<div className="space-y-2">
-							{splitByStatus.completed.length === 0 ? (
-								<p className="text-xs text-muted-foreground">No completed topics yet.</p>
-							) : (
-								splitByStatus.completed.map((t: any) => (
-									<Row
-										key={t.id}
-										status="completed"
-										topic={t}
-										isCompleted={true}
-										onMakeCurrent={() => setCurrentMutation.mutate({ subjectId: selectedSubjectId, topicId: t.id })}
-										onToggleDone={(checked) => setCompletedMutation.mutate({ subjectId: selectedSubjectId, topicId: t.id, isCompleted: checked })}
-										disableMakeCurrent={splitByStatus.current.length >= 2}
-									/>
-								))
-							)}
-						</div>
-					</div>
-				</div>
-			</Card>
+			</div>
 		</div>
 	);
 }
@@ -298,9 +303,9 @@ function Row({ status, topic, isCompleted, onMakeCurrent, onToggleDone, disableM
 					<span className="text-xs">Done</span>
 				</div>
 				{!isCurrent && (
-				<Button variant={isCurrent ? "default" : "outline"} disabled={isCurrent || !!disableMakeCurrent} onClick={onMakeCurrent}>
-					{isCurrent ? "Current" : "Make Current"}
-				</Button>
+					<Button variant={isCurrent ? "default" : "outline"} disabled={isCurrent || !!disableMakeCurrent} onClick={onMakeCurrent}>
+						{isCurrent ? "Current" : "Make Current"}
+					</Button>
 				)}
 			</div>
 		</div>
