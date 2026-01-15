@@ -10,6 +10,7 @@ import Loading from "@/components/Loading";
 import { Button } from "@repo/common-ui";
 import { useRouter } from "next/navigation";
 import { QuestionWithOptions } from "@/types";
+import { ArrowLeft } from "lucide-react";
 
 interface ReviewTestPageProps {
   testId: string;
@@ -50,17 +51,17 @@ export function ReviewTestPage({ testId }: ReviewTestPageProps) {
   const questionsStatus = useMemo(() => {
     if (!data?.attempts) return {};
     const statusMap: Record<number, 'correct' | 'incorrect' | 'unattempted'> = {};
-    
+
     data.questions.forEach((question, index) => {
       const attempt = data.attempts.find(a => a.questionId === question.id);
       if (attempt) {
-        statusMap[index + 1] = attempt.status === 'CORRECT' ? 'correct' : 
-                                attempt.status === 'INCORRECT' ? 'incorrect' : 'unattempted';
+        statusMap[index + 1] = attempt.status === 'CORRECT' ? 'correct' :
+          attempt.status === 'INCORRECT' ? 'incorrect' : 'unattempted';
       } else {
         statusMap[index + 1] = 'unattempted';
       }
     });
-    
+
     return statusMap;
   }, [data]);
 
@@ -103,6 +104,18 @@ export function ReviewTestPage({ testId }: ReviewTestPageProps) {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
+
+      {/* Header */}
+      <div className="flex items-center px-4 ">
+        <button
+          onClick={() => router.back()}
+          className="p-2 mr-3 hover:bg-gray-100 bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="w-5 h-5 text-gray-600" />
+        </button>
+        <h1 className="text-lg font-semibold">Solution</h1>
+      </div>
 
       {/* Main Content */}
       <div className="flex flex-1 relative ">

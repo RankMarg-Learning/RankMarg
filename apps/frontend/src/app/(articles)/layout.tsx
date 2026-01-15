@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { ArticlesHeader } from '@/components/articles/ArticlesHeader';
+import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: "Articles | RankMarg - Your Personal AI Coach for JEE & NEET",
@@ -33,6 +34,7 @@ export default function ArticlesLayout({
     <>
       <ArticlesHeader />
       {children}
+      <Footer />
     </>
   );
 }

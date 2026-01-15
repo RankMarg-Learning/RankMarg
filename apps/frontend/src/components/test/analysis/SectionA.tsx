@@ -5,10 +5,10 @@ import { AnalysisSectionA } from '@/types/typeTest'
 import { BarChart3, CheckCircle2, Clock } from 'lucide-react'
 import React from 'react'
 
-const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
+const SectionA = ({ analysis }: { analysis: AnalysisSectionA }) => {
 
-    const timeFormat = (time:number) =>{
-        if(time === null) return "0h 0m"
+    const timeFormat = (time: number) => {
+        if (time === null) return "0h 0m"
         const hours = Math.floor(time / 60)
         const minutes = time % 60
         return `${hours}h ${minutes}m`
@@ -16,32 +16,32 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
 
 
     return (
-        <Card className="space-y-3 md:p-8 p-3 rounded-md shadow-sm">
+        <Card className="space-y-3 md:p-5 p-3 rounded-lg border-none">
             <div className="space-y-1">
                 <h1 className="text-2xl font-bold">{analysis?.testTitle}</h1>
                 {
                     analysis?.examCode === "JEE" ?
-                
-                <div className="flex gap-2">
-                    <span className="text-yellow-600">Physics</span>
-                    <span>•</span>
-                    <span className="text-yellow-600">Chemistry</span>
-                    <span>•</span>
-                    <span className="text-yellow-600">Mathematics</span>
-                </div>:
-                <div className="flex gap-2">
-                    <span className="text-yellow-600">Physics</span>
-                    <span>•</span>
-                    <span className="text-yellow-600">Chemistry</span>
-                    <span>•</span>
-                    <span className="text-yellow-600">Biology</span>
-                </div>
-}
+
+                        <div className="flex gap-2">
+                            <span className="text-yellow-600">Physics</span>
+                            <span>•</span>
+                            <span className="text-yellow-600">Chemistry</span>
+                            <span>•</span>
+                            <span className="text-yellow-600">Mathematics</span>
+                        </div> :
+                        <div className="flex gap-2">
+                            <span className="text-yellow-600">Physics</span>
+                            <span>•</span>
+                            <span className="text-yellow-600">Chemistry</span>
+                            <span>•</span>
+                            <span className="text-yellow-600">Biology</span>
+                        </div>
+                }
             </div>
 
             {/* Score Overview */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="rounded-md shadow-sm">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="rounded-2xl shadow-sm">
                     <CardContent className="p-6">
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -49,12 +49,12 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
                                 <span className="text-sm text-muted-foreground">Total Score</span>
                             </div>
                             <div className="text-2xl font-bold">{analysis?.participantScore}/{analysis?.totalMarks}</div>
-                            <div className="text-sm text-muted-foreground">{(analysis?.participantScore/analysis?.totalMarks*100).toFixed(2)}% Score</div>
+                            <div className="text-sm text-muted-foreground">{(analysis?.participantScore / analysis?.totalMarks * 100).toFixed(2)}% Score</div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="rounded-md shadow-sm">
+                <Card className="rounded-2xl shadow-sm">
                     <CardContent className="p-6">
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -67,20 +67,20 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
                     </CardContent>
                 </Card>
 
-                <Card className="rounded-md shadow-sm">
+                <Card className="rounded-2xl shadow-sm">
                     <CardContent className="p-6">
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
                                 <Clock className="w-4 h-4 text-purple-600" />
                                 <span className="text-sm text-muted-foreground">Time Taken</span>
                             </div>
-                            <div className="text-2xl font-bold">{timeFormat(Math.floor((analysis?.timeTaken)/60))}</div>
-                            <div className="text-sm text-purple-600">{analysis?.testDuration - (Math.floor((analysis?.timeTaken)/60))} mins saved</div>
+                            <div className="text-2xl font-bold">{timeFormat(Math.floor((analysis?.timeTaken) / 60))}</div>
+                            <div className="text-sm text-purple-600">{analysis?.testDuration - (Math.floor((analysis?.timeTaken) / 60))} mins saved</div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="rounded-md">
+                <Card className="rounded-2xl">
                     <CardContent className="p-6">
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -103,8 +103,8 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
                 <h2 className="text-lg font-semibold pl-2">Section-wise Performance</h2>
                 <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {
-                        analysis?.sectionPerformance.map((section,index)=>(
-                            <Card key={index} className={`p-3 md:p-4 rounded-sm shadow-none border ${SubjectCardColor[section.sectionName.toLowerCase() as keyof typeof SubjectCardColor] || SubjectCardColor.default}`}>
+                        analysis?.sectionPerformance.map((section, index) => (
+                            <Card key={index} className={`p-3 md:p-4 rounded-xl shadow-none border ${SubjectCardColor[section.sectionName.toLowerCase() as keyof typeof SubjectCardColor] || SubjectCardColor.default}`}>
                                 <div className="flex justify-between">
                                     <span className={`text-sm font-medium ${SubjectTextColor[section.sectionName.toLowerCase() as keyof typeof SubjectTextColor] || SubjectTextColor.default}`}>{section.sectionName}</span>
                                     <span className={`text-sm font-medium ${SubjectTextColor[section.sectionName.toLowerCase() as keyof typeof SubjectTextColor] || SubjectTextColor.default}`}>{section?.correctAnswers}/{section?.totalQuestions}</span>
@@ -113,7 +113,7 @@ const SectionA = ({analysis}:{analysis:AnalysisSectionA}) => {
                             </Card>
                         ))
                     }
-                    
+
                 </CardContent>
             </Card>
         </Card>
