@@ -79,14 +79,14 @@ interface MasterySubjectPageProps {
 const MasterySubjectPage = ({ subjectId }: MasterySubjectPageProps) => {
     const [sortBy, setSortBy] = useState('index');
     const router = useRouter();
-    const { data: subjectMastery, isLoading, error, refetch } = useQuery<{data:SubjectMasteryResponseProps,success:true,message:string}>({
+    const { data: subjectMastery, isLoading, error, refetch } = useQuery<{ data: SubjectMasteryResponseProps, success: true, message: string }>({
         queryKey: ['subjectMastery', subjectId, sortBy],
         queryFn: () => getSubjectMastery(subjectId, sortBy),
         enabled: !!subjectId,
-        staleTime: 5 * 60 * 1000, 
+        staleTime: 5 * 60 * 1000,
     });
 
-  
+
 
     const { overallMastery, topics, indicatorColorClass, masteryColors } = useMemo(() => {
         const overallMastery = subjectMastery?.data?.overallMastery || 0;
@@ -94,8 +94,8 @@ const MasterySubjectPage = ({ subjectId }: MasterySubjectPageProps) => {
         const subjectName = subjectMastery?.data?.subject?.name?.toLowerCase() ?? 'default';
         const indicatorColorClass = SubjectBackgroundColor[subjectName] ?? SubjectBackgroundColor.default;
         const masteryColors = getMasteryColor(overallMastery);
-        
-        
+
+
         return { overallMastery, topics, subjectName, indicatorColorClass, masteryColors };
     }, [subjectMastery]);
 
@@ -103,7 +103,7 @@ const MasterySubjectPage = ({ subjectId }: MasterySubjectPageProps) => {
         setSortBy(value);
     };
 
-    if (isLoading) return <MasterySubjectSkeleton/>
+    if (isLoading) return <MasterySubjectSkeleton />
 
     if (error) {
         return (
@@ -113,7 +113,7 @@ const MasterySubjectPage = ({ subjectId }: MasterySubjectPageProps) => {
                     <p className="text-red-600 text-sm mt-1">
                         {error instanceof Error ? error.message : 'An unexpected error occurred'}
                     </p>
-                    <button 
+                    <button
                         onClick={() => refetch()}
                         className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
                     >
@@ -183,7 +183,7 @@ const MasterySubjectPage = ({ subjectId }: MasterySubjectPageProps) => {
                     )}
                 </div>
                 <Select value={sortBy} onValueChange={handleSortChange} disabled={isLoading}>
-                    <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectTrigger className="w-full sm:w-[200px] rounded-full">
                         <SelectValue placeholder="Sort by..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -210,9 +210,9 @@ const MasterySubjectPage = ({ subjectId }: MasterySubjectPageProps) => {
             {topics.length > 0 && (
                 <div className="mt-3 text-xs text-gray-500">
                     Showing {topics.length} topics • Current sort: {
-                        sortBy === 'index' ? 'By Index' : 
-                        sortBy === 'mastery-asc' ? 'Mastery (Low to High)' : 
-                        'Mastery (High to Low)'
+                        sortBy === 'index' ? 'By Index' :
+                            sortBy === 'mastery-asc' ? 'Mastery (Low to High)' :
+                                'Mastery (High to Low)'
                     }
                 </div>
             )}
@@ -259,7 +259,7 @@ const MasterySubjectPage = ({ subjectId }: MasterySubjectPageProps) => {
                                 <div className="flex items-center justify-between w-full pr-4">
                                     <div className="flex items-center gap-3">
                                         <div className={`md:w-10 md:h-10 w-8 h-8 rounded-full flex items-center justify-center ${topicColors.bg} text-white transition-all`}>
-                                        {topic.mastery === 0 ? "00" : topic.mastery < 10 ? `0${Math.round(topic.mastery)}` : Math.round(topic.mastery)}
+                                            {topic.mastery === 0 ? "00" : topic.mastery < 10 ? `0${Math.round(topic.mastery)}` : Math.round(topic.mastery)}
                                         </div>
                                         <div className="text-left">
                                             <span className="font-semibold text-gray-800 block max-w-[120px] md:max-w-full truncate">
