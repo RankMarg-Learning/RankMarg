@@ -68,7 +68,7 @@ export const ServerConfig = {
     daily: {
       streak: "0 0 * * *",
       updatePerformance: "0 0 * * *",
-      createSuggestion: "0 0 * * *",
+      createSuggestion: "* * * * *", // 12:30 AM IST - Coaching suggestions based on yesterday's practice
     },
     weekly: {
       updateReview: "0 1 * * 0",
@@ -76,7 +76,7 @@ export const ServerConfig = {
       updateLearningProgress: "0 1 * * 0",
     },
     frequent: {
-      createSession: "0 0 * * *", 
+      createSession: "0 0 * * *",
     },
   },
 

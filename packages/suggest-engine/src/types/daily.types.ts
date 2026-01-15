@@ -83,3 +83,84 @@ export interface SubjectMap {
   total: number;
   totalTime: number;
 }
+
+// ============================================
+// NEW: Practice Session Analysis Types
+// ============================================
+
+export interface PracticeSessionAnalysis {
+  userId: string;
+  date: Date;
+  totalQuestions: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+  skippedQuestions: number;
+  unsolvedQuestions: number; // Started but not completed
+  questionsWithoutMistakeReason: number; // Wrong but no reason marked
+  totalTimeSpent: number; // in minutes
+  accuracy: number;
+  subjectBreakdown: SubjectPracticeBreakdown[];
+  todaySessionTopics: TodaySessionTopic[]; // Topics from today's session
+}
+
+export interface SubjectPracticeBreakdown {
+  subjectId: string;
+  subjectName: string;
+  questionsAttempted: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+  accuracy: number;
+  timeSpent: number;
+  commonMistakes: MistakeType[];
+  topicsWithErrors: TopicError[];
+}
+
+export interface TopicError {
+  topicId: string;
+  topicName: string;
+  subtopicId?: string;
+  subtopicName?: string;
+  errorCount: number;
+  mistakeTypes: MistakeType[];
+}
+
+export type MistakeType = 'conceptual' | 'calculation' | 'reading' | 'overconfidence' | 'other';
+
+export interface TodaySessionTopic {
+  subjectId: string;
+  subjectName: string;
+  topicId: string;
+  topicName: string;
+  subtopicId?: string;
+  subtopicName?: string;
+  questionsAttempted: number;
+  accuracy: number;
+}
+
+// ============================================
+// NEW: Coaching Guidance Types
+// ============================================
+
+export interface CoachingGuidance {
+  userId: string;
+  date: Date;
+  mood: 'encouraging' | 'motivating' | 'corrective' | 'celebratory';
+  primaryFocus: string;
+  suggestions: CoachingSuggestion[];
+}
+
+export interface CoachingSuggestion {
+  category: 'mistake_review' | 'time_management' | 'subject_focus' | 'topic_guidance' | 'motivation' | 'strategy';
+  message: string;
+  reasoning: string; // Why this suggestion is being made
+  actionItems: string[];
+  subjectTricks?: SubjectTrick[];
+  priority: number;
+}
+
+export interface SubjectTrick {
+  category: string; // e.g., "Problem-Solving", "Time-Saving", "Common Pitfalls"
+  trick: string;
+  example?: string;
+}
+
