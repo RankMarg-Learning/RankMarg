@@ -60,7 +60,7 @@ const SectionE = ({ analysis }: { analysis: SectionEAnalysis }) => {
   return (
     <Card className='border-none'>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-xl">
           <BookOpen className="w-5 h-5" />
           Subject-wise Analysis
         </CardTitle>

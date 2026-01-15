@@ -87,7 +87,7 @@ const SectionB = ({ analysis }: { analysis: SectionBAnalysis }) => {
   return (
     <Card className='border-none'>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-xl">
           <TrendingUp className="w-5 h-5" />
           Performance Metrics
         </CardTitle>

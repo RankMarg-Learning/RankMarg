@@ -1,15 +1,19 @@
-import { Card, CardContent, CardHeader } from '@repo/common-ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui'
 import { Progress } from '@repo/common-ui'
 import React from 'react'
 import { TimeSpendChart } from './TImeSpendChart'
 import { AnalysisSectionC } from '@/types/typeTest'
 import { SubjectBackgroundColor, SubjectCardColor, SubjectTextColor } from '@/constant/SubjectColorCode'
+import { Clock } from 'lucide-react'
 
 const SectionC = ({ analysis }: { analysis: AnalysisSectionC }) => {
     return (
         <Card className="border-none">
             <CardHeader>
-                <h2 className="text-xl font-semibold">Time Distribution Analysis</h2>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                    <Clock className="w-5 h-5" />
+                    Time Distribution Analysis
+                </CardTitle>
             </CardHeader>
             <CardContent className='space-y-2'>
 

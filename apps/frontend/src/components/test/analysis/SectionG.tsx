@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui'
 import { Badge } from '@repo/common-ui'
 import { Button } from '@repo/common-ui'
-import { 
-  Lightbulb, 
-  Target, 
-  Calendar, 
+import {
+  Lightbulb,
+  Target,
+  Calendar,
   TrendingUp,
   AlertTriangle,
   CheckCircle2,
@@ -60,14 +60,14 @@ const SectionG = ({ analysis, examCode }: { analysis: SectionGAnalysis, examCode
     }
   }
 
-  
+
 
   return (
     <div className="space-y-6">
       {/* Improvement Recommendations */}
-      <Card>
+      <Card className="border-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl">
             <Lightbulb className="w-5 h-5" />
             Improvement Recommendations
           </CardTitle>
@@ -109,9 +109,9 @@ const SectionG = ({ analysis, examCode }: { analysis: SectionGAnalysis, examCode
       </Card>
 
       {/* Study Plan */}
-      <Card>
+      <Card className="border-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl">
             <Calendar className="w-5 h-5" />
             Recommended Study Plan
           </CardTitle>
@@ -125,7 +125,7 @@ const SectionG = ({ analysis, examCode }: { analysis: SectionGAnalysis, examCode
                 <p className="text-sm text-blue-700">{analysis.studyPlan.daily}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
               <Calendar className="w-4 h-4 text-green-600 mt-0.5" />
               <div>
@@ -133,7 +133,7 @@ const SectionG = ({ analysis, examCode }: { analysis: SectionGAnalysis, examCode
                 <p className="text-sm text-green-700">{analysis.studyPlan.weekly}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
               <TrendingUp className="w-4 h-4 text-purple-600 mt-0.5" />
               <div>
@@ -146,9 +146,9 @@ const SectionG = ({ analysis, examCode }: { analysis: SectionGAnalysis, examCode
       </Card>
 
       {/* Next Steps */}
-      <Card>
+      <Card className="border-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl">
             <Target className="w-5 h-5" />
             Next Steps
           </CardTitle>
@@ -164,13 +164,13 @@ const SectionG = ({ analysis, examCode }: { analysis: SectionGAnalysis, examCode
               </div>
             ))}
           </div>
-          
+
           <div className="mt-4 pt-4 border-t">
             <Link href={groupLink[examCode as keyof typeof groupLink]} target='_blank'>
-            <Button className="w-full" variant="outline">
-              <Users className="w-4 h-4 mr-2" />
-              Join Study Group
-            </Button>
+              <Button className="w-full" variant="outline">
+                <Users className="w-4 h-4 mr-2" />
+                Join Study Group
+              </Button>
             </Link>
           </div>
         </CardContent>

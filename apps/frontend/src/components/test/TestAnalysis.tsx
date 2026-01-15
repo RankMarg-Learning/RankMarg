@@ -1,6 +1,7 @@
 "use client"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
+import html2canvas from "html2canvas"
 import SectionA from "./analysis/SectionA"
 import SectionB from "./analysis/SectionB"
 import SectionC from "./analysis/SectionC"
@@ -20,7 +21,8 @@ import {
     GitCompare,
     ChevronRight,
     ArrowRight,
-    ArrowLeft
+    ArrowLeft,
+    Share
 } from "lucide-react"
 import api from "@/utils/api"
 import SectionG from "./analysis/SectionG"
@@ -31,6 +33,25 @@ import ErrorCTA from "../error"
 export default function TestAnalysisPage({ testId }: { testId: string }) {
     const [activeStep, setActiveStep] = useState("overview")
     const router = useRouter()
+    const shareRef = useRef<HTMLDivElement>(null)
+
+    const handleShare = async () => {
+        if (!shareRef.current) return
+        try {
+            const canvas = await html2canvas(shareRef.current, {
+                scale: 3, // Higher quality
+                backgroundColor: "#F8FAFC", // slate-50
+                useCORS: true
+            })
+            const image = canvas.toDataURL("image/png")
+            const link = document.createElement("a")
+            link.href = image
+            link.download = `test-analysis-${testId}.png`
+            link.click()
+        } catch (error) {
+            console.error("Error generating share image:", error)
+        }
+    }
 
     const { data, isLoading, isError, error } = useQuery({
         queryKey: ["testAnalysis", testId],
@@ -113,10 +134,10 @@ export default function TestAnalysisPage({ testId }: { testId: string }) {
     const activeComponent = activeStepData?.component
 
     return (
-        <div className="flex flex-col h-[calc(100vh-4rem)] bg-background">
+        <div className="flex flex-col h-[calc(100vh-4rem)] ">
             <div className="flex flex-1 overflow-hidden lg:flex-row">
 
-                <div className="hidden lg:flex w-64 flex-col  bg-card/50 backdrop-blur-sm p-2 space-y-2 h-full overflow-y-auto">
+                <div className="hidden lg:flex w-56 flex-col  bg-card/50 backdrop-blur-sm p-2 space-y-2 h-full overflow-y-auto">
                     <div className="flex items-center gap-3 mb-4 pl-1">
                         <Button variant="ghost" onClick={() => router.back()} className="rounded-full border-full bg-gray-100 h-8 w-8 p-0">
                             <ArrowLeft className="w-8 h-8" />
@@ -149,17 +170,17 @@ export default function TestAnalysisPage({ testId }: { testId: string }) {
                     })}
                 </div>
 
-                <div className="flex-1 h-full overflow-y-auto bg-gray-50/50 dark:bg-gray-900/50 p-3 lg:p-6 scroll-smooth pb-24 lg:pb-8">
-                    <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 slide-in-from-bottom-4">
-                        <div className="flex items-center justify-between pb-2  mb-6">
-                            <div className="flex items-center space-x-2">
-                                {activeStepData && (
-                                    <>
-                                        <activeStepData.icon className="w-6 h-6 text-primary" />
-                                        <h2 className="md:text-2xl text-lg font-bold text-foreground">{activeStepData.label}</h2>
-                                    </>
-                                )}
-                            </div>
+                <div className="flex-1 h-full overflow-y-auto  p-3 lg:p-4 scroll-smooth ">
+                    <div className="max-w-5xl mx-auto space-y-0 animate-in fade-in duration-500 slide-in-from-bottom-4">
+                        <div className="flex items-center justify-end pb-2 gap-2 ">
+                            <Button
+                                onClick={handleShare}
+                                variant="outline"
+                                className="w-10 h-10 rounded-full"
+                            >
+
+                                <Share className="w-4 h-4 " />
+                            </Button>
                             <Button
                                 onClick={() => router.push(`/t/${testId}/review`)}
                                 className="inline-flex items-center px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-full shadow hover:bg-primary/90 transition-colors"
@@ -168,7 +189,6 @@ export default function TestAnalysisPage({ testId }: { testId: string }) {
                                 <ArrowRight className="w-4 h-4 " />
                             </Button>
                         </div>
-
                         {activeComponent}
                     </div>
                 </div>
@@ -198,6 +218,51 @@ export default function TestAnalysisPage({ testId }: { testId: string }) {
                             </button>
                         )
                     })}
+                </div>
+            </div>
+            {/* Hidden Shareable Component */}
+            <div className="fixed left-[-9999px] top-0 pointer-events-none">
+                <div
+                    ref={shareRef}
+                    className="w-[1080px] h-fit bg-slate-50 p-12 font-sans relative overflow-hidden"
+                >
+                    {/* Watermark/Background decoration */}
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-bl-full -mr-20 -mt-20 z-0" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-tr-full -ml-20 -mb-20 z-0" />
+
+                    <div className="relative z-10">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-10">
+                            <div className="flex flex-col gap-1.5">
+                                <img src="/logo.png" alt="Logo" width={200} height={200} />
+                                <p className="text-base text-slate-500 font-medium pl-1">LEARN•SOLVE•ACHEIVE</p>
+                            </div>
+
+                            <div className="text-right px-6 py-3 rounded-xl shadow-sm border border-slate-100/50">
+                                <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">GENERATED ON</p>
+                                <p className="text-lg font-semibold text-slate-700">
+                                    {new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Main Content - Force desktop layout and clean spacing */}
+                        <div className="space-y-6 [&>div]:!p-0 [&>div]:!bg-transparent [&>div]:!shadow-none [&>div]:!border-none [&>div]:!space-y-8 [&_h2]:!pl-0">
+                            {testAnalysis && <SectionA analysis={testAnalysis.sectionA} />}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-10 flex items-center justify-between pt-8 border-t border-slate-200/60">
+                            <div className="flex items-center gap-2.5">
+                                <p className="text-sm font-medium text-slate-500">Verified Performance Report</p>
+                            </div>
+                            <div className="flex items-center gap-6 text-sm font-medium text-slate-400">
+                                <span>www.rankmarg.in</span>
+                                <span>•</span>
+                                <span>AI-Powered Analysis</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

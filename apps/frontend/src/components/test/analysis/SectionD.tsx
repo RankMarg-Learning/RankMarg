@@ -68,9 +68,9 @@ const SectionD = ({ analysis }: { analysis: SectionDAnalysis }) => {
   }
 
   return (
-    <Card>
+    <Card className="border-none">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-xl">
           <Target className="w-5 h-5" />
           Difficulty Analysis
         </CardTitle>
