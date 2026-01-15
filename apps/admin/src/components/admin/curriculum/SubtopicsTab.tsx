@@ -44,7 +44,7 @@ export const SubtopicsTab = ({
           <div>
             <CardTitle>Subtopics</CardTitle>
             <CardDescription>
-              {selectedTopicId && topics ? 
+              {selectedTopicId && topics ?
                 `Manage subtopics within ${topics.find(t => t.id === selectedTopicId)?.name}` :
                 "Manage subtopics within topics"
               }
@@ -87,6 +87,7 @@ export const SubtopicsTab = ({
                 <TableHead className="font-semibold text-gray-700">Name</TableHead>
                 <TableHead className="font-semibold text-gray-700">Topic</TableHead>
                 <TableHead className="font-semibold text-gray-700">Subject</TableHead>
+                <TableHead className="font-semibold text-gray-700">Weightage</TableHead>
                 <TableHead className="font-semibold text-gray-700">Est. Time</TableHead>
                 <TableHead className="font-semibold text-gray-700">Actions</TableHead>
               </TableRow>
@@ -134,6 +135,17 @@ export const SubtopicsTab = ({
                         {subjects?.find(s => s.id === topics?.find(t => t.id === subtopic.topicId)?.subjectId)?.name}
                       </Badge>
                     </TableCell>
+                    <TableCell className="flex items-center gap-2">
+                      <span>{subtopic.weightage || 0}%</span>
+                      {subtopic.weightage && (
+                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-blue-600 h-2 rounded-full"
+                            style={{ width: `${subtopic.weightage}%` }}
+                          ></div>
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell>
                       {subtopic.estimatedMinutes ? (
                         <div className="flex items-center gap-1">
@@ -144,6 +156,7 @@ export const SubtopicsTab = ({
                         "-"
                       )}
                     </TableCell>
+
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

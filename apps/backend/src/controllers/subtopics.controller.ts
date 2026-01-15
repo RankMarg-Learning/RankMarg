@@ -31,11 +31,11 @@ export class SubtopicsController {
         "Subtopics fetched successfully",
         200,
         undefined,
-        req.user.role !== Role.ADMIN ? 
-        {
-          "Cache-Control": "public, max-age=60, stale-while-revalidate=60",
-          Vary: "Authorization",
-        } : undefined
+        req.user.role !== Role.ADMIN ?
+          {
+            "Cache-Control": "public, max-age=60, stale-while-revalidate=60",
+            Vary: "Authorization",
+          } : undefined
       );
     } catch (error) {
       next(error);
@@ -46,10 +46,10 @@ export class SubtopicsController {
     res: Response,
     next: NextFunction
   ) => {
-    const { name, topicId, slug, orderIndex, estimatedMinutes } = req.body;
+    const { name, topicId, slug, orderIndex, estimatedMinutes, weightage } = req.body;
     try {
       const subtopic = await prisma.subTopic.create({
-        data: { name, topicId, slug, orderIndex, estimatedMinutes },
+        data: { name, topicId, slug, orderIndex, estimatedMinutes, weightage },
       });
       ResponseUtil.success(res, subtopic, "Subtopic created successfully", 200);
     } catch (error) {
@@ -91,11 +91,11 @@ export class SubtopicsController {
     next: NextFunction
   ) => {
     const { id } = req.params;
-    const { name, topicId, slug, orderIndex, estimatedMinutes } = req.body;
+    const { name, topicId, slug, orderIndex, estimatedMinutes, weightage } = req.body;
     try {
       const subtopic = await prisma.subTopic.update({
         where: { id },
-        data: { name, topicId, slug, orderIndex, estimatedMinutes },
+        data: { name, topicId, slug, orderIndex, estimatedMinutes, weightage },
       });
       ResponseUtil.success(res, subtopic, "Subtopic updated successfully", 200);
     } catch (error) {

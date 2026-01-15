@@ -18,16 +18,18 @@ const SubtopicForm = ({ initialSubtopic, topics, selectedTopicId, onSave, onCanc
   const [slug, setSlug] = useState(initialSubtopic?.slug || "");
   const [topicId, setTopicId] = useState(initialSubtopic?.topicId || selectedTopicId || "");
   const [orderIndex, setOrderIndex] = useState(initialSubtopic?.orderIndex || 0);
+  const [weightage, setWeightage] = useState(initialSubtopic?.weightage || undefined);
   const [estimatedMinutes, setEstimatedMinutes] = useState(initialSubtopic?.estimatedMinutes || undefined);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     onSave({
       name,
       slug: slug || undefined,
       topicId,
       orderIndex,
+      weightage,
       estimatedMinutes,
     });
   };
@@ -52,7 +54,7 @@ const SubtopicForm = ({ initialSubtopic, topics, selectedTopicId, onSave, onCanc
           emptyMessage="No topics found."
         />
       </div>
-      
+
       <div>
         <Label htmlFor="name">Subtopic Name *</Label>
         <Input
@@ -70,6 +72,18 @@ const SubtopicForm = ({ initialSubtopic, topics, selectedTopicId, onSave, onCanc
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
           placeholder="e.g., newton-laws, energy-conservation"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="weightage">Weightage</Label>
+        <Input
+          id="weightage"
+          type="number"
+          min="0"
+          value={weightage || ""}
+          onChange={(e) => setWeightage(e.target.value ? parseInt(e.target.value) : undefined)}
+          placeholder="e.g., 10"
         />
       </div>
 
@@ -96,7 +110,7 @@ const SubtopicForm = ({ initialSubtopic, topics, selectedTopicId, onSave, onCanc
           placeholder="e.g., 45"
         />
       </div>
-      
+
       <div className="flex justify-end space-x-2 pt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel

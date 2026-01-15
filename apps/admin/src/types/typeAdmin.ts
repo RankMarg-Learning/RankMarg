@@ -228,6 +228,7 @@ export interface Subtopic {
   slug?: string;
   topicId: string;
   orderIndex: number;
+  weightage?: number;
   estimatedMinutes?: number;
   createdAt?: string;
   updatedAt?: string;
