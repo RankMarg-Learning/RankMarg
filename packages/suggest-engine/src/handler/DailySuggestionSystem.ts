@@ -22,24 +22,18 @@ export class DailySuggestionSystem implements SuggestionHandler {
     try {
       console.log(`Generating Rank Coach suggestions for user ${userId}`);
 
-      // Use Enhanced Analyzer
-      const analyzer = new EnhancedAnalyzer();
-      const analysis = await analyzer.analyze(userId);
+      // Use Daily Coach Orchestrator
+      const { DailyCoachOrchestrator } = await import("../orchestrator/DailyCoachOrchestrator.js");
+      const orchestrator = new DailyCoachOrchestrator();
+      const suggestions = await orchestrator.orchestrateDailyCoaching(userId);
 
-      if (!analysis) {
-        await this.handleNoActivitySuggestion(userId);
-        return;
-      }
-
-      // Generate coaching with Rank Coach Engine
-      const coachEngine = new RankCoachEngine();
-      const coaching = coachEngine.generateCoaching(analysis);
-      console.log(coaching);
-      // Store suggestions (max 2-3)
-      // await this.storeRankCoachSuggestions(coaching.suggestions, userId);
+      // Store suggestions using repository
+      const { SuggestionRepository } = await import("../repository/SuggestionRepository.js");
+      const repository = new SuggestionRepository();
+      await repository.saveSuggestions(suggestions, userId);
 
       console.log(
-        `Generated ${coaching.suggestions.length} Rank Coach suggestions for user ${userId} (Phase: ${coaching.phase})`
+        `Generated and stored ${suggestions.length} Rank Coach suggestions for user ${userId}`
       );
     } catch (error) {
       console.error("Error generating Rank Coach suggestions:", error);

@@ -245,7 +245,7 @@ export class EnhancedAnalyzer {
         const topicROI: TopicROI[] = topics.map((topic) => {
             const mastery = masteryData.find((m) => m.topicId === topic.id);
             const masteryLevel = mastery?.masteryLevel || 0;
-            const examWeightage = topic.weightage || 0.05; // Default 5% if not set
+            const examWeightage = topic.weightage / 100 || 0.05; // Default 5% if not set
             const errorFrequency = errorCounts.get(topic.id) || 0;
             const lastPracticed = null; // TopicMastery doesn't track this directly
 

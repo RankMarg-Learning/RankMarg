@@ -42,4 +42,103 @@ export class SuggestionController {
       next(error);
     }
   };
+
+  /**
+   * Stream suggestions via Server-Sent Events (SSE)
+   * Delivers daily coaching suggestions in sequence with chat-like delay
+   */
+  streamSuggestions = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const userId = req.user.id;
+
+      // Set SSE headers
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.setHeader("X-Accel-Buffering", "no"); // Disable nginx buffering
+
+      // Get today's suggestions ordered by sequence
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const suggestions = await prisma.studySuggestion.findMany({
+        where: {
+          userId,
+          createdAt: {
+            gte: startOfDay,
+          },
+          status: {
+            in: [SuggestionStatus.ACTIVE, SuggestionStatus.VIEWED],
+          },
+        },
+        orderBy: [
+          { sequenceOrder: "asc" },
+          { createdAt: "desc" },
+        ],
+      });
+
+      if (suggestions.length === 0) {
+        // Send empty state event
+        res.write(`event: empty\n`);
+        res.write(`data: ${JSON.stringify({ message: "No suggestions available for today" })}\n\n`);
+        res.end();
+        return;
+      }
+
+      // Send suggestions sequentially with delay
+      for (let i = 0; i < suggestions.length; i++) {
+        const suggestion = suggestions[i];
+
+        // Send suggestion event
+        res.write(`event: suggestion\n`);
+        res.write(`data: ${JSON.stringify({
+          id: suggestion.id,
+          type: suggestion.type,
+          category: suggestion.category,
+          message: suggestion.suggestion,
+          priority: suggestion.priority,
+          actionName: suggestion.actionName,
+          actionUrl: suggestion.actionUrl,
+          sequenceOrder: suggestion.sequenceOrder,
+          index: i + 1,
+          total: suggestions.length,
+        })}\n\n`);
+
+        // Mark as viewed (streamed)
+        await prisma.studySuggestion.update({
+          where: { id: suggestion.id },
+          data: { status: SuggestionStatus.VIEWED },
+        });
+
+        // Add delay between messages (500ms for chat-like effect)
+        if (i < suggestions.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+
+      // Send completion event
+      res.write(`event: complete\n`);
+      res.write(`data: ${JSON.stringify({
+        message: "All suggestions delivered",
+        count: suggestions.length
+      })}\n\n`);
+
+      res.end();
+    } catch (error) {
+      console.error("SSE streaming error:", error);
+
+      // Send error event
+      res.write(`event: error\n`);
+      res.write(`data: ${JSON.stringify({
+        message: "Failed to stream suggestions",
+        error: error instanceof Error ? error.message : "Unknown error"
+      })}\n\n`);
+
+      res.end();
+    }
+  };
 }

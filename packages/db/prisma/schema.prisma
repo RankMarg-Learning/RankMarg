@@ -71,9 +71,9 @@ model User {
 }
 
 model UserSettings {
-  id        String  @id @default(uuid())
-  userId    String
-  settings  Json?
+  id         String @id @default(uuid())
+  userId     String
+  settings   Json?
   goal_value Float?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -696,24 +696,29 @@ model CoinTransaction {
 // ============================================
 
 model StudySuggestion {
-  id           String    @id @default(uuid())
-  userId       String
-  type         String    @db.Text
-  triggerType  String    @db.Text
-  suggestion   String
-  category     String
-  priority     Int
-  displayUntil DateTime?
-  actionName   String?
-  actionUrl    String?
-  status       String    @default("ACTIVE") @db.Text
-  createdAt    DateTime  @default(now())
+  id            String    @id @default(uuid())
+  userId        String
+  type          String    @db.Text
+  triggerType   String    @db.Text
+  suggestion    String
+  category      String
+  priority      Int
+  displayUntil  DateTime?
+  actionName    String?
+  actionUrl     String?
+  status        String    @default("ACTIVE") @db.Text
+  metadata      Json? // NEW: Session metadata (topics, counts, etc.)
+  sequenceOrder Int? // NEW: Order in daily flow (1-6)
+  expiresAt     DateTime? // NEW: Auto-cleanup timestamp (7 days TTL)
+  createdAt     DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status, createdAt])
   @@index([userId, type])
   @@index([displayUntil])
+  @@index([userId, status, expiresAt]) // NEW: Composite index for cleanup
+  @@index([userId, sequenceOrder, createdAt]) // NEW: Index for ordered retrieval
 }
 
 model Notification {

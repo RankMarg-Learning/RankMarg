@@ -62,7 +62,7 @@ export default function ArticleDetailContent({ slug }: ArticleDetailContentProps
   // Extract headings from markdown content for timeline
   const headings = useMemo(() => {
     if (!article?.content) return [];
-    const headingRegex = /^(#{1,3})\s+(.+)$/gm;
+    const headingRegex = /^(#{1,2})\s+(.+)$/gm;
     const matches = Array.from(article.content.matchAll(headingRegex));
     return matches.map((match, index) => {
       const level = match[1].length;
