@@ -123,9 +123,9 @@ const SectionF = ({ analysis }: { analysis: SectionFAnalysis }) => {
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full border-none">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-xl">
           <BookOpen className="w-5 h-5" />
           Question-wise Analysis
         </CardTitle>
@@ -237,10 +237,10 @@ const SectionF = ({ analysis }: { analysis: SectionFAnalysis }) => {
 
                 {question.needsReview && (
                   <Link href={`/question/${question.slug}?solution=true`}>
-                  <Button size="sm" variant="outline" className="text-orange-600 border-orange-200">
-                    <Eye className="w-3 h-3 mr-1" />
-                    Review
-                  </Button>
+                    <Button size="sm" variant="outline" className="text-orange-600 border-orange-200">
+                      <Eye className="w-3 h-3 mr-1" />
+                      Review
+                    </Button>
                   </Link>
                 )}
               </div>

@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui'
 import { Badge } from '@repo/common-ui'
 import { Progress } from '@repo/common-ui'
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  BarChart3, 
+import {
+  TrendingUp,
+  TrendingDown,
+  BarChart3,
   Target,
   Award,
   Clock,
@@ -27,26 +27,26 @@ const SectionH = ({ analysis }: { analysis: SectionHAnalysis }) => {
   if (!analysis) return null
 
   const { comparisonWithAverage } = analysis
-  
+
   const performanceDiff = comparisonWithAverage.accuracy - comparisonWithAverage.averageAccuracy
   const performancePercentage = Math.abs(performanceDiff)
-  
+
   const getPerformanceColor = (performance: string) => {
     return performance === 'above' ? 'text-green-600' : 'text-red-600'
   }
 
   const getPerformanceIcon = (performance: string) => {
-    return performance === 'above' ? 
-      <TrendingUp className="w-4 h-4 text-green-600" /> : 
+    return performance === 'above' ?
+      <TrendingUp className="w-4 h-4 text-green-600" /> :
       <TrendingDown className="w-4 h-4 text-red-600" />
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 border-none">
       {/* Performance Comparison */}
-      <Card>
+      <Card className="border-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl">
             <BarChart3 className="w-5 h-5" />
             Performance Comparison
           </CardTitle>
@@ -58,12 +58,12 @@ const SectionH = ({ analysis }: { analysis: SectionHAnalysis }) => {
               <span className="text-sm font-medium">Your Accuracy</span>
               <span className="font-semibold">{comparisonWithAverage.accuracy.toFixed(1)}%</span>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Average Accuracy</span>
               <span className="text-gray-600">{comparisonWithAverage.averageAccuracy.toFixed(1)}%</span>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Your Performance</span>
@@ -71,22 +71,20 @@ const SectionH = ({ analysis }: { analysis: SectionHAnalysis }) => {
                   {performanceDiff > 0 ? '+' : ''}{performanceDiff.toFixed(1)}%
                 </span>
               </div>
-              <Progress 
-                value={comparisonWithAverage.accuracy} 
+              <Progress
+                value={comparisonWithAverage.accuracy}
                 className="h-2"
               />
             </div>
-            
-            <div className={`flex items-center gap-2 p-3 rounded-lg ${
-              comparisonWithAverage.performance === 'above' 
-                ? 'bg-green-50 border border-green-200' 
-                : 'bg-red-50 border border-red-200'
-            }`}>
-              {getPerformanceIcon(comparisonWithAverage.performance)}
-              <span className={`text-sm font-medium ${
-                comparisonWithAverage.performance === 'above' ? 'text-green-800' : 'text-red-800'
+
+            <div className={`flex items-center gap-2 p-3 rounded-lg ${comparisonWithAverage.performance === 'above'
+              ? 'bg-green-50 border border-green-200'
+              : 'bg-red-50 border border-red-200'
               }`}>
-                {comparisonWithAverage.performance === 'above' 
+              {getPerformanceIcon(comparisonWithAverage.performance)}
+              <span className={`text-sm font-medium ${comparisonWithAverage.performance === 'above' ? 'text-green-800' : 'text-red-800'
+                }`}>
+                {comparisonWithAverage.performance === 'above'
                   ? `You're performing ${performancePercentage.toFixed(1)}% above average!`
                   : `You're ${performancePercentage.toFixed(1)}% below average. Keep practicing!`
                 }
@@ -98,9 +96,9 @@ const SectionH = ({ analysis }: { analysis: SectionHAnalysis }) => {
 
       {/* Ranking Information */}
       {(analysis.percentile || analysis.rank) && (
-        <Card>
+        <Card className="border-none">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-xl">
               <Award className="w-5 h-5" />
               Ranking Information
             </CardTitle>
@@ -117,7 +115,7 @@ const SectionH = ({ analysis }: { analysis: SectionHAnalysis }) => {
                 </Badge>
               </div>
             )}
-            
+
             {analysis.rank && (
               <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center gap-2">
@@ -134,9 +132,9 @@ const SectionH = ({ analysis }: { analysis: SectionHAnalysis }) => {
       )}
 
       {/* Study Tips Based on Performance */}
-      <Card>
+      <Card className="border-none">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl">
             <Zap className="w-5 h-5" />
             Performance Tips
           </CardTitle>

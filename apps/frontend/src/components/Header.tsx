@@ -39,13 +39,13 @@ export function Header({ onMenuClick }: HeaderProps) {
     <header className="sticky top-0 z-30 w-full backdrop-blur-md bg-white/95 border-b border-gray-200/50 shadow-sm">
       <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         <div className="flex h-14 sm:h-16 items-center justify-between">
-          {/* Left Section - Logo & Mobile Menu */}
+          {/* Hamburger menu - hidden on mobile, visible on desktop for sidebar toggle */}
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
             <Button
               variant="ghost"
               size="icon"
               onClick={onMenuClick}
-              className="lg:hidden h-8 w-8 sm:h-9 sm:w-9 hover:bg-gray-100"
+              className="hidden h-8 w-8 sm:h-9 sm:w-9 hover:bg-gray-100"
             >
               <Menu size={18} className="sm:w-5 sm:h-5" />
             </Button>

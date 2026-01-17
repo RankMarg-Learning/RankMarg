@@ -45,20 +45,20 @@ export enum SuggestionType {
 
 export type Condition =
   | {
-      type:
-        | "test_score"
-        | "accuracy"
-        | "study_time"
-        | "questions_solved"
-        | "streak"
-        | "inactivity"
-        | "exam_proximity"
-        | "correct_answers_ratio"
-        | "isCompleted"
-        | "duration";
-      operator: "lt" | "gte" | "eq";
-      value: number | boolean;
-    }
+    type:
+    | "test_score"
+    | "accuracy"
+    | "study_time"
+    | "questions_solved"
+    | "streak"
+    | "inactivity"
+    | "exam_proximity"
+    | "correct_answers_ratio"
+    | "isCompleted"
+    | "duration";
+    operator: "lt" | "gte" | "eq";
+    value: number | boolean;
+  }
   | { type: "always" };
 
 export interface Rule {
@@ -66,13 +66,13 @@ export interface Rule {
   condition: Condition;
   suggestion: string;
   type:
-    | "GUIDANCE"
-    | "CELEBRATION"
-    | "WARNING"
-    | "REMINDER"
-    | "MOTIVATION"
-    | "ENCOURAGEMENT"
-    | "WELLNESS";
+  | "GUIDANCE"
+  | "CELEBRATION"
+  | "WARNING"
+  | "REMINDER"
+  | "MOTIVATION"
+  | "ENCOURAGEMENT"
+  | "WELLNESS";
   duration: number;
 
   metadata?: {
@@ -91,3 +91,6 @@ interface RuleSet {
 }
 
 export type RuleBook = Record<string, RuleSet>;
+
+// Re-export extended types
+export * from "./extended.types";

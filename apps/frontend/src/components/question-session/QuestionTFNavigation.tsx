@@ -76,15 +76,17 @@ export const QuestionTFNavigation: React.FC<QuestionTFNavigationProps> = ({
                 <button
                     onClick={onPrev}
                     disabled={!canGoPrev || isSubmitting}
-                    className="inline-flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-700 bg-white border border-gray-200 rounded-full hover:bg-primary-50 hover:text-primary-800 hover:border-primary-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                 >
                     <ArrowLeft className="h-4 w-4" />
+                    <span>Previous</span>
                 </button>
                 <button
                     onClick={onNext}
                     disabled={!canGoNext || isSubmitting}
-                    className="inline-flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-full hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                 >
+                    <span>Next</span>
                     <ArrowRight className="h-4 w-4" />
                 </button>
             </div>

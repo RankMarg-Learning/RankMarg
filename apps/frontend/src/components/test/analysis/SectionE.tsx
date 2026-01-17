@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui'
 import { Badge } from '@repo/common-ui'
 import { Progress } from '@repo/common-ui'
-import { 
-  TrendingUp, 
-  BookOpen, 
+import {
+  TrendingUp,
+  BookOpen,
   Target,
   Award,
   Users
@@ -58,9 +58,9 @@ const SectionE = ({ analysis }: { analysis: SectionEAnalysis }) => {
   const subjects = Object.keys(subjectWiseAnalysis)
 
   return (
-    <Card>
+    <Card className='border-none'>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-xl">
           <BookOpen className="w-5 h-5" />
           Subject-wise Analysis
         </CardTitle>
@@ -81,7 +81,7 @@ const SectionE = ({ analysis }: { analysis: SectionEAnalysis }) => {
                     {data.accuracy.toFixed(1)}%
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Correct: {data.correct}</span>

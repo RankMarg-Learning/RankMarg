@@ -36,7 +36,7 @@ function getDifficultyGuidelines(subjectName: string): string {
   - 3 (Hard): Multi-step, 2 concepts linked (e.g., friction + NLM), ~1–2 min. 
   - 4 (Very Hard): Multi-concept integration, calculus/advanced logic, >3 min.
   `;
-    
+
     case "Chemistry":
       return `
     - 1 (Easy): Direct NCERT fact, definition, or formula-based numerical, <25 sec.
@@ -44,7 +44,7 @@ function getDifficultyGuidelines(subjectName: string): string {
     - 3 (Hard): Multi-step problem, requires linking 2 concepts (e.g., thermodynamics + equilibrium, hybridisation + resonance), ~1–2 min.
     - 4 (Very Hard): Multi-concept integration, lengthy calculations, tricky exceptions or advanced mechanisms, >2–3 min.    
     `;
-    
+
     case "Biology":
       return `
       - 1 (Easy):Direct NCERT fact or definition recall (one-line answer), <15 sec.
@@ -52,7 +52,7 @@ function getDifficultyGuidelines(subjectName: string): string {
       - 3 (Hard): Twisted recall, multi-step reasoning (e.g., exceptions in taxonomy, genetic cross with 2 traits),~1 min
       - 4 (Very Hard): Case-based/multi-concept integration (e.g., ecology + genetics, applied physiology), >1–2 min. 
     `;
-    
+
     case "Mathematics":
       return `
       - 1 (Easy): Direct formula/application, single-step calculation (e.g., simple algebra or direct differentiation), <40 sec.
@@ -60,7 +60,7 @@ function getDifficultyGuidelines(subjectName: string): string {
       - 3 (Hard): Multi-step problem, requires linking 2 concepts (e.g., calculus + coordinate geometry, algebra + probability), ~1–2 min.
       - 4 (Very Hard): Multi-concept integration, lengthy proofs/advanced calculus or combinatorics, >2–3 min.
       `;
-    
+
     default:
       return `
     - 1 (Easy): Direct formula substitution, single concept, <40 sec.  
@@ -78,15 +78,15 @@ function getDifficultyGuidelines(subjectName: string): string {
  */
 function getSubjectSpecificFormatRules(subjectName: string): string {
   const rules: string[] = [];
-  
+
   if (subjectName === "Chemistry") {
     rules.push("- Transform all element-symbol in render format.(e.g. CO2 -> $CO_2$,SO_4^{-1} -> $SO_4^{-1}$)");
   }
-  
+
   if (subjectName === "Mathematics") {
     rules.push("- Transform difficult latex symbols in unicode format.(e.g. Instead of  \\neq give direct ≠ , \\notin -> ∉)");
   }
-  
+
   return rules.join("\n");
 }
 
@@ -109,7 +109,7 @@ function getSolutionRules(subjectName: string): string {
   - Add **Shortcut/Trick:** ONLY if it's different from the strategy and provides unique value. (If Possible)
   - If-Then Scenario [like, If mass doubles then...](If Possible)
   `;
-    
+
     case "Chemistry":
       return `
       INSTRUCTIONS: 
@@ -121,7 +121,7 @@ function getSolutionRules(subjectName: string): string {
         Example: "For Kc < 1, reactants dominate → equilibrium lies left."
       - **Quick Recall:** Add one-line recall rule or pattern for long-term memory(If Possible).
   `;
-    
+
     case "Biology":
       return `
         -  If solution needed the visualize (diagram / table / etc) Describe the diagram inside square brackets so we will generate and add it. (If needed)
@@ -131,7 +131,7 @@ function getSolutionRules(subjectName: string): string {
         - **Did You Know:** Interesting fact related to the topic (If Possible)
         - **Exploratory:** Advanced concept beyond NCERT but connected to question (If Possible)
   `;
-    
+
     case "Mathematics":
       return `
             [CRITICAL]: ONLY CALCULATION STEPS WITH MINIMAL WORDING - NO LENGTHY EXPLANATIONS.
@@ -141,7 +141,7 @@ function getSolutionRules(subjectName: string): string {
           - **Final Answer:** State the result clearly.
           - Add **Shortcut/Trick:** ONLY if it's different from the strategy and saves significant time. (If Possible)
   `;
-    
+
     default:
       return "";
   }
@@ -164,7 +164,6 @@ export function createSystemPrompt(
   return `Role: Expert of ${subject.name} NEET/JEE question author for RankMarg. Write ONE exam-ready question and reply ONLY with the JSON below.
 
 SUBJECT: ${subject.name} (ID:${subject.id})
-TOPIC: ${topicId ? topicId : "CHOOSE"}
 SUBTOPICS:
 ${subtopicsList}
 
@@ -231,7 +230,7 @@ COMMON MISTAKE FIELD RULES:
 POLICY:
 • SI units, define symbols, formal student tone
 • Keep type, format, options, isNumerical, isTrueFalse consistent
-• Pick Question Categories based on the question and subject syllabus
+• Assign question categories strictly based on the dominant cognitive skill mandatorily required to solve the question, as explicitly intended by the exam syllabus—not by topic, difficulty, or student perception.
 • In Solution make steps subtitle bold
 • All fields must follow RENDER & FORMAT RULES strictly
 
@@ -244,11 +243,11 @@ RETURN EXACTLY THIS JSON (no extra text and each field need to follow strict rul
   "type": "MULTIPLE_CHOICE" | "INTEGER" | "SUBJECTIVE",
   "format": "SINGLE_SELECT" | "MULTIPLE_SELECT" | "TRUE_FALSE" | "MATCHING" | "ASSERTION_REASON" | "COMPREHENSION" (e.g consider Statement-base -> "TRUE_FALSE", Match The Following -> "MATCHING", TYPE => INTEGER then "SINGLE_SELECT"),
   "difficulty": 1|2|3|4,
-  "topicId": "exact_topic_id_from_list_above",
+  "topicId": "${topicId}",
   "subtopicId": "exact_subtopic_id_from_list_above",
   "subjectId": "${subject.id}",
   "solution": "Follow solution generations RULES AND REGULATIONS and always validate the Render & Format Rules. NO '**Solution:**' heading.",
-  "strategy": "1-3 clear, actionable sentences with high-impact insights on approach, pitfalls, elimination, time management. Follow RENDER & FORMAT RULES.",
+  "strategy": "Explain in 1–3 simple, student-friendly sentences how to approach the question. Point out smart shortcuts, or easy elimination clues if any. Keep the tone encouraging, clear, and exam-focused—no heavy theory."
   "hint": "One specific guiding sentence without revealing answer. Follow RENDER & FORMAT RULES.",
   "questionTime": as per question difficulty and subject (In Seconds),
   "isNumerical": If Options not Present then add here numerical value otherwise null,

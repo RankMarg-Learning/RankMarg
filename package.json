@@ -20,6 +20,7 @@
     "backend:build": "npm run build --workspace=apps/backend",
     "frontend:dev": "npm run dev --workspace=apps/frontend",
     "frontend:build": "npm run build --workspace=apps/frontend",
+    "suggest:build": "npm run build --workspace=packages/suggest-engine",
     "depcheck": "turbo run depcheck"
   },
   "prisma": {

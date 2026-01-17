@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
-import { Button } from '@repo/common-ui';
+import {
+  Button,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@repo/common-ui';
 import { Clock, FileText, Info, Lock, Crown, ChevronDown, ChevronUp } from 'lucide-react';
 import { TextFormator } from '@/utils/textFormator';
 import { AvailableTestsProps, TestCardProps } from '@/types';
 import { useRouter } from 'next/navigation';
 import MarkdownRenderer from '@/lib/MarkdownRenderer';
-import { cn } from '@/lib/utils';
 
 
 
@@ -13,7 +19,7 @@ import { cn } from '@/lib/utils';
 const TestCard: React.FC<TestCardProps> = ({ test, onStartTest, isLimitExceeded }) => {
   const router = useRouter();
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  
+
   let badgeColor = 'bg-gray-500 text-white';
   let badgeText = 'Standard';
   let cardBgColor = 'bg-white border-gray-200';
@@ -71,7 +77,7 @@ const TestCard: React.FC<TestCardProps> = ({ test, onStartTest, isLimitExceeded 
 
       <div className="p-4">
         <h3 className="text-base font-medium text-gray-900 mb-1">{test.title}</h3>
-        
+
         {/* Collapsible Description */}
         <div className="mb-4">
           <button
@@ -85,7 +91,7 @@ const TestCard: React.FC<TestCardProps> = ({ test, onStartTest, isLimitExceeded 
               <ChevronDown size={16} className="text-gray-500" />
             )}
           </button>
-          
+
           {isDescriptionExpanded && (
             <div className="mt-1 p-1 bg-gray-50  ">
               <div className=" text-gray-700">
@@ -148,7 +154,7 @@ const AvailableTests: React.FC<AvailableTestsProps> = ({
       onFilterChange(filter);
     }
   };
-  
+
   return (
     <div>
       <div className="mb-6">
@@ -157,24 +163,20 @@ const AvailableTests: React.FC<AvailableTestsProps> = ({
             <h3 className="text-sm font-semibold text-gray-700">Filter Tests</h3>
             <div className="h-px bg-gray-200 flex-1"></div>
           </div>
-          
-          <div className="flex flex-wrap gap-2">
-            {['FULL_LENGTH', 'SUBJECT_WISE', 'CHAPTER_WISE'].map((filter) => (
-              <Button
-                key={filter}
-                variant={activeFilter === filter ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleFilterChange(filter)}
-                className={cn(
-                  "transition-all duration-200 font-medium",
-                  activeFilter === filter 
-                    ? "bg-primary-600 hover:bg-primary-700 text-white shadow-sm" 
-                    : "border-gray-300 text-gray-600 hover:border-primary-300 hover:text-primary-600 hover:bg-primary-50"
-                )}
-              >
-                {TextFormator(filter)}
-              </Button>
-            ))}
+
+          <div className="w-[200px]">
+            <Select value={activeFilter} onValueChange={handleFilterChange}>
+              <SelectTrigger className="w-full h-9 rounded-full">
+                <SelectValue placeholder="Select Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                {['FULL_LENGTH', 'SUBJECT_WISE', 'CHAPTER_WISE'].map((filter) => (
+                  <SelectItem key={filter} value={filter}>
+                    {TextFormator(filter)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>

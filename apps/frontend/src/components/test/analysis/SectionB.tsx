@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui'
 import { Progress } from '@repo/common-ui'
 import { Badge } from '@repo/common-ui'
-import { 
-  TrendingUp, 
-  Target, 
+import {
+  TrendingUp,
+  Target,
   CheckCircle2,
   XCircle,
   Clock,
@@ -85,9 +85,9 @@ const SectionB = ({ analysis }: { analysis: SectionBAnalysis }) => {
   }
 
   return (
-    <Card>
+    <Card className='border-none'>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-xl">
           <TrendingUp className="w-5 h-5" />
           Performance Metrics
         </CardTitle>
@@ -95,25 +95,25 @@ const SectionB = ({ analysis }: { analysis: SectionBAnalysis }) => {
       <CardContent className="space-y-6">
         {/* Overall Statistics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="text-center p-4 bg-green-50 border border-green-200 rounded-2xl">
             <CheckCircle2 className="w-6 h-6 text-green-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-green-600">{statistics.correct}</div>
             <div className="text-sm text-green-700">Correct</div>
           </div>
-          
-          <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg">
+
+          <div className="text-center p-4 bg-red-50 border border-red-200 rounded-2xl">
             <XCircle className="w-6 h-6 text-red-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-red-600">{statistics.incorrect}</div>
             <div className="text-sm text-red-700">Incorrect</div>
           </div>
-          
-          <div className="text-center p-4 bg-gray-50 border border-gray-200 rounded-lg">
+
+          <div className="text-center p-4 bg-gray-50 border border-gray-200 rounded-2xl">
             <Clock className="w-6 h-6 text-gray-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-gray-600">{statistics.unattempted}</div>
             <div className="text-sm text-gray-700">Unattempted</div>
           </div>
-          
-          <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
+
+          <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-2xl">
             <Award className="w-6 h-6 text-blue-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-blue-600">{statistics.percentage}%</div>
             <div className="text-sm text-blue-700">Percentage</div>
@@ -141,7 +141,7 @@ const SectionB = ({ analysis }: { analysis: SectionBAnalysis }) => {
                     {getDifficultyIcon(difficulty)}
                     <h5 className="font-semibold capitalize">{difficulty.replace('_', ' ')}</h5>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="text-2xl font-bold">{accuracy.toFixed(1)}%</div>
                     <div className="text-sm">

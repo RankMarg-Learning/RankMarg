@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  BookOpen, 
-  LayoutDashboard, 
-  PieChart, 
-  BrainCircuit, 
-  GraduationCap, 
-  X, 
+import {
+  BookOpen,
+  LayoutDashboard,
+  PieChart,
+  BrainCircuit,
+  GraduationCap,
+  X,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
@@ -28,7 +28,7 @@ interface SidebarProps {
   className?: string;
 }
 
-export function Sidebar({ className }: SidebarProps)   {
+export function Sidebar({ className }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = usePathname();
   const { user } = useUserData();
@@ -48,8 +48,7 @@ export function Sidebar({ className }: SidebarProps)   {
     <aside
       className={cn(
         "bg-white border-r border-card-border h-[calc(100vh-64px)] sticky top-16 transition-all duration-300",
-        collapsed ? "w-28" : "w-60",
-        "lg:w-auto w-56",
+        collapsed ? "w-16a" : "w-[240px]",
         className
       )}
     >
@@ -76,9 +75,9 @@ export function Sidebar({ className }: SidebarProps)   {
               <Link
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  "flex items-center gap-3 p-3 rounded-md text-sm font-medium transition-colors",
                   location.startsWith(item.href)
-                    ? "bg-gradient-to-tr from-primary-600 to-primary-500 text-white"
+                    ? "bg-primary-50 text-primary-600 border border-primary-200"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 )}
               >
@@ -100,18 +99,18 @@ export function Sidebar({ className }: SidebarProps)   {
         <div className="absolute bottom-4 left-0 w-full flex  justify-center px-1">
           <div className="bg-primary-50 border border-primary-200 rounded-xl shadow-sm p-4 flex flex-col items-center w-full max-w-[220px]">
             <div className="flex flex-col items-center mb-2">
-            
+
               <div className="text-center">
-                <div className="font-semibold text-base text-primary-900">Get Unlimited Access<br/>with <span className="font-bold">RANK Plan</span></div>
+                <div className="font-semibold text-base text-primary-900">Get Unlimited Access<br />with <span className="font-bold">RANK Plan</span></div>
                 <div className="w-16 h-1 border-b-2 border-primary-400 mx-auto mt-1 mb-2 rounded-full" />
               </div>
             </div>
             <Link href={`/pricing?ref=side_upgrade&id=${user?.id}&current_plan=${user?.plan?.status}`} target='_blank' className="w-full">
               <Button className="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold text-sm rounded-md mt-1" size="sm">
                 View Benefits
-                <ExternalLink/>
-                </Button>
-              </Link>
+                <ExternalLink />
+              </Button>
+            </Link>
           </div>
         </div>
       )}

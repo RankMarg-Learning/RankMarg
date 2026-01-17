@@ -1,4 +1,7 @@
 "use client"
+import { useState, useRef } from "react"
+import { useRouter } from "next/navigation"
+import html2canvas from "html2canvas"
 import SectionA from "./analysis/SectionA"
 import SectionB from "./analysis/SectionB"
 import SectionC from "./analysis/SectionC"
@@ -7,30 +10,65 @@ import SectionE from "./analysis/SectionE"
 import { useQuery } from "@tanstack/react-query"
 import SkeletonAnalysis from "../skeleton/skel_analysis"
 import { Alert, AlertDescription, Button } from "@repo/common-ui"
-import { AlertCircle, BookOpen, CheckCircle2, XCircle, Clock } from "lucide-react"
+import {
+    AlertCircle,
+    LayoutDashboard,
+    TrendingUp,
+    Clock,
+    Target,
+    BookOpen,
+    Lightbulb,
+    GitCompare,
+    ChevronRight,
+    ArrowRight,
+    ArrowLeft,
+    Share
+} from "lucide-react"
 import api from "@/utils/api"
 import SectionG from "./analysis/SectionG"
 import SectionH from "./analysis/SectionH"
 import { ExamType } from "@repo/db/enums"
 import ErrorCTA from "../error"
 
-export default function TestAnalysisPage({testId}:{testId:string}) {
+export default function TestAnalysisPage({ testId }: { testId: string }) {
+    const [activeStep, setActiveStep] = useState("overview")
+    const router = useRouter()
+    const shareRef = useRef<HTMLDivElement>(null)
 
-    const {data, isLoading, isError, error} = useQuery({
+    const handleShare = async () => {
+        if (!shareRef.current) return
+        try {
+            const canvas = await html2canvas(shareRef.current, {
+                scale: 3, // Higher quality
+                backgroundColor: "#F8FAFC", // slate-50
+                useCORS: true
+            })
+            const image = canvas.toDataURL("image/png")
+            const link = document.createElement("a")
+            link.href = image
+            link.download = `test-analysis-${testId}.png`
+            link.click()
+        } catch (error) {
+            console.error("Error generating share image:", error)
+        }
+    }
+
+    const { data, isLoading, isError, error } = useQuery({
         queryKey: ["testAnalysis", testId],
-        queryFn: async() => {
-            const {data} = await api.get(`/test/${testId}/analysis`)
+        queryFn: async () => {
+            const { data } = await api.get(`/test/${testId}/analysis`)
             return data
         },
         retry: 2,
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 5 * 60 * 1000,
     })
     const testAnalysis = data?.data
-    if(isLoading) return <SkeletonAnalysis/>
-    
-    if(isError) {
+
+    if (isLoading) return <SkeletonAnalysis />
+
+    if (isError) {
         return (
-           <ErrorCTA message={error?.message || "Error loading test analysis. Please try again."} />
+            <ErrorCTA message={error?.message || "Error loading test analysis. Please try again."} />
         )
     }
 
@@ -47,90 +85,184 @@ export default function TestAnalysisPage({testId}:{testId:string}) {
         )
     }
 
+    const steps = [
+        {
+            id: "overview",
+            label: "Overview",
+            icon: LayoutDashboard,
+            component: <SectionA analysis={testAnalysis.sectionA} />
+        },
+        {
+            id: "performance",
+            label: "Performance",
+            icon: TrendingUp,
+            component: <SectionB analysis={testAnalysis.sectionB} />
+        },
+        {
+            id: "time",
+            label: "Time",
+            icon: Clock,
+            component: <SectionC analysis={testAnalysis.sectionC} />
+        },
+        {
+            id: "difficulty",
+            label: "Difficulty",
+            icon: Target,
+            component: <SectionD analysis={testAnalysis.sectionD} />
+        },
+        ...(testAnalysis.metadata?.examType === ExamType.FULL_LENGTH ? [{
+            id: "subjects",
+            label: "Subjects",
+            icon: BookOpen,
+            component: <SectionE analysis={testAnalysis.sectionE} />
+        }] : []),
+        {
+            id: "recommendations",
+            label: "Coach",
+            icon: Lightbulb,
+            component: <SectionG analysis={testAnalysis.sectionG} examCode={testAnalysis.metadata?.examCode} />
+        },
+        {
+            id: "comparative",
+            label: "Compare",
+            icon: GitCompare,
+            component: <SectionH analysis={testAnalysis.sectionH} />
+        }
+    ]
+
+    const activeStepData = steps.find(s => s.id === activeStep)
+    const activeComponent = activeStepData?.component
+
     return (
-        <div className="container mx-auto p-2 space-y-4">
-            
+        <div className="flex flex-col h-[calc(100vh-4rem)] ">
+            <div className="flex flex-1 overflow-hidden lg:flex-row">
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Analysis Sections */}
-                <div className="lg:col-span-2 space-y-8">
-                    {/* Section A: Test Overview */}
-                    <SectionA analysis={testAnalysis.sectionA}/>
-                    
-                    {/* Section B: Performance Metrics */}
-                    <SectionB analysis={testAnalysis.sectionB}/>
-                    
-                    {/* Section C: Time Analysis */}
-                    <SectionC analysis={testAnalysis.sectionC}/>
-                    
-                    {/* Section D: Difficulty Analysis */}
-                    <SectionD analysis={testAnalysis.sectionD}/>
-                    
-                    {/* Section E: Subject-wise Analysis */}
-                    {
-                        testAnalysis.metadata?.examType === ExamType.FULL_LENGTH && (
-
-                            <SectionE analysis={testAnalysis.sectionE}/>
+                <div className="hidden lg:flex w-56 flex-col  bg-card/50 backdrop-blur-sm p-2 space-y-2 h-full overflow-y-auto">
+                    <div className="flex items-center gap-3 mb-4 pl-1">
+                        <Button variant="ghost" onClick={() => router.back()} className="rounded-full border-full bg-gray-100 h-8 w-8 p-0">
+                            <ArrowLeft className="w-8 h-8" />
+                        </Button>
+                        <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Analysis Sections</h2>
+                    </div>
+                    {steps.map((step) => {
+                        const Icon = step.icon
+                        const isActive = activeStep === step.id
+                        return (
+                            <button
+                                key={step.id}
+                                onClick={() => setActiveStep(step.id)}
+                                className={`group flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium w-full
+                                    ${isActive
+                                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 translate-x-1"
+                                        : "hover:bg-primary/10 hover:text-primary-foreground text-muted-foreground hover:translate-x-1"
+                                    }`}
+                            >
+                                <div className="flex items-center space-x-3">
+                                    <Icon className={`w-5 h-5 transition-transform duration-200 ${isActive ? "scale-110" : "group-hover:scale-110"}`} />
+                                    <span>{step.label}</span>
+                                </div>
+                                <ChevronRight className={`w-4 h-4 transition-all duration-200 ${isActive
+                                    ? "opacity-100 translate-x-0"
+                                    : "opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+                                    }`} />
+                            </button>
                         )
-                    }
-                    
-                    {/* Section F: Question-wise Analysis - Replaced with Review Test Link */}
-                    <div className="w-full">
-                        <div className="bg-white rounded-lg border p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-semibold flex items-center gap-2">
-                                    <BookOpen className="w-5 h-5" />
-                                    Question-wise Review
-                                </h3>
-                                <Button
-                                    onClick={() => {
-                                        window.location.href = `/t/${testId}/review`;
-                                    }}
-                                    className="bg-yellow-400 hover:bg-yellow-500 text-black"
-                                >
-                                    Review All Questions
-                                </Button>
+                    })}
+                </div>
+
+                <div className="flex-1 h-full overflow-y-auto  p-3 lg:p-4 scroll-smooth ">
+                    <div className="max-w-5xl mx-auto space-y-0 animate-in fade-in duration-500 slide-in-from-bottom-4">
+                        <div className="flex items-center justify-end pb-2 gap-2 ">
+                            <Button
+                                onClick={handleShare}
+                                variant="outline"
+                                className="w-10 h-10 rounded-full"
+                            >
+
+                                <Share className="w-4 h-4 " />
+                            </Button>
+                            <Button
+                                onClick={() => router.push(`/t/${testId}/review`)}
+                                className="inline-flex items-center px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-full shadow hover:bg-primary/90 transition-colors"
+                            >
+                                View Solutions
+                                <ArrowRight className="w-4 h-4 " />
+                            </Button>
+                        </div>
+                        {activeComponent}
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Bottom Badge Navigation */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50 px-2 py-3 safe-area-pb shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <div className="flex items-center justify-start overflow-x-auto no-scrollbar gap-2 px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    {steps.map((step) => {
+                        const Icon = step.icon
+                        const isActive = activeStep === step.id
+                        return (
+                            <button
+                                key={step.id}
+                                onClick={() => {
+                                    setActiveStep(step.id)
+                                    window.scrollTo({ top: 0, behavior: "smooth" })
+                                }}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all
+                                    ${isActive
+                                        ? "bg-primary text-primary-foreground shadow-sm"
+                                        : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                                    }`}
+                            >
+                                <Icon className="w-4 h-4" />
+                                <span>{step.label}</span>
+                            </button>
+                        )
+                    })}
+                </div>
+            </div>
+            {/* Hidden Shareable Component */}
+            <div className="fixed left-[-9999px] top-0 pointer-events-none">
+                <div
+                    ref={shareRef}
+                    className="w-[1080px] h-fit bg-slate-50 p-12 font-sans relative overflow-hidden"
+                >
+                    {/* Watermark/Background decoration */}
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-bl-full -mr-20 -mt-20 z-0" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-tr-full -ml-20 -mb-20 z-0" />
+
+                    <div className="relative z-10">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-10">
+                            <div className="flex flex-col gap-1.5">
+                                <img src="/logo.png" alt="Logo" width={200} height={200} />
+                                <p className="text-base text-slate-500 font-medium pl-1">LEARN•SOLVE•ACHEIVE</p>
                             </div>
-                            <p className="text-sm text-gray-600 mb-4">
-                                    Review all test questions with detailed solutions, hints, and explanations in an interactive test-like environment.
+
+                            <div className="text-right px-6 py-3 rounded-xl shadow-sm border border-slate-100/50">
+                                <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">GENERATED ON</p>
+                                <p className="text-lg font-semibold text-slate-700">
+                                    {new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
                                 </p>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <CheckCircle2 className="w-4 h-4 text-green-600" />
-                                        <span className="font-medium text-green-900">
-                                            Correct: {testAnalysis.sectionF?.correctQuestions?.length || 0}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <XCircle className="w-4 h-4 text-red-600" />
-                                        <span className="font-medium text-red-900">
-                                            Incorrect: {testAnalysis.sectionF?.incorrectQuestions?.length || 0}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Clock className="w-4 h-4 text-gray-600" />
-                                        <span className="font-medium text-gray-900">
-                                            Unattempted: {testAnalysis.sectionF?.unattemptedQuestions?.length || 0}
-                                        </span>
-                                    </div>
-                                </div>
+                            </div>
+                        </div>
+
+                        {/* Main Content - Force desktop layout and clean spacing */}
+                        <div className="space-y-6 [&>div]:!p-0 [&>div]:!bg-transparent [&>div]:!shadow-none [&>div]:!border-none [&>div]:!space-y-8 [&_h2]:!pl-0">
+                            {testAnalysis && <SectionA analysis={testAnalysis.sectionA} />}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-10 flex items-center justify-between pt-8 border-t border-slate-200/60">
+                            <div className="flex items-center gap-2.5">
+                                <p className="text-sm font-medium text-slate-500">Verified Performance Report</p>
+                            </div>
+                            <div className="flex items-center gap-6 text-sm font-medium text-slate-400">
+                                <span>www.rankmarg.in</span>
+                                <span>•</span>
+                                <span>AI-Powered Analysis</span>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                {/* Sidebar with Recommendations and Comparative Analysis */}
-                <div className="space-y-8">
-                    {/* Section G: Improvement Recommendations */}
-                    <SectionG analysis={testAnalysis.sectionG} examCode={testAnalysis.metadata?.examCode}/>
-                    
-                    {/* Section H: Comparative Analysis */}
-                    <SectionH analysis={testAnalysis.sectionH}/>
                 </div>
             </div>
         </div>

@@ -41,13 +41,13 @@ const CurriculumLoading = () => (
 const CurriculumContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // URL-based state management
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || "subjects");
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || "");
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | undefined>(searchParams.get('subject') || undefined);
   const [selectedTopicId, setSelectedTopicId] = useState<string | undefined>(searchParams.get('topic') || undefined);
-  
+
   const [filters, setFilters] = useState<FilterState>({
     stream: searchParams.get('stream') || "",
     category: searchParams.get('category') || "",
@@ -83,7 +83,7 @@ const CurriculumContent = () => {
 
   const filteredSubjects = useMemo(() =>
     subjects?.filter(subject =>
-      subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ) || [], [subjects, searchTerm]
+      subject.name.toLowerCase().includes(searchTerm.toLowerCase())) || [], [subjects, searchTerm]
   );
 
   const filteredTopics = useMemo(() =>
@@ -109,7 +109,7 @@ const CurriculumContent = () => {
   // URL parameter management
   const updateURL = useCallback((params: Record<string, string | undefined>) => {
     const current = new URLSearchParams(searchParams.toString());
-    
+
     Object.entries(params).forEach(([key, value]) => {
       if (value && value !== '') {
         current.set(key, value);
@@ -117,7 +117,7 @@ const CurriculumContent = () => {
         current.delete(key);
       }
     });
-    
+
     const newURL = `${window.location.pathname}?${current.toString()}`;
     router.push(newURL, { scroll: false });
   }, [router, searchParams]);
@@ -127,19 +127,19 @@ const CurriculumContent = () => {
     setSelectedSubjectId(subjectId);
     setSelectedTopicId(undefined); // Reset topic when subject changes
     setActiveTab("topics");
-    updateURL({ 
-      subject: subjectId, 
-      topic: undefined, 
-      tab: "topics" 
+    updateURL({
+      subject: subjectId,
+      topic: undefined,
+      tab: "topics"
     });
   }, [updateURL]);
 
   const handleTopicSelect = useCallback((topicId: string | undefined) => {
     setSelectedTopicId(topicId);
     setActiveTab("subtopics");
-    updateURL({ 
-      topic: topicId, 
-      tab: "subtopics" 
+    updateURL({
+      topic: topicId,
+      tab: "subtopics"
     });
   }, [updateURL]);
 
@@ -307,7 +307,7 @@ const CurriculumContent = () => {
       saveSubject.mutate(
         {
           name: subject.name,
-          shortName: subject.shortName, 
+          shortName: subject.shortName,
         },
         {
           onSuccess: () => {
@@ -380,6 +380,7 @@ const CurriculumContent = () => {
         topicId: subtopic.topicId || selectedTopicId,
         orderIndex: subtopic.orderIndex,
         estimatedMinutes: subtopic.estimatedMinutes,
+        weightage: subtopic.weightage || 0,
       },
         {
           onSuccess: () => {
@@ -397,6 +398,7 @@ const CurriculumContent = () => {
         topicId: subtopic.topicId || selectedTopicId,
         orderIndex: subtopic.orderIndex,
         estimatedMinutes: subtopic.estimatedMinutes,
+        weightage: subtopic.weightage || 0,
       },
         {
           onSuccess: () => {
@@ -494,11 +496,11 @@ const CurriculumContent = () => {
     setSelectedSubjectId(undefined);
     setSelectedTopicId(undefined);
     setActiveTab("subjects");
-    updateURL({ 
-      search: undefined, 
-      stream: undefined, 
-      category: undefined, 
-      status: undefined, 
+    updateURL({
+      search: undefined,
+      stream: undefined,
+      category: undefined,
+      status: undefined,
       dateRange: undefined,
       subject: undefined,
       topic: undefined,
@@ -515,7 +517,7 @@ const CurriculumContent = () => {
       <CurriculumHeader onReset={resetFilters} />
 
       {/* Statistics Dashboard */}
-      <CurriculumStats 
+      <CurriculumStats
         stats={stats}
         isLoadingSubjects={isLoadingSubjects}
         isLoadingTopics={isLoadingTopics}
@@ -548,7 +550,7 @@ const CurriculumContent = () => {
           </TabsTrigger>
           <TabsTrigger
             value="exams"
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-primary-600 transition-all duration-200 rounded-md"
+            className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-primary-600 transition-all duration-200 rounded-md"
           >
             <Calendar className="w-4 h-4" />
             Exams

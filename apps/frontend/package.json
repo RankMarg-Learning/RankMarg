@@ -20,6 +20,8 @@
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@prisma/client": "^5.20.0",
+    "@repo/common-ui": "*",
+    "@repo/curriculum": "*",
     "@repo/db": "*",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query": "^5.56.2",
@@ -35,6 +37,7 @@
     "date-fns": "^3.6.0",
     "firebase": "^10.13.1",
     "framer-motion": "^11.11.11",
+    "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
     "katex": "^0.16.11",
     "lucide-react": "^0.439.0",
@@ -62,12 +65,11 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
     "zod": "^3.23.8",
-    "zustand": "^5.0.3",
-    "@repo/common-ui": "*",
-    "@repo/curriculum": "*"
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@repo/eslint-config": "^0.0.0",
+    "@types/html2canvas": "^0.5.35",
     "@types/node": "^20",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18",

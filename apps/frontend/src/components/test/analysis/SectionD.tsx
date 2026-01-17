@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/common-ui'
 import { Progress } from '@repo/common-ui'
 import { Badge } from '@repo/common-ui'
-import { 
-  TrendingUp, 
-  AlertTriangle, 
+import {
+  TrendingUp,
+  AlertTriangle,
   Target,
   Award,
   Clock
@@ -68,9 +68,9 @@ const SectionD = ({ analysis }: { analysis: SectionDAnalysis }) => {
   }
 
   return (
-    <Card>
+    <Card className="border-none">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-xl">
           <Target className="w-5 h-5" />
           Difficulty Analysis
         </CardTitle>
@@ -83,12 +83,12 @@ const SectionD = ({ analysis }: { analysis: SectionDAnalysis }) => {
             {Object.entries(difficultyWiseAnalysis).map(([difficulty, data]) => {
               const accuracy = data.total > 0 ? (data.correct / data.total) * 100 : 0
               return (
-                <div key={difficulty} className={`p-4 border rounded-lg ${getDifficultyColor(difficulty)}`}>
+                <div key={difficulty} className={`p-4 border rounded-2xl ${getDifficultyColor(difficulty)}`}>
                   <div className="flex items-center gap-2 mb-3">
                     {getDifficultyIcon(difficulty)}
                     <h5 className="font-semibold capitalize">{difficulty.replace('_', ' ')}</h5>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="text-2xl font-bold">{accuracy.toFixed(1)}%</div>
                     <div className="text-sm">

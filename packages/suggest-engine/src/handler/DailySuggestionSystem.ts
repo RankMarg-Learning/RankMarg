@@ -1,4 +1,4 @@
-import { SuggestionType } from "@repo/db/enums";
+import { SuggestionType, TriggerType, SuggestionStatus } from "@repo/db/enums";
 import { SuggestionHandler } from "../types";
 import prisma from "../lib/prisma";
 import {
@@ -11,265 +11,37 @@ import {
   SuggestionConfig,
   TopicMap,
   TopicPerformance,
+  CoachingSuggestion,
 } from "../types/daily.types";
+import { EnhancedAnalyzer } from "../analyzer/EnhancedAnalyzer";
+import { RankCoachEngine } from "../engine/RankCoachEngine";
+import { CoachSuggestion } from "../types/coach.types";
 
 export class DailySuggestionSystem implements SuggestionHandler {
   async generate(userId: string): Promise<void> {
     try {
-      const yesterdayMetrics =
-        await this.getYesterdayPerformanceMetrics(userId);
+      console.log(`Generating Rank Coach suggestions for user ${userId}`);
 
-      if (!yesterdayMetrics) {
-        await this.handleNoActivitySuggestion(userId);
-        return;
-      }
-      console.log(
-        `Generating daily suggestions for user ${userId} based on yesterday's metrics`
-      );
-      const allSuggestions = await this.analyzePerfomanceAndCreateSuggestions(
-        userId,
-        yesterdayMetrics
-      );
+      // Use Daily Coach Orchestrator
+      const { DailyCoachOrchestrator } = await import("../orchestrator/DailyCoachOrchestrator.js");
+      const orchestrator = new DailyCoachOrchestrator();
+      const suggestions = await orchestrator.orchestrateDailyCoaching(userId);
 
-      const topSuggestions = allSuggestions
-        .filter((s) => s.suggestions.length > 0)
-        .sort((a, b) => a.priority - b.priority)
-        .slice(0, 3);
-
-      await this.storeSuggestions(topSuggestions);
+      // Store suggestions using repository
+      const { SuggestionRepository } = await import("../repository/SuggestionRepository.js");
+      const repository = new SuggestionRepository();
+      await repository.saveSuggestions(suggestions, userId);
 
       console.log(
-        `Generated ${topSuggestions.length} top priority suggestions for user ${userId} (from ${allSuggestions.length} total suggestions)`
+        `Generated and stored ${suggestions.length} Rank Coach suggestions for user ${userId}`
       );
     } catch (error) {
-      console.error("Error generating daily suggestions:", error);
+      console.error("Error generating Rank Coach suggestions:", error);
       throw error;
     }
   }
 
-  private async getYesterdayPerformanceMetrics(
-    userId: string
-  ): Promise<PerformanceMetrics | null> {
-    const IST_OFFSET_MINUTES = 5.5 * 60;
 
-    const now = new Date();
-    const istNow = new Date(now.getTime() + IST_OFFSET_MINUTES * 60 * 1000);
-    const istMidnight = new Date(istNow);
-    istMidnight.setHours(0, 0, 0, 0);
-
-    const utcMidnight = new Date(istMidnight.getTime() - IST_OFFSET_MINUTES * 60 * 1000);
-    const utcYesterdayMidnight = new Date(utcMidnight);
-    utcYesterdayMidnight.setUTCDate(utcMidnight.getUTCDate() - 1);
-
-    const attempts: AttemptWithQuestionDetails[] =
-      await prisma.attempt.findMany({
-        where: {
-          userId,
-          solvedAt: {
-            gte: utcYesterdayMidnight,
-            lt: utcMidnight,
-          },
-        },
-        include: {
-          question: {
-            include: {
-              subject: true,
-              topic: true,
-              subTopic: true,
-            },
-          },
-        },
-      });
-
-    if (attempts.length === 0) {
-      return null;
-    }
-
-    const totalQuestions = attempts.length;
-    const correctAnswers = attempts.filter(
-      (a) => a.status === "CORRECT"
-    ).length;
-    const accuracy = (correctAnswers / totalQuestions) * 100;
-    const averageTime =
-      attempts.reduce((sum, a) => sum + (a.timing || 0), 0) / totalQuestions;
-    const hintsUsed = attempts.filter((a) => a.hintsUsed).length;
-
-    const subjectWisePerformance =
-      this.calculateSubjectWisePerformance(attempts);
-    const topicWisePerformance = await this.calculateTopicWisePerformance(
-      userId,
-      attempts
-    );
-    const mistakeAnalysis = this.analyzeMistakes(attempts);
-    const streakData = this.calculateStreakData(attempts);
-
-    return {
-      totalQuestions,
-      correctAnswers,
-      accuracy,
-      averageTime,
-      hintsUsed,
-      subjectWisePerformance,
-      topicWisePerformance,
-      mistakeAnalysis,
-      streakData,
-    };
-  }
-
-  private calculateSubjectWisePerformance(
-    attempts: AttemptWithQuestionDetails[]
-  ): SubjectPerformance[] {
-    const subjectMap = new Map<string, SubjectMap>();
-
-    attempts.forEach((attempt) => {
-      if (!attempt.question.subject) return;
-
-      const subjectId = attempt.question.subject.id;
-      const subjectName = attempt.question.subject.name;
-
-      if (!subjectMap.has(subjectId)) {
-        subjectMap.set(subjectId, {
-          subjectId,
-          subjectName,
-          correct: 0,
-          total: 0,
-          totalTime: 0,
-        });
-      }
-
-      const subject = subjectMap.get(subjectId)!;
-      subject.total++;
-      if (attempt.status === "CORRECT") subject.correct++;
-      subject.totalTime += attempt.timing || 0;
-    });
-
-    return Array.from(subjectMap.values()).map((subject) => ({
-      subjectId: subject.subjectId,
-      subjectName: subject.subjectName,
-      accuracy: (subject.correct / subject.total) * 100,
-      questionsAttempted: subject.total,
-      averageTime: subject.totalTime / subject.total,
-    }));
-  }
-
-  private async calculateTopicWisePerformance(
-    userId: string,
-    attempts: AttemptWithQuestionDetails[]
-  ): Promise<TopicPerformance[]> {
-    const topicMap = new Map<string, TopicMap>();
-
-    attempts.forEach((attempt) => {
-      if (!attempt.question.topic) return;
-
-      const topicId = attempt.question.topic.id;
-      const topicName = attempt.question.topic.name;
-      const subjectName = attempt.question.subject?.name || "Unknown";
-
-      if (!topicMap.has(topicId)) {
-        topicMap.set(topicId, {
-          topicId,
-          topicName,
-          subjectName,
-          correct: 0,
-          total: 0,
-        });
-      }
-
-      const topic = topicMap.get(topicId)!;
-      topic.total++;
-      if (attempt.status === "CORRECT") topic.correct++;
-    });
-
-    const topicIds = Array.from(topicMap.keys());
-    const masteryData = await prisma.topicMastery.findMany({
-      where: {
-        userId,
-        topicId: { in: topicIds },
-      },
-    });
-
-    const masteryMap = new Map(masteryData.map((m) => [m.topicId, m]));
-
-    return Array.from(topicMap.values()).map((topic) => {
-      const mastery = masteryMap.get(topic.topicId);
-      return {
-        topicId: topic.topicId,
-        topicName: topic.topicName,
-        subjectName: topic.subjectName,
-        accuracy: (topic.correct / topic.total) * 100,
-        questionsAttempted: topic.total,
-        masteryLevel: mastery?.masteryLevel || 0,
-        strengthIndex: mastery?.strengthIndex || 0,
-      };
-    });
-  }
-
-  private analyzeMistakes(
-    attempts: AttemptWithQuestionDetails[]
-  ): MistakeAnalysis {
-    const mistakes = {
-      conceptual: 0,
-      calculation: 0,
-      reading: 0,
-      overconfidence: 0,
-      other: 0,
-    };
-
-    attempts.forEach((attempt) => {
-      if (
-        attempt.status !== "CORRECT" &&
-        attempt.mistake &&
-        attempt.mistake !== "NONE"
-      ) {
-        const mistakeType = attempt.mistake.toLowerCase();
-        if (mistakes.hasOwnProperty(mistakeType)) {
-          mistakes[mistakeType as keyof MistakeAnalysis]++;
-        } else {
-          mistakes.other++;
-        }
-      }
-    });
-
-    return mistakes;
-  }
-
-  private calculateStreakData(
-    attempts: AttemptWithQuestionDetails[]
-  ): StreakData {
-    let currentStreak = 0;
-    let maxCorrectStreak = 0;
-    let maxWrongStreak = 0;
-    let tempCorrectStreak = 0;
-    let tempWrongStreak = 0;
-
-    const sortedAttempts = attempts.sort(
-      (a, b) => new Date(a.solvedAt).getTime() - new Date(b.solvedAt).getTime()
-    );
-
-    sortedAttempts.forEach((attempt, index) => {
-      const isCorrect = attempt.status === "CORRECT";
-
-      if (isCorrect) {
-        tempCorrectStreak++;
-        tempWrongStreak = 0;
-        maxCorrectStreak = Math.max(maxCorrectStreak, tempCorrectStreak);
-      } else {
-        tempWrongStreak++;
-        tempCorrectStreak = 0;
-        maxWrongStreak = Math.max(maxWrongStreak, tempWrongStreak);
-      }
-
-      if (index === sortedAttempts.length - 1) {
-        currentStreak = isCorrect ? tempCorrectStreak : -tempWrongStreak;
-      }
-    });
-
-    return {
-      currentStreak,
-      maxCorrectStreak,
-      maxWrongStreak,
-    };
-  }
 
   private async handleNoActivitySuggestion(userId: string): Promise<void> {
     const noActivityTemplates = [
@@ -291,439 +63,6 @@ export class DailySuggestionSystem implements SuggestionHandler {
     await this.storeSuggestions(suggestions);
   }
 
-  private async analyzePerfomanceAndCreateSuggestions(
-    userId: string,
-    metrics: PerformanceMetrics
-  ): Promise<SuggestionConfig[]> {
-    const suggestions: SuggestionConfig[] = [];
-
-    suggestions.push(
-      ...(await this.analyzeOverallPerformance(userId, metrics))
-    );
-    suggestions.push(
-      ...(await this.analyzeSubjectPerformance(userId, metrics))
-    );
-    suggestions.push(...(await this.analyzeTopicPerformance(userId, metrics)));
-    suggestions.push(...(await this.analyzeTimeManagement(userId, metrics)));
-    suggestions.push(...(await this.analyzeMistakePatterns(userId, metrics)));
-    suggestions.push(...(await this.analyzeStreakPerformance(userId, metrics)));
-    suggestions.push(
-      ...(await this.generateStudyStrategySuggestions(userId, metrics))
-    );
-
-    return suggestions.filter((s) => s.suggestions.length > 0);
-  }
-
-  private async analyzeOverallPerformance(
-    userId: string,
-    metrics: PerformanceMetrics
-  ): Promise<SuggestionConfig[]> {
-    const suggestions: SuggestionConfig[] = [];
-
-    if (metrics.accuracy >= 85) {
-      const templates = [
-        "🎉 Outstanding effort! You hit {accuracy}% accuracy yesterday—keep that energy alive!",
-        "🌟 You’re crushing it with {accuracy}% accuracy. Let’s maintain this winning streak!",
-        "👏 Awesome job! {accuracy}% accuracy shows your hard work paying off. Stay the course!",
-        "🔥 You nailed {accuracy}% accuracy yesterday. Keep shining, champ!",
-      ];
-      suggestions.push(
-        this.createSuggestionConfig(userId, "PERFORMANCE", 1, templates, {
-          accuracy: metrics.accuracy.toFixed(1),
-        })
-      );
-    } else if (metrics.accuracy >= 70) {
-      const templates = [
-        "👍 Nice work! {accuracy}% accuracy is strong—let’s push for 85% today!",
-        "💪 You’re at {accuracy}% accuracy. Solid foundation—let’s build it higher!",
-        "🌱 Great progress with {accuracy}% accuracy. Keep growing toward excellence!",
-        "👊 {accuracy}% accuracy is a good step. Let’s aim higher together!",
-      ];
-      suggestions.push(
-        this.createSuggestionConfig(userId, "PERFORMANCE", 2, templates, {
-          accuracy: metrics.accuracy.toFixed(1),
-        })
-      );
-    } else if (metrics.accuracy >= 50) {
-      const templates = [
-        "🛠️ You’re at {accuracy}% accuracy. Let’s sharpen those skills together!",
-        "📈 {accuracy}% accuracy shows promise. Time to boost it with some focus!",
-        "💡 With {accuracy}% accuracy, we’ve got room to grow. Let’s tackle the basics!",
-        "🏃‍♂️ {accuracy}% accuracy is a start. Keep moving forward with practice!",
-      ];
-      suggestions.push(
-        this.createSuggestionConfig(
-          userId,
-          "IMPROVEMENT",
-          3,
-          templates,
-          { accuracy: metrics.accuracy.toFixed(1) },
-          "Review Concepts",
-          "/study/review"
-        )
-      );
-    } else {
-      const templates = [
-        "🌟 {accuracy}% accuracy? Every pro started somewhere—let’s build from here!",
-        "📚 At {accuracy}% accuracy, we’ve got a chance to learn. Let’s dive into the basics!",
-        "💪 Don’t sweat {accuracy}% accuracy—it’s a stepping stone. We’ll climb together!",
-        "🏋️‍♂️ {accuracy}% accuracy is your baseline. Let’s power up from here!",
-      ];
-      suggestions.push(
-        this.createSuggestionConfig(
-          userId,
-          "URGENT_IMPROVEMENT",
-          4,
-          templates,
-          { accuracy: metrics.accuracy.toFixed(1) },
-          "Start Basics",
-          "/study/basics"
-        )
-      );
-    }
-
-    return suggestions;
-  }
-
-  private async analyzeSubjectPerformance(
-    userId: string,
-    metrics: PerformanceMetrics
-  ): Promise<SuggestionConfig[]> {
-    const suggestions: SuggestionConfig[] = [];
-
-    const sortedSubjects = metrics.subjectWisePerformance.sort(
-      (a, b) => b.accuracy - a.accuracy
-    );
-    const strongestSubject = sortedSubjects[0];
-    const weakestSubject = sortedSubjects[sortedSubjects.length - 1];
-
-    if (strongestSubject && weakestSubject && sortedSubjects.length > 1) {
-      const accuracyGap = strongestSubject.accuracy - weakestSubject.accuracy;
-
-      if (accuracyGap > 30) {
-        const templates = [
-          "📊 Whoa! {strongestSubject} at {strongestAccuracy}% shines, but {weakestSubject} at {weakestAccuracy}% needs some love!",
-          "🏋️‍♂️ {strongestSubject} is rocking {strongestAccuracy}%, while {weakestSubject} lags at {weakestAccuracy}%. Let’s balance it out!",
-          "🌟 Big contrast! {strongestSubject} at {strongestAccuracy}% vs {weakestSubject} at {weakestAccuracy}%. Time to lift up {weakestSubject}!",
-        ];
-        suggestions.push(
-          this.createSuggestionConfig(
-            userId,
-            "SUBJECT_BALANCE",
-            2,
-            templates,
-            {
-              strongestSubject: strongestSubject.subjectName,
-              strongestAccuracy: strongestSubject.accuracy.toFixed(1),
-              weakestSubject: weakestSubject.subjectName,
-              weakestAccuracy: weakestSubject.accuracy.toFixed(1),
-            },
-            `Focus on ${weakestSubject.subjectName}`,
-            `/study/subject/${weakestSubject.subjectName.toLowerCase()}`
-          )
-        );
-      }
-    }
-
-    for (const subject of metrics.subjectWisePerformance) {
-      if (subject.accuracy < 40 && subject.questionsAttempted >= 3) {
-        const templates = [
-          "⚠️ {subjectName} is at {accuracy}%—let’s turn that around with some targeted practice!",
-          "📉 {subjectName} hit {accuracy}% accuracy. Time to dig in and boost it up!",
-          "🛠️ {subjectName} needs a lift at {accuracy}%. Let’s tackle it together!",
-        ];
-        suggestions.push(
-          this.createSuggestionConfig(
-            userId,
-            "SUBJECT_IMPROVEMENT",
-            3,
-            templates,
-            {
-              subjectName: subject.subjectName,
-              accuracy: subject.accuracy.toFixed(1),
-            },
-            `Study ${subject.subjectName}`,
-            `/study/subject/${subject.subjectName.toLowerCase()}`
-          )
-        );
-      }
-    }
-
-    return suggestions;
-  }
-
-  private async analyzeTopicPerformance(
-    userId: string,
-    metrics: PerformanceMetrics
-  ): Promise<SuggestionConfig[]> {
-    const suggestions: SuggestionConfig[] = [];
-
-    const weakTopics = metrics.topicWisePerformance.filter(
-      (t) => t.accuracy < 50 && t.questionsAttempted >= 2
-    );
-
-    if (weakTopics.length > 0) {
-      const topicsList = weakTopics
-        .slice(0, 3)
-        .map((t) => t.topicName)
-        .join(", ");
-      const templates = [
-        "🎯 Let’s zero in on these weaker spots: {topicsList}. You’ve got this!",
-        "📌 Time to strengthen: {topicsList}. Let’s make them your forte!",
-        "💪 Your next challenge? Power up on: {topicsList}. I’m rooting for you!",
-      ];
-      suggestions.push(
-        this.createSuggestionConfig(
-          userId,
-          "TOPIC_FOCUS",
-          2,
-          templates,
-          { topicsList },
-          "Practice Weak Topics",
-          "/study/weak-topics"
-        )
-      );
-    }
-
-    const improvementTopics = metrics.topicWisePerformance.filter(
-      (t) => t.accuracy >= 70 && t.masteryLevel < 50
-    );
-
-    if (improvementTopics.length > 0) {
-      const templates = [
-        "🏆 You’re solid in some topics—more practice will make you unstoppable!",
-        "🌟 Looking good in spots! A little more effort, and you’ll master them!",
-        "💡 You’ve got the knack in some areas. Let’s polish them to perfection!",
-      ];
-      suggestions.push(
-        this.createSuggestionConfig(
-          userId,
-          "MASTERY_BUILDING",
-          1,
-          templates,
-          {}
-        )
-      );
-    }
-
-    return suggestions;
-  }
-
-  private async analyzeTimeManagement(
-    userId: string,
-    metrics: PerformanceMetrics
-  ): Promise<SuggestionConfig[]> {
-    const suggestions: SuggestionConfig[] = [];
-
-    const averageTimePerQuestion = metrics.averageTime;
-    const idealTime = 2.5;
-
-    if (averageTimePerQuestion > idealTime * 1.5) {
-      const templates = [
-        "⏰ {averageTime} sec/question? Let’s pick up the pace together!",
-        "🏃‍♂️ You’re at {averageTime} sec/question. Time to speed things up!",
-        "⏳ Averaging {averageTime} sec/question—let’s work on efficiency!",
-      ];
-      suggestions.push(
-        this.createSuggestionConfig(
-          userId,
-          "TIME_MANAGEMENT",
-          2,
-          templates,
-          { averageTime: averageTimePerQuestion.toFixed(1) },
-          "Time Management Tips",
-          "/tips/time-management"
-        )
-      );
-    } else if (averageTimePerQuestion < idealTime * 0.7) {
-      const templates = [
-        "⚡ Fast at {averageTime} sec/question, but let’s lock in that accuracy too!",
-        "🏎️ You’re quick at {averageTime} sec/question—now let’s nail the precision!",
-        "🌪️ {averageTime} sec/question is speedy! Let’s balance it with accuracy!",
-      ];
-      suggestions.push(
-        this.createSuggestionConfig(userId, "ACCURACY_FOCUS", 2, templates, {
-          averageTime: averageTimePerQuestion.toFixed(1),
-        })
-      );
-    }
-
-    return suggestions;
-  }
-
-  private async analyzeMistakePatterns(
-    userId: string,
-    metrics: PerformanceMetrics
-  ): Promise<SuggestionConfig[]> {
-    const suggestions: SuggestionConfig[] = [];
-
-    const totalMistakes = metrics.totalQuestions - metrics.correctAnswers;
-    if (totalMistakes === 0) return suggestions;
-
-    const mistakeTypes = metrics.mistakeAnalysis;
-    const dominantMistakeType = Object.entries(mistakeTypes)
-      .filter(([key]) => key !== "other")
-      .reduce((a, b) =>
-        mistakeTypes[a[0] as keyof MistakeAnalysis] >
-          mistakeTypes[b[0] as keyof MistakeAnalysis]
-          ? a
-          : b
-      );
-
-    if (dominantMistakeType[1] > totalMistakes * 0.4) {
-      const mistakeType = dominantMistakeType[0];
-      const mistakeTemplates = {
-        conceptual: [
-          "🧠 {count}/{total} conceptual errors—let’s solidify those core ideas!",
-          "📚 Conceptual slips at {count}/{total}. Time to master the fundamentals!",
-        ],
-        calculation: [
-          "🔢 {count}/{total} calc errors—let’s sharpen those number skills!",
-          "➗ Calculation missteps at {count}/{total}. Precision practice is key!",
-        ],
-        reading: [
-          "📖 {count}/{total} reading errors—slow down and catch the details!",
-          "👀 Reading gotcha’s at {count}/{total}. Let’s focus on comprehension!",
-        ],
-        overconfidence: [
-          "😎 {count}/{total} from overconfidence—double-check those instincts!",
-          "🏃‍♂️ Overconfidence tripped you up {count}/{total} times. Stay sharp!",
-        ],
-      };
-      const templates =
-        mistakeTemplates[mistakeType as keyof typeof mistakeTemplates] || [];
-      if (templates.length > 0) {
-        let actionUrl = "";
-        switch (mistakeType) {
-          case "conceptual":
-            actionUrl = "/study/concepts";
-            break;
-          case "calculation":
-            actionUrl = "/practice/calculations";
-            break;
-          case "reading":
-            actionUrl = "/tips/reading-comprehension";
-            break;
-          case "overconfidence":
-            actionUrl = "/tips/avoiding-traps";
-            break;
-        }
-        suggestions.push(
-          this.createSuggestionConfig(
-            userId,
-            "MISTAKE_PATTERN",
-            2,
-            templates,
-            {
-              count: dominantMistakeType[1].toString(),
-              total: totalMistakes.toString(),
-            },
-            "Learn More",
-            actionUrl
-          )
-        );
-      }
-    }
-
-    return suggestions;
-  }
-
-  private async analyzeStreakPerformance(
-    userId: string,
-    metrics: PerformanceMetrics
-  ): Promise<SuggestionConfig[]> {
-    const suggestions: SuggestionConfig[] = [];
-
-    if (metrics.streakData.maxCorrectStreak >= 5) {
-      const templates = [
-        "🔥 Wow! A {streak}-question correct streak—you’re unstoppable!",
-        "🏆 {streak}-question streak nailed! Keep that fire burning!",
-        "🌟 {streak} correct in a row—amazing focus, keep it up!",
-      ];
-      suggestions.push(
-        this.createSuggestionConfig(
-          userId,
-          "STREAK_CELEBRATION",
-          1,
-          templates,
-          { streak: metrics.streakData.maxCorrectStreak.toString() }
-        )
-      );
-    }
-
-    if (metrics.streakData.maxWrongStreak >= 3) {
-      const templates = [
-        "📉 {streak} wrong in a row? Shake it off—we’ll get back on track!",
-        "🛠️ Tough stretch with {streak} misses. Let’s rebuild that streak!",
-        "💪 Hit a {streak}-wrong bump. Time to turn it around together!",
-      ];
-      suggestions.push(
-        this.createSuggestionConfig(userId, "STREAK_RECOVERY", 3, templates, {
-          streak: metrics.streakData.maxWrongStreak.toString(),
-        })
-      );
-    }
-
-    return suggestions;
-  }
-
-  private async generateStudyStrategySuggestions(
-    userId: string,
-    metrics: PerformanceMetrics
-  ): Promise<SuggestionConfig[]> {
-    const suggestions: SuggestionConfig[] = [];
-
-    const hintsPercentage = (metrics.hintsUsed / metrics.totalQuestions) * 100;
-
-    if (hintsPercentage > 50) {
-      const templates = [
-        "💡 Hints on {percentage}% of questions? Let’s beef up those basics!",
-        "🧰 Used hints for {percentage}%—time to deepen your understanding!",
-        "📚 {percentage}% hint reliance—let’s work on standing strong solo!",
-      ];
-      suggestions.push(
-        this.createSuggestionConfig(
-          userId,
-          "STUDY_STRATEGY",
-          2,
-          templates,
-          { percentage: hintsPercentage.toFixed(1) },
-          "Build Concepts",
-          "/study/concepts"
-        )
-      );
-    } else if (hintsPercentage < 10 && metrics.accuracy < 70) {
-      const templates = [
-        "🤔 Skipped hints but accuracy’s low—use them to level up!",
-        "💪 Low hints, low accuracy? Hints are your friend—lean on them!",
-        "📉 Barely used hints and accuracy dipped. Let’s strategize with support!",
-      ];
-      suggestions.push(
-        this.createSuggestionConfig(userId, "STUDY_STRATEGY", 2, templates, {})
-      );
-    }
-
-    if (metrics.totalQuestions < 5) {
-      const templates = [
-        "📊 Just {count} questions yesterday? Let’s ramp up the reps!",
-        "🏋️‍♂️ {count} attempts yesterday—more practice fuels progress!",
-        "🌱 Only {count} questions? Consistency’s your next win—let’s go!",
-      ];
-      suggestions.push(
-        this.createSuggestionConfig(
-          userId,
-          "VOLUME_INCREASE",
-          2,
-          templates,
-          { count: metrics.totalQuestions.toString() },
-          "Set Daily Goal",
-          "/settings/daily-goals"
-        )
-      );
-    }
-
-    return suggestions;
-  }
 
   private createSuggestionConfig(
     userId: string,
@@ -775,6 +114,102 @@ export class DailySuggestionSystem implements SuggestionHandler {
         });
       }
     }
+  }
+
+  /**
+   * Store coaching suggestions (new format with reasoning and action items)
+   */
+  /**
+   * Store Rank Coach suggestions (new format)
+   */
+  private async storeRankCoachSuggestions(
+    suggestions: CoachSuggestion[],
+    userId: string
+  ): Promise<void> {
+    for (const suggestion of suggestions) {
+      await prisma.studySuggestion.create({
+        data: {
+          userId,
+          type: suggestion.type,
+          triggerType: TriggerType.DAILY_ANALYSIS,
+          suggestion: suggestion.message,
+          category: suggestion.category,
+          priority: suggestion.priority,
+          actionName: suggestion.actionName || null,
+          actionUrl: suggestion.actionUrl || null,
+          displayUntil: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+          status: SuggestionStatus.ACTIVE,
+        },
+      });
+    }
+  }
+
+  /**
+   * Store old coaching suggestions (kept for backward compatibility)
+   */
+  private async storeCoachingSuggestions(
+    suggestions: CoachingSuggestion[],
+    userId: string
+  ): Promise<void> {
+    for (const coaching of suggestions) {
+      // Create main suggestion message
+      const suggestionText = coaching.message;
+
+      // Add reasoning and action items to the suggestion
+      let fullSuggestion = suggestionText + "\n\n";
+
+      if (coaching.reasoning) {
+        fullSuggestion += `💡 Why: ${coaching.reasoning}\n\n`;
+      }
+
+      if (coaching.actionItems && coaching.actionItems.length > 0) {
+        fullSuggestion += "📋 Action Plan:\n";
+        coaching.actionItems.forEach((item, index) => {
+          fullSuggestion += `${index + 1}. ${item}\n`;
+        });
+        fullSuggestion += "\n";
+      }
+
+      if (coaching.subjectTricks && coaching.subjectTricks.length > 0) {
+        fullSuggestion += "🎯 Pro Tips:\n";
+        coaching.subjectTricks.forEach((trick) => {
+          fullSuggestion += `\n• ${trick.category}: ${trick.trick}`;
+          if (trick.example) {
+            fullSuggestion += `\n  Example: ${trick.example}`;
+          }
+          fullSuggestion += "\n";
+        });
+      }
+
+      await prisma.studySuggestion.create({
+        data: {
+          userId,
+          type: this.mapCoachingCategoryToSuggestionType(coaching.category),
+          triggerType: "DAILY_ANALYSIS",
+          suggestion: fullSuggestion.trim(),
+          category: coaching.category,
+          priority: coaching.priority,
+          displayUntil: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+        },
+      });
+    }
+  }
+
+  /**
+   * Map coaching category to SuggestionType
+   */
+  private mapCoachingCategoryToSuggestionType(
+    category: string
+  ): SuggestionType {
+    const mapping: { [key: string]: SuggestionType } = {
+      mistake_review: "WARNING",
+      time_management: "GUIDANCE",
+      subject_focus: "WARNING",
+      topic_guidance: "GUIDANCE",
+      motivation: "MOTIVATION",
+      strategy: "GUIDANCE",
+    };
+    return mapping[category] || "GUIDANCE";
   }
 
   private mapCategoryToSuggestionType(category: string): SuggestionType {

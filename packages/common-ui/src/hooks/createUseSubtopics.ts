@@ -12,18 +12,20 @@ type SubtopicInput = {
   slug?: string;
   orderIndex?: number;
   estimatedMinutes?: number;
+  weightage?: number;
 };
 
 type UseSubtopicsDeps<Response> = {
   getSubtopics: (topicId?: string) => Promise<Response>;
-  addSubtopic: (name: string, topicId: string, slug?: string, orderIndex?: number, estimatedMinutes?: number) => Promise<unknown>;
+  addSubtopic: (name: string, topicId: string, slug?: string, orderIndex?: number, estimatedMinutes?: number, weightage?: number) => Promise<unknown>;
   updateSubtopic: (
     id: string,
     name: string,
     topicId: string,
     slug?: string,
     orderIndex?: number,
-    estimatedMinutes?: number
+    estimatedMinutes?: number,
+    weightage?: number
   ) => Promise<unknown>;
   deleteSubtopic: (id: string) => Promise<unknown>;
   useQueryError: () => {
@@ -56,9 +58,9 @@ export function createUseSubtopics<Response extends { data?: any[] }>({
     const saveSubTopic = useMutation({
       mutationFn: async (data: SubtopicInput) => {
         if (data.id) {
-          return updateSubtopic(data.id, data.name, data.topicId, data.slug, data.orderIndex, data.estimatedMinutes);
+          return updateSubtopic(data.id, data.name, data.topicId, data.slug, data.orderIndex, data.estimatedMinutes, data.weightage);
         }
-        return addSubtopic(data.name, data.topicId, data.slug, data.orderIndex, data.estimatedMinutes);
+        return addSubtopic(data.name, data.topicId, data.slug, data.orderIndex, data.estimatedMinutes, data.weightage);
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: queryKeys.subtopics.all });

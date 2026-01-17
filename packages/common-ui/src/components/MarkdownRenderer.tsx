@@ -194,7 +194,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
             </div>
           </blockquote>
         ),
-        hr: () => <hr className="my-1 border-gray-300" />, 
+        hr: () => <hr className="my-1 border-gray-300" />,
         details: ({ children }: any) => <details className="my-2 border border-gray-200 rounded p-3">{children}</details>,
         summary: ({ children }: any) => <summary className="cursor-pointer font-medium text-gray-800">{children}</summary>,
       } as const;
@@ -213,6 +213,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(
         <ReactMarkdown remarkPlugins={REMARK_PLUGINS as any} rehypePlugins={REHYPE_PLUGINS as any} skipHtml={false} components={components as any}>
           {processedContent}
         </ReactMarkdown>
+        {/* @ts-ignore */}
         <style jsx global>{`
           .prose :where(.katex-display) {
             margin-top: 1rem;

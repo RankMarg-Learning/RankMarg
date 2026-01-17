@@ -57,7 +57,7 @@ const QuestionUI = ({
   const router = useRouter();
   const isAnswered = useMemo(() => Boolean(answer) || isSolutionShow || reviewMode, [answer, isSolutionShow, reviewMode]);
 
-  
+
   const initialSelectedValues = useMemo(() => {
     if (!answer) return [];
     if (question.type === "INTEGER") return [];
@@ -172,8 +172,8 @@ const QuestionUI = ({
     e.preventDefault();
     if (!handleAttempt || reviewMode) return; // Don't submit in review mode
 
-   
-    
+
+
     setIsRunning(false);
     setIsSubmitting(true);
 
@@ -213,14 +213,14 @@ const QuestionUI = ({
   // UI Preferences
   const [uiPreferences, setUiPreferences] = useState<QuestionUIPreferences>(loadUIPreferences());
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  
+
   // Get available sections and filtered content
-  const availableSections = useMemo(() => 
+  const availableSections = useMemo(() =>
     question?.solution ? getAvailableSections(question.solution) : [],
     [question?.solution]
   );
 
-  const filteredSolution = useMemo(() => 
+  const filteredSolution = useMemo(() =>
     question?.solution ? filterSolutionContent(question.solution, uiPreferences.solutionContentFilters) : '',
     [question?.solution, uiPreferences.solutionContentFilters]
   );
@@ -236,7 +236,7 @@ const QuestionUI = ({
 
   const handleReportSubmit = async () => {
     if (!question?.slug) return;
-   
+
     setIsReporting(true);
     const res = await reportQuestion(question.slug, { type: reportType, feedback: reportText });
     setIsReporting(false);
@@ -285,22 +285,22 @@ const QuestionUI = ({
       <div className="flex flex-wrap md:flex-row flex-1 p-2 rounded-lg overflow-hidden ">
         {/* Left side: Question */}
         <div className="w-full md:w-1/2 md:p-6 p-2 border-b md:border-b-0 md:border-r">
-        <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-bold mb-2">
-              {reviewMode && questionNumber ? `Question ${questionNumber}` : 'Question'}
-            </h1>
-            {reviewMode && getStatusIcon()}
-            {reviewMode && getStatusBadge()}
-          </div>
-          <button
-                className="px-2 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-full text-xs font-medium flex items-center gap-1 transition-colors border border-purple-200"
-                onClick={() => setIsSettingsOpen(true)}
-                title="Display Settings"
-              >
-                <Settings className="h-3 w-3" />
-                <span className="hidden sm:inline">Settings</span>
-              </button>
+          <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold mb-2">
+                {reviewMode && questionNumber ? `Question ${questionNumber}` : 'Question'}
+              </h1>
+              {reviewMode && getStatusIcon()}
+              {reviewMode && getStatusBadge()}
+            </div>
+            <button
+              className="px-2 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-full text-xs font-medium flex items-center gap-1 transition-colors border border-purple-200"
+              onClick={() => setIsSettingsOpen(true)}
+              title="Display Settings"
+            >
+              <Settings className="h-3 w-3" />
+              <span className="hidden sm:inline">Settings</span>
+            </button>
           </div>
 
           {/* Timer - Hidden when answered or in review mode */}
@@ -394,7 +394,7 @@ const QuestionUI = ({
             onClick={() => setShowFeedbackModal(true)}
             variant="outline"
             size="sm"
-            className="bg-primary-500 text-white font-medium rounded-md py-2 px-4 shadow-sm
+            className="bg-primary-500 text-white font-medium rounded-full py-4 px-4 shadow-sm
     hover:bg-primary-600/90 focus:bg-primary-600
     active:bg-primary-600
     disabled:bg-primary-600/50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -515,7 +515,7 @@ const QuestionUI = ({
           </Accordion>
         </Motion>
       )}
-      
+
       {/* Solution Hidden Message */}
       {(reviewMode || isAnswered || isSubmitting) && !uiPreferences.showDetailedSolution && (
         <Motion animation="fade-in" className="w-full p-2">
@@ -547,11 +547,10 @@ const QuestionUI = ({
                     <button
                       key={t.value}
                       type="button"
-                      className={`text-left border rounded-md p-2 sm:p-2.5 text-sm transition-colors ${
-                        reportType === t.value
-                          ? 'border-primary-500 bg-primary-50 text-primary-700'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      className={`text-left border rounded-md p-2 sm:p-2.5 text-sm transition-colors ${reportType === t.value
+                        ? 'border-primary-500 bg-primary-50 text-primary-700'
+                        : 'border-gray-200 hover:border-gray-300'
+                        }`}
                       onClick={() => setReportType(t.value)}
                     >
                       {t.label}

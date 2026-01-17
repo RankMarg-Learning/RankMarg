@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { TrendingUp, Calendar, BookOpen, BarChart3 } from 'lucide-react'
+import { TrendingUp, Calendar, BookOpen, BarChart3, Brain, CheckCircle, Activity } from 'lucide-react'
 import RecommendedTest from './RecommendedTest'
 import ScheduledTests from './ScheduledTests'
 import AvailableTests from './AvailableTests'
@@ -33,7 +33,7 @@ const TestDashboard = () => {
     isLoading,
     isError,
     isSubscriptionError,
-    } = useTestDashboardData({
+  } = useTestDashboardData({
     availableLimit: 6,
     availableType: activeFilter,
     resultsLimit: 5
@@ -165,7 +165,7 @@ const TestDashboard = () => {
         {recommended?.data && !isSubscriptionError && (
           <section className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="h-1 w-8 bg-primary-500 rounded-full"></div>
+              <Brain className="h-5 w-5 text-primary-600" />
               <h2 className="text-lg font-semibold text-gray-900">Recommended for You</h2>
             </div>
             <RecommendedTest
@@ -184,28 +184,28 @@ const TestDashboard = () => {
 
         {/* Scheduled Tests Section */}
         {schedule?.data && schedule.data.length > 0 && (
-        <section className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="h-1 w-8 bg-orange-500 rounded-full"></div>
-            <h2 className="text-lg font-semibold text-gray-900">Upcoming Tests</h2>
-          </div>
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Upcoming Tests</h2>
+            </div>
             <ScheduledTests
               tests={schedule.data}
               onStartTest={handleStartTest}
             />
-        </section>
+          </section>
         )}
 
         {/* Available Tests Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="h-1 w-8 bg-blue-500 rounded-full"></div>
+            <CheckCircle className="h-5 w-5 text-primary-600" />
             <h2 className="text-lg font-semibold text-gray-900">Available Tests {(available?.data?.isLimitExceeded) ? `(Limit: ${available?.data?.userTestCount}/${available?.data?.monthlyLimit})` : ''}</h2>
           </div>
 
           {available?.data && available.data.isLimitExceeded && (
-              <BannerUpgrade title="Unlock Unlimited Tests" description="Upgrade to Premium to access all tests" reference ="test_dashboard" />
-            )}
+            <BannerUpgrade title="Unlock Unlimited Tests" description="Upgrade to Premium to access all tests" reference="test_dashboard" />
+          )}
 
           <AvailableTests
             tests={available?.data?.tests || []}
@@ -219,7 +219,7 @@ const TestDashboard = () => {
         {/* Recent Results Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="h-1 w-8 bg-green-500 rounded-full"></div>
+            <Activity className="h-5 w-5 text-primary-600" />
             <h2 className="text-lg font-semibold text-gray-900">Recent Performance</h2>
           </div>
           <RecentTestResults results={results?.data} />

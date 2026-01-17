@@ -207,3 +207,19 @@ export type SubscriptionStatus =
   (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus];
 export type PaymentProvider =
   (typeof PaymentProvider)[keyof typeof PaymentProvider];
+
+export const ExamPhase = {
+  FOUNDATION: "FOUNDATION",
+  CONSOLIDATION: "CONSOLIDATION",
+  FINAL_PREP: "FINAL_PREP",
+} as const;
+
+export const SessionPriority = {
+  HIGH_ROI: "HIGH_ROI",
+  WEAK_TOPIC: "WEAK_TOPIC",
+  REVISION: "REVISION",
+  CURRICULUM: "CURRICULUM",
+} as const;
+
+export type ExamPhase = (typeof ExamPhase)[keyof typeof ExamPhase];
+export type SessionPriority = (typeof SessionPriority)[keyof typeof SessionPriority];
