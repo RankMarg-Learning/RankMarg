@@ -6,6 +6,7 @@ import { Toaster } from "@repo/common-ui";
 import { usePathname } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
+import { MobileTabBar } from '@/components/MobileTabBar';
 import { useUserData } from '@/context/ClientContextProvider';
 
 const Layout = ({
@@ -44,11 +45,15 @@ const Layout = ({
           )}
         />
 
-        <main className="flex-1 container py-4 px-2 md:py-6 md:px-6">
+        <main className="flex-1 container py-4 px-2 md:py-6 md:px-6 pb-20 lg:pb-6">
           {children}
           <Toaster />
         </main>
       </div>
+
+      {/* Mobile Tab Bar - Only visible on mobile */}
+      <MobileTabBar />
+
       {/* <Footer /> */}
     </div>
   );

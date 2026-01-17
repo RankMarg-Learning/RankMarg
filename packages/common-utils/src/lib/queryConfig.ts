@@ -10,6 +10,7 @@ export const QUERY_CONFIG = {
 
   GC_TIME: {
     STATIC: 60 * 60 * 1000, // 1 hour
+    USER_PREFERENCES: 15 * 60 * 1000, // 15 minutes
     DYNAMIC: 10 * 60 * 1000, // 10 minutes
     REALTIME: 5 * 60 * 1000, // 5 minutes
     SESSION: 15 * 60 * 1000, // 15 minutes
