@@ -1,62 +1,35 @@
+"use client";
 
-"use client"
-import React, { useEffect } from 'react';
-import { cn } from '@/lib/utils';
-import { Toaster } from "@repo/common-ui";
-import { usePathname } from 'next/navigation';
-import { Header } from '@/components/Header';
-import { Sidebar } from '@/components/Sidebar';
-import { MobileTabBar } from '@/components/MobileTabBar';
-import { useUserData } from '@/context/ClientContextProvider';
+import { Button } from "@repo/common-ui";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 const Layout = ({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) => {
-  const { mobileMenuOpen, setMobileMenuOpen } = useUserData();
-  const location = usePathname();
+    const router = useRouter();
 
-
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location]);
-
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
-
-  return (
-    <div className="min-h-screen flex flex-col bg-subtle-gray ">
-      <Header onMenuClick={toggleMobileMenu} />
-      <div className="flex flex-1 relative">
-        <div
-          className={cn(
-            "fixed inset-0 bg-black/20 z-30 lg:hidden transition-opacity duration-300",
-            mobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-          )}
-          onClick={() => setMobileMenuOpen(false)}
-        />
-
-        <Sidebar
-          className={cn(
-            "hidden lg:block",
-            mobileMenuOpen && "block lg:hidden fixed left-0 top-16 bottom-0 shadow-xl z-40"
-          )}
-        />
-
-        <main className="flex-1 container py-4 px-2 md:py-6 md:px-6 pb-20 lg:pb-6">
-          {children}
-          <Toaster />
-        </main>
-      </div>
-
-      {/* Mobile Tab Bar - Only visible on mobile */}
-      <MobileTabBar />
-
-      {/* <Footer /> */}
-    </div>
-  );
+    return (
+        <div className="min-h-screen bg-background">
+            <div className="container mx-auto px-4 py-6 md:px-6 lg:px-8">
+                <header className="mb-4">
+                    <Button
+                        variant="ghost"
+                        onClick={() => router.back()}
+                        className="group flex items-center gap-2 pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+                        <span className="text-base font-medium">Back</span>
+                    </Button>
+                </header>
+                <main className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    {children}
+                </main>
+            </div>
+        </div>
+    );
 };
 
 export default Layout;

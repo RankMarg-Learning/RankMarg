@@ -136,16 +136,13 @@ function MyCurriculumContent() {
 	}
 
 	return (
-		<div className="container mx-auto md:px-4 px-2 py-6 space-y-6">
+		<div className="container mx-auto md:px-4 px-2 space-y-6">
 			<div className="flex flex-col gap-3">
-				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-					<h1 className="text-lg font-semibold sm:text-xl">My Curriculum</h1>
-					<Badge className="w-full sm:w-auto justify-center" variant="outline">Current in subject: {splitByStatus.current.length}/2</Badge>
-				</div>
 
 				{!isLoadingSubjects ? (
 					<Tabs value={selectedSubjectId} onValueChange={setSelectedSubjectId} className="w-full space-y-6">
-						<div className="border-b border-gray-200">
+						<div className="border-b border-gray-200 gap-2">
+
 							<TabsList className="bg-transparent p-0 h-auto justify-start w-full overflow-x-auto flex-nowrap">
 								{subjects?.map((s: any) => (
 									<TabsTrigger
