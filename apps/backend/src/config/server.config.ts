@@ -70,7 +70,7 @@ export const ServerConfig = {
     daily: {
       streak: "0 0 * * *",
       updatePerformance: "0 0 * * *",
-      createSuggestion: "0 30 * * *",
+      createSuggestion: "30 0 * * *",
     },
     weekly: {
       updateReview: "0 1 * * 0",
