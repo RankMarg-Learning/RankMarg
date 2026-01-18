@@ -1,5 +1,4 @@
-import { Prisma } from "@prisma/client";
-import { ExamPhase, SessionPriority } from "@repo/db/enums";
+import { SessionPriority } from "@repo/db/enums";
 
 // ============================================
 // CURRICULUM TRACKING TYPES
@@ -30,13 +29,6 @@ export interface RecommendedTopic {
     weightage: number;
     priority: SessionPriority;
     reason: string;
-}
-
-export interface SkipMetrics {
-    skippedDays: number;
-    lastPracticeDate: Date | null;
-    averageGap: number;
-    isAtRisk: boolean;
 }
 
 // ============================================
@@ -103,33 +95,6 @@ export type ToneStyle = "friendly" | "professional" | "energetic" | "calm";
 // ============================================
 // ENHANCED ANALYSIS TYPES (Extended)
 // ============================================
-
-export interface EnhancedAnalysisExtended {
-    // Existing fields from coach.types
-    userId: string;
-    date: Date;
-    totalQuestions: number;
-    correctAnswers: number;
-    wrongAnswers: number;
-    accuracy: number;
-    totalTimeSpent: number;
-    unsolvedQuestions: number;
-    questionsWithoutMistakeReason: number;
-    topicROI: TopicROI[];
-    volumeMetrics: VolumeMetrics;
-    difficultyMetrics: DifficultyMetrics;
-    consistencyMetrics: ConsistencyMetrics;
-    mistakeClassification: MistakeClassification;
-    examPhase: ExamPhase;
-    daysUntilExam: number;
-    subjectBreakdown: SubjectBreakdown[];
-    todaySessionTopics: SessionTopic[];
-
-    // NEW: Extended fields
-    curriculumAlignment: CurriculumAlignment;
-    skipMetrics: SkipMetrics;
-    mood: CoachMood;
-}
 
 // Re-export from coach.types for convenience
 export interface TopicROI {

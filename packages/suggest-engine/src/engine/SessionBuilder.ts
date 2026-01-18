@@ -3,7 +3,6 @@ import { SessionPriority } from "@repo/db/enums";
 import {
     SessionMetadata,
     SessionTopicInfo,
-    TopicError,
 } from "../types/extended.types";
 import { EnhancedAnalysis } from "../types/coach.types";
 
@@ -51,21 +50,6 @@ export class SessionBuilder {
             difficulty,
             priority,
         };
-    }
-
-    /**
-     * Generate session URL (deep link)
-     */
-    generateSessionUrl(sessionId: string): string {
-        return `https://www.rankmarg.in/ai-session/${sessionId}`;
-    }
-
-    /**
-     * Calculate session duration estimate
-     */
-    calculateSessionDuration(questionCount: number): number {
-        // 90 seconds per question on average
-        return Math.ceil((questionCount * 90) / 60); // in minutes
     }
 
     /**
@@ -160,41 +144,9 @@ export class SessionBuilder {
     }
 
     /**
-     * Build session metadata for all subjects
-     */
-    async buildMultiSubjectSessions(
-        analysis: EnhancedAnalysis,
-        subjectIds: string[],
-        questionsPerSubject: number = 10
-    ): Promise<SessionMetadata[]> {
-        const sessions: SessionMetadata[] = [];
-
-        for (const subjectId of subjectIds) {
-            const topics = await this.selectTopicsForSession(
-                analysis,
-                subjectId,
-                3
-            );
-
-            const priority = this.determinePriority(analysis, subjectId);
-
-            const metadata = await this.buildSessionMetadata(
-                subjectId,
-                topics,
-                questionsPerSubject,
-                priority
-            );
-
-            sessions.push(metadata);
-        }
-
-        return sessions;
-    }
-
-    /**
      * Determine session priority based on analysis
      */
-    private determinePriority(
+    public determinePriority(
         analysis: EnhancedAnalysis,
         subjectId: string
     ): SessionPriority {
@@ -231,15 +183,5 @@ export class SessionBuilder {
         }
 
         return "CURRICULUM";
-    }
-
-    /**
-     * Create session slug from topic names
-     */
-    slugify(text: string): string {
-        return text
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-+|-+$/g, "");
     }
 }

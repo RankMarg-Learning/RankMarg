@@ -132,10 +132,15 @@ export interface SessionTopic {
 export type AttemptWithDetails = Prisma.AttemptGetPayload<{
     include: {
         question: {
-            include: {
-                subject: true;
-                topic: true;
-                subTopic: true;
+            select: {
+                id: true,
+                difficulty: true,
+                subjectId: true,
+                topicId: true,
+                subtopicId: true,
+                subject: true,
+                topic: true,
+                subTopic: true,
             };
         };
     };

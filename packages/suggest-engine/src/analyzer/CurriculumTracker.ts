@@ -1,10 +1,9 @@
 import prisma from "../lib/prisma";
-import { ExamPhase, SessionPriority } from "@repo/db/enums";
+import { SessionPriority } from "@repo/db/enums";
 import {
     CurriculumAlignment,
     CurrentTopic,
     RecommendedTopic,
-    SkipMetrics,
 } from "../types/extended.types";
 
 /**
@@ -158,59 +157,6 @@ export class CurriculumTracker {
     }
 
     /**
-     * Calculate topic completion status based on mastery
-     */
-    async getTopicCompletionStatus(
-        userId: string,
-        topicId: string
-    ): Promise<{ isComplete: boolean; masteryLevel: number }> {
-        const mastery = await prisma.topicMastery.findUnique({
-            where: {
-                userId_topicId: {
-                    userId,
-                    topicId,
-                },
-            },
-        });
-
-        const masteryLevel = mastery?.masteryLevel || 0;
-        const isComplete = masteryLevel >= 80; // 80% mastery = complete
-
-        return { isComplete, masteryLevel };
-    }
-
-    /**
-     * Align topics with exam phase (prioritize differently based on days until exam)
-     */
-    async alignWithExamPhase(
-        topics: RecommendedTopic[],
-        phase: ExamPhase
-    ): Promise<RecommendedTopic[]> {
-        switch (phase) {
-            case "FOUNDATION":
-                // Focus on high weightage topics
-                return topics.sort((a, b) => b.weightage - a.weightage);
-
-            case "CONSOLIDATION":
-                // Balance between weak topics and high weightage
-                return topics.sort((a, b) => {
-                    if (a.priority === "WEAK_TOPIC" && b.priority !== "WEAK_TOPIC") return -1;
-                    if (b.priority === "WEAK_TOPIC" && a.priority !== "WEAK_TOPIC") return 1;
-                    return b.weightage - a.weightage;
-                });
-
-            case "FINAL_PREP":
-                // Focus only on high ROI topics (high weightage, quick wins)
-                return topics
-                    .filter((t) => t.priority === "HIGH_ROI" || t.weightage > 8)
-                    .sort((a, b) => b.weightage - a.weightage);
-
-            default:
-                return topics;
-        }
-    }
-
-    /**
      * Get complete curriculum alignment for a user
      */
     async getCurriculumAlignment(
@@ -285,71 +231,5 @@ export class CurriculumTracker {
         });
 
         return completedTopics.reduce((sum, ct) => sum + ct.topic.weightage, 0);
-    }
-
-    /**
-     * Detect skipped sessions and calculate skip metrics
-     */
-    async detectSkippedSessions(
-        userId: string,
-        last7Days: Date
-    ): Promise<SkipMetrics> {
-        const attempts = await prisma.attempt.findMany({
-            where: {
-                userId,
-                solvedAt: {
-                    gte: last7Days,
-                },
-            },
-            orderBy: {
-                solvedAt: "desc",
-            },
-            select: {
-                solvedAt: true,
-            },
-        });
-
-        if (attempts.length === 0) {
-            return {
-                skippedDays: 7,
-                lastPracticeDate: null,
-                averageGap: 0,
-                isAtRisk: true,
-            };
-        }
-
-        const lastPracticeDate = attempts[0].solvedAt;
-        const daysSinceLastPractice = Math.floor(
-            (Date.now() - lastPracticeDate.getTime()) / (1000 * 60 * 60 * 24)
-        );
-
-        // Calculate gaps between practice days
-        const practiceDates = attempts.map((a) => a.solvedAt.toDateString());
-        const uniqueDates = [...new Set(practiceDates)];
-        const skippedDays = 7 - uniqueDates.length;
-
-        // Calculate average gap
-        const gaps: number[] = [];
-        for (let i = 0; i < uniqueDates.length - 1; i++) {
-            const date1 = new Date(uniqueDates[i]);
-            const date2 = new Date(uniqueDates[i + 1]);
-            const gap = Math.abs(
-                Math.floor((date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24))
-            );
-            gaps.push(gap);
-        }
-
-        const averageGap = gaps.length > 0
-            ? gaps.reduce((sum, g) => sum + g, 0) / gaps.length
-            : 0;
-
-        const isAtRisk = daysSinceLastPractice >= 3 || skippedDays >= 4;
-
-        return {
-            skippedDays,
-            lastPracticeDate,
-            averageGap: Math.round(averageGap * 10) / 10,
-            isAtRisk,
-        };
     }
 }

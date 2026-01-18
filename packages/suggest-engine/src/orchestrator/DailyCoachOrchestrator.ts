@@ -45,8 +45,13 @@ export class DailyCoachOrchestrator {
             // Get user info
             const user = await prisma.user.findUnique({
                 where: { id: userId },
-                include: {
-                    examRegistrations: true,
+                select: {
+                    name: true,
+                    examRegistrations: {
+                        select: {
+                            examCode: true,
+                        },
+                    },
                 },
             });
 

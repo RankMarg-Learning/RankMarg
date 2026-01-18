@@ -8,17 +8,22 @@ export class SuggestionEngine {
   constructor(triggerTypes: TriggerType[], userId: string) {
     this.triggerTypes = triggerTypes;
     this.userId = userId;
-    this.initializeHandlers();
   }
 
-  private initializeHandlers() {
+  async execute(): Promise<void> {
     for (const type of this.triggerTypes) {
-      switch (type) {
-        case TriggerType.DAILY_ANALYSIS:
-          new DailySuggestionSystem().generate(this.userId);
-          break;
-        default:
-          break;
+      try {
+        switch (type) {
+          case TriggerType.DAILY_ANALYSIS:
+            await new DailySuggestionSystem().generate(this.userId);
+            break;
+          default:
+            console.log(`[SuggestionEngine] Unknown trigger type: ${type}`);
+            break;
+        }
+      } catch (error) {
+        console.error(`[SuggestionEngine] Error processing ${type} for user ${this.userId}:`, error);
+        throw error;
       }
     }
   }

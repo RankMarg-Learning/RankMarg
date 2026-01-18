@@ -18,8 +18,10 @@
     "admin:build": "npm run build --workspace=apps/admin",
     "backend:dev": "npm run dev --workspace=apps/backend",
     "backend:build": "npm run build --workspace=apps/backend",
+    "backend:start": "npm run start --workspace=apps/backend",
     "frontend:dev": "npm run dev --workspace=apps/frontend",
     "frontend:build": "npm run build --workspace=apps/frontend",
+    "frontend:start": "npm run start --workspace=apps/frontend",
     "suggest:build": "npm run build --workspace=packages/suggest-engine",
     "depcheck": "turbo run depcheck"
   },

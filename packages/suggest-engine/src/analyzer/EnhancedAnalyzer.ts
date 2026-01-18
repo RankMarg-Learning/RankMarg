@@ -76,7 +76,7 @@ export class EnhancedAnalyzer {
             return null;
         }
 
-        // Fetch today's attempts (for session topics)
+        // Remove this
         const todayAttempts: AttemptWithDetails[] = await prisma.attempt.findMany({
             where: {
                 userId,
@@ -86,7 +86,12 @@ export class EnhancedAnalyzer {
             },
             include: {
                 question: {
-                    include: {
+                    select: {
+                        id: true,
+                        difficulty: true,
+                        subjectId: true,
+                        topicId: true,
+                        subtopicId: true,
                         subject: true,
                         topic: true,
                         subTopic: true,
