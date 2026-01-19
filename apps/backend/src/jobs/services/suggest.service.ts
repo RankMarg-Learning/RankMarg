@@ -1,6 +1,6 @@
 import prisma from "@repo/db";
 import { Role, TriggerType } from "@repo/db/enums";
-import { SuggestionEngine } from "@repo/suggest";
+import { SuggestionEngine } from "../../services/suggest-engine";
 import { BaseJobService, UserBatch, JobConfig } from "./BaseJobService";
 
 export class SuggestionService extends BaseJobService {

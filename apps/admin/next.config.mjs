@@ -6,7 +6,7 @@ dotenv.config({ path: '../../.env' });
 const nextConfig = {
     output: 'standalone',
     reactStrictMode: true,
-    transpilePackages: ["@repo/db", "@repo/suggest", "@repo/common-ui"],
+    transpilePackages: ["@repo/db", "@repo/common-ui"],
     experimental: {
         optimizePackageImports: [
             'lucide-react',

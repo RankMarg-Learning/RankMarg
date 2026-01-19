@@ -35,7 +35,6 @@ export class RankCoachEngine {
         const revision = this.decideRevision(analysis);
         const examPhase = this.decideExamPhase(analysis);
         const consistency = this.enforceConsistency(analysis);
-        const sessionBuild = this.buildTodaySession(analysis);
 
         // Collect all non-null suggestions
         if (whatToStudy) allSuggestions.push(whatToStudy);
@@ -46,7 +45,6 @@ export class RankCoachEngine {
         if (revision) allSuggestions.push(revision);
         if (examPhase) allSuggestions.push(examPhase);
         if (consistency) allSuggestions.push(consistency);
-        if (sessionBuild) allSuggestions.push(sessionBuild);
 
         // Sort by priority and take top 2-3
         const topSuggestions = allSuggestions
@@ -282,24 +280,7 @@ export class RankCoachEngine {
     private decideExamPhase(analysis: EnhancedAnalysis): CoachSuggestion | null {
         const { examPhase, daysUntilExam } = analysis;
 
-        // Final prep: Ban new topics
-        if (examPhase === 'final_prep' && analysis.todaySessionTopics.length > 0) {
-            const newTopics = analysis.todaySessionTopics.filter((t) => {
-                const topicROI = analysis.topicROI.find((roi) => roi.topicId === t.topicId);
-                return topicROI && topicROI.masteryLevel < 30;
-            });
 
-            if (newTopics.length > 0) {
-                return {
-                    type: SuggestionType.WARNING,
-                    category: "EXAM_PHASE",
-                    message: `New topics banned. ${daysUntilExam} days left - consolidate what you know.`,
-                    priority: 1,
-                    actionName: "Update Curriculum",
-                    actionUrl: "https://www.rankmarg.in/my-curriculum",
-                };
-            }
-        }
 
         // Consolidation: Accuracy > attempts
         if (examPhase === 'consolidation' && analysis.accuracy < 80) {
@@ -356,54 +337,7 @@ export class RankCoachEngine {
         return null;
     }
 
-    /**
-     * 9. BUILD TODAY'S SESSION
-     * Auto-generate practice session based on yesterday's errors
-     */
-    private buildTodaySession(analysis: EnhancedAnalysis): CoachSuggestion | null {
-        const { todaySessionTopics, subjectBreakdown } = analysis;
 
-        // If today's session already exists, guide on it
-        if (todaySessionTopics.length > 0) {
-            const primaryTopic = todaySessionTopics[0];
-
-            // Check if this topic had errors yesterday
-            const hadErrors = subjectBreakdown.some((subject) =>
-                subject.topicsWithErrors.some((error) => error.topicId === primaryTopic.topicId)
-            );
-
-            if (hadErrors) {
-                return {
-                    type: SuggestionType.GUIDANCE,
-                    category: "SESSION_BUILD",
-                    message: `Smart choice! Practicing ${primaryTopic.topicName} where you struggled yesterday.`,
-                    priority: 2,
-                };
-            }
-
-            return {
-                type: SuggestionType.GUIDANCE,
-                category: "SESSION_BUILD",
-                message: `Today's focus: ${primaryTopic.topicName}. Let's master it.`,
-                priority: 3,
-            };
-        }
-
-        // Suggest building a session based on high-ROI topics
-        const topROI = analysis.topicROI.slice(0, 2);
-        if (topROI.length > 0) {
-            return {
-                type: SuggestionType.GUIDANCE,
-                category: "SESSION_BUILD",
-                message: `Build today's session: 15 questions in ${topROI[0].topicName}.`,
-                priority: 2,
-                actionName: "Build Session",
-                actionUrl: `https://www.rankmarg.in/ai-questions/${topROI[0].subjectId}/${this.slugify(topROI[0].topicName)}`,
-            };
-        }
-
-        return null;
-    }
 
     /**
      * Helper: Convert topic name to slug

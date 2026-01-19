@@ -7,13 +7,21 @@
     "strict": false,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@repo/db": ["../../packages/db/dist"],
-      "@repo/db/*": ["../../packages/db/dist/*"],
-      "@repo/suggest": ["../../packages/suggest-engine/dist"],
-      "@repo/suggest/*": ["../../packages/suggest-engine/dist/*"],
-      "@repo/curriculum": ["../../packages/curriculum/src/index.ts"],
-      "@repo/curriculum/*": ["../../packages/curriculum/src/*"]
+      "@/*": [
+        "src/*"
+      ],
+      "@repo/db": [
+        "../../packages/db/dist"
+      ],
+      "@repo/db/*": [
+        "../../packages/db/dist/*"
+      ],
+      "@repo/curriculum": [
+        "../../packages/curriculum/src/index.ts"
+      ],
+      "@repo/curriculum/*": [
+        "../../packages/curriculum/src/*"
+      ]
     },
     "moduleResolution": "node",
     "esModuleInterop": true,
@@ -36,15 +44,27 @@
     "allowUnreachableCode": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "lib": ["ES2022"],
-    "types": ["node"],
+    "lib": [
+      "ES2022"
+    ],
+    "types": [
+      "node"
+    ],
     "moduleDetection": "legacy",
     "isolatedModules": false,
     "noUncheckedIndexedAccess": false,
     "useDefineForClassFields": false
   },
-  "include": ["src/**/*", "scripts/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
+  "include": [
+    "src/**/*",
+    "scripts/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ],
   "ts-node": {
     "esm": false,
     "experimentalSpecifierResolution": "node"

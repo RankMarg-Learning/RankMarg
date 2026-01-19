@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma";
+import prisma from "@repo/db";
 import { SessionPriority } from "@repo/db/enums";
 import {
     SessionMetadata,
@@ -173,14 +173,7 @@ export class SessionBuilder {
             return "HIGH_ROI";
         }
 
-        // Check if subject needs revision
-        const hasRecentPractice = analysis.todaySessionTopics.some(
-            (t) => t.subjectId === subjectId
-        );
 
-        if (!hasRecentPractice) {
-            return "REVISION";
-        }
 
         return "CURRICULUM";
     }

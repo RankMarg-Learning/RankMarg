@@ -1,13 +1,13 @@
 import { EnhancedAnalyzer } from "../analyzer/EnhancedAnalyzer";
 import { CurriculumTracker } from "../analyzer/CurriculumTracker";
-import { RankCoachEngine } from "../engine/RankCoachEngine.js";
-import { SessionBuilder } from "../engine/SessionBuilder.js";
-import { MotivationEngine } from "../engine/MotivationEngine.js";
+import { RankCoachEngine } from "../engine/RankCoachEngine";
+import { SessionBuilder } from "../engine/SessionBuilder";
+import { MotivationEngine } from "../engine/MotivationEngine";
 import { SuggestionFormatter } from "../formatter/SuggestionFormatter";
 import { ActionButtonGenerator } from "../generator/ActionButtonGenerator";
 import { CoachSuggestion } from "../types/coach.types";
 import { CoachMood, SessionMetadata } from "../types/extended.types";
-import prisma from "../lib/prisma";
+import prisma from "@repo/db";
 
 /**
  * DailyCoachOrchestrator

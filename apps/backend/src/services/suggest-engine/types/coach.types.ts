@@ -49,7 +49,6 @@ export interface EnhancedAnalysis {
 
     // Subject and topic breakdown
     subjectBreakdown: SubjectBreakdown[];
-    todaySessionTopics: SessionTopic[];
 }
 
 export interface TopicROI {
