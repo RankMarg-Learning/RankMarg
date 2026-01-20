@@ -14,17 +14,17 @@ COPY package*.json ./
 COPY turbo.json ./
 COPY apps/backend/package*.json ./apps/backend/
 COPY packages/db/package*.json ./packages/db/
-COPY packages/suggest-engine/package*.json ./packages/suggest-engine/
+
 
 COPY packages/db/prisma ./packages/db/prisma
 
 RUN npm ci
 
 COPY packages/db ./packages/db
-COPY packages/suggest-engine ./packages/suggest-engine
+
 
 RUN npm run build --workspace=packages/db
-RUN npm run build --workspace=@repo/suggest
+
 
 RUN npm run db:generate --workspace=packages/db
 
@@ -39,7 +39,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY apps/backend/package*.json ./apps/backend/
 COPY packages/db/package*.json ./packages/db/
-COPY packages/suggest-engine/package*.json ./packages/suggest-engine/
+
 
 COPY packages/db/prisma ./packages/db/prisma
 
@@ -48,7 +48,7 @@ RUN npm ci --omit=dev
 RUN npm run db:generate --workspace=packages/db
 
 COPY --from=builder /app/packages/db/dist ./packages/db/dist
-COPY --from=builder /app/packages/suggest-engine/dist ./packages/suggest-engine/dist
+
 COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
 
 ENV NODE_ENV=production

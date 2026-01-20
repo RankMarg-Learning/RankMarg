@@ -10,6 +10,8 @@ try {
 
 const DEFAULT_CORS_ORIGIN = "http://localhost:3000";
 
+const TEST_CRON = "* * * * *";
+
 const corsOrigins = (
   process.env.CORS_ORIGINS ?? process.env.CORS_ORIGIN ?? DEFAULT_CORS_ORIGIN
 )
@@ -68,7 +70,7 @@ export const ServerConfig = {
     daily: {
       streak: "0 0 * * *",
       updatePerformance: "0 0 * * *",
-      createSuggestion: "0 30 * * *", // 12:30 AM IST - Coaching suggestions based on yesterday's practice
+      createSuggestion: "30 0 * * *",
     },
     weekly: {
       updateReview: "0 1 * * 0",
@@ -77,6 +79,9 @@ export const ServerConfig = {
     },
     frequent: {
       createSession: "0 0 * * *",
+    },
+    test: {
+      createSuggestion: TEST_CRON,
     },
   },
 

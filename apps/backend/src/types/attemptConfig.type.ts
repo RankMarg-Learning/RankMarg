@@ -5,6 +5,34 @@ import {
   SubmitStatus,
 } from "@repo/db/enums";
 
+
+export interface AttemptsDayData {
+  id: string;
+  questionId: string;
+  type: AttemptType;
+  answer: string;
+  mistake: string;
+  timing: number;
+  reactionTime: number;
+  status: SubmitStatus;
+  hintsUsed: boolean;
+  solvedAt: Date;
+  subject: {
+    id: string;
+    name: string;
+  };
+  topic: {
+    id: string;
+    name: string;
+  };
+  subtopic: {
+    id: string;
+    name: string;
+  }[];
+  difficulty: number;
+  category: string[];
+}
+
 export interface AttemptsConfigOptions {
   userId: string;
   startDate?: Date;

@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma";
+import prisma from "@repo/db";
 import {
     EnhancedAnalysis,
     TopicROI,
@@ -9,8 +9,8 @@ import {
     SubjectBreakdown,
     TopicError,
     SessionTopic,
-    AttemptWithDetails,
     ExamPhase,
+    AttemptWithDetails,
 } from "../types/coach.types";
 
 export class EnhancedAnalyzer {
@@ -76,24 +76,6 @@ export class EnhancedAnalyzer {
             return null;
         }
 
-        // Fetch today's attempts (for session topics)
-        const todayAttempts: AttemptWithDetails[] = await prisma.attempt.findMany({
-            where: {
-                userId,
-                solvedAt: {
-                    gte: utcTodayStart,
-                },
-            },
-            include: {
-                question: {
-                    include: {
-                        subject: true,
-                        topic: true,
-                        subTopic: true,
-                    },
-                },
-            },
-        });
 
         // Fetch last 7 days attempts (for consistency)
         const last7DaysAttempts = await prisma.attempt.findMany({
@@ -169,7 +151,6 @@ export class EnhancedAnalyzer {
         const examPhase = this.determineExamPhase(daysUntilExam);
 
         const subjectBreakdown = this.calculateSubjectBreakdown(yesterdayAttempts);
-        const todaySessionTopics = this.calculateSessionTopics(todayAttempts);
 
         return {
             userId,
@@ -189,9 +170,9 @@ export class EnhancedAnalyzer {
             examPhase,
             daysUntilExam,
             subjectBreakdown,
-            todaySessionTopics,
         };
     }
+
 
     /**
      * Calculate Topic ROI: exam weightage * (1 - mastery/100) * error frequency

@@ -1,6 +1,6 @@
 import prisma from "@repo/db";
-import { TriggerType } from "@repo/db/enums";
-import { SuggestionEngine } from "@repo/suggest";
+import { Role, TriggerType } from "@repo/db/enums";
+import { SuggestionEngine } from "../../services/suggest-engine";
 import { BaseJobService, UserBatch, JobConfig } from "./BaseJobService";
 
 export class SuggestionService extends BaseJobService {
@@ -10,7 +10,7 @@ export class SuggestionService extends BaseJobService {
       concurrencyLimit: 10,
       retryAttempts: 3,
       retryDelay: 1000,
-      enableCaching: false, // Suggestions should be fresh
+      enableCaching: false,
       cacheTimeout: 0,
       ...config,
     });
@@ -25,6 +25,11 @@ export class SuggestionService extends BaseJobService {
     offset: number
   ): Promise<UserBatch[]> {
     const users = await prisma.user.findMany({
+      where: {
+        onboardingCompleted: true,
+        isActive: true,
+        role: Role.USER,
+      },
       select: {
         id: true,
       },
@@ -41,7 +46,8 @@ export class SuggestionService extends BaseJobService {
 
   public async generateSuggestion(userId: string) {
     try {
-      new SuggestionEngine([TriggerType.DAILY_ANALYSIS], userId);
+      const engine = new SuggestionEngine([TriggerType.DAILY_ANALYSIS], userId);
+      await engine.execute();
     } catch (error) {
       throw new Error(
         `Error generating suggestion for user ${userId}: ${error instanceof Error ? error.message : "Unknown error"}`

@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma";
+import prisma from "@repo/db";
 import { SuggestionType, TriggerType, SuggestionStatus } from "@repo/db/enums";
 import { CoachSuggestion } from "../types/coach.types";
 

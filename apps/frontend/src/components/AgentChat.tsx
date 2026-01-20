@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useRef } from 'react'
 import Image from 'next/image'
-import { Avatar, AvatarImage, AvatarFallback } from '@repo/common-ui'
+import { Avatar, AvatarImage, AvatarFallback, Skeleton, Badge } from '@repo/common-ui'
 import { Button } from '@repo/common-ui'
 import Link from 'next/link'
 import { ArrowRightIcon } from 'lucide-react'
+import ErrorCTA from './error'
 
 interface Suggestion {
     id: string
@@ -22,6 +23,83 @@ interface Suggestion {
 
 interface AgentChatProps {
     className?: string
+}
+
+function formatMessage(message: string) {
+    const parts: React.ReactNode[] = []
+    let key = 0
+
+    const lines = message.split('\n')
+
+    lines.forEach((line, lineIndex) => {
+        if (lineIndex > 0) {
+            parts.push(<br key={`br-${key++}`} />)
+        }
+
+        let currentLine = line
+        let lastIndex = 0
+        const lineParts: React.ReactNode[] = []
+
+        while (lastIndex < currentLine.length) {
+            const subtopicMatch = currentLine.slice(lastIndex).match(/^\[\[([^\]]+)\]\]/)
+            if (subtopicMatch) {
+                lineParts.push(
+                    <Badge
+                        key={`badge-${key++}`}
+                        variant="outline"
+                        className="mx-0.5 sm:mx-1 mb-1 inline-flex bg-primary-50 text-primary-700  text-[11px] sm:text-xs px-1.5 sm:px-2 py-0.5"
+                    >
+                        {subtopicMatch[1]}
+                    </Badge>
+                )
+                lastIndex += subtopicMatch[0].length
+                continue
+            }
+
+            const topicMatch = currentLine.slice(lastIndex).match(/^\[([^\]]+)\]/)
+            if (topicMatch) {
+                lineParts.push(
+                    <span key={`topic-${key++}`} className="font-semibold text-gray-800 mx-0.5 sm:mx-1 text-sm pl-2 my-4 border-l-4 border-l-primary-600">
+                        {topicMatch[1]}
+                    </span>
+                )
+                lastIndex += topicMatch[0].length
+                continue
+            }
+
+            const boldMatch = currentLine.slice(lastIndex).match(/^\*\*([^*]+)\*\*/)
+            if (boldMatch) {
+                lineParts.push(
+                    <strong key={`bold-${key++}`} className="font-bold text-gray-900">
+                        {boldMatch[1]}
+                    </strong>
+                )
+                lastIndex += boldMatch[0].length
+                continue
+            }
+
+            const nextSpecial = currentLine.slice(lastIndex).search(/[\[*]/)
+            if (nextSpecial === -1) {
+                lineParts.push(
+                    <span key={`text-${key++}`}>
+                        {currentLine.slice(lastIndex)}
+                    </span>
+                )
+                break
+            } else {
+                lineParts.push(
+                    <span key={`text-${key++}`}>
+                        {currentLine.slice(lastIndex, lastIndex + nextSpecial)}
+                    </span>
+                )
+                lastIndex += nextSpecial
+            }
+        }
+
+        parts.push(...lineParts)
+    })
+
+    return <>{parts}</>
 }
 
 export default function AgentChat({ className = '' }: AgentChatProps) {
@@ -68,18 +146,16 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
             setSuggestions([])
             setStreamComplete(false)
 
-            // Build the URL - backend uses /api/suggestion/stream (singular)
             const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
             const url = `${baseURL}/api/suggestion/stream`
 
-            // Use native fetch with credentials for cookie-based auth
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     Accept: 'text/event-stream',
                 },
-                credentials: 'include', // Important: sends cookies for session auth
-                signal, // Pass abort signal to cancel request
+                credentials: 'include',
+                signal,
             })
 
             if (!response.ok) {
@@ -150,54 +226,92 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
     }
 
     return (
-        <div className={`max-w-4xl mx-auto px-4 py-8 ${className}`}>
+        <div className={`max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 ${className}`}>
             {/* Header with Action Buttons */}
-            <div className="text-center mb-12">
-                <div className="flex justify-center mb-6">
+            <div className="text-center mb-6 sm:mb-12 hidden">
+                <div className="flex justify-center mb-4 sm:mb-6">
                     <Image
                         src="/logo_circle.png"
                         alt="RankMarg Coach"
-                        width={80}
-                        height={80}
-                        className="rounded-full shadow-lg shadow-blue-500/20 hover:scale-105 transition-transform"
+                        width={60}
+                        height={60}
+                        className="sm:w-20 sm:h-20 rounded-full shadow-lg shadow-blue-500/20 hover:scale-105 transition-transform"
                     />
                 </div>
 
             </div>
 
-            {/* Loading State */}
             {isLoading && (
-                <div className="text-center py-12">
-                    <div className="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading your personalized coaching...</p>
+                <div className="flex flex-col gap-3 sm:gap-4 my-4 sm:my-8">
+                    <div className="flex gap-2 items-start">
+                        <Skeleton className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 rounded-full" />
+                        <div className="flex-1 bg-gray-50 px-3 sm:px-5 py-2.5 sm:py-3 rounded-tr-xl rounded-br-xl rounded-bl-xl space-y-2.5">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-5/6" />
+                        </div>
+                    </div>
+
+                    <div className="flex gap-2 items-start">
+                        <Skeleton className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 rounded-full" />
+                        <div className="flex-1 bg-gray-50 px-3 sm:px-5 py-2.5 sm:py-3 rounded-tr-xl rounded-br-xl rounded-bl-xl space-y-2.5">
+                            <Skeleton className="h-4 w-2/3" />
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-4/5" />
+                            <Skeleton className="h-4 w-1/2" />
+                        </div>
+                    </div>
+
+                    <div className="flex gap-2 items-start">
+                        <Skeleton className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 rounded-full" />
+                        <div className="flex-1 bg-gray-50 px-3 sm:px-5 py-2.5 sm:py-3 rounded-tr-xl rounded-br-xl rounded-bl-xl space-y-2.5">
+                            <Skeleton className="h-4 w-5/6" />
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-4 w-2/3" />
+                            <div className="pt-1">
+                                <Skeleton className="h-9 w-32 rounded-full" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="text-center mt-4">
+                        <p className="text-gray-500 text-sm animate-pulse">Analyzing your progress and generating personalized suggestions...</p>
+                    </div>
                 </div>
             )}
 
-            {/* Error State */}
             {error && (
-                <div className="text-center p-8 bg-red-50 border border-red-200 rounded-xl my-8">
-                    <p className="text-red-600 mb-4">{error}</p>
-                    <Button onClick={() => connectToStream(new AbortController().signal)} variant="destructive">
-                        Try Again
-                    </Button>
-                </div>
+                <ErrorCTA message={error} />
             )}
 
-            {/* Chat Messages */}
+
             {!isLoading && !error && (
-                <div className="flex flex-col gap-4 my-8">
+                <div className="flex flex-col gap-3 sm:gap-4 my-4 sm:my-8">
                     {suggestions.map((suggestion) => (
-                        <div key={suggestion.id} className="flex gap-2 items-start animate-in fade-in slide-in-from-bottom-2 duration-400">
-                            {/* Agent Avatar */}
-                            <Avatar className="w-8 h-8 flex-shrink-0">
+                        <div key={suggestion.id} className="flex flex-col sm:flex-row gap-1 sm:items-start animate-in fade-in slide-in-from-bottom-2 duration-400">
+                            {/* Mobile: Logo + RankCoach text */}
+                            <div className="flex sm:hidden items-center gap-2 mb-1">
+                                <Image
+                                    src="/logo_circle.png"
+                                    alt="RankMarg Coach"
+                                    width={24}
+                                    height={24}
+                                    className="rounded-full"
+                                />
+                                <span className="text-primary-600 font-semibold text-sm">RankCoach</span>
+                            </div>
+
+                            {/* Desktop: Circular Avatar */}
+                            <Avatar className="hidden sm:flex w-8 h-8 flex-shrink-0">
                                 <AvatarImage src="/logo_circle.png" alt="RankMarg Coach" />
                                 <AvatarFallback>RM</AvatarFallback>
                             </Avatar>
 
                             {/* Message Content */}
-                            <div className="flex-1 flex flex-col gap-0 bg-gray-50 px-5 py-3 gap-2  rounded-tr-xl rounded-br-xl rounded-bl-xl">
-                                <div className=" rounded-tr-xl rounded-br-xl rounded-bl-xl  text-gray-900 text-[15px] leading-relaxed">
-                                    {suggestion.message}
+                            <div className="flex-1 flex flex-col gap-0 bg-gray-50 px-3 sm:px-5 py-2.5 sm:py-3 gap-2 rounded-tr-xl rounded-br-xl rounded-bl-xl">
+                                <div className="rounded-tr-xl rounded-br-xl rounded-bl-xl text-gray-900 text-[14px] sm:text-[15px] leading-relaxed">
+                                    {formatMessage(suggestion.message)}
                                 </div>
 
                                 {suggestion.actionName && suggestion.actionUrl && (
@@ -206,7 +320,7 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
                                     >
                                         <Button
                                             variant='outline'
-                                            className="inline-flex items-center border-primary-600 gap-2 text-primary-600 hover:text-primary-700 font-semibold text-sm py-2 rounded-full "
+                                            className="inline-flex items-center border-primary-600 gap-1.5 sm:gap-2 text-primary-600 hover:text-primary-700 font-semibold text-xs sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4 rounded-full"
                                         >
                                             {suggestion.actionName}
                                             <ArrowRightIcon className="w-4 h-4" />
@@ -219,13 +333,26 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
 
                     {/* Typing Indicator */}
                     {isStreaming && (
-                        <div className="flex gap-2 items-start">
-                            <Avatar className="w-8 h-8 flex-shrink-0">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:items-start">
+                            {/* Mobile: Logo + RankCoach text */}
+                            <div className="flex sm:hidden items-center gap-2 mb-1">
+                                <Image
+                                    src="/logo_circle.png"
+                                    alt="RankMarg Coach"
+                                    width={24}
+                                    height={24}
+                                    className="rounded-full"
+                                />
+                                <span className="text-primary-600 font-semibold text-sm">RankCoach</span>
+                            </div>
+
+                            {/* Desktop: Circular Avatar */}
+                            <Avatar className="hidden sm:flex w-8 h-8 flex-shrink-0">
                                 <AvatarImage src="/logo_circle.png" alt="RankMarg Coach" />
                                 <AvatarFallback>RM</AvatarFallback>
                             </Avatar>
 
-                            <div className="bg-gray-50 px-5 py-3 rounded-tr-xl rounded-br-xl rounded-bl-xl flex gap-2 w-fit">
+                            <div className="bg-gray-50 px-3 sm:px-5 py-2.5 sm:py-3 rounded-tr-xl rounded-br-xl rounded-bl-xl flex gap-2 w-fit">
                                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.32s]"></span>
                                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.16s]"></span>
                                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>

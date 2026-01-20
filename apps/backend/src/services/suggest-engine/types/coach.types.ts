@@ -18,6 +18,7 @@ export interface CoachSuggestion {
     priority: number; // 1 = highest
     actionName?: string; // Button text (e.g., "Start Practice", "View Analytics")
     actionUrl?: string; // Deep link URL
+    sequenceOrder?: number;
 }
 
 export type ExamPhase = 'foundation' | 'consolidation' | 'final_prep';
@@ -49,7 +50,6 @@ export interface EnhancedAnalysis {
 
     // Subject and topic breakdown
     subjectBreakdown: SubjectBreakdown[];
-    todaySessionTopics: SessionTopic[];
 }
 
 export interface TopicROI {
@@ -132,10 +132,15 @@ export interface SessionTopic {
 export type AttemptWithDetails = Prisma.AttemptGetPayload<{
     include: {
         question: {
-            include: {
-                subject: true;
-                topic: true;
-                subTopic: true;
+            select: {
+                id: true,
+                difficulty: true,
+                subjectId: true,
+                topicId: true,
+                subtopicId: true,
+                subject: true,
+                topic: true,
+                subTopic: true,
             };
         };
     };

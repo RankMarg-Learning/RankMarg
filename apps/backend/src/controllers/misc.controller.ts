@@ -1,11 +1,12 @@
 import { AuthenticatedRequest } from "@/middleware/auth.middleware";
 import { Response, NextFunction } from "express";
 import { v2 as cloudinary } from "cloudinary";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { ResponseUtil } from "@/utils/response.util";
 import ServerConfig from "@/config/server.config";
 import prisma from "@/lib/prisma";
 import { v4 as uuidv4 } from "uuid";
+import { s3 } from "@/lib/s3";
 
 cloudinary.config({
   cloud_name: ServerConfig.cloudinary.cloud_name,
@@ -13,13 +14,7 @@ cloudinary.config({
   api_secret: ServerConfig.cloudinary.api_secret,
 });
 
-const s3Client = new S3Client({
-  region: ServerConfig.s3.region,
-  credentials: {
-    accessKeyId: ServerConfig.s3.accessKeyId!,
-    secretAccessKey: ServerConfig.s3.secretAccessKey!,
-  },
-});
+
 
 export class MiscController {
   uploadCloudinary = async (
@@ -77,7 +72,7 @@ export class MiscController {
         ContentType: `image/${extension}`,
       });
 
-      await s3Client.send(command);
+      await s3.send(command);
 
       const publicUrl = `https://cdn.rankmarg.in/${s3Key}`;
 
@@ -127,7 +122,7 @@ export class MiscController {
       if (cpn.maxUsageCount && cpn.currentUsageCount >= cpn.maxUsageCount) {
         ResponseUtil.error(res, "Coupon code has reached the maximum usage limit", 400);
       }
-      
+
       ResponseUtil.success(res, cpn, "Coupon code is valid", 200);
     } catch (error) {
       next(error);

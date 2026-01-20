@@ -6,7 +6,7 @@ import { RedisCacheService } from "../redisCache.service";
 import { captureServiceError } from "../../lib/sentry";
 
 const DAILY_TEACHING_HOURS = 60 //minutes
-const BUFFER_FACTOR = 0.75 
+const BUFFER_FACTOR = 0.75
 
 export class QuestionSelector {
   private config: SessionConfig;
@@ -33,7 +33,7 @@ export class QuestionSelector {
         subjectId
       );
 
-      let currentTopics;
+      let currentTopics: { topicId: string; startedAt: Date }[];
       if (cachedTopics) {
         currentTopics = cachedTopics;
       } else {
@@ -46,7 +46,7 @@ export class QuestionSelector {
           },
           select: {
             topicId: true,
-            startedAt:true,
+            startedAt: true,
           },
         });
 
@@ -57,15 +57,15 @@ export class QuestionSelector {
         );
       }
 
-      
+
 
       if (currentTopics.length === 0) {
         console.log("No current topics found, falling back to medium mastery topics");
-        return this.selectMediumMasteryQuestions(subjectId,count);
+        return this.selectMediumMasteryQuestions(subjectId, count);
       }
 
-      const availableTimeMinutes = DAILY_TEACHING_HOURS * BUFFER_FACTOR; 
-      
+      const availableTimeMinutes = DAILY_TEACHING_HOURS * BUFFER_FACTOR;
+
       const subTopicIds: string[] = [];
       for (const topic of currentTopics) {
 
@@ -84,7 +84,7 @@ export class QuestionSelector {
             orderIndex: "asc",
           },
         });
-        
+
         let accumulatedTime = 0;
 
         for (const subTopic of subTopics) {
@@ -94,19 +94,19 @@ export class QuestionSelector {
           ) {
             break;
           }
-          
+
           subTopicIds.push(subTopic.id);
           accumulatedTime += subTopic.estimatedMinutes;
         }
       }
 
-      
+
       if (subTopicIds.length === 0) {
         return [];
       }
-      
+
       const { difficulty: difficultyDistribution, categories } =
-        this.getSelectionParameters(count,subjectId);
+        this.getSelectionParameters(count, subjectId);
 
       let selectedQuestions: { id: string; difficulty: number }[] = [];
 
@@ -188,7 +188,7 @@ export class QuestionSelector {
             id: {
               notIn: Array.from(
                 new Set([...selectedIds, ...attemptedQuestionIds])
-              ), 
+              ),
             },
             OR: [
               { category: { some: { category: { in: categories } } } },
@@ -224,8 +224,8 @@ export class QuestionSelector {
         selectedQuestions = [...selectedQuestions, ...fallbackQuestions];
       }
 
-      if(selectedQuestions.length < 0) {
-        return this.selectMediumMasteryQuestions(subjectId,count);
+      if (selectedQuestions.length < 0) {
+        return this.selectMediumMasteryQuestions(subjectId, count);
       }
       return selectedQuestions.slice(0, count);
     } catch (error) {
@@ -245,7 +245,7 @@ export class QuestionSelector {
     }
   }
 
-  public async selectMediumMasteryQuestions(subjectId: string,count: number): Promise<{id: string; difficulty: number}[]> {
+  public async selectMediumMasteryQuestions(subjectId: string, count: number): Promise<{ id: string; difficulty: number }[]> {
     try {
       const mediumMasteryTopics = await this.prisma.topicMastery.findMany({
         where: {
@@ -255,7 +255,7 @@ export class QuestionSelector {
           },
           masteryLevel: { gte: 40, lte: 60 },
         },
-        select:{
+        select: {
           topicId: true,
         },
         orderBy: [{ masteryLevel: "asc" }],
@@ -265,7 +265,7 @@ export class QuestionSelector {
         return [];
       }
       let topicIds = mediumMasteryTopics.map((t) => t.topicId);
-      const { difficulty: difficultyDistribution, categories } = this.getSelectionParameters(count,subjectId);
+      const { difficulty: difficultyDistribution, categories } = this.getSelectionParameters(count, subjectId);
       let selectedQuestions: { id: string; difficulty: number }[] = [];
       for (let difficulty = 1; difficulty <= 4; difficulty++) {
         const questionsNeededForThisDifficulty = difficultyDistribution[difficulty - 1];
@@ -365,40 +365,25 @@ export class QuestionSelector {
     count: number
   ): Promise<{ id: string; difficulty: number }[]> {
     try {
-      // Try cache first
+
       let weakTopics = [];
 
-      weakTopics = await RedisCacheService.getCachedWeakConcepts(
-        this.userId,
-        subjectId
-      );
-
-      if (!weakTopics || weakTopics.length === 0) {
-        weakTopics = await this.prisma.topicMastery.findMany({
-          where: {
-            userId: this.userId,
-            topic: {
-              subjectId: subjectId,
-            },
-            OR: [{ masteryLevel: { lte: 40 } } , { masteryLevel: { gt: 0 } }],
+      weakTopics = await this.prisma.topicMastery.findMany({
+        where: {
+          userId: this.userId,
+          topic: {
+            subjectId: subjectId,
           },
-          select: {
-            topicId: true,
-            masteryLevel: true,
-          },
-          orderBy: [{ masteryLevel: "asc" }],
-          take: 1,
-        });
+          OR: [{ masteryLevel: { lte: 40 } }, { masteryLevel: { gt: 0 } }],
+        },
+        select: {
+          topicId: true,
+          masteryLevel: true,
+        },
+        orderBy: [{ masteryLevel: "asc" }],
+        take: 1,
+      });
 
-        await RedisCacheService.cacheWeakConcepts(
-          this.userId,
-          subjectId,
-          weakTopics.map((t) => ({
-            topicId: t.topicId,
-            masteryLevel: t.masteryLevel,
-          }))
-        );
-      }
 
       if (!weakTopics || weakTopics.length === 0) {
         return [];
@@ -407,7 +392,7 @@ export class QuestionSelector {
       let topicIds = weakTopics.map((wt) => wt.topicId);
 
       const { difficulty: difficultyDistribution, categories } =
-        this.getSelectionParameters(count,subjectId);
+        this.getSelectionParameters(count, subjectId);
 
       let selectedQuestions: { id: string; difficulty: number }[] = [];
 
@@ -544,47 +529,36 @@ export class QuestionSelector {
         return [];
       }
 
-      let cachedRevisionTopics =
-        await RedisCacheService.getCachedRevisionTopics(this.userId, subjectId);
 
-      let topicIds: string[];
-      if (cachedRevisionTopics && cachedRevisionTopics.length > 0) {
-        topicIds = cachedRevisionTopics;
-      } else {
-        const reviewSchedules = await this.prisma.reviewSchedule.findMany({
-          where: {
-            userId: this.userId,
-            topicId: {
-              in: completedTopics.map((ct) => ct.topicId),
-            },
-            nextReviewAt: {
-              lte: new Date(),
-            },
+      const reviewSchedules = await this.prisma.reviewSchedule.findMany({
+        where: {
+          userId: this.userId,
+          topicId: {
+            in: completedTopics.map((ct) => ct.topicId),
           },
-          select: {
-            topicId: true,
+          nextReviewAt: {
+            lte: new Date(),
           },
-          orderBy: {
-            nextReviewAt: "asc",
-          },
-          take: 1,
-        });
+        },
+        select: {
+          topicId: true,
+        },
+        orderBy: {
+          nextReviewAt: "asc",
+        },
+        take: 1,
+      });
 
-        topicIds = reviewSchedules.map((rs) => rs.topicId);
+      const topicIds: string[] = reviewSchedules.map((rs) => rs.topicId);
 
-        if (topicIds.length === 0) {
-          return [];
-        }
-
-        await RedisCacheService.cacheRevisionTopics(
-          this.userId,
-          subjectId,
-          topicIds
-        );
+      if (topicIds.length === 0) {
+        return [];
       }
 
+
+
       const { difficulty: difficultyDistribution, categories } =
-        this.getSelectionParameters(count,subjectId);
+        this.getSelectionParameters(count, subjectId);
 
       let selectedQuestions: { id: string; difficulty: number }[] = [];
 
@@ -772,11 +746,11 @@ export class QuestionSelector {
     }
   }
 
-  private getSelectionParameters(count: number,subjectId:string): {
+  private getSelectionParameters(count: number, subjectId: string): {
     difficulty: number[];
     categories: QCategory[];
   } {
-    const { difficulty } = getDifficultyDistributionByGrade(this.grade, count,subjectId,this.config.examCode);
+    const { difficulty } = getDifficultyDistributionByGrade(this.grade, count, subjectId, this.config.examCode);
     const categories = this.config.questionCategoriesDistribution
       .grade as QCategory[];
 

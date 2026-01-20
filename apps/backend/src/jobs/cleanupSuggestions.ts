@@ -1,4 +1,4 @@
-import { SuggestionRepository } from "@repo/suggest";
+import { SuggestionRepository } from "../services/suggest-engine";
 
 /**
  * Cleanup expired suggestions (TTL-based)

@@ -47,20 +47,3 @@ export const forgotPasswordLimiter = rateLimit({
   },
 });
 
-export const attemptLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 30,
-  keyGenerator: (req: AuthenticatedRequest) => {
-    const userId = req.user?.id;
-    const ip = getIp(req);
-
-    return userId ? `${userId}:${ip}` : ip;
-  },
-
-  message: {
-    error: "Too many attempts. Please wait 1 minute.",
-  },
-
-  standardHeaders: true,
-  legacyHeaders: false,
-});
