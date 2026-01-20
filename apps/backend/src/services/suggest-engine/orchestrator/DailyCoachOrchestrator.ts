@@ -2,6 +2,7 @@ import { EnhancedAnalyzer } from "../analyzer/EnhancedAnalyzer";
 import { MotivationEngine } from "../engine/MotivationEngine";
 import { SuggestionFormatter } from "../formatter/SuggestionFormatter";
 import { ActionButtonGenerator } from "../generator/ActionButtonGenerator";
+import { MessageTemplateGenerator } from "../generator/MessageTemplateGenerator";
 import { CoachSuggestion } from "../types/coach.types";
 import { CoachMood } from "../types/extended.types";
 import prisma from "@repo/db";
@@ -13,12 +14,14 @@ export class DailyCoachOrchestrator {
     private motivationEngine: MotivationEngine;
     private formatter: SuggestionFormatter;
     private actionGenerator: ActionButtonGenerator;
+    private messageTemplateGenerator: MessageTemplateGenerator;
 
     constructor() {
         this.analyzer = new EnhancedAnalyzer();
         this.motivationEngine = new MotivationEngine();
         this.formatter = new SuggestionFormatter();
         this.actionGenerator = new ActionButtonGenerator();
+        this.messageTemplateGenerator = new MessageTemplateGenerator();
     }
 
 
@@ -244,21 +247,26 @@ export class DailyCoachOrchestrator {
         mood: CoachMood,
         sessionNumber: number
     ): string {
-        const emoji = mood === "celebratory" ? "🎯" : mood === "encouraging" ? "💪" : "📚";
 
-        let message = `${emoji} **${subjectName} - Session ${sessionNumber}**\n\n`;
+        const template = this.messageTemplateGenerator.getStudyPromptTemplate(
+            subjectName,
+            mood,
+            sessionNumber
+        );
+
+        let message = `${template.emoji} ${template.header}\n\n`;
 
         if (topicMap.size > 0) {
-            message += `📖 **Topics to Study:**\n`;
+            message += `${template.topicsLabel}`;
             topicMap.forEach((subtopics, topic) => {
-                message += `[${topic}]`;
+                message += `\n [${topic}]: \n`;
                 subtopics.forEach((subtopic, i) => {
                     message += `[[${subtopic}]]`;
                 });
             });
         }
 
-        message += `\n💡 **Pro Tip:** Study these topics for 10-15 minutes before solving. It'll boost your confidence! 🚀`;
+        message += `\n${template.tip}`;
 
         return message;
     }
@@ -273,22 +281,20 @@ export class DailyCoachOrchestrator {
         mood: CoachMood,
         sessionNumber: number
     ): string {
-        const emoji = mood === "celebratory" ? "🔥" : mood === "encouraging" ? "💪" : "✅";
+        // Get template from generator
+        const template = this.messageTemplateGenerator.getPracticePromptTemplate(
+            subjectName,
+            mood,
+            sessionNumber
+        );
 
-        let message = `${emoji} **Ready to Practice ${subjectName}?**\n\n`;
+        let message = `${template.emoji} ${template.intro}\n\n`;
 
-        message += `📊 **Session Details:**\n`;
+        message += `${template.detailsLabel}\n`;
         message += `• Questions: ${questionCount}\n`;
         message += `• Estimated Time: ~${estimatedMinutes} minutes\n`;
-        message += `• Session: ${sessionNumber}\n\n`;
 
-        if (mood === "celebratory") {
-            message += `🎉 You're on fire! Let's crush this practice session! 💪`;
-        } else if (mood === "encouraging") {
-            message += `🌟 You've got this! Consistent practice = Top rank! 🎯`;
-        } else {
-            message += `🚀 Let's make today count. Start solving now! 💡`;
-        }
+        message += template.motivational;
 
         return message;
     }
@@ -308,7 +314,7 @@ export class DailyCoachOrchestrator {
             type: "GUIDANCE",
             category: "ANALYSIS_PROMPT",
             message,
-            priority: 20, // Lower priority (shown last)
+            priority: 20,
             actionName: actionButton.text,
             actionUrl: actionButton.url,
         };
