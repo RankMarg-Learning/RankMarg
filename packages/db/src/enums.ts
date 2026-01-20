@@ -143,6 +143,12 @@ export const TriggerType = {
   EXAM_PROXIMITY: "EXAM_PROXIMITY",
 } as const;
 
+export const SuggestionCategory = {
+  STUDY_PROMPT: "STUDY_PROMPT",
+  SUMMARIZATION: "SUMMARIZATION",
+  PRACTICE_PROMPT: "PRACTICE_PROMPT",
+} as const;
+
 export const SuggestionStatus = {
   ACTIVE: "ACTIVE",
   VIEWED: "VIEWED",

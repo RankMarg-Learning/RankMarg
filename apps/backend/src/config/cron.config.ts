@@ -11,6 +11,7 @@ import { subscriptionExpiredJob } from "../jobs/tasks/userActivity.job";
 import { updateGradeJob } from "@/jobs/tasks/grade.job";
 import { updatePromocodeJob } from "@/jobs/tasks/promocode.job";
 import { updateQuestionsPerDayJob } from "@/jobs/tasks/questionsPerDay.update.job";
+import { cacheAttemptDayJob } from "@/jobs/support/cacheAttemptDay.job";
 import { initSentryForCronJobs, captureCronJobError } from "../lib/sentry";
 
 export interface CronJob {
@@ -20,6 +21,8 @@ export interface CronJob {
   enabled: boolean;
   description: string;
 }
+
+export const BATCH_SIZE: number = 50;
 
 export class CronManager {
   private jobs: Map<string, ScheduledTask> = new Map();
@@ -47,7 +50,7 @@ export class CronManager {
     },
     {
       name: "updateReview",
-      schedule: ServerConfig.cron.weekly.updateReview, 
+      schedule: ServerConfig.cron.weekly.updateReview,
       job: updateReviewJob,
       enabled: true,
       description: "Update review schedules weekly on Sunday at midnight",
@@ -102,6 +105,14 @@ export class CronManager {
       enabled: true,
       description:
         "Update user questionsPerDay field based on last 5 days attempts from top 3 subjects",
+    },
+    {
+      name: "cacheAttemptDay",
+      schedule: "50 23 * * *", // Every day at 11:50 PM
+      job: cacheAttemptDayJob,
+      enabled: true,
+      description:
+        "Cache the day's attempt data (12:00 AM - 11:50 PM) in Redis for all active users to support analytics and next-day suggestions",
     }
   ];
 
@@ -139,7 +150,7 @@ export class CronManager {
               `❌ Cron job ${jobConfig.name} failed after ${duration}ms:`,
               error
             );
-            
+
             if (error instanceof Error) {
               captureCronJobError(error, {
                 jobName: jobConfig.name,
@@ -228,7 +239,7 @@ export class CronManager {
     if (jobConfig) {
       console.log(`🚀 Manually running cron job: ${jobName}`);
       const startTime = Date.now();
-      
+
       try {
         await jobConfig.job();
         const duration = Date.now() - startTime;
@@ -241,7 +252,7 @@ export class CronManager {
           `❌ Manually triggered cron job ${jobName} failed after ${duration}ms:`,
           error
         );
-        
+
         if (error instanceof Error) {
           captureCronJobError(error, {
             jobName: jobConfig.name,
@@ -266,7 +277,7 @@ export class CronManager {
             }
           );
         }
-        
+
         throw error;
       }
     } else {

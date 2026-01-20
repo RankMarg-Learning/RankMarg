@@ -18,6 +18,7 @@ export interface CoachSuggestion {
     priority: number; // 1 = highest
     actionName?: string; // Button text (e.g., "Start Practice", "View Analytics")
     actionUrl?: string; // Deep link URL
+    sequenceOrder?: number;
 }
 
 export type ExamPhase = 'foundation' | 'consolidation' | 'final_prep';

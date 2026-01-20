@@ -11,7 +11,6 @@ import {
  * based on suggestion context.
  */
 export class ActionButtonGenerator {
-    private readonly baseUrl = "https://www.rankmarg.in";
 
     /**
      * Generate action button with optional custom label
@@ -41,34 +40,34 @@ export class ActionButtonGenerator {
                 if (!context.sessionId) {
                     throw new Error("sessionId required for START_PRACTICE action");
                 }
-                return `${this.baseUrl}/ai-session/${context.sessionId}`;
+                return `/ai-session/${context.sessionId}`;
 
             case "PRACTICE_MORE":
                 if (!context.subjectId || !context.topicSlug) {
                     throw new Error("subjectId and topicSlug required for PRACTICE_MORE action");
                 }
-                return `${this.baseUrl}/ai-questions/${context.subjectId}/${context.topicSlug}`;
+                return `/ai-questions/${context.subjectId}/${context.topicSlug}`;
 
             case "SEE_MASTERY":
                 if (!context.subjectId) {
                     throw new Error("subjectId required for SEE_MASTERY action");
                 }
-                return `${this.baseUrl}/mastery/${context.subjectId}`;
+                return `/mastery/${context.subjectId}`;
 
             case "MOCK_TEST":
-                return `${this.baseUrl}/tests`;
+                return `/tests`;
 
             case "TEST_ANALYSIS":
                 if (!context.testId) {
                     throw new Error("testId required for TEST_ANALYSIS action");
                 }
-                return `${this.baseUrl}/t/${context.testId}/analysis`;
+                return `/t/${context.testId}/analysis`;
 
             case "CHANGE_CURRICULUM":
-                return `${this.baseUrl}/my-curriculum`;
+                return `/my-curriculum`;
 
             case "VIEW_RESULTS":
-                return `${this.baseUrl}/ai-practice/recent-results`;
+                return `/ai-practice/recent-results`;
 
             default:
                 throw new Error(`Unknown action type: ${type}`);

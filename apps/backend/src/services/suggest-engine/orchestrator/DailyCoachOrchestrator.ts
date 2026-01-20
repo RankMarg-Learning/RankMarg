@@ -1,57 +1,35 @@
 import { EnhancedAnalyzer } from "../analyzer/EnhancedAnalyzer";
-import { CurriculumTracker } from "../analyzer/CurriculumTracker";
-import { RankCoachEngine } from "../engine/RankCoachEngine";
-import { SessionBuilder } from "../engine/SessionBuilder";
 import { MotivationEngine } from "../engine/MotivationEngine";
 import { SuggestionFormatter } from "../formatter/SuggestionFormatter";
 import { ActionButtonGenerator } from "../generator/ActionButtonGenerator";
 import { CoachSuggestion } from "../types/coach.types";
-import { CoachMood, SessionMetadata } from "../types/extended.types";
+import { CoachMood } from "../types/extended.types";
 import prisma from "@repo/db";
+import { SuggestionCategory, SuggestionType } from "@repo/db/enums";
 
-/**
- * DailyCoachOrchestrator
- * 
- * Orchestrates the complete daily coaching flow (5-6 suggestions).
- * Coordinates all components to generate personalized coaching messages.
- */
+
 export class DailyCoachOrchestrator {
     private analyzer: EnhancedAnalyzer;
-    private curriculumTracker: CurriculumTracker;
-    private coachEngine: RankCoachEngine;
-    private sessionBuilder: SessionBuilder;
     private motivationEngine: MotivationEngine;
     private formatter: SuggestionFormatter;
     private actionGenerator: ActionButtonGenerator;
 
     constructor() {
         this.analyzer = new EnhancedAnalyzer();
-        this.curriculumTracker = new CurriculumTracker();
-        this.coachEngine = new RankCoachEngine();
-        this.sessionBuilder = new SessionBuilder();
         this.motivationEngine = new MotivationEngine();
         this.formatter = new SuggestionFormatter();
         this.actionGenerator = new ActionButtonGenerator();
     }
 
-    /**
-     * Orchestrate complete daily coaching flow
-     * Returns 5-6 suggestions in sequence
-     */
+
     async orchestrateDailyCoaching(userId: string): Promise<CoachSuggestion[]> {
         const suggestions: CoachSuggestion[] = [];
 
         try {
-            // Get user info
             const user = await prisma.user.findUnique({
                 where: { id: userId },
                 select: {
                     name: true,
-                    examRegistrations: {
-                        select: {
-                            examCode: true,
-                        },
-                    },
                 },
             });
 
@@ -60,62 +38,38 @@ export class DailyCoachOrchestrator {
             }
 
             const userName = user.name || "Student";
-            const examCode = user.examRegistrations[0]?.examCode || "JEE";
 
-            // Analyze yesterday's performance
             const analysis = await this.analyzer.analyze(userId);
 
-            if (!analysis) {
-                // No activity - generate motivational suggestions
-                return this.generateNoActivitySuggestions(userName);
-            }
-
-            // Get curriculum alignment
-            const curriculumAlignment = await this.curriculumTracker.getCurriculumAlignment(
-                userId,
-                examCode
-            );
-
-            // Determine mood
             const mood = this.motivationEngine.determineMood(analysis);
 
-            // 1. GREETING (First chat)
             const greeting = this.generateGreeting(userName, mood);
             suggestions.push(greeting);
 
-            // 2. DAILY SUMMARY (Second chat)
-            const summary = this.generateDailySummary(analysis, mood);
-            suggestions.push(summary);
-
-            // 3. SUBJECT SESSIONS (Third, Fourth, Fifth chats)
-            const sessions = await this.generateSubjectSessions(
-                analysis,
-                examCode,
+            if (!analysis) {
+                const noActivitySuggestions = this.generateNoActivitySuggestions(userName, userId);
+                suggestions.push(...noActivitySuggestions);
+            } else {
+                const summary = this.generateDailySummary(analysis, mood);
+                suggestions.push(summary);
+            }
+            const sessionSuggestions = await this.generateSessionSuggestions(
+                userId,
                 mood
             );
-            suggestions.push(...sessions);
+            suggestions.push(...sessionSuggestions);
 
-            // 4. FEEDBACK/ANALYSIS (Sixth chat - conditional)
-            const feedback = this.generateFeedback(analysis, mood);
-            if (feedback) {
-                suggestions.push(feedback);
-            }
-
-            // 5. CURRICULUM GUIDANCE (Optional - if needed)
-            if (curriculumAlignment.completionPercentage < 80) {
-                const curriculumGuidance = this.generateCurriculumGuidance(
-                    curriculumAlignment,
-                    mood
-                );
-                if (curriculumGuidance) {
-                    suggestions.push(curriculumGuidance);
+            if (analysis && analysis.totalQuestions >= 5) {
+                const feedback = this.generateFeedback();
+                if (feedback) {
+                    suggestions.push(feedback);
                 }
             }
 
             return suggestions;
         } catch (error) {
             console.error("Error orchestrating daily coaching:", error);
-            // Return fallback suggestion
+
             return this.generateFallbackSuggestions();
         }
     }
@@ -127,16 +81,14 @@ export class DailyCoachOrchestrator {
         const message = this.formatter.formatGreeting(userName, mood);
 
         return {
-            type: "MOTIVATION",
-            category: "GREETING",
+            type: SuggestionType.GUIDANCE,
+            category: SuggestionCategory.SUMMARIZATION,
             message,
             priority: 1,
+            sequenceOrder: 1,
         };
     }
 
-    /**
-     * Generate daily summary suggestion
-     */
     private generateDailySummary(
         analysis: any,
         mood: CoachMood
@@ -150,84 +102,112 @@ export class DailyCoachOrchestrator {
         );
 
         return {
-            type: mood === "celebratory" ? "CELEBRATION" : "GUIDANCE",
-            category: "DAILY_SUMMARY",
+            type: mood === "celebratory" ? SuggestionType.CELEBRATION : SuggestionType.GUIDANCE,
+            category: SuggestionCategory.SUMMARIZATION,
             message,
             priority: 2,
+            sequenceOrder: 2,
         };
     }
 
-    /**
-     * Generate subject session suggestions (3 sessions)
-     */
-    private async generateSubjectSessions(
-        analysis: any,
-        examCode: string,
+
+    private async generateSessionSuggestions(
+        userId: string,
         mood: CoachMood
     ): Promise<CoachSuggestion[]> {
         const suggestions: CoachSuggestion[] = [];
 
-        // Get exam subjects
-        const examSubjects = await prisma.examSubject.findMany({
-            where: { examCode },
-            include: { subject: true },
-            orderBy: { weightage: "desc" },
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
+
+        const sessions = await prisma.practiceSession.findMany({
+            where: {
+                userId,
+                createdAt: { gte: todayStart, lte: todayEnd },
+                isCompleted: false,
+            },
+            orderBy: { createdAt: "desc" },
             take: 3,
+            select: {
+                id: true,
+                subjectId: true,
+                duration: true,
+                questions: {
+                    select: {
+                        question: {
+                            select: {
+                                topic: { select: { id: true, name: true } },
+                                subTopic: { select: { id: true, name: true } },
+                            },
+                        },
+                    },
+                },
+            },
         });
 
-        for (let i = 0; i < examSubjects.length; i++) {
-            const examSubject = examSubjects[i];
-            const subjectId = examSubject.subjectId;
+        if (sessions.length === 0) {
+            suggestions.push({
+                type: SuggestionType.REMINDER,
+                category: SuggestionCategory.PRACTICE_PROMPT,
+                message: "No practice sessions scheduled yet. Let's create one! 🎯",
+                priority: 3,
+                actionName: "Generate Session",
+                actionUrl: "/ai-practice",
+            });
+            return suggestions;
+        }
 
-            // Build session metadata
-            const topics = await this.sessionBuilder.selectTopicsForSession(
-                analysis,
-                subjectId,
-                3
-            );
 
-            const questionCount = 10; // Default 10 questions per subject
-            const priority = this.sessionBuilder["determinePriority"](analysis, subjectId);
+        const subjectIds = sessions.map((s) => s.subjectId).filter(Boolean) as string[];
+        const subjects = await prisma.subject.findMany({
+            where: { id: { in: subjectIds } },
+            select: { id: true, name: true },
+        });
 
-            const metadata: SessionMetadata = await this.sessionBuilder.buildSessionMetadata(
-                subjectId,
-                topics,
-                questionCount,
-                priority
-            );
+        const subjectMap = new Map(subjects.map((s) => [s.id, s.name]));
 
-            // Format session message
-            const message = this.formatter.formatSessionSuggestion(
-                metadata,
+        let priority = 3;
+
+        for (let i = 0; i < sessions.length; i++) {
+            const session = sessions[i];
+            const subjectName = subjectMap.get(session.subjectId || "") || "Unknown Subject";
+
+            const extracted = this.extractSessionTopics(session);
+
+            const studyMessage = this.formatStudyPrompt(
+                subjectName,
+                extracted.topicMap,
                 mood,
                 i + 1
             );
 
-            // Create practice session in database
-            const session = await this.createPracticeSession(
-                analysis.userId,
-                subjectId,
-                topics.map((t) => t.topicId),
-                questionCount
-            );
+            suggestions.push({
+                type: SuggestionType.GUIDANCE,
+                category: "STUDY_PROMPT",
+                message: studyMessage,
+                priority: priority++,
+                sequenceOrder: priority,
+            });
 
-            // Generate action button
-            const actionButton = this.actionGenerator.generateActionButton(
-                "START_PRACTICE",
-                {
-                    sessionId: session.id,
-                    subjectName: examSubject.subject.name,
-                    questionCount,
-                }
+            const practiceMessage = this.formatPracticePrompt(
+                subjectName,
+                session.questions.length,
+                Math.ceil(session.duration / 60),
+                mood,
+                i + 1
             );
 
             suggestions.push({
-                type: "GUIDANCE",
-                category: "SUBJECT_SESSION",
-                message,
-                priority: 3 + i,
-                actionName: actionButton.text,
-                actionUrl: actionButton.url,
+                type: SuggestionType.REMINDER,
+                category: SuggestionCategory.PRACTICE_PROMPT,
+                message: practiceMessage,
+                priority: priority++,
+                actionName: "Start Practice",
+                actionUrl: `/ai-session/${session.id}`,
+                sequenceOrder: priority,
             });
         }
 
@@ -235,14 +215,88 @@ export class DailyCoachOrchestrator {
     }
 
     /**
-     * Generate feedback suggestion
+     * Extract topics and subtopics from session
      */
-    private generateFeedback(analysis: any, mood: CoachMood): CoachSuggestion | null {
-        // Check if user has time for analysis
-        if (analysis.totalQuestions < 5) {
-            return null; // Too few questions to give meaningful feedback
+    private extractSessionTopics(session: any): {
+        topicMap: Map<string, string[]>;
+    } {
+        const topicMap = new Map<string, string[]>();
+
+        for (const q of session.questions || []) {
+            if (topicMap.get(q.question.topic.name)) {
+                topicMap.get(q.question.topic.name)?.push(q.question.subTopic.name);
+            } else {
+                topicMap.set(q.question.topic.name, [q.question.subTopic.name]);
+            }
         }
 
+        return {
+            topicMap,
+        };
+    }
+
+    /**
+     * Format study prompt (Encourages studying topics first)
+     */
+    private formatStudyPrompt(
+        subjectName: string,
+        topicMap: Map<string, string[]>,
+        mood: CoachMood,
+        sessionNumber: number
+    ): string {
+        const emoji = mood === "celebratory" ? "🎯" : mood === "encouraging" ? "💪" : "📚";
+
+        let message = `${emoji} **${subjectName} - Session ${sessionNumber}**\n\n`;
+
+        if (topicMap.size > 0) {
+            message += `📖 **Topics to Study:**\n`;
+            topicMap.forEach((subtopics, topic) => {
+                message += `[${topic}]`;
+                subtopics.forEach((subtopic, i) => {
+                    message += `[[${subtopic}]]`;
+                });
+            });
+        }
+
+        message += `\n💡 **Pro Tip:** Study these topics for 10-15 minutes before solving. It'll boost your confidence! 🚀`;
+
+        return message;
+    }
+
+    /**
+     * Format practice prompt (Prompts to solve the session)
+     */
+    private formatPracticePrompt(
+        subjectName: string,
+        questionCount: number,
+        estimatedMinutes: number,
+        mood: CoachMood,
+        sessionNumber: number
+    ): string {
+        const emoji = mood === "celebratory" ? "🔥" : mood === "encouraging" ? "💪" : "✅";
+
+        let message = `${emoji} **Ready to Practice ${subjectName}?**\n\n`;
+
+        message += `📊 **Session Details:**\n`;
+        message += `• Questions: ${questionCount}\n`;
+        message += `• Estimated Time: ~${estimatedMinutes} minutes\n`;
+        message += `• Session: ${sessionNumber}\n\n`;
+
+        if (mood === "celebratory") {
+            message += `🎉 You're on fire! Let's crush this practice session! 💪`;
+        } else if (mood === "encouraging") {
+            message += `🌟 You've got this! Consistent practice = Top rank! 🎯`;
+        } else {
+            message += `🚀 Let's make today count. Start solving now! 💡`;
+        }
+
+        return message;
+    }
+
+    /**
+     * Generate feedback suggestion
+     */
+    private generateFeedback(): CoachSuggestion | null {
         const message = this.formatter.formatAnalysisPrompt();
 
         const actionButton = this.actionGenerator.generateActionButton(
@@ -254,84 +308,29 @@ export class DailyCoachOrchestrator {
             type: "GUIDANCE",
             category: "ANALYSIS_PROMPT",
             message,
-            priority: 6,
+            priority: 20, // Lower priority (shown last)
             actionName: actionButton.text,
             actionUrl: actionButton.url,
         };
     }
 
     /**
-     * Generate curriculum guidance suggestion
+     * Generate suggestions for users with no activity yesterday
      */
-    private generateCurriculumGuidance(
-        curriculumAlignment: any,
-        mood: CoachMood
-    ): CoachSuggestion | null {
-        if (curriculumAlignment.nextRecommendedTopics.length === 0) {
-            return null;
-        }
-
-        const nextTopics = curriculumAlignment.nextRecommendedTopics
-            .slice(0, 3)
-            .map((t: any) => t.topicName);
-
-        const message = this.formatter.formatCurriculumGuidance(
-            curriculumAlignment.completionPercentage,
-            nextTopics,
-            mood
-        );
-
-        const actionButton = this.actionGenerator.generateActionButton(
-            "CHANGE_CURRICULUM",
-            {}
-        );
-
-        return {
-            type: "GUIDANCE",
-            category: "CURRICULUM_GUIDANCE",
-            message,
-            priority: 7,
-            actionName: actionButton.text,
-            actionUrl: actionButton.url,
-        };
-    }
-
-    /**
-     * Generate suggestions for users with no activity
-     */
-    private generateNoActivitySuggestions(userName: string): CoachSuggestion[] {
+    private generateNoActivitySuggestions(
+        userName: string,
+        userId: string
+    ): CoachSuggestion[] {
         const suggestions: CoachSuggestion[] = [];
 
-        // Greeting
-        suggestions.push({
-            type: "MOTIVATION",
-            category: "GREETING",
-            message: `Hi ${userName}! 👋`,
-            priority: 1,
-        });
-
-        // Motivational message
         suggestions.push({
             type: "MOTIVATION",
             category: "NO_ACTIVITY",
-            message: `No practice yesterday? No problem! Every day is a fresh start. Let's begin today with focused practice. 💪`,
+            message: `No practice yesterday? No worries! Every day is a fresh start. Let's begin today with focused practice. 💪`,
             priority: 2,
+            sequenceOrder: 2,
         });
 
-        // Action prompt
-        const actionButton = this.actionGenerator.generateActionButton(
-            "VIEW_RESULTS",
-            {}
-        );
-
-        suggestions.push({
-            type: "REMINDER",
-            category: "START_PRACTICE",
-            message: `Start with a quick session today and build momentum. Consistency is key! 🎯`,
-            priority: 3,
-            actionName: "Start Practice",
-            actionUrl: "/ai-practice",
-        });
 
         return suggestions;
     }
@@ -350,48 +349,5 @@ export class DailyCoachOrchestrator {
                 actionUrl: "/ai-practice",
             },
         ];
-    }
-
-    /**
-     * Create practice session in database
-     */
-    private async createPracticeSession(
-        userId: string,
-        subjectId: string,
-        topicIds: string[],
-        questionCount: number
-    ) {
-        // Get questions for topics
-        const questions = await prisma.question.findMany({
-            where: {
-                subjectId,
-                topicId: {
-                    in: topicIds,
-                },
-                isPublished: true,
-            },
-            take: questionCount,
-            orderBy: {
-                difficulty: "asc",
-            },
-        });
-
-        // Create session
-        const session = await prisma.practiceSession.create({
-            data: {
-                userId,
-                subjectId,
-                questionsSolved: 0,
-                correctAnswers: 0,
-                duration: questionCount * 90, // 90 seconds per question
-                questions: {
-                    create: questions.map((q) => ({
-                        questionId: q.id,
-                    })),
-                },
-            },
-        });
-
-        return session;
     }
 }

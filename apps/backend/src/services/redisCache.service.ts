@@ -1,6 +1,7 @@
 import redisService from "../lib/redis";
 import { GradeEnum, QCategory } from "@repo/db/enums";
 import { SelectedQuestion, SessionConfig } from "../types/session.api.types";
+import { AttemptsDayData } from "@/types/attemptConfig.type";
 
 interface CacheStats {
   totalKeys: number;
@@ -19,11 +20,12 @@ interface ConnectionTestResult {
 export class RedisCacheService {
   // Optimized TTL values based on data volatility
   private static readonly CACHE_TTL = {
+    ATTEMPT_DAY: 7200, // 2 hours - attempt day data changes regularly
     QUESTIONS: 7200, // 2 hours - questions don't change frequently
     USER_PERFORMANCE: 1800, // 30 minutes - performance data changes regularly
     SESSION_CONFIG: 14400, // 4 hours - configs are relatively stable
     WEAK_CONCEPTS: 3600, // 1 hour - concepts can change based on practice
-    CURRENT_TOPICS: 1800, // 30 minutes - current topics change frequently
+    CURRENT_TOPICS: 7200, //  2 hours - current topics change frequently
     REVISION_TOPICS: 3600, // 1 hour - revision topics are more stable
     SUBJECT_QUESTIONS: 10800, // 3 hours - subject questions are stable
     PRACTICE_SESSION: 86400, // 24 hours - sessions need to persist
@@ -56,6 +58,24 @@ export class RedisCacheService {
       console.error(`Cache GET failed for key ${key}:`, error);
       return null;
     }
+  }
+
+
+  static async cacheAttemptDay(
+    userId: string,
+    date: string,
+    data: AttemptsDayData[]
+  ): Promise<boolean> {
+    const key = this.generateKey("date", "user", date, userId);
+    return this.safeSetJson(key, data, this.CACHE_TTL.ATTEMPT_DAY);
+  }
+
+  static async getCachedAttemptDay(
+    userId: string,
+    date: string
+  ): Promise<AttemptsDayData[] | null> {
+    const key = this.generateKey("date", "user", date, userId);
+    return this.safeGetJson<AttemptsDayData[]>(key);
   }
 
   // Question caching with improved key management
@@ -206,7 +226,7 @@ export class RedisCacheService {
     subjectId: string,
     topics: Array<{
       topicId: string;
-      startedAt: number;
+      startedAt: Date;
     }>
   ): Promise<boolean> {
     if (!Array.isArray(topics)) return false;
@@ -225,13 +245,15 @@ export class RedisCacheService {
     );
   }
 
+
+
   static async getCachedCurrentTopics(
     userId: string,
     subjectId: string
-  ): Promise<Array<Record<string, any>> | null> {
+  ): Promise<Array<{ topicId: string; startedAt: Date }> | null> {
     const key = this.generateKey("current", "topics", userId, subjectId);
     const data = await this.safeGetJson<{
-      topics: Array<Record<string, any>>;
+      topics: Array<{ topicId: string; startedAt: Date }>;
       count: number;
       lastUpdated: number;
     }>(key);
@@ -239,93 +261,7 @@ export class RedisCacheService {
     return data?.topics || null;
   }
 
-  // Revision topics with smart invalidation
-  static async cacheRevisionTopics(
-    userId: string,
-    subjectId: string,
-    topics: string[]
-  ): Promise<boolean> {
-    if (!Array.isArray(topics)) return false;
 
-    const key = this.generateKey("revision", "topics", userId, subjectId);
-    const topicsData = {
-      topics: [...new Set(topics)], // Remove duplicates
-      count: topics.length,
-      lastUpdated: Date.now(),
-    };
-
-    return this.safeSetJson(key, topicsData, this.CACHE_TTL.REVISION_TOPICS);
-  }
-
-  static async getCachedRevisionTopics(
-    userId: string,
-    subjectId: string
-  ): Promise<string[] | null> {
-    const key = this.generateKey("revision", "topics", userId, subjectId);
-    const data = await this.safeGetJson<{
-      topics: string[];
-      count: number;
-      lastUpdated: number;
-    }>(key);
-
-    return data?.topics || null;
-  }
-
-  // Subject questions with better categorization
-  static async cacheSubjectQuestions(
-    subjectId: string,
-    category: QCategory,
-    difficulty: number,
-    questions: SelectedQuestion[]
-  ): Promise<boolean> {
-    if (!Array.isArray(questions)) return false;
-
-    const key = this.generateKey(
-      "subject",
-      "questions",
-      subjectId,
-      category,
-      difficulty.toString()
-    );
-    const questionsData = {
-      questions,
-      count: questions.length,
-      category,
-      difficulty,
-      cachedAt: Date.now(),
-    };
-
-    return this.safeSetJson(
-      key,
-      questionsData,
-      this.CACHE_TTL.SUBJECT_QUESTIONS
-    );
-  }
-
-  static async getCachedSubjectQuestions(
-    subjectId: string,
-    category: QCategory,
-    difficulty: number
-  ): Promise<SelectedQuestion[] | null> {
-    const key = this.generateKey(
-      "subject",
-      "questions",
-      subjectId,
-      category,
-      difficulty.toString()
-    );
-    const data = await this.safeGetJson<{
-      questions: SelectedQuestion[];
-      count: number;
-      category: QCategory;
-      difficulty: number;
-      cachedAt: number;
-    }>(key);
-
-    return data?.questions || null;
-  }
-
-  // Practice session with enhanced metadata
   static async cachePracticeSession(
     userId: string,
     sessionId: string,
@@ -350,43 +286,7 @@ export class RedisCacheService {
     return this.safeGetJson(key);
   }
 
-  // Optimized batch operations
-  static async cacheMultipleQuestions(
-    questionsMap: Map<string, SelectedQuestion[]>
-  ): Promise<{ success: number; failed: number }> {
-    let success = 0;
-    let failed = 0;
 
-    // Use controlled concurrency to avoid overwhelming Redis
-    const BATCH_SIZE = 10;
-    const entries = Array.from(questionsMap.entries());
-
-    for (let i = 0; i < entries.length; i += BATCH_SIZE) {
-      const batch = entries.slice(i, i + BATCH_SIZE);
-
-      const results = await Promise.allSettled(
-        batch.map(async ([key, questions]) => {
-          const cacheKey = this.generateKey("questions", "batch", key);
-          return this.safeSetJson(
-            cacheKey,
-            questions,
-            this.CACHE_TTL.QUESTIONS
-          );
-        })
-      );
-
-      results.forEach((result) => {
-        if (result.status === "fulfilled" && result.value) {
-          success++;
-        } else {
-          failed++;
-        }
-      });
-    }
-
-    console.log(`Batch cache operation: ${success} success, ${failed} failed`);
-    return { success, failed };
-  }
 
   // Improved cache invalidation
   private static async invalidateKey(key: string): Promise<boolean> {
@@ -490,7 +390,7 @@ export class RedisCacheService {
       checks.setGet = JSON.stringify(retrieved) === JSON.stringify(testValue);
 
       // Cleanup test key
-      await redisService.del(testKey).catch(() => {});
+      await redisService.del(testKey).catch(() => { });
 
       // Test info command if available
       try {

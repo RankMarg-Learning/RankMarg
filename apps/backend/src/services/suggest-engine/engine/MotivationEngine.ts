@@ -1,18 +1,12 @@
 import { CoachMood } from "../types/extended.types";
 import { EnhancedAnalysis } from "../types/coach.types";
 
-/**
- * MotivationEngine
- * 
- * Adds motivational intelligence to suggestions based on student state.
- * Determines mood, tone, and adds context-aware motivational elements.
- */
 export class MotivationEngine {
-    /**
-     * Determine coaching mood based on analysis
-     */
+
     determineMood(analysis: EnhancedAnalysis): CoachMood {
-        // Celebratory: High accuracy + good streak
+        if (!analysis) {
+            return "encouraging";
+        }
         if (
             analysis.accuracy >= 75 &&
             analysis.consistencyMetrics.currentStreak >= 3
@@ -39,4 +33,6 @@ export class MotivationEngine {
         // Default: Encouraging
         return "encouraging";
     }
+
+
 }
