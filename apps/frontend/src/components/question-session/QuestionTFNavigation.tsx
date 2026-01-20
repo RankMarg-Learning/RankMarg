@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react';
-import { ArrowLeft, ArrowRight, SkipForward } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Progress } from '@repo/common-ui';
 import { cn } from '@/lib/utils';
 
@@ -56,7 +56,7 @@ export const QuestionTFNavigation: React.FC<QuestionTFNavigationProps> = ({
                 </div>
 
                 {/* Next Unattempted Button */}
-                {showNextUnattempted && onNextUnattempted && (
+                {/* {showNextUnattempted && onNextUnattempted && (
                     <button
                         onClick={onNextUnattempted}
                         disabled={isSubmitting}
@@ -65,7 +65,7 @@ export const QuestionTFNavigation: React.FC<QuestionTFNavigationProps> = ({
                         <SkipForward className="h-4 w-4" />
                         <span className="hidden sm:inline">Next Unattempted</span>
                     </button>
-                )}
+                )} */}
             </div>
         );
     };
