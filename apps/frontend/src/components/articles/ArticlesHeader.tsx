@@ -56,7 +56,7 @@ export function ArticlesHeader() {
             <Link href="/" className="flex items-center">
               <Image
                 src="https://cdn.rankmarg.in/assets/logo.png"
-                alt="RankMarg Logo"
+                alt="RankMarg"
                 priority
                 width={80}
                 height={22}
@@ -91,14 +91,14 @@ export function ArticlesHeader() {
           {/* Right Section - Trial Badge, Notifications, Upgrade & User Menu */}
           <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
             {/* Trial Badge */}
-            <HeaderTrialBadge 
-              endDate={user?.plan?.endAt} 
-              status={user?.plan?.status} 
+            <HeaderTrialBadge
+              endDate={user?.plan?.endAt}
+              status={user?.plan?.status}
               isLoading={isLoading}
               onUpgrade={() => window.location.href = `/pricing?ref=header_upgrade&id=${user?.id}&current_plan=${user?.plan?.status}`}
             />
 
-            
+
 
             {/* User Profile */}
             {isLoading ? (
@@ -161,7 +161,7 @@ export function ArticlesHeader() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="py-1">
                     <DropdownMenuItem asChild>
                       <Link href={`/u/${user?.name}`} className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-gray-50 cursor-pointer">
@@ -176,7 +176,7 @@ export function ArticlesHeader() {
                       </Link>
                     </DropdownMenuItem>
                   </div>
-                  
+
                   <div className="border-t border-gray-100 pt-1">
                     <DropdownMenuItem
                       className="flex items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md cursor-pointer"

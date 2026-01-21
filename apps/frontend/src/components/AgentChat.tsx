@@ -29,6 +29,58 @@ function formatMessage(message: string) {
     const parts: React.ReactNode[] = []
     let key = 0
 
+    // Helper function to parse inline formatting (bold, italic) within text
+    const parseInlineFormatting = (text: string): React.ReactNode[] => {
+        const inlineParts: React.ReactNode[] = []
+        let lastIndex = 0
+
+        while (lastIndex < text.length) {
+            // Match bold: **text**
+            const boldMatch = text.slice(lastIndex).match(/^\*\*([^*]+)\*\*/)
+            if (boldMatch) {
+                inlineParts.push(
+                    <strong key={`bold-${key++}`} className="font-bold text-gray-900">
+                        {boldMatch[1]}
+                    </strong>
+                )
+                lastIndex += boldMatch[0].length
+                continue
+            }
+
+            // Match italic: *text*
+            const italicMatch = text.slice(lastIndex).match(/^\*([^*]+)\*/)
+            if (italicMatch) {
+                inlineParts.push(
+                    <em key={`italic-${key++}`} className="italic text-gray-800">
+                        {italicMatch[1]}
+                    </em>
+                )
+                lastIndex += italicMatch[0].length
+                continue
+            }
+
+            // Find next special character
+            const nextSpecial = text.slice(lastIndex).search(/\*/)
+            if (nextSpecial === -1) {
+                inlineParts.push(
+                    <span key={`text-${key++}`}>
+                        {text.slice(lastIndex)}
+                    </span>
+                )
+                break
+            } else {
+                inlineParts.push(
+                    <span key={`text-${key++}`}>
+                        {text.slice(lastIndex, lastIndex + nextSpecial)}
+                    </span>
+                )
+                lastIndex += nextSpecial
+            }
+        }
+
+        return inlineParts
+    }
+
     const lines = message.split('\n')
 
     lines.forEach((line, lineIndex) => {
@@ -58,9 +110,10 @@ function formatMessage(message: string) {
 
             const topicMatch = currentLine.slice(lastIndex).match(/^\[([^\]]+)\]/)
             if (topicMatch) {
+                const innerContent = topicMatch[1]
                 lineParts.push(
                     <span key={`topic-${key++}`} className="font-semibold text-gray-800 mx-0.5 sm:mx-1 text-sm pl-2 my-4 border-l-4 border-l-primary-600">
-                        {topicMatch[1]}
+                        {parseInlineFormatting(innerContent)}
                     </span>
                 )
                 lastIndex += topicMatch[0].length
@@ -75,6 +128,18 @@ function formatMessage(message: string) {
                     </strong>
                 )
                 lastIndex += boldMatch[0].length
+                continue
+            }
+
+
+            const italicMatch = currentLine.slice(lastIndex).match(/^\*([^*]+)\*/)
+            if (italicMatch) {
+                lineParts.push(
+                    <em key={`italic-${key++}`} className="italic text-gray-800">
+                        {italicMatch[1]}
+                    </em>
+                )
+                lastIndex += italicMatch[0].length
                 continue
             }
 

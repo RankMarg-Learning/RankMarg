@@ -53,7 +53,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             <Link href="/" className="flex items-center">
               <Image
                 src="https://cdn.rankmarg.in/assets/logo.png"
-                alt="RankMarg Logo"
+                alt="RankMarg"
                 priority
                 width={80}
                 height={22}

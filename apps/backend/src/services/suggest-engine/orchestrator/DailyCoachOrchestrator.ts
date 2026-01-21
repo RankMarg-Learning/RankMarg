@@ -3,7 +3,7 @@ import { MotivationEngine } from "../engine/MotivationEngine";
 import { SuggestionFormatter } from "../formatter/SuggestionFormatter";
 import { ActionButtonGenerator } from "../generator/ActionButtonGenerator";
 import { MessageTemplateGenerator } from "../generator/MessageTemplateGenerator";
-import { CoachSuggestion } from "../types/coach.types";
+import { CoachSuggestion, EnhancedAnalysis } from "../types/coach.types";
 import { CoachMood } from "../types/extended.types";
 import prisma from "@repo/db";
 import { SuggestionCategory, SuggestionType } from "@repo/db/enums";
@@ -62,13 +62,6 @@ export class DailyCoachOrchestrator {
             );
             suggestions.push(...sessionSuggestions);
 
-            if (analysis && analysis.totalQuestions >= 5) {
-                const feedback = this.generateFeedback();
-                if (feedback) {
-                    suggestions.push(feedback);
-                }
-            }
-
             return suggestions;
         } catch (error) {
             console.error("Error orchestrating daily coaching:", error);
@@ -93,14 +86,11 @@ export class DailyCoachOrchestrator {
     }
 
     private generateDailySummary(
-        analysis: any,
+        analysis: EnhancedAnalysis,
         mood: CoachMood
     ): CoachSuggestion {
         const message = this.formatter.formatDailySummary(
-            analysis.totalQuestions,
-            analysis.correctAnswers,
-            analysis.accuracy,
-            analysis.totalTimeSpent,
+            analysis,
             mood
         );
 
@@ -299,26 +289,7 @@ export class DailyCoachOrchestrator {
         return message;
     }
 
-    /**
-     * Generate feedback suggestion
-     */
-    private generateFeedback(): CoachSuggestion | null {
-        const message = this.formatter.formatAnalysisPrompt();
 
-        const actionButton = this.actionGenerator.generateActionButton(
-            "VIEW_RESULTS",
-            {}
-        );
-
-        return {
-            type: "GUIDANCE",
-            category: "ANALYSIS_PROMPT",
-            message,
-            priority: 20,
-            actionName: actionButton.text,
-            actionUrl: actionButton.url,
-        };
-    }
 
     /**
      * Generate suggestions for users with no activity yesterday

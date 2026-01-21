@@ -1,3 +1,4 @@
+import { convertISTtoUTC, getISTDate } from "@/lib/convertIndToUTC";
 import prisma from "@repo/db";
 import {
     EnhancedAnalysis,
@@ -14,18 +15,12 @@ import {
 } from "../types/coach.types";
 
 export class EnhancedAnalyzer {
-    /**
-     * Analyze yesterday's attempts + today's session + historical data
-     * to provide comprehensive metrics for Rank Coach
-     */
+
     async analyze(userId: string): Promise<EnhancedAnalysis | null> {
-        const IST_OFFSET_MINUTES = 5.5 * 60;
 
-        // Calculate time windows
         const now = new Date();
-        const istNow = new Date(now.getTime() + IST_OFFSET_MINUTES * 60 * 1000);
+        const istNow = getISTDate(now);
 
-        // Yesterday: 12:00 AM to 11:50 PM
         const yesterdayMidnight = new Date(istNow);
         yesterdayMidnight.setDate(yesterdayMidnight.getDate() - 1);
         yesterdayMidnight.setHours(0, 0, 0, 0);
@@ -33,29 +28,21 @@ export class EnhancedAnalyzer {
         const yesterdayEnd = new Date(yesterdayMidnight);
         yesterdayEnd.setHours(23, 50, 0, 0);
 
-        const utcYesterdayStart = new Date(yesterdayMidnight.getTime() - IST_OFFSET_MINUTES * 60 * 1000);
-        const utcYesterdayEnd = new Date(yesterdayEnd.getTime() - IST_OFFSET_MINUTES * 60 * 1000);
-
-        // Today: 12:00 AM onwards
         const todayMidnight = new Date(istNow);
         todayMidnight.setHours(0, 0, 0, 0);
-        const utcTodayStart = new Date(todayMidnight.getTime() - IST_OFFSET_MINUTES * 60 * 1000);
 
-        // Last 7 days
-        const last7Days = new Date(utcYesterdayStart);
+        const last7Days = new Date(yesterdayMidnight);
         last7Days.setDate(last7Days.getDate() - 7);
 
-        // Last 30 days
-        const last30Days = new Date(utcYesterdayStart);
+        const last30Days = new Date(yesterdayMidnight);
         last30Days.setDate(last30Days.getDate() - 30);
 
-        // Fetch yesterday's attempts
         const yesterdayAttempts: AttemptWithDetails[] = await prisma.attempt.findMany({
             where: {
                 userId,
                 solvedAt: {
-                    gte: utcYesterdayStart,
-                    lte: utcYesterdayEnd,
+                    gte: yesterdayMidnight,
+                    lte: yesterdayEnd,
                 },
             },
             include: {
@@ -83,7 +70,7 @@ export class EnhancedAnalyzer {
                 userId,
                 solvedAt: {
                     gte: last7Days,
-                    lt: utcYesterdayStart,
+                    lt: yesterdayEnd,
                 },
             },
             select: {
@@ -99,7 +86,7 @@ export class EnhancedAnalyzer {
                 userId,
                 solvedAt: {
                     gte: last30Days,
-                    lt: utcYesterdayStart,
+                    lt: yesterdayEnd,
                 },
             },
             select: {

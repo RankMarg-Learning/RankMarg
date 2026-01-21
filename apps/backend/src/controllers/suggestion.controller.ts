@@ -1,3 +1,4 @@
+import { getDayWindow } from "@/lib/dayRange";
 import prisma from "@/lib/prisma";
 import { AuthenticatedRequest } from "@/middleware/auth.middleware";
 import { ResponseUtil } from "@/utils/response.util";
@@ -55,21 +56,20 @@ export class SuggestionController {
     try {
       const userId = req.user.id;
 
-      // Set SSE headers
+
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
-      res.setHeader("X-Accel-Buffering", "no"); // Disable nginx buffering
+      res.setHeader("X-Accel-Buffering", "no");
 
-      // Get today's suggestions ordered by sequence
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
+      const { from, to } = getDayWindow();
 
       const suggestions = await prisma.studySuggestion.findMany({
         where: {
           userId,
           createdAt: {
-            gte: startOfDay,
+            gte: from,
+            lte: to,
           },
           status: {
             in: [SuggestionStatus.ACTIVE, SuggestionStatus.VIEWED],
@@ -89,11 +89,9 @@ export class SuggestionController {
         return;
       }
 
-      // Send suggestions sequentially with delay
       for (let i = 0; i < suggestions.length; i++) {
         const suggestion = suggestions[i];
 
-        // Send suggestion event
         res.write(`event: suggestion\n`);
         res.write(`data: ${JSON.stringify({
           id: suggestion.id,
@@ -108,19 +106,11 @@ export class SuggestionController {
           total: suggestions.length,
         })}\n\n`);
 
-        // Mark as viewed (streamed)
-        await prisma.studySuggestion.update({
-          where: { id: suggestion.id },
-          data: { status: SuggestionStatus.VIEWED },
-        });
 
-        // Add delay between messages (500ms for chat-like effect)
         if (i < suggestions.length - 1) {
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
-
-      // Send completion event
       res.write(`event: complete\n`);
       res.write(`data: ${JSON.stringify({
         message: "All suggestions delivered",
