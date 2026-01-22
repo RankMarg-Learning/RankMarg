@@ -8,6 +8,11 @@ const fetchHomeData = async () => {
     return data
 }
 
+const fetchTodayStats = async () => {
+    const { data } = await api.get('/dashboard/today-stats')
+    return data
+}
+
 export function useHome() {
     const { data, isLoading, isError, error } = useQuery({
         queryKey: queryKeys.dashboard.home(),
@@ -26,3 +31,21 @@ export function useHome() {
         error,
     }
 }
+
+export function useTodayStats() {
+    const { data, isLoading, isError, error } = useQuery({
+        queryKey: ['dashboard', 'today-stats'],
+        queryFn: fetchTodayStats,
+        ...getQueryConfig('DYNAMIC'),
+    });
+
+    const payload = data?.data;
+
+    return {
+        stats: payload,
+        isLoading,
+        isError,
+        error,
+    }
+}
+

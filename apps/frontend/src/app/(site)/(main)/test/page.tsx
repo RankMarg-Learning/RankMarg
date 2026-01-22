@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import AgentChat from '@/components/AgentChat'
 import { Avatar, AvatarFallback, AvatarImage, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Skeleton } from '@repo/common-ui'
 import { BookOpen, Crown, User, Settings, LogOut } from 'lucide-react'
@@ -10,23 +9,15 @@ import { useRouter } from 'next/navigation'
 import api from '@/utils/api'
 import Link from 'next/link'
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown'
+import { useTodayStats } from '@/hooks/useHome'
+import ErrorCTA from '@/components/error'
 
-interface SubjectStats {
-    subjectName: string
-    accuracy: number
-}
 
-interface TodayStats {
-    totalQuestions: number
-    correctAnswers: number
-    wrongAnswers: number
-    accuracy: number
-    subjectBreakdown: SubjectStats[]
-}
 
 const DashboardHome = () => {
 
     const { user } = useUserData();
+    const { stats, isLoading, isError, error } = useTodayStats();
 
     const router = useRouter()
     const handleSignOut = async () => {
@@ -40,42 +31,16 @@ const DashboardHome = () => {
         }
     };
 
-    const [stats, setStats] = useState<TodayStats | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
-
-    useEffect(() => {
-        // Simulate loading delay
-        setTimeout(() => {
-            setStats({
-                totalQuestions: 45,
-                correctAnswers: 32,
-                wrongAnswers: 13,
-                accuracy: 71.11,
-                subjectBreakdown: [
-                    {
-                        subjectName: 'Physics',
-                        accuracy: 80,
-                    },
-                    {
-                        subjectName: 'Chemistry',
-                        accuracy: 66.67,
-                    },
-                    {
-                        subjectName: 'Biology',
-                        accuracy: 66.67,
-                    }
-                ]
-            })
-            setIsLoading(false)
-        }, 1000)
-    }, [])
+    if (isError) {
+        return <ErrorCTA message={error?.message} />
+    }
 
     return (
         <div className="min-h-screen ">
             <div className=" text-gray-900">
                 <div className="border-b border-gray-200 md:border-none">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between h-14 sm:h-16">
+                        <div className="flex items-center justify-between h-14 sm:h-14">
 
                             <div className=" md:flex items-center gap-3 block hidden">
                                 <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">

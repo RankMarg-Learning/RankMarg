@@ -12,7 +12,7 @@ const QuerySchema = z.object({
 });
 
 export class DashboardController {
-  //[GET] /api/dashboard
+  //[GET] /
   getDashboard = async (
     req: AuthenticatedRequest,
     res: Response,
@@ -354,7 +354,67 @@ export class DashboardController {
     }
   };
 
-  //[GET] /api/dashboard/ai-practice
+  //[GET] /stats
+  getDashboardStats = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const userId = req.user.id
+      const { from: todayStart, to: todayEnd } = getDayWindow();
+
+      const [overallStats] = await prisma.$queryRaw<Array<{
+        total: bigint;
+        correct: bigint;
+      }>>`
+    SELECT 
+      COUNT(*) as total,
+      SUM(CASE WHEN status = 'CORRECT' THEN 1 ELSE 0 END) as correct
+    FROM "Attempt"
+    WHERE "userId" = ${userId}
+      AND type IN ('SESSION', 'NONE')
+      AND "solvedAt" >= ${todayStart}
+      AND "solvedAt" < ${todayEnd}
+  `;
+      const subjectStats = await prisma.$queryRaw<Array<{
+        subjectName: string;
+        total: bigint;
+        correct: bigint;
+      }>>`
+    SELECT 
+      s.name as "subjectName",
+      COUNT(*) as total,
+      SUM(CASE WHEN a.status = 'CORRECT' THEN 1 ELSE 0 END) as correct
+    FROM "Attempt" a
+    JOIN "Question" q ON a."questionId" = q.id
+    JOIN "Subject" s ON q."subjectId" = s.id
+    WHERE a."userId" = ${userId}
+      AND a.type IN ('SESSION', 'NONE')
+      AND a."solvedAt" >= ${todayStart}
+      AND a."solvedAt" < ${todayEnd}
+    GROUP BY s.id, s.name
+  `;
+      const total = Number(overallStats?.total || 0);
+      const correct = Number(overallStats?.correct || 0);
+
+      ResponseUtil.success(res, {
+        totalQuestions: total,
+        correctAnswers: correct,
+        wrongAnswers: total - correct,
+        accuracy: total > 0 ? Math.round((correct / total) * 10000) / 100 : 0,
+        subjectBreakdown: subjectStats.map(s => ({
+          subjectName: s.subjectName,
+          accuracy: Math.round((Number(s.correct) / Number(s.total)) * 10000) / 100,
+        })),
+      }, "Ok", 200);
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  //[GET] /ai-practice
   getAiPractice = async (
     req: AuthenticatedRequest,
     res: Response,
@@ -364,12 +424,13 @@ export class DashboardController {
       const userId = req.user.id;
       const { from: todayStart, to: todayEnd } = getDayWindow();
 
+
       const recentAttempts = await prisma.attempt.findMany({
         where: {
           userId,
           type: {
             in: [AttemptType.SESSION, AttemptType.NONE]
-          }, 
+          },
           solvedAt: {
             gte: todayStart,
             lt: todayEnd,
