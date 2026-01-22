@@ -175,7 +175,7 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
     const [streamComplete, setStreamComplete] = useState(false)
     const eventSourceRef = useRef<EventSource | null>(null)
 
-    // Sample "You can also ask" questions
+
     const sampleArticles = [
         { name: "The Silent Reason Students Forget What They Studied Last Month", slug: "the-silent-reason-students-forget-what-they-studied-last-month" },
         { name: "Revision vs Re-learning: Why Smart Students Stop Improving and How to Fix It", slug: "revision-vs-re-learning-why-smart-students-stop-improving-and-how-to-fix-it" },
@@ -183,20 +183,12 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
 
     ]
 
-    // Sample "Practice MCQs on" topics
-    const practiceTopics = [
-        { name: 'Current Affairs', url: '/ai-practice?topic=current-affairs' },
-        { name: 'Indian Polity', url: '/ai-practice?topic=indian-polity' },
-        { name: 'Economics', url: '/ai-practice?topic=economics' },
-    ]
 
-    // Connect to stream when component mounts
     useEffect(() => {
         const abortController = new AbortController()
         connectToStream(abortController.signal)
 
         return () => {
-            // Abort the fetch request on unmount
             abortController.abort()
             if (eventSourceRef.current) {
                 eventSourceRef.current.close()
@@ -358,18 +350,18 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
                             {/* Mobile: Logo + RankCoach text */}
                             <div className="flex sm:hidden items-center gap-2 mb-1">
                                 <Image
-                                    src="/logo_circle.png"
+                                    src="/aniq.png"
                                     alt="RankMarg Coach"
                                     width={24}
                                     height={24}
                                     className="rounded-full"
                                 />
-                                <span className="text-primary-600 font-semibold text-sm">RankCoach</span>
+                                <span className="text-primary-600 font-semibold text-sm">AniQ</span>
                             </div>
 
                             {/* Desktop: Circular Avatar */}
                             <Avatar className="hidden sm:flex w-8 h-8 flex-shrink-0">
-                                <AvatarImage src="/logo_circle.png" alt="RankMarg Coach" />
+                                <AvatarImage src="/aniq.png" alt="RankMarg Coach" />
                                 <AvatarFallback>RM</AvatarFallback>
                             </Avatar>
 
@@ -448,22 +440,7 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
                 </div>
             )}
 
-            {/* Practice MCQs Section */}
-            {streamComplete && suggestions.length > 0 && (
-                <div className="mt-12 hidden">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Practice MCQs on</h3>
-                    <div className="flex gap-3 flex-wrap">
-                        {practiceTopics.map((topic, index) => (
-                            <Button
-                                key={index}
-                                className="px-5 py-2.5 bg-gray-50 border text-primary-600 rounded-full text-sm font-semibold hover:bg-primary-50 hover:text-primary-600 hover:border-primary-500 hover:-translate-y-0.5 transition-all"
-                            >
-                                {topic.name}
-                            </Button>
-                        ))}
-                    </div>
-                </div>
-            )}
+
         </div>
     )
 }

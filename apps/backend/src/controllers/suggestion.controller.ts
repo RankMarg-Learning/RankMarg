@@ -63,6 +63,7 @@ export class SuggestionController {
       res.setHeader("X-Accel-Buffering", "no");
 
       const { from, to } = getDayWindow();
+      console.log(from, to)
 
       const suggestions = await prisma.studySuggestion.findMany({
         where: {
@@ -80,9 +81,8 @@ export class SuggestionController {
           { createdAt: "desc" },
         ],
       });
-
+      console.log(suggestions)
       if (suggestions.length === 0) {
-        // Send empty state event
         res.write(`event: empty\n`);
         res.write(`data: ${JSON.stringify({ message: "No suggestions available for today" })}\n\n`);
         res.end();
