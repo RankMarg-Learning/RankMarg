@@ -181,9 +181,6 @@ export class CronManager {
       );
 
       this.jobs.set(jobConfig.name, scheduledTask);
-      console.log(
-        `📅 Scheduled ${jobConfig.name}: ${jobConfig.schedule} - ${jobConfig.description}`
-      );
     } catch (error) {
       console.error(`❌ Failed to schedule cron job ${jobConfig.name}:`, error);
     }
