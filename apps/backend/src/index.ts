@@ -24,7 +24,17 @@ import { globalLimiter } from "./config/rate.config";
 
 const app = express();
 
-app.use(cors(ServerConfig.cors));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) {
+      return callback(null, true);
+    }
+    if (ServerConfig.cors.origin.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error("ORS violation"));
+  }
+}));
 app.use(express.json({ limit: ServerConfig.performance.maxPayloadSize }));
 app.use(cookieParser(ServerConfig.security.session.secret));
 
