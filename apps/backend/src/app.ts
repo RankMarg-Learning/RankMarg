@@ -25,7 +25,8 @@ app.use(cors({
             return callback(null, true);
         }
         return callback(new Error("ORS violation"));
-    }
+    },
+    credentials: true
 }));
 
 app.use(express.json({ limit: ServerConfig.performance.maxPayloadSize }));
