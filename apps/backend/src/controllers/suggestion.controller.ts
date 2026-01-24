@@ -82,7 +82,7 @@ export class SuggestionController {
       });
 
       if (suggestions.length === 0) {
-        res.write(`event: empty\n`);
+        res.write(`event: suggestion\n`);
         res.write(`data: ${JSON.stringify({ message: "No suggestions available for today" })}\n\n`);
         res.end();
         return;
