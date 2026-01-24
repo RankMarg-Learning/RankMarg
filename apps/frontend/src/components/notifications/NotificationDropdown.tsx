@@ -25,7 +25,7 @@ import { UserNotification } from "@/types/notification.types";
 
 const NotificationIcon = ({ type }: { type: string }) => {
   const iconClass = "h-4 w-4";
-  
+
   switch (type) {
     case "PRACTICE_SESSION":
       return <span className={cn(iconClass, "text-blue-500")}>📚</span>;
@@ -40,10 +40,10 @@ const NotificationIcon = ({ type }: { type: string }) => {
   }
 };
 
-const NotificationItem = ({ 
+const NotificationItem = ({
   notification,
   onMarkAsRead,
-}: { 
+}: {
   notification: UserNotification;
   onMarkAsRead: (id: string) => void;
 }) => {
@@ -104,11 +104,11 @@ export function NotificationDropdown() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild >
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-8 w-8 sm:h-9 sm:w-9"
+          className="relative h-10 w-10  "
         >
           <Bell size={18} className="sm:w-5 sm:h-5" />
           {unreadCount > 0 && (

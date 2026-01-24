@@ -29,6 +29,56 @@ function formatMessage(message: string) {
     const parts: React.ReactNode[] = []
     let key = 0
 
+    const parseInlineFormatting = (text: string): React.ReactNode[] => {
+        const inlineParts: React.ReactNode[] = []
+        let lastIndex = 0
+
+        while (lastIndex < text.length) {
+            const boldMatch = text.slice(lastIndex).match(/^\*\*([^*]+)\*\*/)
+            if (boldMatch) {
+                inlineParts.push(
+                    <strong key={`bold-${key++}`} className="font-bold text-gray-900">
+                        {boldMatch[1]}
+                    </strong>
+                )
+                lastIndex += boldMatch[0].length
+                continue
+            }
+
+            // Match italic: *text*
+            const italicMatch = text.slice(lastIndex).match(/^\*([^*]+)\*/)
+            if (italicMatch) {
+                inlineParts.push(
+                    <em key={`italic-${key++}`} className="italic text-gray-800">
+                        {italicMatch[1]}
+                    </em>
+                )
+                lastIndex += italicMatch[0].length
+                continue
+            }
+
+            // Find next special character
+            const nextSpecial = text.slice(lastIndex).search(/\*/)
+            if (nextSpecial === -1) {
+                inlineParts.push(
+                    <span key={`text-${key++}`}>
+                        {text.slice(lastIndex)}
+                    </span>
+                )
+                break
+            } else {
+                inlineParts.push(
+                    <span key={`text-${key++}`}>
+                        {text.slice(lastIndex, lastIndex + nextSpecial)}
+                    </span>
+                )
+                lastIndex += nextSpecial
+            }
+        }
+
+        return inlineParts
+    }
+
     const lines = message.split('\n')
 
     lines.forEach((line, lineIndex) => {
@@ -58,9 +108,10 @@ function formatMessage(message: string) {
 
             const topicMatch = currentLine.slice(lastIndex).match(/^\[([^\]]+)\]/)
             if (topicMatch) {
+                const innerContent = topicMatch[1]
                 lineParts.push(
                     <span key={`topic-${key++}`} className="font-semibold text-gray-800 mx-0.5 sm:mx-1 text-sm pl-2 my-4 border-l-4 border-l-primary-600">
-                        {topicMatch[1]}
+                        {parseInlineFormatting(innerContent)}
                     </span>
                 )
                 lastIndex += topicMatch[0].length
@@ -75,6 +126,18 @@ function formatMessage(message: string) {
                     </strong>
                 )
                 lastIndex += boldMatch[0].length
+                continue
+            }
+
+
+            const italicMatch = currentLine.slice(lastIndex).match(/^\*([^*]+)\*/)
+            if (italicMatch) {
+                lineParts.push(
+                    <em key={`italic-${key++}`} className="italic text-gray-800">
+                        {italicMatch[1]}
+                    </em>
+                )
+                lastIndex += italicMatch[0].length
                 continue
             }
 
@@ -110,7 +173,7 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
     const [streamComplete, setStreamComplete] = useState(false)
     const eventSourceRef = useRef<EventSource | null>(null)
 
-    // Sample "You can also ask" questions
+
     const sampleArticles = [
         { name: "The Silent Reason Students Forget What They Studied Last Month", slug: "the-silent-reason-students-forget-what-they-studied-last-month" },
         { name: "Revision vs Re-learning: Why Smart Students Stop Improving and How to Fix It", slug: "revision-vs-re-learning-why-smart-students-stop-improving-and-how-to-fix-it" },
@@ -118,20 +181,17 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
 
     ]
 
-    // Sample "Practice MCQs on" topics
-    const practiceTopics = [
-        { name: 'Current Affairs', url: '/ai-practice?topic=current-affairs' },
-        { name: 'Indian Polity', url: '/ai-practice?topic=indian-polity' },
-        { name: 'Economics', url: '/ai-practice?topic=economics' },
+    const badges = [
+        { name: "Mistakes Tracker", url: "/mistakes-tracker" },
+        { name: "Analytics", url: "/analytics" },
     ]
 
-    // Connect to stream when component mounts
+
     useEffect(() => {
         const abortController = new AbortController()
         connectToStream(abortController.signal)
 
         return () => {
-            // Abort the fetch request on unmount
             abortController.abort()
             if (eventSourceRef.current) {
                 eventSourceRef.current.close()
@@ -231,8 +291,8 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
             <div className="text-center mb-6 sm:mb-12 hidden">
                 <div className="flex justify-center mb-4 sm:mb-6">
                     <Image
-                        src="/logo_circle.png"
-                        alt="RankMarg Coach"
+                        src="/aniq.png"
+                        alt="AniQ"
                         width={60}
                         height={60}
                         className="sm:w-20 sm:h-20 rounded-full shadow-lg shadow-blue-500/20 hover:scale-105 transition-transform"
@@ -293,18 +353,18 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
                             {/* Mobile: Logo + RankCoach text */}
                             <div className="flex sm:hidden items-center gap-2 mb-1">
                                 <Image
-                                    src="/logo_circle.png"
+                                    src="/aniq.png"
                                     alt="RankMarg Coach"
                                     width={24}
                                     height={24}
                                     className="rounded-full"
                                 />
-                                <span className="text-primary-600 font-semibold text-sm">RankCoach</span>
+                                <span className="text-primary-600 font-semibold text-sm">AniQ</span>
                             </div>
 
                             {/* Desktop: Circular Avatar */}
                             <Avatar className="hidden sm:flex w-8 h-8 flex-shrink-0">
-                                <AvatarImage src="/logo_circle.png" alt="RankMarg Coach" />
+                                <AvatarImage src="/aniq.png" alt="RankMarg Coach" />
                                 <AvatarFallback>RM</AvatarFallback>
                             </Avatar>
 
@@ -337,18 +397,18 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
                             {/* Mobile: Logo + RankCoach text */}
                             <div className="flex sm:hidden items-center gap-2 mb-1">
                                 <Image
-                                    src="/logo_circle.png"
-                                    alt="RankMarg Coach"
+                                    src="/aniq.png"
+                                    alt="AniQ"
                                     width={24}
                                     height={24}
                                     className="rounded-full"
                                 />
-                                <span className="text-primary-600 font-semibold text-sm">RankCoach</span>
+                                <span className="text-primary-600 font-semibold text-sm">AniQ</span>
                             </div>
 
                             {/* Desktop: Circular Avatar */}
                             <Avatar className="hidden sm:flex w-8 h-8 flex-shrink-0">
-                                <AvatarImage src="/logo_circle.png" alt="RankMarg Coach" />
+                                <AvatarImage src="/aniq.png" alt="AniQ" />
                                 <AvatarFallback>RM</AvatarFallback>
                             </Avatar>
 
@@ -362,9 +422,26 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
                 </div>
             )}
 
+
+            <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Check out your progress</h3>
+                <div className="flex flex-row gap-3">
+                    {badges.map((art, index) => (
+                        <Link
+                            href={`${process.env.NEXT_PUBLIC_WEBSITE_URL}${art.url}`}
+                            target='_blank'
+                            key={index}
+                            className="flex items-center gap-2"
+                        >
+                            <Badge className="text-primary-600 font-semibold text-sm">{art.name}</Badge>
+                        </Link>
+                    ))}
+                </div>
+            </div>
+
             {/* You Can Also Ask Section */}
-            {streamComplete && suggestions.length > 0 && (
-                <div className="mt-12">
+            {streamComplete || suggestions.length > 0 && (
+                <div className="mt-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">You can also read this</h3>
                     <div className="flex flex-col gap-3">
                         {sampleArticles.map((art, index) => (
@@ -383,22 +460,7 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
                 </div>
             )}
 
-            {/* Practice MCQs Section */}
-            {streamComplete && suggestions.length > 0 && (
-                <div className="mt-12 hidden">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Practice MCQs on</h3>
-                    <div className="flex gap-3 flex-wrap">
-                        {practiceTopics.map((topic, index) => (
-                            <Button
-                                key={index}
-                                className="px-5 py-2.5 bg-gray-50 border text-primary-600 rounded-full text-sm font-semibold hover:bg-primary-50 hover:text-primary-600 hover:border-primary-500 hover:-translate-y-0.5 transition-all"
-                            >
-                                {topic.name}
-                            </Button>
-                        ))}
-                    </div>
-                </div>
-            )}
+
         </div>
     )
 }

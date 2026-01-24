@@ -58,12 +58,10 @@ class RedisService {
   private setupEventListeners(): void {
     try {
       this.client.on("connect", () => {
-        logger.info("Redis client connected");
         this.isConnected = true;
       });
 
       this.client.on("ready", () => {
-        logger.info("Redis client ready");
       });
 
       this.client.on("error", (err: any) => {

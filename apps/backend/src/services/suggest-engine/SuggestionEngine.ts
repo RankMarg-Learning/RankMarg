@@ -17,6 +17,10 @@ export class SuggestionEngine {
           case TriggerType.DAILY_ANALYSIS:
             await new DailySuggestionSystem().generate(this.userId);
             break;
+          case TriggerType.ONBOARDING:
+            const { NewUserSuggestionHandler } = await import("./handler/NewUserSuggestionHandler");
+            await new NewUserSuggestionHandler().generate(this.userId);
+            break;
           default:
             console.log(`[SuggestionEngine] Unknown trigger type: ${type}`);
             break;

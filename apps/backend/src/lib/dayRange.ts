@@ -1,22 +1,12 @@
-import { addDays, setHours, setMinutes, setSeconds } from "date-fns";
+export function getDayWindow(now: Date = new Date()): { from: Date; to: Date } {
+  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
 
-export function getDayWindow(): { from: Date; to: Date } {
-  const IST_OFFSET_MS: number = 5.5 * 60 * 60 * 1000;
+  const istNow = new Date(now.getTime() + IST_OFFSET_MS);
 
-  const now: Date = new Date();
-  const istNow: Date = new Date(now.getTime() + IST_OFFSET_MS);
+  istNow.setUTCHours(0, 0, 0, 0);
 
-  let ist1150PM: Date = setSeconds(setMinutes(setHours(istNow, 23), 50), 0);
-
-  if (
-    istNow.getHours() < 23 ||
-    (istNow.getHours() === 23 && istNow.getMinutes() < 50)
-  ) {
-    ist1150PM = addDays(ist1150PM, -1);
-  }
-
-  const from: Date = new Date(ist1150PM.getTime() - IST_OFFSET_MS);
-  const to: Date = new Date(from.getTime() + 24 * 60 * 60 * 1000);
+  const from = new Date(istNow.getTime() - IST_OFFSET_MS);
+  const to = new Date(from.getTime() + 24 * 60 * 60 * 1000);
 
   return { from, to };
 }

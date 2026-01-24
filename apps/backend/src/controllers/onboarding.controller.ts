@@ -168,16 +168,16 @@ export class OnboardingController {
               const questionsFromSubject =
                 remainingCount > 0
                   ? await prisma.question.findMany({
-                      where: {
-                        subjectId,
-                        isPublished: true,
-                        difficulty: { lte: 2 },
-                        id: { notIn: questionsFromTopics.map((q) => q.id) },
-                      },
-                      select: { id: true },
-                      take: remainingCount,
-                      orderBy: { createdAt: "desc" },
-                    })
+                    where: {
+                      subjectId,
+                      isPublished: true,
+                      difficulty: { lte: 2 },
+                      id: { notIn: questionsFromTopics.map((q) => q.id) },
+                    },
+                    select: { id: true },
+                    take: remainingCount,
+                    orderBy: { createdAt: "desc" },
+                  })
                   : [];
               const subjectQuestionIds = [
                 ...questionsFromTopics,
@@ -220,6 +220,27 @@ export class OnboardingController {
       if (createdSessionIds.length === 0) {
         ResponseUtil.error(res, "Failed to create any practice sessions", 500);
       }
+
+      // Generate onboarding suggestions for new user
+      // This runs asynchronously and doesn't block the response
+      // If it fails, we log the error but don't fail the onboarding
+      try {
+        const { SuggestionEngine } = await import("@/services/suggest-engine");
+        const { TriggerType } = await import("@repo/db/enums");
+
+        const suggestionEngine = new SuggestionEngine([TriggerType.ONBOARDING], userId);
+
+        // Fire and forget - don't await to keep response fast
+        suggestionEngine.execute().catch((error) => {
+          console.error("[OnboardingController] Failed to generate onboarding suggestions:", error);
+        });
+
+        console.log(`[OnboardingController] Triggered onboarding suggestions for user ${userId}`);
+      } catch (suggestionError) {
+        console.error("[OnboardingController] Error triggering suggestions:", suggestionError);
+        // Continue anyway - suggestions are nice-to-have, not critical
+      }
+
       ResponseUtil.success(
         res,
         createdSessionIds,

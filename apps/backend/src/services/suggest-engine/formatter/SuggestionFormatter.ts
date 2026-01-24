@@ -1,3 +1,5 @@
+import { ActionButtonGenerator } from "../generator/ActionButtonGenerator";
+import { CoachSuggestion, EnhancedAnalysis } from "../types/coach.types";
 import { CoachMood, SessionMetadata } from "../types/extended.types";
 
 /**
@@ -57,40 +59,92 @@ export class SuggestionFormatter {
      * Format daily summary message
      */
     formatDailySummary(
-        totalQuestions: number,
-        correctAnswers: number,
-        accuracy: number,
-        timeSpent: number,
+        analysis: EnhancedAnalysis,
         mood: CoachMood
     ): string {
+        const {
+            totalQuestions,
+            correctAnswers,
+            accuracy,
+            totalTimeSpent,
+            mistakeClassification,
+            subjectBreakdown,
+            consistencyMetrics,
+            examPhase
+        } = analysis;
+
         const accuracyPercent = Math.round(accuracy);
-        const timeInMinutes = Math.round(timeSpent);
+        const timeInMinutes = Math.round(totalTimeSpent);
+        const wrongAnswers = totalQuestions - correctAnswers;
 
-        const summaries: Record<CoachMood, string[]> = {
-            encouraging: [
-                `Yesterday, you solved ${totalQuestions} questions with ${accuracyPercent}% accuracy in ${timeInMinutes} minutes. Let's keep building! 📈`,
-                `You practiced ${totalQuestions} questions yesterday (${correctAnswers} correct). Good effort! Time to improve further. 💪`,
-                `${totalQuestions} questions, ${accuracyPercent}% accuracy, ${timeInMinutes} minutes of practice. Solid work! Let's continue. ✨`,
-            ],
-            celebratory: [
-                `Wow! ${totalQuestions} questions with ${accuracyPercent}% accuracy yesterday! You're doing great! 🎉`,
-                `Amazing! ${correctAnswers}/${totalQuestions} correct yesterday. Your hard work is paying off! 🌟`,
-                `Fantastic performance! ${accuracyPercent}% accuracy on ${totalQuestions} questions. Keep this momentum! 🔥`,
-            ],
-            corrective: [
-                `Yesterday: ${totalQuestions} questions, ${accuracyPercent}% accuracy. We need to improve this. Let's focus on understanding concepts. 📊`,
-                `You attempted ${totalQuestions} questions but only ${correctAnswers} were correct. Time to identify and fix mistakes. 🎓`,
-                `${accuracyPercent}% accuracy needs work. Let's analyze what went wrong and improve today. 💡`,
-            ],
-            motivating: [
-                `${totalQuestions} questions done! Now let's push for higher accuracy today. You can do this! 🚀`,
-                `Yesterday's ${accuracyPercent}% is just the start. Let's aim higher today! 💯`,
-                `${correctAnswers} correct out of ${totalQuestions}. Time to beat that score! ⚡`,
-            ],
-        };
+        // 1. Identify dominant mistake pattern
+        let mistakeInsight = "";
+        if (mistakeClassification.totalMistakes > 0) {
+            const { sillyMistakes, conceptualMistakes, speedMistakes } = mistakeClassification;
+            if (sillyMistakes > conceptualMistakes && sillyMistakes > speedMistakes) {
+                mistakeInsight = `*Watch out:* Silly errors detected—read questions more carefully`;
+            } else if (conceptualMistakes > sillyMistakes && conceptualMistakes > speedMistakes) {
+                mistakeInsight = `*Focus needed:* Strengthen core concepts in weak areas`;
+            } else if (speedMistakes > 0) {
+                mistakeInsight = `*Slow down:* You might be rushing—accuracy > speed`;
+            }
+        }
 
-        const options = summaries[mood];
-        return options[Math.floor(Math.random() * options.length)];
+        // 2. Identify weak subject
+        let subjectInsight = "";
+        let weakSubject: EnhancedAnalysis['subjectBreakdown'][0] | undefined;
+
+        if (subjectBreakdown.length > 0) {
+            weakSubject = [...subjectBreakdown].sort((a, b) => a.accuracy - b.accuracy)[0];
+            if (weakSubject && weakSubject.accuracy < 60) {
+                subjectInsight = `**${weakSubject.subjectName}** needs attention [[${Math.round(weakSubject.accuracy)}% accuracy]]`;
+            }
+        }
+
+        // 3. Streak badge
+        const streakBadge = consistencyMetrics.currentStreak > 2
+            ? `[[${consistencyMetrics.currentStreak}-Day Streak 🔥]]`
+            : "";
+
+        // 4. Construct message based on mood
+        switch (mood) {
+            case "celebratory":
+                return [
+                    `[ **Yesterday's Performance** ]\n**${totalQuestions}** questions • **${accuracyPercent}%** accuracy • ${timeInMinutes} mins\n\n🎉 *Outstanding work!* ${streakBadge}\n${mistakeInsight ? "\n💡 " + mistakeInsight : "Keep this momentum going!"}`,
+
+                    `[ **Daily Summary** ]\n✅ Correct: **${correctAnswers}/${totalQuestions}**\n⏱️ Time: ${timeInMinutes} minutes\n\n🌟 *Amazing progress!* ${streakBadge}\n${mistakeInsight || "Your hard work is paying off—stay consistent!"}`,
+
+                    `[ **Practice Report** ]\n**${accuracyPercent}%** accuracy achieved! 🚀\n\n${streakBadge ? streakBadge + "\n" : ""}*Fantastic performance!* You're on the right track.\n${subjectInsight ? "\n📌 " + subjectInsight : ""}`
+                ][Math.floor(Math.random() * 3)];
+
+            case "corrective":
+                return [
+                    `[ **Yesterday's Analysis** ]\n📊 **${totalQuestions}** questions attempted\n✅ Correct: ${correctAnswers} | ❌ Wrong: ${wrongAnswers}\n📈 Accuracy: **${accuracyPercent}%**\n\n⚠️ *Action needed:*\n${mistakeInsight || "Review your mistakes carefully"}\n${subjectInsight ? "• " + subjectInsight : ""}`,
+
+                    `[ **Performance Review** ]\n**${correctAnswers}/${totalQuestions}** correct answers\n\n🎯 *Focus areas:*\n${subjectInsight ? "• " + subjectInsight + "\n" : ""}${mistakeInsight ? "• " + mistakeInsight : "• Analyze incorrect answers systematically"}\n\n💪 Let's turn this around today!`,
+
+                    `[ **Gap Analysis** ]\nAccuracy: [[${accuracyPercent}%]] • Time: ${timeInMinutes} mins\n\n📚 *Improvement plan:*\n${mistakeInsight || "Focus on conceptual clarity"}\n${subjectInsight ? "\n🔴 Priority: " + subjectInsight : ""}\n\n*Quality over quantity—let's improve!*`
+                ][Math.floor(Math.random() * 3)];
+
+            case "encouraging":
+                return [
+                    `[ **Yesterday's Practice** ]\n**${totalQuestions}** questions • **${accuracyPercent}%** accuracy\n⏱️ ${timeInMinutes} minutes invested\n\n${streakBadge ? streakBadge + "\n" : ""}📈 *Good effort!* ${subjectInsight || "Consistency is building your foundation."}\n${mistakeInsight ? "\n� Tip: " + mistakeInsight : ""}`,
+
+                    `[ **Daily Progress** ]\n✅ **${correctAnswers}** correct | ❌ ${wrongAnswers} wrong\n\n💪 *You're building momentum!*\n${mistakeInsight || "Keep practicing with focus"}\n${subjectInsight ? "\n📌 Next: " + subjectInsight : ""}`,
+
+                    `[ **Practice Summary** ]\n${timeInMinutes} mins of focused practice ✨\n**${totalQuestions}** questions completed\n\n${streakBadge ? streakBadge + " " : ""}*Solid work!*\n${subjectInsight ? "\n🎯 " + subjectInsight : "Step by step, you're getting better!"}`
+                ][Math.floor(Math.random() * 3)];
+
+            case "motivating":
+            default:
+                return [
+                    `[ **Yesterday's Stats** ]\n**${totalQuestions}** questions • **${accuracyPercent}%** accuracy\n\n${streakBadge ? streakBadge + "\n" : ""}🚀 *Today's mission:* Beat yesterday's score!\n${mistakeInsight ? "\n⚡ " + mistakeInsight : "Push yourself harder!"}`,
+
+                    `[ **Performance Snapshot** ]\n✅ **${correctAnswers}** correct answers\n\n💯 *Let's dominate today!*\n${mistakeInsight || "Focus + Speed = Success"}\n${subjectInsight ? "\n🎯 Target: " + subjectInsight : ""}`,
+
+                    `[ **Daily Recap** ]\n${accuracyPercent}% accuracy • ${timeInMinutes} mins\n\n⚡ *Yesterday is done—today is your opportunity!*\n${subjectInsight || "Every question counts toward your rank"}\n${streakBadge ? "\n" + streakBadge : ""}`
+                ][Math.floor(Math.random() * 3)];
+        }
     }
 
     /**

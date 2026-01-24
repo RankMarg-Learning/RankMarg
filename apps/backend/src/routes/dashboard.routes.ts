@@ -7,5 +7,6 @@ const dashboardController = new DashboardController();
 
 router.get("/", authenticate, dashboardController.getDashboard);
 router.get("/ai-practice", authenticate, dashboardController.getAiPractice);
+router.get("/today-stats", authenticate, dashboardController.getDashboardStats)
 
 export default router;
