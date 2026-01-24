@@ -141,12 +141,14 @@ export const TriggerType = {
   STREAK_MILESTONE: "STREAK_MILESTONE",
   INACTIVITY: "INACTIVITY",
   EXAM_PROXIMITY: "EXAM_PROXIMITY",
+  ONBOARDING: "ONBOARDING",
 } as const;
 
 export const SuggestionCategory = {
   STUDY_PROMPT: "STUDY_PROMPT",
   SUMMARIZATION: "SUMMARIZATION",
   PRACTICE_PROMPT: "PRACTICE_PROMPT",
+  OTHER: "OTHER",
 } as const;
 
 export const SuggestionStatus = {

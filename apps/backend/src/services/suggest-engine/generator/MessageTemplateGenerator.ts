@@ -15,9 +15,7 @@ interface PracticePromptTemplate {
 }
 
 export class MessageTemplateGenerator {
-    /**
-     * Get a random study prompt template
-     */
+
     getStudyPromptTemplate(
         subjectName: string,
         mood: CoachMood,
@@ -171,9 +169,20 @@ export class MessageTemplateGenerator {
         return this.selectRandomTemplate(templates);
     }
 
-    /**
-     * Randomly select a template from an array
-     */
+
+    getNoYesterdayPracticeMessage(): string {
+        const messages = [
+            "No practice yesterday? No worries! Every day is a fresh start. Let's begin today with focused practice. 💪",
+            "Missed practice yesterday? It happens to the best of us! Let's get back on track today and crush those goals. 🎯",
+            "Yesterday is gone, but today is full of potential. Let's make up for it with an extra focused session! 🚀",
+            "Consistency is a journey, not a destination. One missed day won't stop you! Ready to dive back in? 🔥",
+            "Don't let yesterday take up too much of today. Reset and restart—you've got this! ✨",
+            "Taking a break is part of the process, but now it's time to build momentum again! Let's go! ⚡"
+        ];
+
+        return this.selectRandomTemplate(messages);
+    }
+
     private selectRandomTemplate<T>(templates: T[]): T {
         const randomIndex = Math.floor(Math.random() * templates.length);
         return templates[randomIndex];

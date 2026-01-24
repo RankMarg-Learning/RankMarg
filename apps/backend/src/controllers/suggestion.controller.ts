@@ -51,7 +51,6 @@ export class SuggestionController {
   streamSuggestions = async (
     req: AuthenticatedRequest,
     res: Response,
-    next: NextFunction
   ): Promise<void> => {
     try {
       const userId = req.user.id;
@@ -81,7 +80,7 @@ export class SuggestionController {
           { createdAt: "desc" },
         ],
       });
-      console.log(suggestions)
+
       if (suggestions.length === 0) {
         res.write(`event: empty\n`);
         res.write(`data: ${JSON.stringify({ message: "No suggestions available for today" })}\n\n`);

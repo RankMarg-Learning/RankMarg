@@ -1,10 +1,11 @@
+import { getDayWindow } from "@/lib/dayRange";
 import { EnhancedAnalyzer } from "../analyzer/EnhancedAnalyzer";
 import { MotivationEngine } from "../engine/MotivationEngine";
 import { SuggestionFormatter } from "../formatter/SuggestionFormatter";
 import { ActionButtonGenerator } from "../generator/ActionButtonGenerator";
 import { MessageTemplateGenerator } from "../generator/MessageTemplateGenerator";
 import { CoachSuggestion, EnhancedAnalysis } from "../types/coach.types";
-import { CoachMood } from "../types/extended.types";
+import { CoachMood, ActionButton, ActionType } from "../types/extended.types";
 import prisma from "@repo/db";
 import { SuggestionCategory, SuggestionType } from "@repo/db/enums";
 
@@ -50,7 +51,7 @@ export class DailyCoachOrchestrator {
             suggestions.push(greeting);
 
             if (!analysis) {
-                const noActivitySuggestions = this.generateNoActivitySuggestions(userName, userId);
+                const noActivitySuggestions = this.generateNoActivitySuggestions();
                 suggestions.push(...noActivitySuggestions);
             } else {
                 const summary = this.generateDailySummary(analysis, mood);
@@ -70,9 +71,7 @@ export class DailyCoachOrchestrator {
         }
     }
 
-    /**
-     * Generate greeting suggestion
-     */
+
     private generateGreeting(userName: string, mood: CoachMood): CoachSuggestion {
         const message = this.formatter.formatGreeting(userName, mood);
 
@@ -104,22 +103,18 @@ export class DailyCoachOrchestrator {
     }
 
 
-    private async generateSessionSuggestions(
+    async generateSessionSuggestions(
         userId: string,
         mood: CoachMood
     ): Promise<CoachSuggestion[]> {
         const suggestions: CoachSuggestion[] = [];
 
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-
-        const todayEnd = new Date();
-        todayEnd.setHours(23, 59, 59, 999);
+        const { from, to } = getDayWindow()
 
         const sessions = await prisma.practiceSession.findMany({
             where: {
                 userId,
-                createdAt: { gte: todayStart, lte: todayEnd },
+                createdAt: { gte: from, lte: to },
                 isCompleted: false,
             },
             orderBy: { createdAt: "desc" },
@@ -142,13 +137,14 @@ export class DailyCoachOrchestrator {
         });
 
         if (sessions.length === 0) {
+            const actionButton = this.actionGenerator.generateActionButton("MOCK_TEST", {})
             suggestions.push({
                 type: SuggestionType.REMINDER,
                 category: SuggestionCategory.PRACTICE_PROMPT,
-                message: "No practice sessions scheduled yet. Let's create one! 🎯",
+                message: "New Some Mock Tests are available for you to practice. Give them a try! 🎯",
                 priority: 3,
-                actionName: "Generate Session",
-                actionUrl: "/ai-practice",
+                actionName: actionButton.text,
+                actionUrl: actionButton.url,
             });
             return suggestions;
         }
@@ -179,7 +175,7 @@ export class DailyCoachOrchestrator {
 
             suggestions.push({
                 type: SuggestionType.GUIDANCE,
-                category: "STUDY_PROMPT",
+                category: SuggestionCategory.STUDY_PROMPT,
                 message: studyMessage,
                 priority: priority++,
                 sequenceOrder: priority,
@@ -188,7 +184,6 @@ export class DailyCoachOrchestrator {
             const practiceMessage = this.formatPracticePrompt(
                 subjectName,
                 session.questions.length,
-                Math.ceil(session.duration / 60),
                 mood,
                 i + 1
             );
@@ -267,11 +262,10 @@ export class DailyCoachOrchestrator {
     private formatPracticePrompt(
         subjectName: string,
         questionCount: number,
-        estimatedMinutes: number,
         mood: CoachMood,
         sessionNumber: number
     ): string {
-        // Get template from generator
+
         const template = this.messageTemplateGenerator.getPracticePromptTemplate(
             subjectName,
             mood,
@@ -282,7 +276,6 @@ export class DailyCoachOrchestrator {
 
         message += `${template.detailsLabel}\n`;
         message += `• Questions: ${questionCount}\n`;
-        message += `• Estimated Time: ~${estimatedMinutes} minutes\n`;
 
         message += template.motivational;
 
@@ -294,16 +287,13 @@ export class DailyCoachOrchestrator {
     /**
      * Generate suggestions for users with no activity yesterday
      */
-    private generateNoActivitySuggestions(
-        userName: string,
-        userId: string
-    ): CoachSuggestion[] {
+    private generateNoActivitySuggestions(): CoachSuggestion[] {
         const suggestions: CoachSuggestion[] = [];
 
         suggestions.push({
-            type: "MOTIVATION",
-            category: "NO_ACTIVITY",
-            message: `No practice yesterday? No worries! Every day is a fresh start. Let's begin today with focused practice. 💪`,
+            type: SuggestionType.MOTIVATION,
+            category: SuggestionCategory.OTHER,
+            message: this.messageTemplateGenerator.getNoYesterdayPracticeMessage(),
             priority: 2,
             sequenceOrder: 2,
         });
