@@ -56,7 +56,7 @@ const QuestionUI = ({
   const { toast } = useToast();
   const router = useRouter();
   const isAnswered = useMemo(() => Boolean(answer) || isSolutionShow || reviewMode, [answer, isSolutionShow, reviewMode]);
-
+  const hidden = true;
 
   const initialSelectedValues = useMemo(() => {
     if (!answer) return [];
@@ -445,7 +445,7 @@ const QuestionUI = ({
                   {question?.solution ? (
                     <div className="space-y-3">
                       {
-                        isUnlocked ? (
+                        hidden && (isUnlocked ? (
                           <>
                             {/* Solving Strategy */}
                             {uiPreferences.showStrategy && question?.strategy && question?.strategy?.length > 10 && (
@@ -488,7 +488,7 @@ const QuestionUI = ({
                               Upgrade Now
                             </span>
                           </div>
-                        )
+                        ))
                       }
 
                       {/* Step-by-Step Analysis */}
