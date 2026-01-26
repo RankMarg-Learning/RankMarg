@@ -1278,6 +1278,7 @@ export class TestController {
           updatedAt: true,
           examCode: true,
         },
+        take: 1
       });
       if (!recommendedTest) {
         ResponseUtil.success(res, null, "No recommended tests found", 200);

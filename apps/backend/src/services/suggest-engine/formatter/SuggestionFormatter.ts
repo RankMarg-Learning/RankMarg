@@ -13,16 +13,7 @@ export class SuggestionFormatter {
      * Format greeting message
      */
     formatGreeting(userName: string, mood: CoachMood): string {
-        const hour = new Date().getHours();
-        let timeGreeting = "Hello";
-
-        if (hour < 12) {
-            timeGreeting = "Good morning";
-        } else if (hour < 17) {
-            timeGreeting = "Good afternoon";
-        } else {
-            timeGreeting = "Good evening";
-        }
+        const timeGreeting = "Hello";
 
         const greetings: Record<CoachMood, string[]> = {
             encouraging: [
