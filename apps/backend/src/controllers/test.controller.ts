@@ -1155,6 +1155,9 @@ export class TestController {
       }
 
       const whereClause = {
+        startTime: {
+          lte: new Date(new Date().setDate(new Date().getDate() - 7)),
+        },
         status: TestStatus.ACTIVE,
         visibility: Visibility.PUBLIC,
         ...(type
@@ -1232,14 +1235,10 @@ export class TestController {
         where: { userId },
         orderBy: { masteryLevel: "asc" },
         select: {
-          subject: {
-            select: {
-              id: true,
-            },
-          },
+          subjectId: true,
         },
       });
-      const weakestSubjectId = weakestSubject?.subject?.id;
+      const weakestSubjectId = weakestSubject?.subjectId;
 
       const recommendedTest = await prisma.test.findFirst({
         where: {
@@ -1279,6 +1278,7 @@ export class TestController {
           updatedAt: true,
           examCode: true,
         },
+        take: 1
       });
       if (!recommendedTest) {
         ResponseUtil.success(res, null, "No recommended tests found", 200);

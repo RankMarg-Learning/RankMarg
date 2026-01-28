@@ -1,7 +1,7 @@
 import { Button } from '@repo/common-ui';
 import { Card } from '@repo/common-ui';
 import { CurrentStudies } from '@/types/dashboard.types';
-import {  Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function CurrentTopicCard({ currentStudies }: { currentStudies: CurrentStudies[] | undefined }) {
@@ -32,7 +32,7 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
 
   return (
     <>
-      <Card className="border border-green-100 bg-white">
+      <Card className="border border-green-100 bg-white hidden md:block">
         <div className="p-4 space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="font-medium text-sm text-green-800 flex items-center gap-1">
@@ -40,7 +40,7 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
                 <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
               </svg>
               Current Topics
-             
+
             </h3>
             <Button
               variant="ghost"
@@ -52,13 +52,13 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
               Manage
             </Button>
           </div>
-          
+
           <div className="space-y-1 text-sm">
             {Object.keys(groupedTopics).length > 0 ? (
               Object.entries(groupedTopics).map(([subjectName, { topics, totalCount }]) => {
                 const firstTopic = topics[0];
                 const hasMoreTopics = totalCount > 1;
-                
+
                 return (
                   <div key={subjectName} className="flex items-center justify-between ">
                     <div className="flex-1 min-w-0">
@@ -66,7 +66,7 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
                         <span className="truncate text-sm font-medium">
                           {firstTopic.topicName}
                         </span>
-                        
+
                         {hasMoreTopics && (
                           <span className="text-xs bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">
                             +{totalCount - 1}
@@ -108,7 +108,7 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
         </div>
       </Card>
 
-     
+
     </>
   );
 }

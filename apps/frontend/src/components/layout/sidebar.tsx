@@ -13,7 +13,8 @@ import {
     ChevronsUpDown,
     LogOut,
     User,
-    Settings
+    Settings,
+    BrainCircuit
 } from "lucide-react"
 
 import {
@@ -71,6 +72,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     const navItems: NavItem[] = [
         { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
+        { icon: BrainCircuit, label: 'AI Coach', href: '/coach' },
         { icon: BookOpen, label: 'Mock Test', href: '/tests' },
         { icon: GraduationCap, label: 'Mastery', href: '/mastery' },
         { icon: X, label: 'Mistakes Tracker', href: '/mistakes-tracker' },

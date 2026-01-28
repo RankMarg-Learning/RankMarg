@@ -6,7 +6,7 @@ import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 import { MasteryOverviewProps } from '@/types/mastery.types'
 
 const MasteryOverview = ({ overview }: { overview: MasteryOverviewProps }) => {
-  
+
   return (
     <Card className="border border-gray-100 shadow-sm mb-6 overflow-hidden ">
       <div className="border-0 bg-gradient-to-r from-primary-50 to-primary-100 shadow-md animate-fade-in overflow-hidden md:p-6 p-4">
@@ -34,21 +34,21 @@ const MasteryOverview = ({ overview }: { overview: MasteryOverviewProps }) => {
                   return (
                     <div className="flex items-center text-green-600">
                       <ArrowUp className="h-4 w-4" />
-                      <span>+{improvement} since last week</span>
+                      <span>+{improvement} since last month</span>
                     </div>
                   );
                 } else if (improvement < 0) {
                   return (
                     <div className="flex items-center text-red-600">
                       <ArrowDown className="h-4 w-4" />
-                      <span>{improvement} since last week</span>
+                      <span>{improvement} since last month</span>
                     </div>
                   );
                 } else {
                   return (
                     <div className="flex items-center text-gray-500">
                       <Minus className="h-4 w-4" />
-                      <span>No change since last week</span>
+                      <span>No change since last month</span>
                     </div>
                   );
                 }

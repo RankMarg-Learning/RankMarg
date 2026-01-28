@@ -269,7 +269,7 @@ async function getConceptsMasteredData(userId: string, examCode: string) {
       prisma.topicMastery.count({
         where: {
           userId,
-          masteryLevel: { gte: MASTERY_THRESHOLDS.EXCELLENT },
+          masteryLevel: { gte: MASTERY_THRESHOLDS.GOOD },
         },
       }),
       prisma.topic.count({

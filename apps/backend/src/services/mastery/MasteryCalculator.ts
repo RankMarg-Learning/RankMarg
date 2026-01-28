@@ -67,13 +67,13 @@ export class MasteryCalculator {
       0,
       Math.min(
         baseScore +
-          streakBonus +
-          timeScore +
-          difficultyScore +
-          consistencyScore +
-          spacedRepetitionScore +
-          forgettingCurveScore -
-          mistakePenalty,
+        streakBonus +
+        timeScore +
+        difficultyScore +
+        consistencyScore +
+        spacedRepetitionScore +
+        forgettingCurveScore -
+        mistakePenalty,
         100
       )
     );
@@ -168,6 +168,8 @@ export class MasteryCalculator {
     };
   }
 
+
+  //NO use of StengthIndex
   calculateStrengthIndex(
     data: StrengthIndexData,
     context: MasteryCalculationContext
@@ -205,11 +207,11 @@ export class MasteryCalculator {
       0,
       Math.min(
         consistencyScore +
-          streakBonus +
-          timeConsistency +
-          trendBonus +
-          engagementScore -
-          decayPenalty,
+        streakBonus +
+        timeConsistency +
+        trendBonus +
+        engagementScore -
+        decayPenalty,
         100
       )
     );
@@ -285,7 +287,7 @@ export class MasteryCalculator {
     const repetitionEffectiveness = Math.min(
       ((data.oneDayRepetitions * 0.5 + data.threeDayRepetitions * 0.8) /
         Math.max(data.totalAttempts, 1)) *
-        10,
+      10,
       5
     );
 
@@ -305,9 +307,9 @@ export class MasteryCalculator {
 
     return Math.min(
       conceptualPenalty +
-        calculationPenalty +
-        readingPenalty +
-        overconfidencePenalty,
+      calculationPenalty +
+      readingPenalty +
+      overconfidencePenalty,
       10
     );
   }

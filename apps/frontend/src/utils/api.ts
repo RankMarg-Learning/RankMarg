@@ -71,8 +71,10 @@ api.interceptors.response.use(
           console.debug("[api] retrying request", { url: error.config.url, retryCount: (error.config as any).__retryCount || 0 });
         }
         return await retryRequest(error.config);
-      } catch (error) {
-        if (!isProd) console.warn("[api] retries exhausted for", error.config?.url);
+      } catch (retryError) {
+        if (!isProd && axios.isAxiosError(retryError)) {
+          console.warn("[api] retries exhausted for", retryError.config?.url);
+        }
       }
     }
     return Promise.reject(error);

@@ -20,17 +20,7 @@ export interface MasteryResult {
   confidenceLevel: number;
 }
 
-// interface SubtopicMasteryData {
-//   userId: string;
-//   subtopicId: string;
-//   topicId: string;
-//   masteryLevel: number;
-//   strengthIndex: number;
-//   totalAttempts: number;
-//   correctAttempts: number;
-//   confidenceLevel: number;
-//   lastPracticed: Date | null;
-// }
+
 
 interface TopicMasteryData {
   userId: string;
@@ -41,7 +31,6 @@ interface TopicMasteryData {
   correctAttempts: number;
   subtopicCount: number;
   masteredSubtopicCount: number;
-  weightage: number;
   lastPracticed: Date | null;
 }
 
@@ -95,8 +84,6 @@ export class MasteryProcessor {
       );
       const {
         subtopicAttempts,
-        // _topicAttempts,
-        // _subjectAttempts,
         subtopicIds,
         topicIds,
         subjectIds,
@@ -311,12 +298,12 @@ export class MasteryProcessor {
         userId,
         topicId: { in: topicIds },
       },
-      include: {
-        subtopic: {
-          select: {
-            name: true,
-          },
-        },
+      select: {
+        id: true,
+        subtopicId: true,
+        masteryLevel: true,
+        totalAttempts: true,
+        correctAttempts: true,
       },
     });
 
@@ -325,11 +312,11 @@ export class MasteryProcessor {
       select: {
         id: true,
         name: true,
-        weightage: true,
         subTopics: {
           select: {
             id: true,
             name: true,
+            weightage: true,
           },
         },
       },
@@ -357,31 +344,35 @@ export class MasteryProcessor {
 
       let totalAttempts = 0;
       let correctAttempts = 0;
-      let masterySum = 0;
+      let weightedMasterySum = 0;
+      let totalWeight = 0;
       let strengthIndexSum = 0;
       let masteredSubtopicCount = 0;
       let attemptedSubtopicCount = 0;
 
       for (const subtopic of topic.subTopics) {
         const mastery = masteryBySubtopicId.get(subtopic.id);
+        const subtopicWeight = subtopic.weightage || 1;
 
         if (mastery) {
           totalAttempts += mastery.totalAttempts;
           correctAttempts += mastery.correctAttempts;
-          masterySum += mastery.masteryLevel;
-          strengthIndexSum += mastery.strengthIndex;
+          weightedMasterySum += mastery.masteryLevel * subtopicWeight;
           attemptedSubtopicCount++;
 
           if (mastery.masteryLevel >= 70) {
             masteredSubtopicCount++;
           }
         } else {
-          masterySum += 0;
-          strengthIndexSum += 0;
+          weightedMasterySum += 0 * subtopicWeight;
         }
+
+        totalWeight += subtopicWeight;
       }
 
-      const newMasteryLevel = Math.round(masterySum / subtopicCount);
+      const newMasteryLevel = totalWeight > 0
+        ? Math.min(100, Math.round(weightedMasterySum / totalWeight) + 15)
+        : 0;
 
       const avgStrengthIndex =
         attemptedSubtopicCount > 0
@@ -397,7 +388,6 @@ export class MasteryProcessor {
         correctAttempts,
         subtopicCount,
         masteredSubtopicCount,
-        weightage: topic.weightage,
         lastPracticed: attemptedSubtopicCount > 0 ? new Date() : null,
       };
 
@@ -447,7 +437,11 @@ export class MasteryProcessor {
           subjectId: { in: subjectIds },
         },
       },
-      include: {
+      select: {
+        topicId: true,
+        masteryLevel: true,
+        totalAttempts: true,
+        correctAttempts: true,
         topic: {
           select: {
             id: true,
@@ -475,7 +469,7 @@ export class MasteryProcessor {
     const subjectMap = new Map(subjects.map((s) => [s.id, s]));
 
     const masteryByTopicId = new Map(
-      topicMasteries.map((m) => [m.topic.id, m])
+      topicMasteries.map((m) => [m.topicId, m])
     );
 
     const upsertOperations: Promise<any>[] = [];
@@ -498,6 +492,7 @@ export class MasteryProcessor {
       let totalWeight = 0;
       let masteredTopicCount = 0;
       let attemptedTopicCount = 0;
+      const attemptedMasteries = [];
 
       for (const topic of subject.topics) {
         const mastery = masteryByTopicId.get(topic.id);
@@ -508,6 +503,7 @@ export class MasteryProcessor {
           correctAttempts += mastery.correctAttempts;
           weightedMasterySum += mastery.masteryLevel * topicWeight;
           attemptedTopicCount++;
+          attemptedMasteries.push(mastery);
 
           if (mastery.masteryLevel >= 70) {
             masteredTopicCount++;
@@ -519,12 +515,9 @@ export class MasteryProcessor {
         totalWeight += topicWeight;
       }
 
-      const newMasteryLevel =
-        totalWeight > 0 ? Math.round(weightedMasterySum / totalWeight) : 0;
-
-      const attemptedMasteries = topicMasteries.filter((m) =>
-        subject.topics.some((t) => t.id === m.topic.id)
-      );
+      const newMasteryLevel = totalWeight > 0
+        ? Math.min(100, Math.round(weightedMasterySum / totalWeight) + 10)
+        : 0;
 
       const overallConfidence = this.calculateSubjectConfidence(
         attemptedMasteries,
@@ -612,35 +605,39 @@ export class MasteryProcessor {
     _context: MasteryCalculationContext
   ) {
     try {
-      const subjectMasteries = await prisma.subjectMastery.findMany({
-        where: { userId },
-        include: {
-          subject: {
-            select: {
-              id: true,
-              name: true,
+      const recordedAt = new Date();
+
+      const [subjectMasteries, topicMasteries] = await Promise.all([
+        prisma.subjectMastery.findMany({
+          where: { userId },
+          select: {
+            userId: true,
+            subjectId: true,
+            masteryLevel: true,
+            totalAttempts: true,
+            correctAttempts: true,
+          },
+        }),
+        prisma.topicMastery.findMany({
+          where: { userId },
+          select: {
+            userId: true,
+            topicId: true,
+            masteryLevel: true,
+            strengthIndex: true,
+            totalAttempts: true,
+            correctAttempts: true,
+            topic: {
+              select: {
+                subjectId: true,
+              },
             },
           },
-        },
-      });
+        }),
+      ]);
 
-      const topicMasteries = await prisma.topicMastery.findMany({
-        where: { userId },
-        include: {
-          topic: {
-            select: {
-              id: true,
-              name: true,
-              subjectId: true,
-            },
-          },
-        },
-      });
-
-      const historyRecords = [];
-
-      for (const mastery of subjectMasteries) {
-        historyRecords.push({
+      const historyRecords = [
+        ...subjectMasteries.map((mastery) => ({
           userId: mastery.userId,
           subjectId: mastery.subjectId,
           masteryLevel: mastery.masteryLevel,
@@ -648,12 +645,9 @@ export class MasteryProcessor {
           totalAttempts: mastery.totalAttempts,
           correctAttempts: mastery.correctAttempts,
           totalTimeSpent: 0,
-          recordedAt: new Date(),
-        });
-      }
-
-      for (const mastery of topicMasteries) {
-        historyRecords.push({
+          recordedAt,
+        })),
+        ...topicMasteries.map((mastery) => ({
           userId: mastery.userId,
           subjectId: mastery.topic.subjectId,
           masteryLevel: mastery.masteryLevel,
@@ -661,9 +655,9 @@ export class MasteryProcessor {
           totalAttempts: mastery.totalAttempts,
           correctAttempts: mastery.correctAttempts,
           totalTimeSpent: 0,
-          recordedAt: new Date(),
-        });
-      }
+          recordedAt,
+        })),
+      ];
 
       if (historyRecords.length > 0) {
         await prisma.masteryHistory.createMany({
