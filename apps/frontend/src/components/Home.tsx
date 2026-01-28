@@ -1,6 +1,5 @@
 'use client'
 
-import AgentChat from '@/components/AgentChat'
 import { Avatar, AvatarFallback, AvatarImage, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Skeleton } from '@repo/common-ui'
 import { BookOpen, Crown, User, Settings, LogOut } from 'lucide-react'
 import { SubjectBackgroundColor, SubjectCardColor } from '@/constant/SubjectColorCode'
@@ -9,8 +8,9 @@ import { useRouter } from 'next/navigation'
 import api from '@/utils/api'
 import Link from 'next/link'
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown'
-import { useTodayStats } from '@/hooks/useHome'
+import { useHome, useTodayStats } from '@/hooks/useHome'
 import ErrorCTA from '@/components/error'
+import SmartSubjectSession from './dashboard/SmartSubjectSession'
 
 
 
@@ -18,6 +18,7 @@ export const DashboardHome = () => {
 
     const { user } = useUserData();
     const { stats, isLoading, isError, error } = useTodayStats();
+    const { session, } = useHome()
 
     const router = useRouter()
     const handleSignOut = async () => {
@@ -37,13 +38,13 @@ export const DashboardHome = () => {
 
     return (
         <div className="min-h-screen ">
-            <div className=" text-gray-900">
+            <div className="bg-gradient-to-r from-primary-50 to-primary-100 text-gray-900">
                 <div className="border-b border-gray-200 md:border-none">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between h-14 sm:h-14">
+                    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+                        <div className="flex items-center justify-between h-12 sm:h-14">
 
-                            <div className=" md:flex items-center gap-3 block hidden">
-                                <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">
+                            <div className="md:flex items-center gap-2 sm:gap-3 block hidden">
+                                <h1 className="text-primary-900 sm:text-lg md:text-xl font-bold text-gray-900 mb-1">
                                     Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'} 👋
                                 </h1>
 
@@ -60,12 +61,12 @@ export const DashboardHome = () => {
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <div
-                                                className="flex items-center gap-1 sm:gap-2 md:gap-3 h-auto p-1 sm:p-2 rounded-lg transition-colors border-0 cursor-pointer hover:bg-gray-50"
+                                                className="flex items-center gap-1 sm:gap-2 md:gap-3 h-auto p-0.5 sm:p-1 md:p-2 rounded-lg transition-colors border-0 cursor-pointer hover:bg-gray-50"
                                             >
                                                 <div className="relative">
-                                                    <Avatar className="h-10 w-10 ">
+                                                    <Avatar className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10">
                                                         <AvatarImage src={user?.avatar} />
-                                                        <AvatarFallback className="font-semibold text-xs sm:text-sm">
+                                                        <AvatarFallback className="font-semibold text-[10px] sm:text-xs">
                                                             {user?.name?.split(" ")
                                                                 .map((n) => n[0])
                                                                 .join("")
@@ -73,8 +74,8 @@ export const DashboardHome = () => {
                                                         </AvatarFallback>
                                                     </Avatar>
                                                     {user?.plan?.status === "ACTIVE" && (
-                                                        <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3 h-3 sm:w-4 sm:h-4 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
-                                                            <Crown size={6} className="text-white sm:w-2 sm:h-2" />
+                                                        <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
+                                                            <Crown className="text-white w-1.5 h-1.5 sm:w-2 sm:h-2" />
                                                         </div>
                                                     )}
                                                 </div>
@@ -166,43 +167,43 @@ export const DashboardHome = () => {
                 </div>
 
                 {/* Stats Content */}
-                <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-5 pb-4 pt-2">
+                <div className="max-w-7xl mx-auto px-2 sm:px-3 lg:px-5 pb-3 sm:pb-4 pt-2">
                     {/* Greeting */}
-                    <div className="mb-6 md:hidden">
-                        <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">
+                    <div className="mb-4 sm:mb-6 md:hidden">
+                        <h1 className=" text-primary-900 sm:text-lg font-bold text-gray-900 mb-0.5 sm:mb-1">
                             Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'} 👋
                         </h1>
-                        <p className="text-gray-600 text-sm sm:text-base">
+                        <p className="text-gray-600 text-xs sm:text-sm">
                             Here's your progress for today
                         </p>
                     </div>
 
                     {isLoading ? (
-                        <div className="space-y-4">
-                            <Skeleton className="h-32 w-full bg-primary-50 rounded-xl" />
+                        <div className="space-y-3 sm:space-y-4">
+                            <Skeleton className="h-28 sm:h-32 w-full bg-primary-50 rounded-xl" />
                         </div>
                     ) : stats ? (
-                        <div className="space-y-5">
+                        <div className="space-y-3 sm:space-y-4 md:space-y-5">
                             {/* Main Stats Card */}
-                            <div className="bg-gradient-to-br from-primary-50 via-white to-primary-50 border border-primary-100 rounded-xl p-6 shadow-sm">
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium mb-2">Questions Solved Today</p>
-                                        <div className="flex items-baseline gap-3">
-                                            <h2 className="text-5xl sm:text-6xl font-bold text-gray-900">
+                            <div className="bg-gradient-to-br from-primary-50 via-white to-primary-50 border border-primary-100 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 shadow-sm">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                                    <div className="w-full sm:w-auto">
+                                        <p className="text-gray-600 text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">Questions Solved Today</p>
+                                        <div className="flex items-baseline gap-2 sm:gap-3">
+                                            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900">
                                                 {stats.totalQuestions}
                                             </h2>
-                                            <span className="text-2xl font-semibold text-primary-600">
+                                            <span className="text-xl sm:text-2xl font-semibold text-primary-600">
                                                 {Math.round(stats.accuracy)}%
                                             </span>
                                         </div>
-                                        <p className="text-gray-500 text-sm mt-2">
+                                        <p className="text-gray-500 text-xs sm:text-sm mt-1 sm:mt-2">
                                             Overall accuracy
                                         </p>
                                     </div>
                                     {/* Subject Badges */}
                                     {stats.subjectBreakdown && stats.subjectBreakdown.length > 0 && (
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="flex flex-wrap gap-1.5 sm:gap-2 w-full sm:w-auto">
                                             {stats.subjectBreakdown.map((subject, index) => {
                                                 const subjectKey = subject.subjectName.toLowerCase() as keyof typeof SubjectBackgroundColor
                                                 const bgColor = SubjectCardColor[subjectKey] || SubjectCardColor.default
@@ -210,7 +211,7 @@ export const DashboardHome = () => {
                                                 return (
                                                     <div
                                                         key={index}
-                                                        className={`${bgColor} text-gray-600 px-3 py-1.5 rounded-full text-sm font-semibold`}
+                                                        className={`${bgColor} text-gray-600 px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs md:text-sm font-semibold whitespace-nowrap`}
                                                     >
                                                         {subject.subjectName} {Math.round(subject.accuracy)}%
                                                     </div>
@@ -223,24 +224,22 @@ export const DashboardHome = () => {
 
                         </div>
                     ) : (
-                        <div className="bg-white border border-gray-200 rounded-xl p-12 text-center shadow-sm">
-                            <div className="h-20 w-20 rounded-xl bg-indigo-50 flex items-center justify-center mx-auto mb-4">
-                                <BookOpen className="h-10 w-10 text-indigo-600" />
+                        <div className="bg-white border border-gray-200 rounded-lg sm:rounded-xl p-6 sm:p-8 md:p-12 text-center shadow-sm">
+                            <div className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-lg sm:rounded-xl bg-indigo-50 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                <BookOpen className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 text-indigo-600" />
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">No activity yet</h3>
-                            <p className="text-gray-600 text-sm mb-6 max-w-sm mx-auto">Start solving questions to see your daily progress and performance insights</p>
-                            <button className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">
+                            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1.5 sm:mb-2">No activity yet</h3>
+                            <p className="text-gray-600 text-xs sm:text-sm mb-4 sm:mb-6 max-w-sm mx-auto">Start solving questions to see your daily progress and performance insights</p>
+                            <button className="px-4 py-2 sm:px-6 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm sm:text-base font-medium transition-colors">
                                 Start Practice
                             </button>
                         </div>
                     )}
                 </div>
             </div>
+            <SmartSubjectSession session={session} />
 
-            {/* AgentChat Section */}
-            <div>
-                <AgentChat />
-            </div>
+
         </div>
     )
 }

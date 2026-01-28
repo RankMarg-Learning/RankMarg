@@ -445,7 +445,7 @@ const QuestionUI = ({
                   {question?.solution ? (
                     <div className="space-y-3">
                       {
-                        hidden && (isUnlocked ? (
+                        hidden || (isUnlocked ? (
                           <>
                             {/* Solving Strategy */}
                             {uiPreferences.showStrategy && question?.strategy && question?.strategy?.length > 10 && (
