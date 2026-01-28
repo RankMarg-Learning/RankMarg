@@ -1,4 +1,4 @@
-import DashboardHome from '@/components/Home';
+import DashboardPage from '@/components/dashboard/DashboardPage';
 import React from 'react'
 
 export const metadata = {
@@ -33,7 +33,7 @@ export const metadata = {
 
 const Dashboard = () => {
   return (
-    <DashboardHome />
+    <DashboardPage />
   )
 }
 
