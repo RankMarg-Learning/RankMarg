@@ -11,7 +11,7 @@ import { AnalyticsMetricsProps } from '@/types';
 export function PerformanceOverview({ metrics }: { metrics: AnalyticsMetricsProps }) {
     return (
         <section className="dashboard-section" id="performance">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h2 className="section-title flex items-center gap-2">
                     <span className="text-lg font-semibold">Performance Overview</span>
                     <TooltipProvider>
@@ -25,7 +25,7 @@ export function PerformanceOverview({ metrics }: { metrics: AnalyticsMetricsProp
                 </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <StatCard
                     title="Questions Attempts"
                     value={metrics?.TOTAL_QUESTIONS?.value || "0"}
@@ -84,10 +84,10 @@ interface StatCardProps {
 function StatCard({ title, value, change, insight, trend, icon: Icon }: StatCardProps) {
     return (
         <Card className="overflow-hidden glass-card card-hover animate-scale-in">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
                 <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium">{title}</span>
-                    <Icon size={18} className="text-muted-foreground" />
+                    <Icon size={18} className="text-muted-foreground flex-shrink-0" />
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
                     <span className="text-2xl font-bold">{value}</span>
@@ -102,7 +102,7 @@ function StatCard({ title, value, change, insight, trend, icon: Icon }: StatCard
                     </span>
                 </div>
                 {insight && (
-                    <p className="text-xs text-muted-foreground mb-3">{insight}</p>
+                    <p className="text-xs text-muted-foreground">{insight}</p>
                 )}
             </CardContent>
         </Card>

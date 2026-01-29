@@ -92,7 +92,7 @@ const MasteryOverview = ({ overview }: { overview: MasteryOverviewProps }) => {
                 </div>
               </Card>
 
-              <Card className="border border-primary-100 p-4">
+              <Card className="border border-primary-100 p-4 md:block hidden">
                 <div className="text-sm opacity-80 text-primary-800">Study Streak</div>
                 <div className="mt-2 text-lg font-semibold">{overview?.studyStreak?.days} days</div>
                 <div className="mt-2 text-sm opacity-80 text-gray-800">
