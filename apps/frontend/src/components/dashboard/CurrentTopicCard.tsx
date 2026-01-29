@@ -68,12 +68,12 @@ export default function CurrentTopicCard({ currentStudies }: { currentStudies: C
                         </span>
 
                         {hasMoreTopics && (
-                          <span className="text-xs bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">
+                          <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
                             +{totalCount - 1}
                           </span>
                         )}
                         {firstTopic.isCompleted && (
-                          <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
                             Done
                           </span>
                         )}
