@@ -2,8 +2,21 @@ import { Avatar, AvatarFallback, AvatarImage, Button, DropdownMenu, DropdownMenu
 import { Crown, LogOut, Settings, User } from "lucide-react"
 import Link from "next/link"
 import { NotificationDropdown } from "../notifications/NotificationDropdown"
+import { useRouter } from "next/navigation"
+import api from "@/utils/api"
 
 const HeaderHome = ({ isLoading, user }: { isLoading: boolean, user: any }) => {
+    const router = useRouter();
+    const handleSignOut = async () => {
+        try {
+            const res = await api.post("/auth/sign-out");
+            if (res.data.success) {
+                router.push("/sign-in");
+            }
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
+    }
     return (
         <div className="border-b border-gray-200 md:border-none">
             <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
@@ -97,7 +110,7 @@ const HeaderHome = ({ isLoading, user }: { isLoading: boolean, user: any }) => {
                                     <div className="border-t border-gray-100 pt-1">
                                         <DropdownMenuItem
                                             className="flex items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md cursor-pointer"
-                                        // onClick={handleSignOut}
+                                            onClick={handleSignOut}
                                         >
                                             <LogOut className="mr-3 h-4 w-4 flex-shrink-0" />
                                             <span className="truncate">Sign Out</span>
