@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@repo/common-ui";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@repo/common-ui";
-import {  ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { ScrollArea } from "@repo/common-ui";
 import { TestContext } from "@/context/TestContext";
 import { useContext } from "react";
@@ -27,11 +27,11 @@ type QuestionNavigationProps = ReviewModeProps | TestModeProps;
 
 export function QuestionNavigation(props?: QuestionNavigationProps) {
   const isReviewMode = props?.reviewMode === true;
-  
+
   const contextValue = useContext(TestContext);
-  
+
   const currentQuestion = isReviewMode ? (props as ReviewModeProps).currentQuestion : (contextValue?.currentQuestion ?? 1);
-  const setCurrentQuestion = isReviewMode ? (props as ReviewModeProps).setCurrentQuestion : (contextValue?.setCurrentQuestion ?? (() => {}));
+  const setCurrentQuestion = isReviewMode ? (props as ReviewModeProps).setCurrentQuestion : (contextValue?.setCurrentQuestion ?? (() => { }));
   const totalQuestions = isReviewMode ? (props as ReviewModeProps).totalQuestions : (contextValue?.totalQuestions ?? 0);
   const testSection = isReviewMode ? (props as ReviewModeProps).testSection : contextValue?.testSection;
 
@@ -98,18 +98,15 @@ export function QuestionNavigation(props?: QuestionNavigationProps) {
 
     if (isReviewMode && (props as ReviewModeProps).questionsStatus) {
       const status = (props as ReviewModeProps).questionsStatus[questionNumber] || 'unattempted';
-      return `${baseClass} ${reviewStatusClasses[status]} ${
-        isCurrentQuestion ? "ring-2 ring-offset-2 ring-yellow-300" : ""
-      }`;
+      return `${baseClass} ${reviewStatusClasses[status]} ${isCurrentQuestion ? "ring-2 ring-offset-2 ring-yellow-300" : ""
+        }`;
     } else if (contextValue) {
       const status = contextValue.questionsData[questionNumber]?.status || QuestionStatus.NotAnswered;
-      return `${baseClass} ${testStatusClasses[status]} ${
-        isCurrentQuestion ? "ring-2 ring-offset-2 ring-yellow-300" : ""
-      }`;
+      return `${baseClass} ${testStatusClasses[status]} ${isCurrentQuestion ? "ring-2 ring-offset-2 ring-yellow-300" : ""
+        }`;
     } else {
-      return `${baseClass} ${testStatusClasses[QuestionStatus.NotAnswered]} ${
-        isCurrentQuestion ? "ring-2 ring-offset-2 ring-yellow-300" : ""
-      }`;
+      return `${baseClass} ${testStatusClasses[QuestionStatus.NotAnswered]} ${isCurrentQuestion ? "ring-2 ring-offset-2 ring-yellow-300" : ""
+        }`;
     }
   };
 
@@ -133,7 +130,7 @@ export function QuestionNavigation(props?: QuestionNavigationProps) {
       });
     }
   }, [currentQuestion, isOpen]);
-  
+
 
   const NavigationContent = () => (
     <div className="flex flex-col   h-full md:h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-3.5rem)]  ">
@@ -183,7 +180,7 @@ export function QuestionNavigation(props?: QuestionNavigationProps) {
                 <div key={key} className=" mb-4  ">
                   {!isSingleSection && (
                     <div className="text-left text-xs font-semibold text-gray-700 mb-2">
-                      {sectionName} 
+                      {sectionName}
                       {value.maxQuestions > 0 && ` (Any ${value.maxQuestions})`}
                     </div>
                   )}
@@ -258,7 +255,7 @@ export function QuestionNavigation(props?: QuestionNavigationProps) {
             <ChevronLeft className="h-4 w-4" />
           </Button>
         </SheetTrigger>
-        <SheetContent  side="right" className="lg:hidden md:hidden w-[240px] sm:w-[280px] p-0 bg-white">
+        <SheetContent side="right" className="lg:hidden md:hidden w-[240px] sm:w-[280px] p-0 bg-white">
           <SheetHeader className="hidden">
             <SheetTitle>Question Line</SheetTitle>
             <SheetDescription>
