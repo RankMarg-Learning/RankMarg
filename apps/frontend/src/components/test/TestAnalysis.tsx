@@ -21,7 +21,6 @@ import {
     GitCompare,
     ChevronRight,
     ArrowRight,
-    ArrowLeft,
     Share
 } from "lucide-react"
 import api from "@/utils/api"
@@ -139,9 +138,6 @@ export default function TestAnalysisPage({ testId }: { testId: string }) {
 
                 <div className="hidden lg:flex w-56 flex-col  bg-card/50 backdrop-blur-sm p-2 space-y-2 h-full overflow-y-auto">
                     <div className="flex items-center gap-3 mb-4 pl-1">
-                        <Button variant="ghost" onClick={() => router.back()} className="rounded-full border-full bg-gray-100 h-8 w-8 p-0">
-                            <ArrowLeft className="w-8 h-8" />
-                        </Button>
                         <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Analysis Sections</h2>
                     </div>
                     {steps.map((step) => {

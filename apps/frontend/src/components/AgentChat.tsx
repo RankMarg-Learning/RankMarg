@@ -170,7 +170,6 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
     const [isLoading, setIsLoading] = useState(true)
     const [isStreaming, setIsStreaming] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [streamComplete, setStreamComplete] = useState(false)
     const eventSourceRef = useRef<EventSource | null>(null)
 
 
@@ -204,7 +203,6 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
             setIsLoading(true)
             setError(null)
             setSuggestions([])
-            setStreamComplete(false)
 
             const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
             const url = `${baseURL}/api/suggestion/stream`
@@ -259,13 +257,11 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
                         if (eventType === 'suggestion') {
                             setSuggestions((prev) => [...prev, data])
                         } else if (eventType === 'complete') {
-                            setStreamComplete(true)
                             setIsStreaming(false)
                         } else if (eventType === 'error') {
                             setError(data.message)
                             setIsStreaming(false)
                         } else if (eventType === 'empty') {
-                            setStreamComplete(true)
                             setIsStreaming(false)
                         }
                     }
@@ -440,25 +436,25 @@ export default function AgentChat({ className = '' }: AgentChatProps) {
             </div>
 
             {/* You Can Also Ask Section */}
-            {streamComplete || suggestions.length > 0 && (
-                <div className="mt-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">You can also read this</h3>
-                    <div className="flex flex-col gap-3">
-                        {sampleArticles.map((art, index) => (
-                            <Link
-                                href={`${process.env.NEXT_PUBLIC_WEBSITE_URL}/articles/${art.slug}`}
-                                target='_blank'
-                                key={index}
-                                className="flex items-center justify-between p-4 px-5 py-3  bg-gray-50 border rounded-lg hover:bg-white hover:border-primary-500 hover:shadow-md  "
 
-                            >
-                                <span className="text-gray-700 text-[15px] truncate">{art.name}</span>
-                                <ArrowRightIcon className="w-4 h-4" />
-                            </Link>
-                        ))}
-                    </div>
+            <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">You can also read this</h3>
+                <div className="flex flex-col gap-3">
+                    {sampleArticles.map((art, index) => (
+                        <Link
+                            href={`${process.env.NEXT_PUBLIC_WEBSITE_URL}/articles/${art.slug}`}
+                            target='_blank'
+                            key={index}
+                            className="flex items-center justify-between p-4 px-5 py-3  bg-gray-50 border rounded-lg hover:bg-white hover:border-primary-500 hover:shadow-md  "
+
+                        >
+                            <span className="text-gray-700 text-[15px] truncate">{art.name}</span>
+                            <ArrowRightIcon className="w-4 h-4" />
+                        </Link>
+                    ))}
                 </div>
-            )}
+            </div>
+
 
 
         </div>
