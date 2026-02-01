@@ -1,4 +1,3 @@
-import { AuthenticatedRequest } from "@/middleware/auth.middleware";
 import { Request } from "express";
 import rateLimit from "express-rate-limit";
 
@@ -8,9 +7,11 @@ export const getIp = (req: Request) => {
 
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 120,
+  max: 300,
   keyGenerator: (req: Request) => {
-    return getIp(req);
+    const ip = getIp(req);
+    const userAgent = req.headers["user-agent"] || "unknown";
+    return `${ip}:${userAgent}`;
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -18,7 +19,7 @@ export const globalLimiter = rateLimit({
 
 export const signinLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 10,
   keyGenerator: (req: Request) =>
     `${getIp(req)}:${req.body?.email || "unknown"}`,
   message: {
@@ -27,7 +28,8 @@ export const signinLimiter = rateLimit({
 });
 export const signupLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 3,
+  max: 10,
+  keyGenerator: (req: Request) => getIp(req),
   message: {
     error: "Too many signup attempts. Try again later.",
   },
@@ -36,12 +38,14 @@ export const signupLimiter = rateLimit({
 export const checkUsernameLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 30,
+  keyGenerator: (req: Request) => getIp(req),
   message: { error: "Too many requests. Try later." },
 });
 
 export const forgotPasswordLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 3,
+  max: 10,
+  keyGenerator: (req: Request) => getIp(req),
   message: {
     error: "Too many requests. Try later.",
   },
