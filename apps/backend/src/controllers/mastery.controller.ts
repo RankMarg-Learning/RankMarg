@@ -358,6 +358,10 @@ async function getSubjectMasteryDataBySubjectId(userId: string, subjectId: strin
         id: true,
         name: true,
         examSubjects: { select: { examCode: true }, take: 1 },
+        subjectMastery: {
+          where: { userId },
+          select: { masteryLevel: true },
+        },
         topics: {
           select: {
             id: true,
@@ -465,7 +469,7 @@ async function getSubjectMasteryDataBySubjectId(userId: string, subjectId: strin
     };
   });
 
-  const overallMastery = totalWeight > 0 ? Math.round(weightedMasterySum / totalWeight) : 0;
+  const overallMastery = subjectData.subjectMastery[0]?.masteryLevel || 0;
   const comparator = sortComparators[sortBy as keyof typeof sortComparators] || sortComparators.index;
   const sortedTopics = processedTopics.slice().sort(comparator);
 
