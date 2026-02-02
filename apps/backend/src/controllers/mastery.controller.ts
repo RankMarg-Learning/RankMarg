@@ -1,4 +1,5 @@
 import {
+  generateBiologyRecommendationByMastery,
   generateChemistryRecommendationByMastery,
   generateMathematicsRecommendationByMastery,
   generatePhysicsRecommendationByMastery,
@@ -19,21 +20,13 @@ interface SubjectMasteryResponse {
   id: string;
   name: string;
   masteryPercentage: number;
-  concepts: {
-    mastered: number;
-    total: number;
-  };
+  concepts: { mastered: number; total: number };
   improvementFromLastMonth: number;
-  improvementAreas: Array<{
-    name: string;
-    masteryLevel: number;
-  }>;
-  topPerformingTopics: Array<{
-    name: string;
-    masteryLevel: number;
-  }>;
+  improvementAreas: Array<{ name: string; masteryLevel: number }>;
+  topPerformingTopics: Array<{ name: string; masteryLevel: number }>;
   recommendations: Recommendation[];
 }
+
 interface Recommendation {
   icon: RecommendationIcon;
   color: RecommendationColor;
@@ -41,42 +34,12 @@ interface Recommendation {
   message: string;
 }
 
-export type RecommendationType =
-  | "physics"
-  | "chemistry"
-  | "biology"
-  | "mathematics"
-  | "default";
+export type RecommendationType = "physics" | "chemistry" | "biology" | "mathematics" | "default";
 export type RecommendationIcon = "info" | "warning" | "check" | "close";
-export type RecommendationColor =
-  | "red"
-  | "blue"
-  | "green"
-  | "purple"
-  | "teal"
-  | "gray"
-  | "indigo"
-  | "lime";
-// const TOP_PERCENTILE_THRESHOLDS = [
-//   { score: 95, percentile: 1 },
-//   { score: 90, percentile: 5 },
-//   { score: 80, percentile: 10 },
-//   { score: 70, percentile: 25 },
-//   { score: 60, percentile: 50 },
-//   { score: 40, percentile: 75 },
-// ] as const;
+export type RecommendationColor = "red" | "blue" | "green" | "purple" | "teal" | "gray" | "indigo" | "lime";
 
-// const MASTERY_LABELS = [
-//   { threshold: MASTERY_THRESHOLDS.EXCELLENT, label: "Excellent" },
-//   { threshold: MASTERY_THRESHOLDS.GOOD, label: "Good" },
-//   { threshold: MASTERY_THRESHOLDS.SATISFACTORY, label: "Satisfactory" },
-// ];
 interface MasteryData {
-  subject: {
-    id: string;
-    name: string;
-    examCode: string;
-  };
+  subject: { id: string; name: string; examCode: string };
   overallMastery: number;
   topics: Array<{
     id: string;
@@ -116,107 +79,70 @@ interface LastAttemptData {
   entity_type: "topic" | "subtopic";
   solvedAt: string;
 }
-const masteryCache = new Map<
-  string,
-  { data: MasteryData; timestamp: number }
->();
+
+const masteryCache = new Map<string, { data: MasteryData; timestamp: number }>();
 const CACHE_TTL = 5 * 60 * 1000;
 
 const sortComparators = {
-  "mastery-asc": (a: TopicWithMastery, b: TopicWithMastery) =>
-    a.mastery - b.mastery,
-  "mastery-desc": (a: TopicWithMastery, b: TopicWithMastery) =>
-    b.mastery - a.mastery,
-  index: (a: TopicWithMastery, b: TopicWithMastery) =>
-    a.orderIndex - b.orderIndex,
+  "mastery-asc": (a: TopicWithMastery, b: TopicWithMastery) => a.mastery - b.mastery,
+  "mastery-desc": (a: TopicWithMastery, b: TopicWithMastery) => b.mastery - a.mastery,
+  index: (a: TopicWithMastery, b: TopicWithMastery) => a.orderIndex - b.orderIndex,
 } as const;
+
 const VALID_SORT_OPTIONS = new Set(["index", "mastery-asc", "mastery-desc"]);
 
 export class MasteryController {
-  getMasteryDashboard = async (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
+  getMasteryDashboard = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user.id;
-      const examCode = req.user.examCode;
-      const plan = req.user.plan;
-      if (
-        plan.status !== SubscriptionStatus.ACTIVE && plan.status !== SubscriptionStatus.TRIAL
-      ) {
-        ResponseUtil.error(
-          res,
-          "Your subscription is not active. Please upgrade to access Mastery Dashboard.",
-          403
-        );
+      const { id: userId, examCode, plan } = req.user;
+
+      if (plan.status !== SubscriptionStatus.ACTIVE && plan.status !== SubscriptionStatus.TRIAL) {
+        ResponseUtil.error(res, "Your subscription is not active. Please upgrade to access Mastery Dashboard.", 403);
+        return;
       }
+
       if (!examCode) {
         ResponseUtil.error(res, "Exam code is required", 400);
+        return;
       }
-      const [overallMastery, conceptsMastered, studyStreak, improvement] =
-        await Promise.all([
-          calculateOverallMastery(userId),
-          getConceptsMasteredData(userId, examCode),
-          getStudyStreakData(userId),
-          getImprovementData(userId),
-        ]);
-      ResponseUtil.success(
-        res,
-        {
-          overallMastery,
-          conceptsMastered,
-          studyStreak,
-          improvement,
-        },
-        "Ok",
-        200,
-        undefined,
-        {
-          "Cache-Control": "public, max-age=300, stale-while-revalidate=300",
-          Vary: "Authorization",
-        }
-      );
+
+      const [overallMastery, conceptsMastered, studyStreak, lastMonthMastery] = await Promise.all([
+        calculateOverallMastery(userId),
+        getConceptsMasteredData(userId, examCode),
+        getStudyStreakData(userId),
+        getLastMonthMastery(userId),
+      ]);
+
+      const improvement = lastMonthMastery ? Math.round(overallMastery - lastMonthMastery) : 0;
+
+      ResponseUtil.success(res, { overallMastery, conceptsMastered, studyStreak, improvement }, "Ok", 200, undefined, {
+        "Cache-Control": "public, max-age=300, stale-while-revalidate=300",
+        Vary: "Authorization",
+      });
     } catch (error) {
       next(error);
     }
   };
-  getTopMasteryBySubject = async (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
+
+  getTopMasteryBySubject = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user.id;
-      const examCode = req.user.examCode;
+      const { id: userId, examCode, plan } = req.user;
+
       if (!examCode) {
         ResponseUtil.error(res, "Exam code is required", 400);
+        return;
       }
-      const plan = req.user.plan;
-      if (
-        plan.status !== SubscriptionStatus.ACTIVE && plan.status !== SubscriptionStatus.TRIAL
-      ) {
-        ResponseUtil.error(
-          res,
-          "Your subscription is not active. Please upgrade to access Subject Mastery.",
-          403
-        );
+
+      if (plan.status !== SubscriptionStatus.ACTIVE && plan.status !== SubscriptionStatus.TRIAL) {
+        ResponseUtil.error(res, "Your subscription is not active. Please upgrade to access Subject Mastery.", 403);
+        return;
       }
-      const improvementAreasCountParam = req.query
-        .improvementAreasCount as string;
-      const topPerformingCountParam = req.query.topPerformingCount as string;
-      const improvementAreasCount = improvementAreasCountParam
-        ? parseInt(improvementAreasCountParam)
-        : 2;
-      const topPerformingCount = topPerformingCountParam
-        ? parseInt(topPerformingCountParam)
-        : 3;
-      const subjectMasteryData = await getSubjectMasteryData(
-        userId,
-        examCode,
-        improvementAreasCount,
-        topPerformingCount
-      );
+
+      const improvementAreasCount = parseInt(req.query.improvementAreasCount as string) || 2;
+      const topPerformingCount = parseInt(req.query.topPerformingCount as string) || 3;
+
+      const subjectMasteryData = await getSubjectMasteryData(userId, examCode, improvementAreasCount, topPerformingCount);
+
       ResponseUtil.success(res, subjectMasteryData, "Ok", 200, undefined, {
         "Cache-Control": "public, max-age=300, stale-while-revalidate=300",
         Vary: "Authorization",
@@ -225,23 +151,26 @@ export class MasteryController {
       next(error);
     }
   };
-  getFullMasteryBySubjectId = async (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
+
+  getFullMasteryBySubjectId = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user.id;
+      const { id: userId, plan } = req.user;
+
+      if (plan.status !== SubscriptionStatus.ACTIVE && plan.status !== SubscriptionStatus.TRIAL) {
+        ResponseUtil.error(res, "Your subscription is not active. Please upgrade to access Subject Mastery Details.", 403);
+        return;
+      }
+
       const sortBy = (req.query.sortBy as string) || "index";
       const subjectId = req.params.subjectId;
+
       if (!VALID_SORT_OPTIONS.has(sortBy)) {
         ResponseUtil.error(res, "Invalid sortBy parameter", 400);
+        return;
       }
-      const masteryData = await getSubjectMasteryDataBySubjectId(
-        userId,
-        subjectId,
-        sortBy
-      );
+
+      const masteryData = await getSubjectMasteryDataBySubjectId(userId, subjectId, sortBy);
+
       ResponseUtil.success(res, masteryData, "Ok", 200, undefined, {
         "Cache-Control": "public, max-age=300, stale-while-revalidate=300",
         Vary: "Authorization",
@@ -251,6 +180,7 @@ export class MasteryController {
     }
   };
 }
+
 async function calculateOverallMastery(userId: string): Promise<number> {
   try {
     const result = await prisma.subjectMastery.aggregate({
@@ -258,423 +188,176 @@ async function calculateOverallMastery(userId: string): Promise<number> {
       _avg: { masteryLevel: true },
     });
     return Math.round(result._avg.masteryLevel ?? 0);
-  } catch (error) {
-    console.error("[Get Mastery] Error calculating overall mastery:", error);
+  } catch {
     return 0;
   }
 }
+
 async function getConceptsMasteredData(userId: string, examCode: string) {
   try {
     const [masteredCount, totalTopics] = await Promise.all([
       prisma.topicMastery.count({
-        where: {
-          userId,
-          masteryLevel: { gte: MASTERY_THRESHOLDS.GOOD },
-        },
+        where: { userId, masteryLevel: { gte: MASTERY_THRESHOLDS.GOOD } },
       }),
       prisma.topic.count({
-        where: {
-          subject: {
-            examSubjects: { some: { examCode } },
-          },
-        },
+        where: { subject: { examSubjects: { some: { examCode } } } },
       }),
     ]);
-
     return { mastered: masteredCount, total: totalTopics };
-  } catch (error) {
-    console.error(
-      "[Get Mastery] Error fetching concepts mastered data:",
-      error
-    );
+  } catch {
     return { mastered: 0, total: 0 };
   }
 }
+
 async function getStudyStreakData(userId: string) {
   try {
     const userPerformance = await prisma.userPerformance.findUnique({
       where: { userId },
       select: { streak: true },
     });
-
     const streakDays = userPerformance?.streak || 0;
-
-    return { days: streakDays, message: getStreakMessage(streakDays) };
-  } catch (error) {
-    console.error("[Get Mastery] Error fetching study streak data:", error);
-    return { days: 0, message: getStreakMessage(0) };
+    return { days: streakDays, message: streakDays >= 7 ? "Keep it up! 🔥" : "Keep learning daily!" };
+  } catch {
+    return { days: 0, message: "Keep learning daily!" };
   }
 }
-function getStreakMessage(streakDays: number): string {
-  return streakDays >= 7 ? "Keep it up! 🔥" : "Keep learning daily!";
-}
 
-async function getImprovementData(userId: string): Promise<number> {
+async function getLastMonthMastery(userId: string): Promise<number | null> {
   try {
     const previousMonth = new Date();
     previousMonth.setMonth(previousMonth.getMonth() - 1);
-
-    const lastMonthMastery = await prisma.masteryHistory.findFirst({
+    const record = await prisma.masteryHistory.findFirst({
       where: { userId, recordedAt: { lt: previousMonth } },
       select: { masteryLevel: true },
       orderBy: { recordedAt: "desc" },
     });
-
-    if (!lastMonthMastery?.masteryLevel) return 0;
-
-    const current = await calculateOverallMastery(userId);
-    return Math.round(current - lastMonthMastery.masteryLevel);
-  } catch (error) {
-    console.error("[Get Mastery] Error fetching improvement data:", error);
-    return 0;
+    return record?.masteryLevel ?? null;
+  } catch {
+    return null;
   }
 }
 
-// ============================
 const getSubjectMasteryData = async (
   userId: string,
   examCode: string,
   improvementAreasCount: number,
   topPerformingCount: number
 ): Promise<SubjectMasteryResponse[]> => {
-  if (!userId) {
-    throw new Error("User ID is required");
+  if (!userId || !examCode) throw new Error("User ID and Exam code are required");
+
+  const subjects = await prisma.subject.findMany({
+    where: { examSubjects: { some: { examCode } } },
+    select: { id: true, name: true },
+  });
+
+  if (subjects.length === 0) return [];
+
+  const subjectIds = subjects.map(s => s.id);
+  const previousMonthDate = new Date();
+  previousMonthDate.setMonth(previousMonthDate.getMonth() - 1);
+
+  const [allSubjectMasteries, allTopicMasteries, previousMasteries, topicsPerSubject] = await Promise.all([
+    prisma.subjectMastery.findMany({
+      where: { userId, subjectId: { in: subjectIds } },
+      select: { subjectId: true, masteryLevel: true },
+    }),
+    prisma.topicMastery.findMany({
+      where: { userId, topic: { subjectId: { in: subjectIds } } },
+      select: {
+        masteryLevel: true,
+        strengthIndex: true,
+        topic: { select: { id: true, name: true, subjectId: true } },
+      },
+    }),
+    prisma.masteryHistory.findMany({
+      where: { userId, subjectId: { in: subjectIds }, recordedAt: { lt: previousMonthDate } },
+      orderBy: { recordedAt: "desc" },
+      distinct: ["subjectId"],
+      select: { subjectId: true, masteryLevel: true },
+    }),
+    prisma.topic.groupBy({
+      by: ["subjectId"],
+      where: { subjectId: { in: subjectIds } },
+      _count: { id: true },
+    }),
+  ]);
+
+  const subjectMasteriesMap = new Map(allSubjectMasteries.map(sm => [sm.subjectId, sm.masteryLevel]));
+  const previousMasteriesMap = new Map(previousMasteries.map(pm => [pm.subjectId, pm.masteryLevel]));
+  const topicsCountMap = new Map(topicsPerSubject.map(t => [t.subjectId, t._count.id]));
+
+  const topicMasteriesBySubject = new Map<string, Array<{ id: string; name: string; masteryLevel: number }>>();
+  for (const tm of allTopicMasteries) {
+    const sid = tm.topic.subjectId;
+    if (!topicMasteriesBySubject.has(sid)) topicMasteriesBySubject.set(sid, []);
+    topicMasteriesBySubject.get(sid)!.push({ id: tm.topic.id, name: tm.topic.name, masteryLevel: tm.masteryLevel });
   }
 
-  if (!examCode) {
-    throw new Error("Exam code is required");
-  }
+  return subjects.map(subject => {
+    const masteryLevel = Math.max(0, Math.min(100, subjectMasteriesMap.get(subject.id) || 0));
+    const previousMastery = previousMasteriesMap.get(subject.id);
+    const topicCount = topicsCountMap.get(subject.id) || 0;
+    const subjectTopics = topicMasteriesBySubject.get(subject.id) || [];
 
-  return await prisma.$transaction(
-    async (tx) => {
-      try {
-        const [subjects, allSubjectMasteries, allTopicMasteries, allSubTopics] =
-          await Promise.all([
-            tx.subject.findMany({
-              where: { examSubjects: { some: { examCode } } },
-              select: { id: true, name: true },
-            }),
-            tx.subjectMastery.findMany({
-              where: { userId },
-              select: {
-                subjectId: true,
-                masteryLevel: true,
-                totalAttempts: true,
-                correctAttempts: true,
-              },
-            }),
-            tx.topicMastery.findMany({
-              where: { userId },
-              select: {
-                topicId: true,
-                masteryLevel: true,
-                strengthIndex: true,
-                topic: {
-                  select: {
-                    id: true,
-                    name: true,
-                    subjectId: true,
-                  },
-                },
-              },
-            }),
-            tx.subtopicMastery.findMany({
-              where: { userId },
-              select: {
-                subtopicId: true,
-                masteryLevel: true,
-                subtopic: {
-                  select: {
-                    name: true,
-                    topicId: true,
-                  },
-                },
-              },
-            }),
-          ]);
+    const totalConcepts = topicCount * 10;
+    const conceptsMastered = Math.round((masteryLevel / 100) * totalConcepts);
 
-        const previousMonthDate = new Date();
-        previousMonthDate.setMonth(previousMonthDate.getMonth() - 1);
+    const sorted = subjectTopics.slice().sort((a, b) => a.masteryLevel - b.masteryLevel);
+    const weakestTopics = sorted.slice(0, improvementAreasCount);
+    const strongestTopics = sorted.slice(-topPerformingCount).reverse();
 
-        const [previousMasteries, topicsPerSubject] = await Promise.all([
-          tx.masteryHistory.findMany({
-            where: {
-              userId,
-              recordedAt: { lt: previousMonthDate },
-            },
-            orderBy: { recordedAt: "desc" },
-            distinct: ["subjectId"],
-            select: {
-              subjectId: true,
-              masteryLevel: true,
-            },
-          }),
-          tx.topic.groupBy({
-            by: ["subjectId"],
-            _count: { id: true },
-          }),
-        ]);
-
-        // Create maps for efficient lookups
-        const subjectMasteriesMap = new Map(
-          allSubjectMasteries.map((sm) => [sm.subjectId, sm])
-        );
-
-        const previousMasteriesMap = new Map(
-          previousMasteries.map((pm) => [pm.subjectId, pm])
-        );
-
-        const topicsCountMap = new Map(
-          topicsPerSubject.map((t) => [t.subjectId, t._count.id])
-        );
-
-        const topicMasteriesBySubject = new Map<
-          string,
-          Array<{
-            id: string;
-            name: string;
-            masteryLevel: number;
-            strengthIndex: number;
-          }>
-        >();
-
-        // Group topic masteries by subject
-        allTopicMasteries.forEach((tm) => {
-          const subjectId = tm.topic.subjectId;
-          if (!topicMasteriesBySubject.has(subjectId)) {
-            topicMasteriesBySubject.set(subjectId, []);
-          }
-          topicMasteriesBySubject.get(subjectId)?.push({
-            id: tm.topic.id,
-            name: tm.topic.name,
-            masteryLevel: tm.masteryLevel,
-            strengthIndex: tm.strengthIndex,
-          });
-        });
-
-        const subtopicsByTopic = new Map<
-          string,
-          Array<{
-            name: string;
-            masteryLevel: number;
-          }>
-        >();
-
-        // Group subtopics by topic
-        allSubTopics.forEach((stm) => {
-          const topicId = stm.subtopic.topicId;
-          if (!subtopicsByTopic.has(topicId)) {
-            subtopicsByTopic.set(topicId, []);
-          }
-          subtopicsByTopic.get(topicId)?.push({
-            name: stm.subtopic.name,
-            masteryLevel: stm.masteryLevel,
-          });
-        });
-
-        return subjects.map((subject) => {
-          try {
-            const subjectId = subject.id;
-            const subjectMastery = subjectMasteriesMap.get(subjectId) || {
-              masteryLevel: 0,
-            };
-            const previousMastery = previousMasteriesMap.get(subjectId);
-            const topicCount = topicsCountMap.get(subjectId) || 0;
-
-            const subjectTopics = topicMasteriesBySubject.get(subjectId) || [];
-            const masteryLevel = Math.max(
-              0,
-              Math.min(100, subjectMastery.masteryLevel || 0)
-            );
-            const improvementPercentage = previousMastery
-              ? masteryLevel - previousMastery.masteryLevel
-              : 0;
-
-            const conceptsPerTopic = 10;
-            const totalConcepts = Math.max(0, topicCount * conceptsPerTopic);
-            const conceptsMastered = Math.round(
-              (masteryLevel / 100) * totalConcepts
-            );
-
-            const sortedByMastery = [...subjectTopics].sort(
-              (a, b) => a.masteryLevel - b.masteryLevel
-            );
-            const weakestTopics = sortedByMastery.slice(
-              0,
-              Math.max(0, improvementAreasCount)
-            );
-            const strongestTopics = [...subjectTopics]
-              .sort((a, b) => b.masteryLevel - a.masteryLevel)
-              .slice(0, Math.max(0, topPerformingCount));
-
-            const recommendations: Recommendation[] = [];
-
-            // Generate recommendations for weakest topic
-            if (weakestTopics.length > 0) {
-              const weakestTopic = weakestTopics[0];
-              const recommendation = generateRecommendations(
-                subject.name,
-                weakestTopics.map((t) => ({
-                  name: t.name,
-                  masteryLevel: t.masteryLevel,
-                })),
-                weakestTopic.name
-              );
-              recommendations.push(recommendation);
-            }
-
-            // Generate recommendations for strongest topic (if different from weakest)
-            if (
-              strongestTopics.length > 0 &&
-              (!weakestTopics.length ||
-                strongestTopics[0].id !== weakestTopics[0].id)
-            ) {
-              const strongestTopic = strongestTopics[0];
-              const recommendation = generateRecommendations(
-                subject.name,
-                strongestTopics.map((t) => ({
-                  name: t.name,
-                  masteryLevel: t.masteryLevel,
-                })),
-                strongestTopic.name
-              );
-              recommendations.push(recommendation);
-            }
-
-            return {
-              id: subjectId,
-              name: subject.name,
-              masteryPercentage: masteryLevel,
-              concepts: {
-                mastered: conceptsMastered,
-                total: totalConcepts,
-              },
-              improvementFromLastMonth: improvementPercentage,
-              improvementAreas: weakestTopics.map((t) => ({
-                name: t.name,
-                masteryLevel: Math.max(0, Math.min(100, t.masteryLevel)),
-              })),
-              topPerformingTopics: strongestTopics.map((t) => ({
-                name: t.name,
-                masteryLevel: Math.max(0, Math.min(100, t.masteryLevel)),
-              })),
-              recommendations: recommendations.slice(0, 2),
-            };
-          } catch (error) {
-            console.error(`Error processing subject ${subject.name}:`, error);
-            // Return a safe default for this subject
-            return {
-              id: subject.id,
-              name: subject.name,
-              masteryPercentage: 0,
-              concepts: {
-                mastered: 0,
-                total: 0,
-              },
-              improvementFromLastMonth: 0,
-              improvementAreas: [],
-              topPerformingTopics: [],
-              recommendations: [],
-            };
-          }
-        });
-      } catch (error) {
-        console.error("Database transaction error:", error);
-        throw new Error("Failed to fetch mastery data from database");
-      }
-    },
-    {
-      isolationLevel: "ReadCommitted",
-      timeout: 30000, // 30 second timeout
+    const recommendations: Recommendation[] = [];
+    if (weakestTopics.length > 0) {
+      recommendations.push(generateRecommendation(subject.name, weakestTopics[0].name, weakestTopics[0].masteryLevel));
     }
-  );
+    if (strongestTopics.length > 0 && (!weakestTopics.length || strongestTopics[0].id !== weakestTopics[0].id)) {
+      recommendations.push(generateRecommendation(subject.name, strongestTopics[0].name, strongestTopics[0].masteryLevel));
+    }
+
+    return {
+      id: subject.id,
+      name: subject.name,
+      masteryPercentage: masteryLevel,
+      concepts: { mastered: conceptsMastered, total: totalConcepts },
+      improvementFromLastMonth: previousMastery ? masteryLevel - previousMastery : 0,
+      improvementAreas: weakestTopics.map(t => ({ name: t.name, masteryLevel: Math.max(0, Math.min(100, t.masteryLevel)) })),
+      topPerformingTopics: strongestTopics.map(t => ({ name: t.name, masteryLevel: Math.max(0, Math.min(100, t.masteryLevel)) })),
+      recommendations: recommendations.slice(0, 2),
+    };
+  });
 };
 
-function generateRecommendations(
-  subjectName: string,
-  topicData: Array<{ name: string; masteryLevel: number }>,
-  topicName: string
-): Recommendation {
+function generateRecommendation(subjectName: string, topicName: string, masteryLevel: number): Recommendation {
   try {
-    const masteryLevel =
-      topicData.find((t) => t.name === topicName)?.masteryLevel || 0;
-
     switch (subjectName.toLowerCase()) {
-      case "physics":
-        return generatePhysicsRecommendationByMastery(topicName, masteryLevel);
-
-      case "chemistry":
-        return generateChemistryRecommendationByMastery(
-          topicName,
-          masteryLevel
-        );
-
-      case "mathematics":
-        return generateMathematicsRecommendationByMastery(
-          topicName,
-          masteryLevel
-        );
-
-      case "biology":
-        return generateChemistryRecommendationByMastery(
-          topicName,
-          masteryLevel
-        );
-
-      default:
-        return {
-          icon: "info",
-          color: "gray",
-          type: "default",
-          message: `No specific recommendations available for **${subjectName}**. Keep practicing!`,
-        };
+      case "physics": return generatePhysicsRecommendationByMastery(topicName, masteryLevel);
+      case "chemistry": return generateChemistryRecommendationByMastery(topicName, masteryLevel);
+      case "mathematics": return generateMathematicsRecommendationByMastery(topicName, masteryLevel);
+      case "biology": return generateBiologyRecommendationByMastery(topicName, masteryLevel);
+      default: return { icon: "info", color: "gray", type: "default", message: `No specific recommendations available for **${subjectName}**. Keep practicing!` };
     }
-  } catch (error) {
-    console.error(
-      `Error generating recommendations for ${subjectName}:`,
-      error
-    );
-    return {
-      icon: "info",
-      color: "gray",
-      type: "default",
-      message: `Unable to generate recommendations for **${subjectName}**. Please try again later.`,
-    };
+  } catch {
+    return { icon: "info", color: "gray", type: "default", message: `Unable to generate recommendations for **${subjectName}**. Please try again later.` };
   }
 }
 
-// ============================
-async function getSubjectMasteryDataBySubjectId(
-  userId: string,
-  subjectId: string,
-  sortBy: string = "index"
-): Promise<MasteryData> {
-  // Input validation with early return
-  if (!userId || !subjectId) {
-    throw new Error("User ID and Subject ID are required");
-  }
+async function getSubjectMasteryDataBySubjectId(userId: string, subjectId: string, sortBy: string = "index"): Promise<MasteryData> {
+  if (!userId || !subjectId) throw new Error("User ID and Subject ID are required");
 
-  // Check cache first (O(1) lookup)
-  const cacheKey = `${userId}-${subjectId}-${sortBy}`;
-  const cached = masteryCache.get(cacheKey);
+  const baseCacheKey = `${userId}-${subjectId}`;
+  const cached = masteryCache.get(baseCacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    console.log(`[Cache Hit] Serving cached data for ${cacheKey}`);
-    return cached.data;
+    const comparator = sortComparators[sortBy as keyof typeof sortComparators] || sortComparators.index;
+    return { ...cached.data, topics: cached.data.topics.slice().sort(comparator) };
   }
 
-  // Optimized: Single query to fetch all required data using joins
-  // This reduces database round trips from ~4 queries to 1 query
   const [subjectData, lastAttemptData] = await Promise.all([
-    // Main data query with optimized joins
     prisma.subject.findUnique({
       where: { id: subjectId },
       select: {
         id: true,
         name: true,
-        examSubjects: {
-          select: { examCode: true },
-          take: 1, // Only need the first exam code
-        },
+        examSubjects: { select: { examCode: true }, take: 1 },
         topics: {
           select: {
             id: true,
@@ -685,12 +368,7 @@ async function getSubjectMasteryDataBySubjectId(
             estimatedMinutes: true,
             topicMastery: {
               where: { userId },
-              select: {
-                masteryLevel: true,
-                strengthIndex: true,
-                totalAttempts: true,
-                correctAttempts: true,
-              },
+              select: { masteryLevel: true, strengthIndex: true, totalAttempts: true },
             },
             subTopics: {
               select: {
@@ -701,12 +379,7 @@ async function getSubjectMasteryDataBySubjectId(
                 estimatedMinutes: true,
                 subtopicMastery: {
                   where: { userId },
-                  select: {
-                    masteryLevel: true,
-                    strengthIndex: true,
-                    totalAttempts: true,
-                    correctAttempts: true,
-                  },
+                  select: { masteryLevel: true, strengthIndex: true, totalAttempts: true },
                 },
               },
               orderBy: { orderIndex: "asc" },
@@ -716,176 +389,103 @@ async function getSubjectMasteryDataBySubjectId(
         },
       },
     }),
-
-    // Optimized: Single query for last attempts with proper indexing
-    prisma.$queryRaw`
-            WITH topic_attempts AS (
-                SELECT DISTINCT ON (q."topicId") 
-                    q."topicId" as entity_id,
-                    'topic' as entity_type,
-                    a."solvedAt"
-                FROM "Attempt" a
-                JOIN "Question" q ON a."questionId" = q.id
-                WHERE a."userId" = ${userId} 
-                  AND q."topicId" IN (
-                      SELECT t.id FROM "Topic" t WHERE t."subjectId" = ${subjectId}
-                  )
-                ORDER BY q."topicId", a."solvedAt" DESC
-            ),
-            subtopic_attempts AS (
-                SELECT DISTINCT ON (q."subtopicId") 
-                    q."subtopicId" as entity_id,
-                    'subtopic' as entity_type,
-                    a."solvedAt"
-                FROM "Attempt" a
-                JOIN "Question" q ON a."questionId" = q.id
-                WHERE a."userId" = ${userId} 
-                  AND q."subtopicId" IN (
-                      SELECT st.id FROM "SubTopic" st 
-                      JOIN "Topic" t ON st."topicId" = t.id 
-                      WHERE t."subjectId" = ${subjectId}
-                  )
-                ORDER BY q."subtopicId", a."solvedAt" DESC
-            )
-            SELECT * FROM topic_attempts 
-            UNION ALL 
-            SELECT * FROM subtopic_attempts
-        `,
+    prisma.$queryRaw<LastAttemptData[]>`
+      SELECT DISTINCT ON (entity_id) entity_id, entity_type, "solvedAt"
+      FROM (
+        SELECT q."topicId" as entity_id, 'topic' as entity_type, a."solvedAt"
+        FROM "Attempt" a
+        JOIN "Question" q ON a."questionId" = q.id
+        WHERE a."userId" = ${userId} AND q."topicId" IN (SELECT id FROM "Topic" WHERE "subjectId" = ${subjectId})
+        UNION ALL
+        SELECT q."subtopicId" as entity_id, 'subtopic' as entity_type, a."solvedAt"
+        FROM "Attempt" a
+        JOIN "Question" q ON a."questionId" = q.id
+        WHERE a."userId" = ${userId} AND q."subtopicId" IN (
+          SELECT st.id FROM "SubTopic" st JOIN "Topic" t ON st."topicId" = t.id WHERE t."subjectId" = ${subjectId}
+        )
+      ) combined
+      ORDER BY entity_id, "solvedAt" DESC
+    `,
   ]);
 
-  if (!subjectData) {
-    throw new Error("Subject not found");
+  if (!subjectData) throw new Error("Subject not found");
+
+  const userExamCode = subjectData.examSubjects[0]?.examCode || "";
+  const lastAttemptMap = new Map<string, Date>();
+  for (const a of lastAttemptData) {
+    if (a.entity_id && !lastAttemptMap.has(a.entity_id)) {
+      lastAttemptMap.set(a.entity_id, new Date(a.solvedAt));
+    }
   }
 
-  // Get user's exam code efficiently
-  const userExamRegistration = await prisma.examUser.findFirst({
-    where: { userId },
-    select: { examCode: true },
-    orderBy: { registeredAt: "desc" },
-    take: 1, // Only need the latest one
-  });
+  let totalWeight = 0;
+  let weightedMasterySum = 0;
 
-  const userExamCode =
-    userExamRegistration?.examCode ||
-    subjectData.examSubjects[0]?.examCode ||
-    "";
+  const processedTopics = subjectData.topics.map(topic => {
+    const tm = topic.topicMastery[0];
+    const mastery = tm?.masteryLevel || 0;
+    const totalAttempts = tm?.totalAttempts || 0;
+    const strengthIndex = tm?.strengthIndex || 0;
+    const weightage = topic.weightage;
 
-  // Create efficient lookup maps (O(1) access instead of O(n) array.find)
-  const lastAttemptMap = new Map<string, Date>();
+    totalWeight += weightage;
+    weightedMasterySum += mastery * weightage;
 
-  // Process last attempt data into maps
-  (lastAttemptData as LastAttemptData[]).forEach((attempt: LastAttemptData) => {
-    if (attempt.entity_id && !lastAttemptMap.has(attempt.entity_id)) {
-      lastAttemptMap.set(attempt.entity_id, new Date(attempt.solvedAt));
-    }
-  });
-
-  // Process topics data with optimized calculations
-  const processedTopics = subjectData.topics.map((topic) => {
-    const topicMastery = topic.topicMastery[0];
-    const mastery = topicMastery?.masteryLevel || 0;
-    const totalAttempts = topicMastery?.totalAttempts || 0;
-    const strengthIndex = topicMastery?.strengthIndex || 0;
-    const masteredCount = mastery >= 70 ? 1 : 0;
-
-    // Process subtopics with optimized mapping
-    const subtopics = topic.subTopics.map((subtopic) => {
-      const subtopicMastery = subtopic.subtopicMastery[0];
-      const subtopicMasteryLevel = subtopicMastery?.masteryLevel || 0;
-      const subtopicTotalAttempts = subtopicMastery?.totalAttempts || 0;
-      const subtopicStrengthIndex = subtopicMastery?.strengthIndex || 0;
-      const subtopicMasteredCount = subtopicMasteryLevel >= 70 ? 1 : 0;
-
-      // O(1) lookup instead of array search
+    const subtopics = topic.subTopics.map(subtopic => {
+      const sm = subtopic.subtopicMastery[0];
       const lastPracticedDate = lastAttemptMap.get(subtopic.id);
-      const lastPracticed = lastPracticedDate
-        ? lastPracticedDate.toISOString()
-        : null;
-
       return {
         id: subtopic.id,
         name: subtopic.name,
         slug: subtopic.slug,
-        mastery: subtopicMasteryLevel,
-        totalAttempts: subtopicTotalAttempts,
-        masteredCount: subtopicMasteredCount,
+        mastery: sm?.masteryLevel || 0,
+        totalAttempts: sm?.totalAttempts || 0,
+        masteredCount: (sm?.masteryLevel || 0) >= MASTERY_THRESHOLDS.EXCELLENT ? 1 : 0,
         orderIndex: subtopic.orderIndex,
         estimatedMinutes: subtopic.estimatedMinutes,
-        strengthIndex: subtopicStrengthIndex,
-        lastPracticed,
+        strengthIndex: sm?.strengthIndex || 0,
+        lastPracticed: lastPracticedDate?.toISOString() || null,
       };
     });
 
-    // O(1) lookup for topic last practiced
     const topicLastPracticedDate = lastAttemptMap.get(topic.id);
-    const topicLastPracticed = topicLastPracticedDate
-      ? topicLastPracticedDate.toISOString()
-      : null;
-
     return {
       id: topic.id,
       name: topic.name,
       slug: topic.slug,
       mastery,
-      weightage: topic.weightage,
+      weightage,
       orderIndex: topic.orderIndex,
       estimatedMinutes: topic.estimatedMinutes,
       totalAttempts,
-      masteredCount,
+      masteredCount: mastery >= MASTERY_THRESHOLDS.EXCELLENT ? 1 : 0,
       strengthIndex,
-      lastPracticed: topicLastPracticed,
+      lastPracticed: topicLastPracticedDate?.toISOString() || null,
       subtopics,
     };
   });
 
-  // Optimized sorting using pre-defined comparator functions
-  // This avoids function creation overhead in each sort call
-  const comparator =
-    sortComparators[sortBy as keyof typeof sortComparators] ||
-    sortComparators.index;
-
-  // Use stable sort (Timsort) which is O(n log n) worst case, O(n) best case
-  const sortedTopics = [...processedTopics].sort(comparator);
-
-  // Optimized overall mastery calculation using single pass
-  let totalWeight = 0;
-  let weightedMasterySum = 0;
-
-  for (const topic of sortedTopics) {
-    totalWeight += topic.weightage;
-    weightedMasterySum += topic.mastery * topic.weightage;
-  }
-
-  const overallMastery =
-    totalWeight > 0 ? Math.round(weightedMasterySum / totalWeight) : 0;
+  const overallMastery = totalWeight > 0 ? Math.round(weightedMasterySum / totalWeight) : 0;
+  const comparator = sortComparators[sortBy as keyof typeof sortComparators] || sortComparators.index;
+  const sortedTopics = processedTopics.slice().sort(comparator);
 
   const result: MasteryData = {
-    subject: {
-      id: subjectData.id,
-      name: subjectData.name,
-      examCode: userExamCode,
-    },
+    subject: { id: subjectData.id, name: subjectData.name, examCode: userExamCode },
     overallMastery,
     topics: sortedTopics,
     userExamCode,
   };
 
-  // Cache the result for future requests
-  masteryCache.set(cacheKey, {
-    data: result,
-    timestamp: Date.now(),
-  });
+  masteryCache.set(baseCacheKey, { data: { ...result, topics: processedTopics }, timestamp: Date.now() });
 
-  if (masteryCache.size > 1000) {
-    // Arbitrary limit
+  if (masteryCache.size > 500) {
     const now = Date.now();
-    const keysToDelete: string[] = [];
-    masteryCache.forEach((value, key) => {
+    for (const [key, value] of masteryCache) {
       if (now - value.timestamp > CACHE_TTL) {
-        keysToDelete.push(key);
+        masteryCache.delete(key);
+        if (masteryCache.size <= 400) break;
       }
-    });
-    keysToDelete.forEach((key) => masteryCache.delete(key));
+    }
   }
 
   return result;
