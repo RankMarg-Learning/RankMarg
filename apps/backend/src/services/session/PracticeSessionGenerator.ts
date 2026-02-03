@@ -42,13 +42,13 @@ export class PracticeSessionGenerator {
       await Promise.all(
         subjectIds.map((subjectId) => {
           if (this.config.isPaidUser) {
-            this.generateSubjectSessionAdaptive(subjectId);
+            return this.generateSubjectSessionAdaptive(subjectId);
           } else {
-            this.generateSubjectSession(subjectId);
+            return this.generateSubjectSession(subjectId);
           }
         })
       );
-      
+
       try {
         const template = NotificationService.templates.practiceSessionCreated();
         await NotificationService.createAndDeliverToUser(
