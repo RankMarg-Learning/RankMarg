@@ -10,7 +10,7 @@ export class SubjectConstraintHandler {
     proposedDate: Date,
     excludeTopicId: string
   ): Promise<Date> {
-    
+
     const topicsInSubject = await prisma.topicMastery.findMany({
       where: {
         userId,
@@ -50,9 +50,14 @@ export class SubjectConstraintHandler {
     let daysChecked = 0;
 
     while (daysChecked < maxDaysToCheck) {
-      const dateKey:Date = new Date(candidateDate.toISOString());
-      
-      if (!occupiedDates.has(dateKey.toISOString())) {
+      if (isNaN(candidateDate.getTime())) {
+        console.error('Invalid candidateDate encountered in findNextAvailableDateForSubject');
+        return proposedDate;
+      }
+
+      const dateKey = candidateDate.toISOString();
+
+      if (!occupiedDates.has(dateKey)) {
         return candidateDate;
       }
 
