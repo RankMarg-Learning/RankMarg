@@ -16,7 +16,7 @@ export function createDefaultSessionConfig(
     examCode,
     grade: grade,
     totalQuestions: totalQuestions,
-    subjectwiseQuestions: getSubjectwiseQuestions(examCode,totalQuestions),
+    subjectwiseQuestions: getSubjectwiseQuestions(examCode, totalQuestions),
     attempts: {
       nDays: nDays,
       questionIds: [],
@@ -45,7 +45,7 @@ export function createDefaultSessionConfig(
 }
 
 
-export function getSubjectwiseQuestions(examCode: string,totalQuestions: number): { subjectId: string, questions: number }[] {
+export function getSubjectwiseQuestions(examCode: string, totalQuestions: number): { subjectId: string, questions: number }[] {
   const examData = exam[examCode as keyof typeof exam];
   return examData.subjects.map(subject => {
     return {
@@ -96,7 +96,6 @@ export function getDifficultyDistributionByGrade(
   examCode: string,
   subjectId?: string | undefined
 ): { difficulty: number[] } {
-
   const percentMap: Record<GradeEnum, number[]> = {
     D: [0.4, 0.35, 0.2, 0.05],
     C: [0.35, 0.35, 0.2, 0.1],
@@ -106,54 +105,58 @@ export function getDifficultyDistributionByGrade(
   };
 
   const gradePercentages = percentMap[grade] || percentMap["C"];
-  const gradeBlendWeight = 0.3;
+  const examPercentages = getExamDifficultyPercentages(examCode, subjectId);
 
+  const finalPercentages = examPercentages
+    ? blendPercentages(examPercentages, gradePercentages, 0.3)
+    : gradePercentages;
+
+  return { difficulty: distributeQuestions(finalPercentages, totalQuestions) };
+}
+
+
+function getExamDifficultyPercentages(
+  examCode: string,
+  subjectId?: string
+): number[] | null {
   const examData = exam[examCode as keyof typeof exam];
-  
-  if (examData) {
-    let difficultyDistribution;
-    
-    if (subjectId) {
-      const subject = examData.subjects.find(sub => sub.id === subjectId);
-      if (subject) {
-        difficultyDistribution = subject.difficulty_distribution;
-      }
-    }
-    
-    if (!difficultyDistribution) {
-      difficultyDistribution = examData.global_difficulty_bias;
-    }
-    
-    if (difficultyDistribution) {
-      const examPercentages = [
-        difficultyDistribution.easy_pct / 100,
-        difficultyDistribution.medium_pct / 100,
-        difficultyDistribution.hard_pct / 100,
-        difficultyDistribution.very_hard_pct / 100,
-      ];
+  if (!examData) return null;
 
-      const percentages = examPercentages.map(
-        (p, i) => p * (1 - gradeBlendWeight) + gradePercentages[i] * gradeBlendWeight
-      );
-      
-      const raw = percentages.map((p) => p * totalQuestions);
-      const base = raw.map(Math.floor);
-      const remainder = totalQuestions - base.reduce((sum, val) => sum + val, 0);
+  let distribution;
 
-      const indicesByFraction = raw
-        .map((val, i) => ({ i, frac: val - base[i] }))
-        .sort((a, b) => b.frac - a.frac);
-
-      for (let i = 0; i < remainder; i++) {
-        base[indicesByFraction[i].i]++;
-      }
-
-      return { difficulty: base };
-    }
+  if (subjectId) {
+    const subject = examData.subjects.find((sub) => sub.id === subjectId);
+    distribution = subject?.difficulty_distribution;
   }
-  
-  const percentages = gradePercentages;
 
+  distribution = distribution || examData.global_difficulty_bias;
+
+  if (!distribution) return null;
+
+  return [
+    distribution.easy_pct / 100,
+    distribution.medium_pct / 100,
+    distribution.hard_pct / 100,
+    distribution.very_hard_pct / 100,
+  ];
+}
+
+
+function blendPercentages(
+  examPercentages: number[],
+  gradePercentages: number[],
+  gradeWeight: number
+): number[] {
+  return examPercentages.map(
+    (p, i) => p * (1 - gradeWeight) + gradePercentages[i] * gradeWeight
+  );
+}
+
+
+function distributeQuestions(
+  percentages: number[],
+  totalQuestions: number
+): number[] {
   const raw = percentages.map((p) => p * totalQuestions);
   const base = raw.map(Math.floor);
   const remainder = totalQuestions - base.reduce((sum, val) => sum + val, 0);
@@ -166,7 +169,7 @@ export function getDifficultyDistributionByGrade(
     base[indicesByFraction[i].i]++;
   }
 
-  return { difficulty: base };
+  return base;
 }
 
 export function getSubjectDistribution(

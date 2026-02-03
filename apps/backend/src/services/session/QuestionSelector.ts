@@ -28,206 +28,20 @@ export class QuestionSelector {
     count: number
   ): Promise<{ id: string; difficulty: number }[]> {
     try {
-      const cachedTopics = await RedisCacheService.getCachedCurrentTopics(
-        this.userId,
-        subjectId
-      );
-
-      let currentTopics: { topicId: string; startedAt: Date }[];
-      if (cachedTopics) {
-        currentTopics = cachedTopics;
-      } else {
-        currentTopics = await this.prisma.currentStudyTopic.findMany({
-          where: {
-            userId: this.userId,
-            subjectId: subjectId,
-            isCurrent: true,
-            isCompleted: false,
-          },
-          select: {
-            topicId: true,
-            startedAt: true,
-          },
-        });
-
-        await RedisCacheService.cacheCurrentTopics(
-          this.userId,
-          subjectId,
-          currentTopics
-        );
-      }
-
-
+      const currentTopics = await this.getCurrentTopics(subjectId);
 
       if (currentTopics.length === 0) {
         console.log("No current topics found, falling back to medium mastery topics");
         return this.selectMediumMasteryQuestions(subjectId, count);
       }
 
-      const availableTimeMinutes = DAILY_TEACHING_HOURS * BUFFER_FACTOR;
-
-      const subTopicIds: string[] = [];
-      for (const topic of currentTopics) {
-
-        const timeSpentOnTopic = Date.now() - topic.startedAt.getTime();
-        const timeSpentDays = timeSpentOnTopic / (1000 * 60 * 24);
-
-        const subTopics = await this.prisma.subTopic.findMany({
-          where: {
-            topicId: topic.topicId,
-          },
-          select: {
-            id: true,
-            estimatedMinutes: true,
-          },
-          orderBy: {
-            orderIndex: "asc",
-          },
-        });
-
-        let accumulatedTime = 0;
-
-        for (const subTopic of subTopics) {
-          if (
-            accumulatedTime >= timeSpentDays * availableTimeMinutes ||
-            subTopic.estimatedMinutes > availableTimeMinutes
-          ) {
-            break;
-          }
-
-          subTopicIds.push(subTopic.id);
-          accumulatedTime += subTopic.estimatedMinutes;
-        }
-      }
-
+      const subTopicIds = await this.getSubTopicIdsFromCurrentTopics(currentTopics);
 
       if (subTopicIds.length === 0) {
         return [];
       }
 
-      const { difficulty: difficultyDistribution, categories } =
-        this.getSelectionParameters(count, subjectId);
-
-      let selectedQuestions: { id: string; difficulty: number }[] = [];
-
-      const attemptedQuestionIds = this.attempts.questionIds;
-
-      const questions = await this.prisma.question.findMany({
-        where: {
-          subtopicId: { in: subTopicIds },
-          subjectId: subjectId,
-          isPublished: true,
-          id: {
-            notIn: Array.from(attemptedQuestionIds),
-          },
-          OR: [
-            {
-              AND: [
-                {
-                  difficulty: {
-                    in: difficultyDistribution.map((_, i) => i + 1),
-                  },
-                },
-                { category: { some: { category: { in: categories } } } },
-              ],
-            },
-            {
-              AND: [
-                {
-                  difficulty: {
-                    in: difficultyDistribution.map((_, i) => i + 1),
-                  },
-                },
-                {
-                  OR: [
-                    {
-                      category: {
-                        some: {
-                          category: { in: ["CONCEPTUAL", "APPLICATION"] },
-                        },
-                      },
-                    },
-                    { category: { none: {} } },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        select: {
-          id: true,
-          difficulty: true,
-        },
-        take: count * 3,
-      });
-
-      for (let difficulty = 1; difficulty <= 4; difficulty++) {
-        const questionsNeededForThisDifficulty =
-          difficultyDistribution[difficulty - 1];
-        if (questionsNeededForThisDifficulty <= 0) continue;
-
-        const questionsForDifficulty = questions.filter(
-          (q) => q.difficulty === difficulty
-        );
-
-        selectedQuestions = [
-          ...selectedQuestions,
-          ...questionsForDifficulty.slice(0, questionsNeededForThisDifficulty),
-        ];
-      }
-
-      if (selectedQuestions.length < count) {
-        const selectedIds = new Set(selectedQuestions.map((q) => q.id));
-
-        const additionalQuestions = await this.prisma.question.findMany({
-          where: {
-            topicId: {
-              in: subTopicIds,
-            },
-            subjectId: subjectId,
-            id: {
-              notIn: Array.from(
-                new Set([...selectedIds, ...attemptedQuestionIds])
-              ),
-            },
-            OR: [
-              { category: { some: { category: { in: categories } } } },
-              { category: { none: {} } },
-            ],
-            isPublished: true,
-          },
-          select: {
-            id: true,
-            difficulty: true,
-          },
-          take: count - selectedQuestions.length,
-        });
-
-        selectedQuestions = [
-          ...selectedQuestions,
-          ...additionalQuestions.slice(0, count - selectedQuestions.length),
-        ];
-      }
-
-      if (selectedQuestions.length < count) {
-        const remainingCount = count - selectedQuestions.length;
-        const selectedIds = new Set(selectedQuestions.map((q) => q.id));
-
-        const fallbackQuestions = await this.getFallbackQuestions(
-          subTopicIds,
-          subjectId,
-          remainingCount,
-          categories,
-          selectedIds
-        );
-
-        selectedQuestions = [...selectedQuestions, ...fallbackQuestions];
-      }
-
-      if (selectedQuestions.length < 0) {
-        return this.selectMediumMasteryQuestions(subjectId, count);
-      }
-      return selectedQuestions.slice(0, count);
+      return this.selectQuestionsFromTopics(subTopicIds, subjectId, count, true);
     } catch (error) {
       console.error("Error selecting current topic questions:", error);
       if (error instanceof Error) {
@@ -250,99 +64,20 @@ export class QuestionSelector {
       const mediumMasteryTopics = await this.prisma.topicMastery.findMany({
         where: {
           userId: this.userId,
-          topic: {
-            subjectId: subjectId,
-          },
+          topic: { subjectId },
           masteryLevel: { gte: 40, lte: 60 },
         },
-        select: {
-          topicId: true,
-        },
-        orderBy: [{ masteryLevel: "asc" }],
+        select: { topicId: true },
+        orderBy: { masteryLevel: "asc" },
         take: 3,
       });
+
       if (mediumMasteryTopics.length === 0) {
         return [];
       }
-      let topicIds = mediumMasteryTopics.map((t) => t.topicId);
-      const { difficulty: difficultyDistribution, categories } = this.getSelectionParameters(count, subjectId);
-      let selectedQuestions: { id: string; difficulty: number }[] = [];
-      for (let difficulty = 1; difficulty <= 4; difficulty++) {
-        const questionsNeededForThisDifficulty = difficultyDistribution[difficulty - 1];
-        if (questionsNeededForThisDifficulty <= 0) continue;
-        const questionsForDifficulty = await this.prisma.question.findMany({
-          where: {
-            topicId: {
-              in: topicIds,
-            },
-            subjectId: subjectId,
-            difficulty: difficulty,
-            id: {
-              notIn: Array.from(this.attempts.questionIds),
-            },
-            OR: [
-              { category: { some: { category: { in: categories } } } },
-              { category: { none: {} } },
-            ],
-            isPublished: true,
-          },
-          select: {
-            id: true,
-            difficulty: true,
-          },
-          take: questionsNeededForThisDifficulty * 3,
-        });
-        selectedQuestions = [
-          ...selectedQuestions,
-          ...questionsForDifficulty.slice(0, questionsNeededForThisDifficulty),
-        ];
-      }
-      if (selectedQuestions.length < count) {
-        const selectedIds = new Set(selectedQuestions.map((q) => q.id));
-        const additionalQuestions = await this.prisma.question.findMany({
-          where: {
-            topicId: {
-              in: topicIds,
-            },
-            subjectId: subjectId,
-            id: {
-              notIn: Array.from(
-                new Set([...selectedIds, ...this.attempts.questionIds])
-              ),
-            },
-            OR: [
-              { category: { some: { category: { in: categories } } } },
-              { category: { none: {} } },
-            ],
-            isPublished: true,
-          },
-          select: {
-            id: true,
-            difficulty: true,
-          },
-          take: count - selectedQuestions.length,
-        });
-        selectedQuestions = [
-          ...selectedQuestions,
-          ...additionalQuestions.slice(0, count - selectedQuestions.length),
-        ];
-      }
-      if (selectedQuestions.length < count) {
-        const remainingCount = count - selectedQuestions.length;
-        const selectedIds = new Set(selectedQuestions.map((q) => q.id));
-        const fallbackQuestions = await this.getFallbackQuestions(
-          topicIds,
-          subjectId,
-          remainingCount,
-          categories,
-          selectedIds
-        );
-        selectedQuestions = [...selectedQuestions, ...fallbackQuestions];
-      }
 
-      return selectedQuestions.slice(0, count);
-
-
+      const topicIds = mediumMasteryTopics.map((t) => t.topicId);
+      return this.selectQuestionsFromTopics(topicIds, subjectId, count, false);
     } catch (error) {
       console.error("Error selecting medium mastery questions:", error);
       if (error instanceof Error) {
@@ -350,10 +85,7 @@ export class QuestionSelector {
           service: "QuestionSelector",
           method: "selectMediumMasteryQuestions",
           userId: this.userId,
-          additionalData: {
-            subjectId,
-            count,
-          },
+          additionalData: { subjectId, count },
         });
       }
       return [];
@@ -365,133 +97,23 @@ export class QuestionSelector {
     count: number
   ): Promise<{ id: string; difficulty: number }[]> {
     try {
-
-      let weakTopics = [];
-
-      weakTopics = await this.prisma.topicMastery.findMany({
+      const weakTopics = await this.prisma.topicMastery.findMany({
         where: {
           userId: this.userId,
-          topic: {
-            subjectId: subjectId,
-          },
-          OR: [{ masteryLevel: { lte: 40 } }, { masteryLevel: { gt: 0 } }],
+          topic: { subjectId },
+          masteryLevel: { gte: 10, lte: 40 },
         },
-        select: {
-          topicId: true,
-          masteryLevel: true,
-        },
-        orderBy: [{ masteryLevel: "asc" }],
+        select: { topicId: true },
+        orderBy: { masteryLevel: "asc" },
         take: 1,
       });
 
-
-      if (!weakTopics || weakTopics.length === 0) {
+      if (weakTopics.length === 0) {
         return [];
       }
 
-      let topicIds = weakTopics.map((wt) => wt.topicId);
-
-      const { difficulty: difficultyDistribution, categories } =
-        this.getSelectionParameters(count, subjectId);
-
-      let selectedQuestions: { id: string; difficulty: number }[] = [];
-
-      for (let difficulty = 1; difficulty <= 4; difficulty++) {
-        const questionsNeededForThisDifficulty =
-          difficultyDistribution[difficulty - 1];
-
-        if (questionsNeededForThisDifficulty <= 0) continue;
-
-        const questionsForDifficulty = await this.prisma.question.findMany({
-          where: {
-            topicId: {
-              in: topicIds,
-            },
-            subjectId: subjectId,
-            difficulty: difficulty,
-            id: {
-              notIn: Array.from(this.attempts.questionIds),
-            },
-            OR: [
-              {
-                category: {
-                  some: {
-                    category: {
-                      in: categories,
-                    },
-                  },
-                },
-              },
-              {
-                category: {
-                  none: {},
-                },
-              },
-            ],
-            isPublished: true,
-          },
-          select: {
-            id: true,
-            difficulty: true,
-          },
-          take: questionsNeededForThisDifficulty * 3,
-        });
-
-        selectedQuestions = [
-          ...selectedQuestions,
-          ...questionsForDifficulty.slice(0, questionsNeededForThisDifficulty),
-        ];
-      }
-
-      if (selectedQuestions.length < count) {
-        const selectedIds = new Set(selectedQuestions.map((q) => q.id));
-
-        const additionalQuestions = await this.prisma.question.findMany({
-          where: {
-            topicId: {
-              in: topicIds,
-            },
-            subjectId: subjectId,
-            id: {
-              notIn: Array.from(
-                new Set([...selectedIds, ...this.attempts.questionIds])
-              ),
-            },
-            OR: [
-              { category: { some: { category: { in: categories } } } },
-              { category: { none: {} } },
-            ],
-            isPublished: true,
-          },
-          select: {
-            id: true,
-            difficulty: true,
-          },
-          take: count - selectedQuestions.length,
-        });
-
-        selectedQuestions = [
-          ...selectedQuestions,
-          ...additionalQuestions.slice(0, count - selectedQuestions.length),
-        ];
-      }
-
-      if (selectedQuestions.length < count) {
-        const remainingCount = count - selectedQuestions.length;
-        const selectedIds = new Set(selectedQuestions.map((q) => q.id));
-
-        const fallbackQuestions = await this.getFallbackQuestions(
-          topicIds,
-          subjectId,
-          remainingCount,
-          categories,
-          selectedIds
-        );
-
-        selectedQuestions = [...selectedQuestions, ...fallbackQuestions];
-      }
-
-      return selectedQuestions.slice(0, count);
+      const topicIds = weakTopics.map((wt) => wt.topicId);
+      return this.selectQuestionsFromTopics(topicIds, subjectId, count, false);
     } catch (error) {
       console.error("Error selecting weak concept questions:", error);
       if (error instanceof Error) {
@@ -499,10 +121,7 @@ export class QuestionSelector {
           service: "QuestionSelector",
           method: "selectWeakConceptQuestions",
           userId: this.userId,
-          additionalData: {
-            subjectId,
-            count,
-          },
+          additionalData: { subjectId, count },
         });
       }
       return [];
@@ -517,147 +136,33 @@ export class QuestionSelector {
       const completedTopics = await this.prisma.currentStudyTopic.findMany({
         where: {
           userId: this.userId,
-          subjectId: subjectId,
+          subjectId,
           isCompleted: true,
         },
-        select: {
-          topicId: true,
-        },
+        select: { topicId: true },
       });
 
       if (completedTopics.length === 0) {
         return [];
       }
 
-
       const reviewSchedules = await this.prisma.reviewSchedule.findMany({
         where: {
           userId: this.userId,
-          topicId: {
-            in: completedTopics.map((ct) => ct.topicId),
-          },
-          nextReviewAt: {
-            lte: new Date(),
-          },
+          topicId: { in: completedTopics.map((ct) => ct.topicId) },
+          nextReviewAt: { lte: new Date() },
         },
-        select: {
-          topicId: true,
-        },
-        orderBy: {
-          nextReviewAt: "asc",
-        },
+        select: { topicId: true },
+        orderBy: { nextReviewAt: "asc" },
         take: 1,
       });
 
-      const topicIds: string[] = reviewSchedules.map((rs) => rs.topicId);
-
-      if (topicIds.length === 0) {
+      if (reviewSchedules.length === 0) {
         return [];
       }
 
-
-
-      const { difficulty: difficultyDistribution, categories } =
-        this.getSelectionParameters(count, subjectId);
-
-      let selectedQuestions: { id: string; difficulty: number }[] = [];
-
-      for (let difficulty = 1; difficulty <= 4; difficulty++) {
-        const questionsNeededForThisDifficulty =
-          difficultyDistribution[difficulty - 1];
-
-        if (questionsNeededForThisDifficulty <= 0) continue;
-
-        const questionsForDifficulty = await this.prisma.question.findMany({
-          where: {
-            topicId: {
-              in: topicIds,
-            },
-            subjectId: subjectId,
-            difficulty: difficulty,
-            id: {
-              notIn: Array.from(this.attempts.questionIds),
-            },
-            OR: [
-              {
-                category: {
-                  some: {
-                    category: {
-                      in: categories,
-                    },
-                  },
-                },
-              },
-              {
-                category: {
-                  none: {},
-                },
-              },
-            ],
-            isPublished: true,
-          },
-          select: {
-            id: true,
-            difficulty: true,
-          },
-          take: questionsNeededForThisDifficulty * 3,
-        });
-
-        selectedQuestions = [
-          ...selectedQuestions,
-          ...questionsForDifficulty.slice(0, questionsNeededForThisDifficulty),
-        ];
-      }
-
-      if (selectedQuestions.length < count) {
-        const selectedIds = new Set(selectedQuestions.map((q) => q.id));
-
-        const additionalQuestions = await this.prisma.question.findMany({
-          where: {
-            topicId: {
-              in: topicIds,
-            },
-            subjectId: subjectId,
-            id: {
-              notIn: Array.from(
-                new Set([...selectedIds, ...this.attempts.questionIds])
-              ),
-            },
-            OR: [
-              { category: { some: { category: { in: categories } } } },
-              { category: { none: {} } },
-            ],
-            isPublished: true,
-          },
-          select: {
-            id: true,
-            difficulty: true,
-          },
-          take: count - selectedQuestions.length,
-        });
-
-        selectedQuestions = [
-          ...selectedQuestions,
-          ...additionalQuestions.slice(0, count - selectedQuestions.length),
-        ];
-      }
-
-      if (selectedQuestions.length < count) {
-        const remainingCount = count - selectedQuestions.length;
-        const selectedIds = new Set(selectedQuestions.map((q) => q.id));
-
-        const fallbackQuestions = await this.getFallbackQuestions(
-          topicIds,
-          subjectId,
-          remainingCount,
-          categories,
-          selectedIds
-        );
-
-        selectedQuestions = [...selectedQuestions, ...fallbackQuestions];
-      }
-
-      return selectedQuestions.slice(0, count);
+      const topicIds = reviewSchedules.map((rs) => rs.topicId);
+      return this.selectQuestionsFromTopics(topicIds, subjectId, count, false);
     } catch (error) {
       console.error("Error selecting revision questions:", error);
       if (error instanceof Error) {
@@ -665,10 +170,7 @@ export class QuestionSelector {
           service: "QuestionSelector",
           method: "selectRevisionQuestions",
           userId: this.userId,
-          additionalData: {
-            subjectId,
-            count,
-          },
+          additionalData: { subjectId, count },
         });
       }
       return [];
@@ -746,13 +248,193 @@ export class QuestionSelector {
     }
   }
 
+
+  private async getCurrentTopics(
+    subjectId: string
+  ): Promise<{ topicId: string; startedAt: Date }[]> {
+    const cachedTopics = await RedisCacheService.getCachedCurrentTopics(
+      this.userId,
+      subjectId
+    );
+
+    if (cachedTopics) {
+      return cachedTopics.map((topic) => ({
+        ...topic,
+        startedAt: new Date(topic.startedAt),
+      }));
+    }
+
+    const currentTopics = await this.prisma.currentStudyTopic.findMany({
+      where: {
+        userId: this.userId,
+        subjectId,
+        isCurrent: true,
+        isCompleted: false,
+      },
+      select: {
+        topicId: true,
+        startedAt: true,
+      },
+    });
+
+    await RedisCacheService.cacheCurrentTopics(
+      this.userId,
+      subjectId,
+      currentTopics
+    );
+
+    return currentTopics;
+  }
+
+
+  private async getSubTopicIdsFromCurrentTopics(
+    currentTopics: { topicId: string; startedAt: Date }[]
+  ): Promise<string[]> {
+    const availableTimeMinutes = DAILY_TEACHING_HOURS * BUFFER_FACTOR;
+    const topicIds = currentTopics.map((t) => t.topicId);
+
+    const allSubTopics = await this.prisma.subTopic.findMany({
+      where: { topicId: { in: topicIds } },
+      select: {
+        id: true,
+        topicId: true,
+        estimatedMinutes: true,
+      },
+      orderBy: { orderIndex: "asc" },
+    });
+
+    const subTopicsByTopic = new Map<string, typeof allSubTopics>();
+    for (const subTopic of allSubTopics) {
+      const list = subTopicsByTopic.get(subTopic.topicId) || [];
+      list.push(subTopic);
+      subTopicsByTopic.set(subTopic.topicId, list);
+    }
+
+    const subTopicIds: string[] = [];
+    const now = Date.now();
+
+    for (const topic of currentTopics) {
+      const timeSpentDays = (now - topic.startedAt.getTime()) / (1000 * 60 * 60 * 24);
+      const targetTime = timeSpentDays * availableTimeMinutes;
+      const subTopics = subTopicsByTopic.get(topic.topicId) || [];
+
+      let accumulatedTime = 0;
+      for (const subTopic of subTopics) {
+        if (accumulatedTime >= targetTime || subTopic.estimatedMinutes > availableTimeMinutes) {
+          break;
+        }
+        subTopicIds.push(subTopic.id);
+        accumulatedTime += subTopic.estimatedMinutes;
+      }
+    }
+
+    return subTopicIds;
+  }
+
+
+  private async selectQuestionsFromTopics(
+    topicIds: string[],
+    subjectId: string,
+    count: number,
+    useSubtopicId: boolean
+  ): Promise<{ id: string; difficulty: number }[]> {
+    const { difficulty: difficultyDistribution, categories } =
+      this.getSelectionParameters(count, subjectId);
+
+    const baseWhere: any = {
+      subjectId,
+      isPublished: true,
+      id: { notIn: this.attempts.questionIds },
+    };
+
+    if (useSubtopicId) {
+      baseWhere.subtopicId = { in: topicIds };
+    } else {
+      baseWhere.topicId = { in: topicIds };
+    }
+
+    const categoryFilter = {
+      OR: [
+        { category: { some: { category: { in: categories } } } },
+        { category: { none: {} } },
+      ],
+    };
+
+    const allQuestions = await this.prisma.question.findMany({
+      where: {
+        ...baseWhere,
+        difficulty: { in: [1, 2, 3, 4] },
+        ...categoryFilter,
+      },
+      select: { id: true, difficulty: true },
+      take: count * 3,
+    });
+
+    const selectedQuestions = this.distributeQuestionsByDifficulty(
+      allQuestions,
+      difficultyDistribution
+    );
+    if (selectedQuestions.length < count) {
+      const selectedIds = new Set(selectedQuestions.map((q) => q.id));
+      const additionalQuestions = await this.prisma.question.findMany({
+        where: {
+          ...baseWhere,
+          id: {
+            notIn: [...this.attempts.questionIds, ...Array.from(selectedIds)],
+          },
+          ...categoryFilter,
+        },
+        select: { id: true, difficulty: true },
+        take: count - selectedQuestions.length,
+      });
+      selectedQuestions.push(...additionalQuestions);
+    }
+
+    if (selectedQuestions.length < count) {
+      const selectedIds = new Set(selectedQuestions.map((q) => q.id));
+      const fallbackQuestions = await this.getFallbackQuestions(
+        topicIds,
+        subjectId,
+        count - selectedQuestions.length,
+        categories,
+        selectedIds
+      );
+      selectedQuestions.push(...fallbackQuestions);
+    }
+
+    return selectedQuestions.slice(0, count);
+  }
+
+  private distributeQuestionsByDifficulty(
+    questions: { id: string; difficulty: number }[],
+    difficultyDistribution: number[]
+  ): { id: string; difficulty: number }[] {
+    const selected: { id: string; difficulty: number }[] = [];
+
+    for (let difficulty = 1; difficulty <= 4; difficulty++) {
+      const needed = difficultyDistribution[difficulty - 1];
+      if (needed <= 0) continue;
+
+      const questionsForDifficulty = questions.filter(
+        (q) => q.difficulty === difficulty
+      );
+      selected.push(...questionsForDifficulty.slice(0, needed));
+    }
+
+    return selected;
+  }
+
   private getSelectionParameters(count: number, subjectId: string): {
     difficulty: number[];
     categories: QCategory[];
   } {
-    const { difficulty } = getDifficultyDistributionByGrade(this.grade, count, subjectId, this.config.examCode);
-    const categories = this.config.questionCategoriesDistribution
-      .grade as QCategory[];
+    const { difficulty } = getDifficultyDistributionByGrade(
+      this.grade,
+      count,
+      subjectId,
+      this.config.examCode
+    );
+    const categories = this.config.questionCategoriesDistribution.grade as QCategory[];
 
     return { difficulty, categories };
   }

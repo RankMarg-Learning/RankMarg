@@ -16,10 +16,7 @@ import { captureServiceError } from "../../lib/sentry";
 export class AttemptsProcessor {
   async attempts(userId: string, cutoffDate: Date): Promise<MasteryAttempt[]> {
     const attempts = await prisma.attempt.findMany({
-      where: {
-        userId,
-        solvedAt: { gte: cutoffDate },
-      },
+      where: { userId, solvedAt: { gte: cutoffDate } },
       select: {
         userId: true,
         timing: true,
@@ -43,7 +40,7 @@ export class AttemptsProcessor {
       orderBy: { solvedAt: "desc" },
     });
 
-    return attempts.map((attempt) => ({
+    return attempts.map(attempt => ({
       ...attempt,
       status: attempt.status as SubmitStatus,
       type: attempt.type as AttemptType,
@@ -83,157 +80,99 @@ export class AttemptsProcessor {
     };
   }
 
-  async getPerformanceTrend(
-    userId: string,
-    timeWindow: number
-  ): Promise<PerformanceTrend> {
-    const cutoffDate = startOfDay(subDays(new Date(), timeWindow));
-    const weekAgo = startOfDay(subDays(new Date(), 7));
-    const monthAgo = startOfDay(subDays(new Date(), 30));
+  async getPerformanceTrend(userId: string, timeWindow: number): Promise<PerformanceTrend> {
+    const now = new Date();
+    const cutoffDate = startOfDay(subDays(now, timeWindow));
+    const weekAgo = startOfDay(subDays(now, 7));
+    const monthAgo = startOfDay(subDays(now, 30));
 
-    const recentAttempts = await prisma.attempt.findMany({
-      where: {
-        userId,
-        solvedAt: { gte: cutoffDate },
-      },
-      select: {
-        status: true,
-        timing: true,
-        solvedAt: true,
-      },
+    const allAttempts = await prisma.attempt.findMany({
+      where: { userId, solvedAt: { gte: monthAgo } },
+      select: { status: true, timing: true, solvedAt: true },
       orderBy: { solvedAt: "desc" },
     });
 
-    // Get historical data for comparison
-    const weekAttempts = await prisma.attempt.findMany({
-      where: {
-        userId,
-        solvedAt: { gte: weekAgo, lt: cutoffDate },
-      },
-      select: {
-        status: true,
-        timing: true,
-      },
-    });
+    const recentAttempts: typeof allAttempts = [];
+    const weekAttempts: typeof allAttempts = [];
+    const monthAttempts: typeof allAttempts = [];
 
-    const monthAttempts = await prisma.attempt.findMany({
-      where: {
-        userId,
-        solvedAt: { gte: monthAgo, lt: weekAgo },
-      },
-      select: {
-        status: true,
-        timing: true,
-      },
-    });
+    for (const attempt of allAttempts) {
+      const solvedAt = attempt.solvedAt;
+      if (!solvedAt) continue;
 
-    // Calculate recent accuracy
-    const recentCorrect = recentAttempts.filter(
-      (a) => a.status === "CORRECT"
-    ).length;
-    const recentAccuracy =
-      recentAttempts.length > 0 ? recentCorrect / recentAttempts.length : 0;
+      if (solvedAt >= cutoffDate) {
+        recentAttempts.push(attempt);
+      } else if (solvedAt >= weekAgo) {
+        weekAttempts.push(attempt);
+      } else {
+        monthAttempts.push(attempt);
+      }
+    }
 
-    // Calculate week accuracy
-    const weekCorrect = weekAttempts.filter(
-      (a) => a.status === "CORRECT"
-    ).length;
-    const weekAccuracy =
-      weekAttempts.length > 0 ? weekCorrect / weekAttempts.length : 0;
+    const calcAccuracy = (attempts: typeof allAttempts) => {
+      if (attempts.length === 0) return 0;
+      return attempts.filter(a => a.status === "CORRECT").length / attempts.length;
+    };
 
-    // Calculate month accuracy
-    const monthCorrect = monthAttempts.filter(
-      (a) => a.status === "CORRECT"
-    ).length;
-    const monthAccuracy =
-      monthAttempts.length > 0 ? monthCorrect / monthAttempts.length : 0;
-
-    // Calculate trends
-    const accuracyTrend = recentAccuracy - weekAccuracy;
-    const speedTrend = this.calculateSpeedTrend(recentAttempts, weekAttempts);
-    const consistencyScore = this.calculateConsistencyScore(recentAttempts);
-    const improvementRate = this.calculateImprovementRate(
-      recentAccuracy,
-      weekAccuracy,
-      monthAccuracy
-    );
+    const recentAccuracy = calcAccuracy(recentAttempts);
+    const weekAccuracy = calcAccuracy(weekAttempts);
+    const monthAccuracy = calcAccuracy(monthAttempts);
 
     return {
       recentAccuracy,
-      accuracyTrend,
-      speedTrend,
-      consistencyScore,
-      improvementRate,
+      accuracyTrend: recentAccuracy - weekAccuracy,
+      speedTrend: this.calculateSpeedTrend(recentAttempts, weekAttempts),
+      consistencyScore: this.calculateConsistencyScore(recentAttempts),
+      improvementRate: this.calculateImprovementRate(recentAccuracy, weekAccuracy, monthAccuracy),
       lastWeekPerformance: weekAccuracy,
       lastMonthPerformance: monthAccuracy,
     };
   }
 
-  private calculateSpeedTrend(
-    recentAttempts: any[],
-    weekAttempts: any[]
-  ): number {
-    const recentAvgTime =
-      recentAttempts.length > 0
-        ? recentAttempts.reduce((sum, a) => sum + (a.timing || 0), 0) /
-          recentAttempts.length
-        : 0;
+  private calculateSpeedTrend(recentAttempts: any[], weekAttempts: any[]): number {
+    const calcAvgTime = (attempts: any[]) => {
+      if (attempts.length === 0) return 0;
+      return attempts.reduce((sum, a) => sum + (a.timing || 0), 0) / attempts.length;
+    };
 
-    const weekAvgTime =
-      weekAttempts.length > 0
-        ? weekAttempts.reduce((sum, a) => sum + (a.timing || 0), 0) /
-          weekAttempts.length
-        : 0;
+    const recentAvgTime = calcAvgTime(recentAttempts);
+    const weekAvgTime = calcAvgTime(weekAttempts);
 
     if (weekAvgTime === 0) return 0;
-    return (weekAvgTime - recentAvgTime) / weekAvgTime; // Positive = faster, Negative = slower
+    return (weekAvgTime - recentAvgTime) / weekAvgTime;
   }
 
   private calculateConsistencyScore(attempts: any[]): number {
     if (attempts.length < 2) return 1.0;
 
-    const accuracies = [];
     const batchSize = Math.max(1, Math.floor(attempts.length / 5));
+    const accuracies: number[] = [];
 
     for (let i = 0; i < attempts.length; i += batchSize) {
       const batch = attempts.slice(i, i + batchSize);
-      const correct = batch.filter((a) => a.status === "CORRECT").length;
+      const correct = batch.filter((a: any) => a.status === "CORRECT").length;
       accuracies.push(correct / batch.length);
     }
 
     if (accuracies.length < 2) return 1.0;
 
-    // Calculate standard deviation of accuracies
-    const mean =
-      accuracies.reduce((sum, acc) => sum + acc, 0) / accuracies.length;
-    const variance =
-      accuracies.reduce((sum, acc) => sum + Math.pow(acc - mean, 2), 0) /
-      accuracies.length;
+    const mean = accuracies.reduce((sum, acc) => sum + acc, 0) / accuracies.length;
+    const variance = accuracies.reduce((sum, acc) => sum + Math.pow(acc - mean, 2), 0) / accuracies.length;
     const stdDev = Math.sqrt(variance);
 
-    // Convert to consistency score (0-1, higher is more consistent)
     return Math.max(0, 1 - stdDev);
   }
 
-  private calculateImprovementRate(
-    recent: number,
-    week: number,
-    month: number
-  ): number {
+  private calculateImprovementRate(recent: number, week: number, month: number): number {
     if (week === 0) return 0;
     if (month === 0) return (recent - week) / week;
-
-    const recentWeekRate = (recent - week) / week;
-    const weekMonthRate = (week - month) / month;
-
-    return (recentWeekRate + weekMonthRate) / 2;
+    return ((recent - week) / week + (week - month) / month) / 2;
   }
 
   organizeAttempts(attempts: MasteryAttempt[]) {
     const subtopicAttempts = new Map<string, MasteryAttempt[]>();
     const topicAttempts = new Map<string, MasteryAttempt[]>();
     const subjectAttempts = new Map<string, MasteryAttempt[]>();
-
     const subtopicIds = new Set<string>();
     const topicIds = new Set<string>();
     const subjectIds = new Set<string>();
@@ -241,45 +180,31 @@ export class AttemptsProcessor {
     for (const attempt of attempts) {
       const { question } = attempt;
 
-      // Organize by subtopic (primary)
       if (question.subtopicId) {
         subtopicIds.add(question.subtopicId);
-        if (!subtopicAttempts.has(question.subtopicId)) {
-          subtopicAttempts.set(question.subtopicId, []);
-        }
-        subtopicAttempts.get(question.subtopicId)?.push(attempt);
+        const arr = subtopicAttempts.get(question.subtopicId);
+        if (arr) arr.push(attempt);
+        else subtopicAttempts.set(question.subtopicId, [attempt]);
       }
 
-      // Organize by topic (fallback or additional)
       if (question.topicId) {
         topicIds.add(question.topicId);
-        if (!topicAttempts.has(question.topicId)) {
-          topicAttempts.set(question.topicId, []);
-        }
-        topicAttempts.get(question.topicId)?.push(attempt);
+        const arr = topicAttempts.get(question.topicId);
+        if (arr) arr.push(attempt);
+        else topicAttempts.set(question.topicId, [attempt]);
       }
 
-      // Organize by subject (fallback or additional)
       if (question.subjectId) {
         subjectIds.add(question.subjectId);
-        if (!subjectAttempts.has(question.subjectId)) {
-          subjectAttempts.set(question.subjectId, []);
-        }
-        subjectAttempts.get(question.subjectId)?.push(attempt);
+        const arr = subjectAttempts.get(question.subjectId);
+        if (arr) arr.push(attempt);
+        else subjectAttempts.set(question.subjectId, [attempt]);
       }
     }
 
-    return {
-      subtopicAttempts,
-      topicAttempts,
-      subjectAttempts,
-      subtopicIds,
-      topicIds,
-      subjectIds,
-    };
+    return { subtopicAttempts, topicAttempts, subjectAttempts, subtopicIds, topicIds, subjectIds };
   }
 
-  // Enhanced method to handle questions without subtopicId
   async getQuestionHierarchy(questionIds: string[]) {
     const questions = await prisma.question.findMany({
       where: { id: { in: questionIds } },
@@ -298,12 +223,7 @@ export class AttemptsProcessor {
                 id: true,
                 name: true,
                 subjectId: true,
-                subject: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
+                subject: { select: { id: true, name: true } },
               },
             },
           },
@@ -313,51 +233,28 @@ export class AttemptsProcessor {
             id: true,
             name: true,
             subjectId: true,
-            subject: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
+            subject: { select: { id: true, name: true } },
           },
         },
-        subject: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        subject: { select: { id: true, name: true } },
       },
     });
 
     const hierarchyMap = new Map();
 
     for (const question of questions) {
-      const hierarchy = {
+      hierarchyMap.set(question.id, {
         questionId: question.id,
         subtopic: question.subTopic
-          ? {
-              id: question.subTopic.id,
-              name: question.subTopic.name,
-              topicId: question.subTopic.topicId,
-            }
+          ? { id: question.subTopic.id, name: question.subTopic.name, topicId: question.subTopic.topicId }
           : null,
         topic: question.topic
-          ? {
-              id: question.topic.id,
-              name: question.topic.name,
-              subjectId: question.topic.subjectId,
-            }
+          ? { id: question.topic.id, name: question.topic.name, subjectId: question.topic.subjectId }
           : null,
         subject: question.subject
-          ? {
-              id: question.subject.id,
-              name: question.subject.name,
-            }
+          ? { id: question.subject.id, name: question.subject.name }
           : null,
-      };
-
-      hierarchyMap.set(question.id, hierarchy);
+      });
     }
 
     return hierarchyMap;
