@@ -18,6 +18,7 @@ interface SubtopicsTabProps {
   searchTerm: string;
   isLoading: boolean;
   isLoadingTopics: boolean;
+  questionCounts?: Record<string, number>;
   onAddSubtopic: () => void;
   onEditSubtopic: (subtopic: Subtopic) => void;
   onDeleteSubtopic: (subtopic: Subtopic) => void;
@@ -32,6 +33,7 @@ export const SubtopicsTab = ({
   searchTerm,
   isLoading,
   isLoadingTopics,
+  questionCounts = {},
   onAddSubtopic,
   onEditSubtopic,
   onDeleteSubtopic,
@@ -89,6 +91,7 @@ export const SubtopicsTab = ({
                 <TableHead className="font-semibold text-gray-700">Subject</TableHead>
                 <TableHead className="font-semibold text-gray-700">Weightage</TableHead>
                 <TableHead className="font-semibold text-gray-700">Est. Time</TableHead>
+                <TableHead className="font-semibold text-gray-700">Questions</TableHead>
                 <TableHead className="font-semibold text-gray-700">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -156,7 +159,11 @@ export const SubtopicsTab = ({
                         "-"
                       )}
                     </TableCell>
-
+                    <TableCell>
+                      <Badge variant={questionCounts[subtopic.id] > 0 ? "default" : "secondary"}>
+                        {questionCounts[subtopic.id] || 0}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

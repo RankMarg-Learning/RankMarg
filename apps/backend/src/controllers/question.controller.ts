@@ -12,7 +12,7 @@ import {
 import { NextFunction, Response } from "express";
 
 interface WhereClauseProps {
-  subjectId?: {in: string[]};
+  subjectId?: { in: string[] };
   topicId?: string;
   subtopicId?: string;
   difficulty?: number;
@@ -96,19 +96,19 @@ export class QuestionController {
       const l = Number(limit) || 25;
       const skip = (Number(page) - 1) * l;
       const whereClause: WhereClauseProps = {};
-      
-      
+
+
       if (subjectId) {
-        const subjectIds  = Array.isArray(subjectId) 
-        ? subjectId as string[]
-        : typeof subjectId === 'string' && subjectId.includes(',')
-        ? subjectId.split(',').map(id => id.trim()).filter(id => id.length > 0)
-        : [subjectId as string];
+        const subjectIds = Array.isArray(subjectId)
+          ? subjectId as string[]
+          : typeof subjectId === 'string' && subjectId.includes(',')
+            ? subjectId.split(',').map(id => id.trim()).filter(id => id.length > 0)
+            : [subjectId as string];
         whereClause.subjectId = {
           in: subjectIds,
         };
-      }else{
-        if(examCode){
+      } else {
+        if (examCode) {
           const examSubject = await prisma.examSubject.findMany({
             where: {
               examCode: examCode as string,
@@ -135,7 +135,7 @@ export class QuestionController {
           { content: { contains: search as string, mode: "insensitive" } },
           { title: { contains: search as string, mode: "insensitive" } },
           {
-            subject:{
+            subject: {
               name: { contains: search as string, mode: "insensitive" },
             }
           },
@@ -155,7 +155,7 @@ export class QuestionController {
       }
       if (userRole !== Role.ADMIN && questionFilter === "my-questions") {
         whereClause.createdBy = userID;
-        
+
       } else if (userRole === Role.ADMIN && questionFilter === "all") {
         whereClause.OR = [
           { isPublished: true },
@@ -176,7 +176,7 @@ export class QuestionController {
             difficulty: true,
             isPublished: true,
             pyqYear: true,
-            
+
             topic: {
               select: { name: true },
             },
@@ -233,19 +233,19 @@ export class QuestionController {
         isPublished,
         options,
       }: Question = req.body;
-      
+
       // Validate required fields
       if (!title || !content || !solution || !type || !difficulty || !subjectId || !topicId || !subtopicId) {
-         ResponseUtil.error(res, "Missing required fields", 400);
+        ResponseUtil.error(res, "Missing required fields", 400);
       }
 
       // Validate category array
       if (!category || !Array.isArray(category) || category.length === 0) {
-         ResponseUtil.error(res, "At least one category is required", 400);
+        ResponseUtil.error(res, "At least one category is required", 400);
       }
 
       const userID = req.user.id;
-      
+
       await prisma.question.create({
         data: {
           slug,
@@ -255,7 +255,7 @@ export class QuestionController {
           format,
           difficulty,
           subjectId,
-          topicId, 
+          topicId,
           subtopicId,
           category: {
             create: category.map((category: QCategory) => ({ category })),
@@ -292,7 +292,7 @@ export class QuestionController {
     const { slug } = req.params;
     try {
       const question = await prisma.question.findFirst({
-        where: { 
+        where: {
           OR: [
             { slug: slug },
             { id: slug },
@@ -330,10 +330,10 @@ export class QuestionController {
     try {
       const { slug } = req.params;
       const body = req.body;
-      
+
       // Validate required fields
       if (!body.title || !body.content || !body.solution) {
-         ResponseUtil.error(res, "Missing required fields: title, content, or solution", 400);
+        ResponseUtil.error(res, "Missing required fields: title, content, or solution", 400);
       }
 
       // Prepare update data with only valid fields
@@ -384,7 +384,7 @@ export class QuestionController {
         },
         data: updateData,
       });
-      
+
       ResponseUtil.success(res, null, "Question updated successfully", 200);
     } catch (error) {
       console.error("Error updating question:", error);
@@ -541,6 +541,86 @@ export class QuestionController {
 
       ResponseUtil.success(res, null, "Report deleted successfully", 200);
     } catch (error) {
+      next(error);
+    }
+  };
+
+
+  getQuestionCounts = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { entityType, parentId } = req.query;
+
+      let counts: Record<string, number> = {};
+
+      if (entityType === "subject" || !entityType) {
+        const subjectCounts = await prisma.question.groupBy({
+          by: ['subjectId'],
+          where: {
+            subjectId: { not: null },
+            isPublished: true,
+          },
+          _count: {
+            id: true,
+          },
+        });
+
+        counts = subjectCounts.reduce((acc, item) => {
+          if (item.subjectId) {
+            acc[item.subjectId] = item._count.id;
+          }
+          return acc;
+        }, {} as Record<string, number>);
+      }
+
+      if (entityType === "topic") {
+        const topicCounts = await prisma.question.groupBy({
+          by: ['topicId'],
+          where: {
+            topicId: { not: null },
+            isPublished: true,
+            ...(parentId ? { subjectId: parentId as string } : {}),
+          },
+          _count: {
+            id: true,
+          },
+        });
+
+        counts = topicCounts.reduce((acc, item) => {
+          if (item.topicId) {
+            acc[item.topicId] = item._count.id;
+          }
+          return acc;
+        }, {} as Record<string, number>);
+      }
+
+      if (entityType === "subtopic") {
+        const subtopicCounts = await prisma.question.groupBy({
+          by: ['subtopicId'],
+          where: {
+            subtopicId: { not: null },
+            isPublished: true,
+            ...(parentId ? { topicId: parentId as string } : {}),
+          },
+          _count: {
+            id: true,
+          },
+        });
+
+        counts = subtopicCounts.reduce((acc, item) => {
+          if (item.subtopicId) {
+            acc[item.subtopicId] = item._count.id;
+          }
+          return acc;
+        }, {} as Record<string, number>);
+      }
+
+      ResponseUtil.success(res, { counts }, "Question counts fetched successfully", 200);
+    } catch (error) {
+      console.error("Error fetching question counts:", error);
       next(error);
     }
   };
