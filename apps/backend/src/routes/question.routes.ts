@@ -6,6 +6,7 @@ const router = Router();
 const questionController = new QuestionController();
 
 router.get("/", authenticate, questionController.getQuestions);
+router.get("/counts", authenticate, questionController.getQuestionCounts);
 router.post("/", authenticate, isInstructor, questionController.createQuestion);
 router.post("/migrate-attempts", authenticate, isAdmin, questionController.migrateAttempts);
 router.get("/:slug", authenticate, questionController.getQuestionById);

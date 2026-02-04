@@ -21,6 +21,7 @@ import { SubtopicsTab } from "@/components/admin/curriculum/SubtopicsTab";
 import { ExamsTab } from "@/components/admin/curriculum/ExamsTab";
 import { CurriculumDialogs } from "@/components/admin/curriculum/CurriculumDialogs";
 import { FilterState, DeleteItem } from "@/components/admin/curriculum/types";
+import { useQuestionCounts } from "@/hooks/useQuestionCounts";
 
 // Loading component for Suspense fallback
 const CurriculumLoading = () => (
@@ -80,6 +81,19 @@ const CurriculumContent = () => {
   const { removeTopic, saveTopic, isLoading: isLoadingTopics, topics } = useTopics(selectedSubjectId)
   const { removeSubTopic, isLoading: isLoadingSubtopics, saveSubTopic, subtopics } = useSubtopics(selectedTopicId)
   const { exams, saveExam, updateExam, removeExam, addSubjectToExam, removeSubjectFromExam, isLoading: isLoadingExams } = useExams()
+
+  // Fetch question counts for each entity type
+  const { data: subjectQuestionCounts } = useQuestionCounts({ entityType: "subject" });
+  const { data: topicQuestionCounts } = useQuestionCounts({
+    entityType: "topic",
+    parentId: selectedSubjectId,
+    enabled: !!selectedSubjectId || activeTab === "topics"
+  });
+  const { data: subtopicQuestionCounts } = useQuestionCounts({
+    entityType: "subtopic",
+    parentId: selectedTopicId,
+    enabled: !!selectedTopicId || activeTab === "subtopics"
+  });
 
   const filteredSubjects = useMemo(() =>
     subjects?.filter(subject =>
@@ -566,6 +580,7 @@ const CurriculumContent = () => {
             subjects={filteredSubjects}
             searchTerm={searchTerm}
             isLoading={isLoadingSubjects}
+            questionCounts={subjectQuestionCounts}
             onAddSubject={handleAddSubject}
             onEditSubject={handleEditSubject}
             onDeleteSubject={handleDeleteSubject}
@@ -583,6 +598,7 @@ const CurriculumContent = () => {
             searchTerm={searchTerm}
             isLoading={isLoadingTopics}
             isLoadingSubjects={isLoadingSubjects}
+            questionCounts={topicQuestionCounts}
             onAddTopic={handleAddTopic}
             onEditTopic={handleEditTopic}
             onDeleteTopic={handleDeleteTopic}
@@ -602,6 +618,7 @@ const CurriculumContent = () => {
             searchTerm={searchTerm}
             isLoading={isLoadingSubtopics}
             isLoadingTopics={isLoadingTopics}
+            questionCounts={subtopicQuestionCounts}
             onAddSubtopic={handleAddSubtopic}
             onEditSubtopic={handleEditSubtopic}
             onDeleteSubtopic={handleDeleteSubtopic}

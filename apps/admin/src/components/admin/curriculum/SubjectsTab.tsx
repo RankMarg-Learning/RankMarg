@@ -13,6 +13,7 @@ interface SubjectsTabProps {
   subjects: Subject[];
   searchTerm: string;
   isLoading: boolean;
+  questionCounts?: Record<string, number>;
   onAddSubject: () => void;
   onEditSubject: (subject: Subject) => void;
   onDeleteSubject: (subject: Subject) => void;
@@ -24,6 +25,7 @@ export const SubjectsTab = ({
   subjects,
   searchTerm,
   isLoading,
+  questionCounts = {},
   onAddSubject,
   onEditSubject,
   onDeleteSubject,
@@ -58,6 +60,7 @@ export const SubjectsTab = ({
               <TableRow className="hover:bg-gray-50">
                 <TableHead className="font-semibold text-gray-700">Name</TableHead>
                 <TableHead className="font-semibold text-gray-700">Short Name</TableHead>
+                <TableHead className="font-semibold text-gray-700">Questions</TableHead>
                 <TableHead className="font-semibold text-gray-700">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -82,8 +85,8 @@ export const SubjectsTab = ({
                 </TableRow>
               ) : (
                 subjects.map((subject) => (
-                  <TableRow 
-                    key={subject.id} 
+                  <TableRow
+                    key={subject.id}
                     className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
                     onClick={() => onSubjectSelect(subject.id)}
                   >
@@ -102,11 +105,16 @@ export const SubjectsTab = ({
                     </TableCell>
                     <TableCell>{subject.shortName || "-"}</TableCell>
                     <TableCell>
+                      <Badge variant={questionCounts[subject.id] > 0 ? "default" : "secondary"}>
+                        {questionCounts[subject.id] || 0}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="hover:bg-gray-200"
                             onClick={(e) => e.stopPropagation()}
                           >

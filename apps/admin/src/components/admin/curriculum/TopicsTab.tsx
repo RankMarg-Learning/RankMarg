@@ -17,6 +17,7 @@ interface TopicsTabProps {
   searchTerm: string;
   isLoading: boolean;
   isLoadingSubjects: boolean;
+  questionCounts?: Record<string, number>;
   onAddTopic: () => void;
   onEditTopic: (topic: Topic) => void;
   onDeleteTopic: (topic: Topic) => void;
@@ -32,6 +33,7 @@ export const TopicsTab = ({
   searchTerm,
   isLoading,
   isLoadingSubjects,
+  questionCounts = {},
   onAddTopic,
   onEditTopic,
   onDeleteTopic,
@@ -46,7 +48,7 @@ export const TopicsTab = ({
           <div>
             <CardTitle>Topics</CardTitle>
             <CardDescription>
-              {selectedSubjectId && subjects ? 
+              {selectedSubjectId && subjects ?
                 `Manage topics within ${subjects.find(s => s.id === selectedSubjectId)?.name}` :
                 "Manage topics within subjects"
               }
@@ -89,6 +91,7 @@ export const TopicsTab = ({
                 <TableHead className="font-semibold text-gray-700">Name</TableHead>
                 <TableHead className="font-semibold text-gray-700">Subject</TableHead>
                 <TableHead className="font-semibold text-gray-700">Weightage</TableHead>
+                <TableHead className="font-semibold text-gray-700">Questions</TableHead>
                 <TableHead className="font-semibold text-gray-700">Est. Time</TableHead>
                 <TableHead className="font-semibold text-gray-700">Actions</TableHead>
               </TableRow>
@@ -119,8 +122,8 @@ export const TopicsTab = ({
                 </TableRow>
               ) : (
                 topics.map((topic) => (
-                  <TableRow 
-                    key={topic.id} 
+                  <TableRow
+                    key={topic.id}
                     className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
                     onClick={() => onTopicSelect(topic.id)}
                   >
@@ -152,6 +155,11 @@ export const TopicsTab = ({
                       </div>
                     </TableCell>
                     <TableCell>
+                      <Badge variant={questionCounts[topic.id] > 0 ? "default" : "secondary"}>
+                        {questionCounts[topic.id] || 0}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
                       {topic.estimatedMinutes ? (
                         <div className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
@@ -164,8 +172,8 @@ export const TopicsTab = ({
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="sm"
                             onClick={(e) => e.stopPropagation()}
                           >
