@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     "RankMarg Student Registration"
   ],
   openGraph: {
-    title: "Sign Up | RankMarg – Your Personal AI Coach for JEE & NEET ",
+    title: "Sign Up | RankMarg – Your Personal AI Practice Coach for JEE & NEET ",
     description:
       "Create your free RankMarg account and continue your personalized JEE/NEET preparation journey. Access smart practice sessions, mastery tracking, and AI-powered insights.",
     url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/sign-up`,
@@ -25,16 +25,16 @@ export const metadata: Metadata = {
     siteName: "RankMarg",
     images: [
       {
-        url: "https://cdn.rankmarg.in/assets/og-cover.png", 
+        url: "https://cdn.rankmarg.in/assets/og-cover.png",
         width: 1200,
         height: 630,
-        alt: "RankMarg Sign Up – Your Personal AI Coach for JEE & NEET ",
+        alt: "RankMarg Sign Up – Your Personal AI Practice Coach for JEE & NEET ",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sign Up | RankMarg – Your Personal AI Coach for JEE & NEET ",
+    title: "Sign Up | RankMarg – Your Personal AI Practice Coach for JEE & NEET ",
     description:
       "Create your free RankMarg account and continue your personalized JEE/NEET preparation journey. Access smart practice sessions, mastery tracking, and AI-powered insights.",
   },

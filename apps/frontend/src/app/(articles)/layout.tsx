@@ -3,10 +3,10 @@ import { ArticlesHeader } from '@/components/articles/ArticlesHeader';
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: "Articles | RankMarg - Your Personal AI Coach for JEE & NEET",
+  title: "Articles | RankMarg - Your Personal AI Practice Coach for JEE & NEET",
   description: "Explore expert articles, study tips, and insights to ace your JEE and NEET exams. Get the latest updates, strategies, and guidance from RankMarg.",
   openGraph: {
-    title: "Articles | RankMarg - Your Personal AI Coach for JEE & NEET",
+    title: "Articles | RankMarg - Your Personal AI Practice Coach for JEE & NEET",
     description: "Explore expert articles, study tips, and insights to ace your JEE and NEET exams.",
     type: "website",
     images: [
