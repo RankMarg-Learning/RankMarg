@@ -6,23 +6,23 @@ export const metadata = {
   description:
     'Understand Rankmarg’s Refund & Cancellation Policy. Get clear information on subscription cancellations, refund eligibility, and how we ensure a fair experience for JEE & NEET aspirants.',
   openGraph: {
-    title: 'Terms & Conditions | RankMarg - Your Personal AI Coach for JEE & NEET ',
+    title: 'Terms & Conditions | RankMarg - Your Personal AI Practice Coach for JEE & NEET ',
     description:
       'Read Rankmarg’s policy on cancellations and refunds. We provide transparent guidelines to help you make informed decisions while using our AI-powered platform for JEE & NEET preparation.',
     url: 'https://rankmarg.in/refunds',
     type: 'website',
     images: [
       {
-        url: "https://cdn.rankmarg.in/assets/og-cover.png", 
+        url: "https://cdn.rankmarg.in/assets/og-cover.png",
         width: 1200,
         height: 630,
-        alt: "RankMarg – Your Personal AI Coach for JEE & NEET ",
+        alt: "RankMarg – Your Personal AI  Practice Coach for JEE & NEET ",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: 'Terms & Conditions | RankMarg - Your Personal AI Coach for JEE & NEET ',
+    title: 'Terms & Conditions | RankMarg - Your Personal AI Practice Coach for JEE & NEET ',
     description:
       'Understand Rankmarg’s Refund & Cancellation Policy. Get clear information on subscription cancellations, refund eligibility, and how we ensure a fair experience for JEE & NEET aspirants.',
   },
@@ -38,7 +38,7 @@ const TermsOfService = () => {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 py-5">
         <div className="rounded-lg shadow-sm md:p-8 p-2">
-        <div className="mb-12 text-center">
+          <div className="mb-12 text-center">
             <h2 className="text-2xl font-bold text-primary-700 mb-6">Terms & Conditions</h2>
           </div>
           {/* Introduction */}

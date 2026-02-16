@@ -1,7 +1,7 @@
 import React from 'react';
-import { 
-  Users, 
-  Target, 
+import {
+  Users,
+  Target,
   Award,
   BookOpen,
   TrendingUp,
@@ -13,38 +13,38 @@ import {
   Heart,
   Globe,
   Trophy,
-  
+
 } from 'lucide-react';
 
 export const metadata = {
-    title: 'About Us | RankMarg',
+  title: 'About Us | RankMarg',
+  description:
+    'Learn about RankMarg - India\'s leading AI-powered practice platform for JEE & NEET preparation. Discover our mission, vision, and commitment to transforming exam preparation.',
+  openGraph: {
+    title: 'About Us | RankMarg - Your Personal AI Practice Coach for JEE & NEET ',
+    description:
+      'Discover how RankMarg is empowering thousands of students with intelligent practice, personalized analytics, and AI-driven insights for JEE & NEET success.',
+    url: 'https://rankmarg.in/about',
+    type: 'website',
+    images: [
+      {
+        url: "https://cdn.rankmarg.in/assets/og-cover.png",
+        width: 1200,
+        height: 630,
+        alt: "RankMarg – Your Personal AI Practice Coach for JEE & NEET ",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: 'About Us | RankMarg - Your Personal AI Practice Coach for JEE & NEET ',
     description:
       'Learn about RankMarg - India\'s leading AI-powered practice platform for JEE & NEET preparation. Discover our mission, vision, and commitment to transforming exam preparation.',
-    openGraph: {
-      title: 'About Us | RankMarg - Your Personal AI Coach for JEE & NEET ',
-      description:
-        'Discover how RankMarg is empowering thousands of students with intelligent practice, personalized analytics, and AI-driven insights for JEE & NEET success.',
-      url: 'https://rankmarg.in/about',
-      type: 'website',
-      images: [
-        {
-          url: "https://cdn.rankmarg.in/assets/og-cover.png", 
-          width: 1200,
-          height: 630,
-          alt: "RankMarg – Your Personal AI Coach for JEE & NEET ",
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: 'About Us | RankMarg - Your Personal AI Coach for JEE & NEET ',
-      description:
-        'Learn about RankMarg - India\'s leading AI-powered practice platform for JEE & NEET preparation. Discover our mission, vision, and commitment to transforming exam preparation.',
-    },
-    icons: {
-      icon: '/favicon.ico',
-    },
-  };
+  },
+  icons: {
+    icon: '/favicon.ico',
+  },
+};
 
 const aboutContent = {
   title: "About RankMarg",
@@ -131,12 +131,12 @@ const aboutContent = {
 };
 
 const AboutPage = () => {
-  
+
 
   const ValueCard = ({ item, index }) => {
     const IconComponent = item.icon;
     return (
-      <div 
+      <div
         className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-primary-50 to-primary-50 border border-primary-200 hover:border-primary-300 hover:to-primary-100 transition-all duration-300"
         style={{
           animationDelay: `${index * 100}ms`
@@ -157,7 +157,7 @@ const AboutPage = () => {
   const StatCard = ({ stat, index }) => {
     const IconComponent = stat.icon;
     return (
-      <div 
+      <div
         className="text-center p-6 bg-white/90 backdrop-blur-sm rounded-2xl border border-white/20 hover:shadow-lg transition-all duration-300 group"
         style={{
           animationDelay: `${index * 100}ms`
@@ -193,7 +193,7 @@ const AboutPage = () => {
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
+
             {/* Mission & Vision */}
             <div className="lg:col-span-6">
               <div className="bg-yellow-100 rounded-xl md:p-8 p-4  text-black h-full transition-all duration-700 delay-200 opacity-100 translate-y-0 border border-yellow-400">
@@ -232,12 +232,12 @@ const AboutPage = () => {
                   </div>
                   <h3 className="text-xl font-bold text-gray-900">{aboutContent.story.heading}</h3>
                 </div>
-                
+
                 <div className="max-w-3xl mx-auto">
                   <p className="text-base text-gray-700 leading-relaxed mb-8 text-center">
                     {aboutContent.story.description}
                   </p>
-                  
+
                   <div className="grid md:grid-cols-2 gap-6">
                     {aboutContent.story.highlights.map((highlight, index) => (
                       <div key={index} className="flex items-center space-x-3 p-4 bg-primary-50 rounded-xl">
@@ -294,12 +294,12 @@ const AboutPage = () => {
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900">{aboutContent.commitment.heading}</h3>
                 </div>
-                
+
                 <div className="max-w-3xl mx-auto">
                   <p className="text-base text-gray-700 leading-relaxed mb-8 text-center">
                     {aboutContent.commitment.description}
                   </p>
-                  
+
                   <div className="grid md:grid-cols-2 gap-4">
                     {aboutContent.commitment.promises.map((promise, index) => (
                       <div key={index} className="flex items-start space-x-3 p-4 bg-primary-50 rounded-xl">

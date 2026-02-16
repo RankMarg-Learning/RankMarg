@@ -5,23 +5,23 @@ export const metadata = {
   description:
     'Learn how Rankmarg collects, uses, and protects your data. Our Privacy Policy ensures transparency and safeguards your personal information as you prepare for JEE & NEET.',
   openGraph: {
-    title: 'Privacy Policy | RankMarg - Your Personal AI Coach for JEE & NEET ',
+    title: 'Privacy Policy | RankMarg - Your Personal AI Practice Coach for JEE & NEET ',
     description:
       'Understand how your data is handled on Rankmarg. We are committed to protecting your privacy while delivering a secure and personalized learning experience for JEE & NEET preparation.',
     url: 'https://rankmarg.in/privacy-policy',
     type: 'website',
     images: [
       {
-        url: "https://cdn.rankmarg.in/assets/og-cover.png", 
+        url: "https://cdn.rankmarg.in/assets/og-cover.png",
         width: 1200,
         height: 630,
-        alt: "RankMarg – Your Personal AI Coach for JEE & NEET ",
+        alt: "RankMarg – Your Personal AI Practice Coach for JEE & NEET ",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: 'Privacy Policy | RankMarg - Your Personal AI Coach for JEE & NEET ',
+    title: 'Privacy Policy | RankMarg - Your Personal AI Practice Coach for JEE & NEET ',
     description:
       'Learn how Rankmarg collects, uses, and protects your data. Our Privacy Policy ensures transparency and safeguards your personal information as you prepare for JEE & NEET.',
   },
@@ -57,7 +57,7 @@ const PrivacyPolicy = () => {
             <h3 className="text-xl font-semibold text-gray-800 mb-4 border-l-4 border-yellow-400 pl-4">
               1. Information We Collect
             </h3>
-            
+
             <div className="mb-6">
               <h4 className="font-medium text-gray-700 mb-3">1.1. Personal Information</h4>
               <div className=" p-2">
@@ -273,10 +273,10 @@ const PrivacyPolicy = () => {
 
           {/* Footer */}
           <div className={`lg:col-span-12 transition-all duration-700 delay-700 opacity-100 translate-y-0`}>
-                <div className="text-center space-y-3">
-                  <span className=" text-gray-800 ">©RankMarg is a registered entity in India. All policies are governed in accordance with Indian law.</span>
-                </div>
+            <div className="text-center space-y-3">
+              <span className=" text-gray-800 ">©RankMarg is a registered entity in India. All policies are governed in accordance with Indian law.</span>
             </div>
+          </div>
         </div>
       </div>
     </div>

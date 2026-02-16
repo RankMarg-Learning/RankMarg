@@ -5,23 +5,23 @@ export const metadata = {
   description:
     'Learn about RankMarg\'s refund and cancellation policy for subscriptions. Understand your rights and our terms for requesting refunds on JEE & NEET preparation plans.',
   openGraph: {
-    title: 'Refund & Cancellation Policy | RankMarg - Your Personal AI Coach for JEE & NEET ',
+    title: 'Refund & Cancellation Policy | RankMarg - Your Personal AI  PracticeCoach for JEE & NEET ',
     description:
       'Understand RankMarg\'s refund and cancellation terms. Learn about eligibility criteria, refund process, and cancellation procedures for our educational services.',
     url: 'https://rankmarg.in/refund-policy',
     type: 'website',
     images: [
       {
-        url: "https://cdn.rankmarg.in/assets/og-cover.png", 
+        url: "https://cdn.rankmarg.in/assets/og-cover.png",
         width: 1200,
         height: 630,
-        alt: "RankMarg – Your Personal AI Coach for JEE & NEET ",
+        alt: "RankMarg – Your Personal AI Practice Coach for JEE & NEET ",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: 'Refund & Cancellation Policy | RankMarg - Your Personal AI Coach for JEE & NEET ',
+    title: 'Refund & Cancellation Policy | RankMarg - Your Personal AI Practice Coach for JEE & NEET ',
     description:
       'Learn about RankMarg\'s refund and cancellation policy for subscriptions. Understand your rights and our terms for requesting refunds on JEE & NEET preparation plans.',
   },
@@ -81,7 +81,7 @@ const RefundPolicy = () => {
                 <li>• You can demonstrate <strong>dissatisfaction due to technical or functional issues</strong> that were not resolved by our support team</li>
               </ul>
             </div>
-            
+
             <p className="text-gray-700 mb-3">We do <strong>not</strong> issue refunds for:</p>
             <div className="mt-2 p-3 bg-yellow-100 rounded border border-yellow-300">
               <ul className="space-y-1 text-gray-600 text-sm">
@@ -189,7 +189,7 @@ const RefundPolicy = () => {
           {/* Footer */}
           <div className="lg:col-span-12 transition-all duration-700 delay-700 opacity-100 translate-y-0">
             <div className="text-center space-y-3">
-             
+
               <span className="text-gray-800">© 2025 RankMarg. All rights reserved.</span>
             </div>
           </div>

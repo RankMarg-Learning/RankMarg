@@ -5,17 +5,17 @@ export const metadata = {
   description:
     'Master spaced repetition with Rankmarg\'s AI-powered revision schedule. Get personalized review reminders, track retention strength, and optimize your JEE & NEET preparation with intelligent revision planning. Never forget to review important topics again!',
   openGraph: {
-    title: 'AI Revision Schedule | RankMarg - Your Personal AI Coach for JEE & NEET ',
+    title: 'AI Revision Schedule | RankMarg - Your Personal AI Practice Coach for JEE & NEET ',
     description:
       'Master spaced repetition with Rankmarg\'s AI-powered revision schedule. Get personalized review reminders, track retention strength, and optimize your JEE & NEET preparation with intelligent revision planning. Never forget to review important topics again!',
     url: 'https://rankmarg.in/ai-revision',
     type: 'website',
     images: [
       {
-        url: "https://cdn.rankmarg.in/assets/og-cover.png", 
+        url: "https://cdn.rankmarg.in/assets/og-cover.png",
         width: 1200,
         height: 630,
-        alt: "RankMarg – Your Personal AI Coach for JEE & NEET ",
+        alt: "RankMarg – Your Personal AI Practice Coach for JEE & NEET ",
       },
     ],
   },
