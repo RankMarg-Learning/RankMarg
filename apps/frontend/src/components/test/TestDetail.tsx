@@ -26,21 +26,27 @@ export default function TestDetail({ testId }: { testId: string }) {
   const [step, setStep] = useState<"instructions" | "details">("instructions")
   const [agreed, setAgreed] = useState(false)
 
-  const { setQuestions, setTestId, setTestSection, setTestInfo, setIsLoaded } = useTestContext()
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+
+  const { setQuestions, setTestId, setTestSection, setTestInfo, setIsLoaded, setToken, token: contextToken } = useTestContext()
 
 
 
   const { data: test, isLoading } = useQuery({
-    queryKey: ["testId", testId],
-    queryFn: async () => getTestDetails(testId)
+    queryKey: ["testId", testId, token || contextToken],
+    queryFn: async () => getTestDetails(testId, token || contextToken || "")
   })
 
-  
+
   useEffect(() => {
-    if(test?.data?.testStatus === TestStatus.COMPLETED){
+    if (test?.data?.testStatus === TestStatus.COMPLETED) {
       router.push(`/t/${testId}/analysis`)
     }
     setTestId(testId)
+    if (token) {
+      setToken(token)
+    }
     if (test) {
       setTestInfo({
         testId: test?.data?.testId,
@@ -69,25 +75,26 @@ export default function TestDetail({ testId }: { testId: string }) {
       })
     }
     setIsLoaded(false)
-  }, [test, setTestId, setQuestions, setTestSection,setTestInfo,setIsLoaded,testId,router])
+  }, [test, setTestId, setQuestions, setTestSection, setTestInfo, setIsLoaded, testId, router])
 
   const handleTestStart = () => {
     if (test.testKey && test.testKey !== testKey) {
       setAgreed(false)
       return
     }
-    router.push(`/test/${testId}`)
+    const startUrl = `/test/${testId}${token ? `?token=${token}` : ''}`
+    router.push(startUrl)
   };
 
 
-  
+
 
 
 
   if (isLoading) {
     return <Loading />
   }
-  if(!test?.success && !isLoading){
+  if (!test?.success && !isLoading) {
     return <div className='w-full h-screen flex items-center justify-center'>Test not found</div>
   }
 

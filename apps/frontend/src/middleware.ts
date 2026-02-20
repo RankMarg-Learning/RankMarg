@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 import { Role } from '@repo/db/enums';
-import { 
-  checkRouteAccess, 
+import {
+  checkRouteAccess,
   getDefaultRedirectUrl
 } from './lib/AccessPage';
 
 interface User {
   id: string;
-  plan?:{
+  plan?: {
     id?: string | null;
     status?: string;
     endAt?: Date | null;
@@ -48,7 +48,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/api/') ||
     pathname.includes('.') ||
-    pathname.startsWith('/favicon.ico')
+    pathname.startsWith('/favicon.ico') ||
+    pathname.startsWith('/test')
   ) {
     return NextResponse.next();
   }
