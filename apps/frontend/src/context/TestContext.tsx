@@ -62,6 +62,8 @@ interface TestContextType {
   setTestStatus: React.Dispatch<React.SetStateAction<TestStatus>>;
   testStatus: TestStatus;
   setMinimizeCount: React.Dispatch<React.SetStateAction<number>>;
+  platform: string;
+  setPlatform: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const TestContext = createContext<TestContextType | undefined>(undefined);
@@ -81,6 +83,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
   const [minimizeCount, setMinimizeCount] = useState(0);
   const [testSection, setTestSection] = useState<Record<string, SectionConfig>>({})
   const [testStatus, setTestStatus] = useState<TestStatus>("JOIN")
+  const [platform, setPlatform] = useState<string>("");
 
   const totalQuestions = useMemo(() => questions?.length || 0, [questions]);
 
@@ -103,6 +106,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
 
     const storedData = sessionStorage.getItem(`questionsData-${testInfo.testId}`);
     const storedToken = sessionStorage.getItem(`testToken-${testInfo.testId}`);
+    const storedPlatform = sessionStorage.getItem(`testPlatform-${testInfo.testId}`);
 
     if (storedData) {
       try {
@@ -114,7 +118,10 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
     if (storedToken && !token) {
       setToken(storedToken);
     }
-  }, [testInfo?.testId, token]);
+    if (storedPlatform && !platform) {
+      setPlatform(storedPlatform);
+    }
+  }, [testInfo?.testId, token, platform]);
 
   useEffect(() => {
     if (!testInfo?.testId) return;
@@ -125,11 +132,14 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
       if (token) {
         sessionStorage.setItem(`testToken-${testInfo.testId}`, token);
       }
+      if (platform) {
+        sessionStorage.setItem(`testPlatform-${testInfo.testId}`, platform);
+      }
     } catch (error) {
       console.error("Error saving data to sessionStorage:", error);
 
     }
-  }, [questionsData, testInfo?.testId, token]);
+  }, [questionsData, testInfo?.testId, token, platform]);
 
 
   useEffect(() => {
@@ -249,7 +259,13 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
             } catch (error) {
               console.log("Could not exit fullscreen:", error);
             }
-            router.push(`/t/${testId}/analysis`);
+
+            if (platform === 'mobile') {
+              // Redirect back to mobile app analysis screen via deep link
+              window.location.href = `rankmarg://t/${testId}/analysis`;
+            } else {
+              router.push(`/t/${testId}/analysis`);
+            }
           }
 
           sessionStorage.clear();
@@ -309,7 +325,8 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
         testSection,
         setTestSection,
         isTestComplete,
-
+        platform,
+        setPlatform
       }}
     >
       {children}

@@ -51,7 +51,7 @@ interface TestContextType {
   setCurrentQuestion: (questionNumber: number) => void;
   totalQuestions: number;
   setQuestionsData: React.Dispatch<React.SetStateAction<Record<number, QuestionData>>>;
-  questionsData: Record<number,QuestionData>;
+  questionsData: Record<number, QuestionData>;
   testSection: Record<string, SectionConfig>;
   setTestSection: React.Dispatch<React.SetStateAction<Record<string, SectionConfig>>>;
   isTestComplete: boolean;
@@ -60,6 +60,8 @@ interface TestContextType {
   setTestStatus: React.Dispatch<React.SetStateAction<TestStatus>>;
   testStatus: TestStatus;
   setMinimizeCount: React.Dispatch<React.SetStateAction<number>>;
+  platform: string;
+  setPlatform: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const TestContext = createContext<TestContextType | undefined>(undefined);
@@ -78,6 +80,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
   const [minimizeCount, setMinimizeCount] = useState(0);
   const [testSection, setTestSection] = useState<Record<string, SectionConfig>>({})
   const [testStatus, setTestStatus] = useState<TestStatus>("JOIN")
+  const [platform, setPlatform] = useState<string>("");
 
   const totalQuestions = useMemo(() => questions?.length || 0, [questions]);
 
@@ -97,7 +100,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!testInfo?.testId) return;
-    
+
     const storedData = sessionStorage.getItem(`questionsData-${testInfo.testId}`);
     if (storedData) {
       try {
@@ -114,7 +117,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
       sessionStorage.setItem(`questionsData-${testInfo.testId}`, JSON.stringify(questionsData));
     } catch (error) {
       console.error("Error saving questions data to sessionStorage:", error);
-      
+
     }
   }, [questionsData, testInfo?.testId]);
 
@@ -132,15 +135,19 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
         let timings = {} as Record<number, number>;
         let remainTimer: { leftTime?: number } = {};
         try {
-           timings = JSON.parse(sessionStorage.getItem(`question_timer_${testInfo.testId}`) || "{}");
-           remainTimer = JSON.parse(sessionStorage.getItem(`test_timer_${testInfo.testId}`) || "{}");
-          
+          timings = JSON.parse(sessionStorage.getItem(`question_timer_${testInfo.testId}`) || "{}");
+          remainTimer = JSON.parse(sessionStorage.getItem(`test_timer_${testInfo.testId}`) || "{}");
+
         } catch (error) {
           console.error("Error parsing sessionStorage data:", error);
-          
+
         }
         const remainingTimer = testInfo.duration * 60 - (remainTimer?.leftTime || 0);
-        
+
+        // Get platform from sessionStorage as well
+        const storedPlatform = sessionStorage.getItem(`testPlatform-${testInfo.testId}`);
+        const effectivePlatform = platform || storedPlatform;
+
         const counts = {
           cntMarkForReview: 0,
           cntNotAnswered: 0,
@@ -157,14 +164,14 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
             type: question.type,
             submittedAt: new Date(),
           };
-          
+
           const timing = timings[questionIndex] || 0;
           const answer = JSON.stringify(questionData.selectedOptions);
-          
+
           // Track counts and determine submission status
           if (questionData.status === QuestionStatus.Answered) {
             counts.cntAnswered++;
-            
+
             // Determine if answer is correct
             let isCorrect = false;
             if (question.type === "INTEGER") {
@@ -175,7 +182,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
                 (index) => question.options[index]?.isCorrect
               ) || false;
             }
-            
+
             return {
               questionId: question.id,
               status: isCorrect ? SubmitStatus.CORRECT : SubmitStatus.INCORRECT,
@@ -184,7 +191,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
               submittedAt: questionData.submittedAt,
             };
           }
-          
+
           // Handle other question statuses
           let status: SubmitStatus;
           switch (questionData.status) {
@@ -203,7 +210,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
             default:
               status = SubmitStatus.NOT_ANSWERED;
           }
-          
+
           return {
             questionId: question.id,
             status,
@@ -214,7 +221,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
         });
 
         const marks = calculateMarks(submissions, testSection);
-        
+
         const response = await api.post(`/test/${testInfo.testId}/submit`, {
           submissions,
           marks,
@@ -227,7 +234,7 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
           // Handle test completion
           const testEndTime = new Date(response.data.TestEnd);
           const currentTime = new Date();
-          
+
           if (currentTime < testEndTime) {
             router.push(`/tests/thank-you`);
           } else {
@@ -236,9 +243,14 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
             } catch (error) {
               console.log("Could not exit fullscreen:", error);
             }
-            router.push(`/analysis/${testId}`);
+
+            if (effectivePlatform === 'mobile') {
+              window.location.href = `rankmarg://t/${testId}/analysis`;
+            } else {
+              router.push(`/analysis/${testId}`);
+            }
           }
-          
+
           sessionStorage.clear();
         }
       } catch (error) {
@@ -294,7 +306,8 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
         testSection,
         setTestSection,
         isTestComplete,
-
+        platform,
+        setPlatform
       }}
     >
       {children}
