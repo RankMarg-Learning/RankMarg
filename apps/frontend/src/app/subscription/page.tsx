@@ -34,7 +34,8 @@ const SubscriptionContent = () => {
   const plan_type = searchParams.get('plan');
   const planIdParam = searchParams.get('planId');
   const couponParam = searchParams.get('coupon');
-  
+  const urlToken = searchParams.get('token');
+
   const [plans, setPlans] = useState<DisplayPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,34 +46,48 @@ const SubscriptionContent = () => {
   const [couponError, setCouponError] = useState("");
   const [showCouponInput, setShowCouponInput] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [token, setToken] = useState<string | null>(urlToken);
+
+  // Handle token persistence
+  useEffect(() => {
+    if (urlToken) {
+      sessionStorage.setItem('auth_token', urlToken);
+      setToken(urlToken);
+    } else {
+      const storedToken = sessionStorage.getItem('auth_token');
+      if (storedToken) {
+        setToken(storedToken);
+      }
+    }
+  }, [urlToken]);
 
   // Fetch plans from API
   useEffect(() => {
     const fetchPlans = async () => {
       try {
         setLoading(true);
-        const apiPlans = await planService.getPlans({ status: 'active' });
-        
+        const apiPlans = await planService.getPlans({ status: 'active' }, token || "");
+
         const mappedPlans: DisplayPlan[] = apiPlans.map((plan: Plan) => {
           const expiryDate = getSubscriptionExpiryDate(plan.duration);
-          
+
           const originalPrice = plan.amount;
           const discountedPrice = Math.round(originalPrice * (1 - DEFAULT_PLAN_DISCOUNT / 100));
-          
+
           return {
             plandId: plan.id,
             label: plan.name,
-            tillDate: expiryDate, 
+            tillDate: expiryDate,
             days: Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
-            current: discountedPrice, 
-            original: originalPrice, 
+            current: discountedPrice,
+            original: originalPrice,
           };
         });
-        
+
         mappedPlans.sort((a, b) => a.days - b.days);
-        
+
         setPlans(mappedPlans);
-        
+
         // Set selected plan from URL param
         if (planIdParam) {
           const foundPlan = mappedPlans.find(p => p.plandId === planIdParam);
@@ -93,7 +108,7 @@ const SubscriptionContent = () => {
     };
 
     fetchPlans();
-  }, [planIdParam]);
+  }, [planIdParam, token]);
 
   // Auto-apply coupon from URL if present
   useEffect(() => {
@@ -102,9 +117,12 @@ const SubscriptionContent = () => {
         try {
           const couponRes = await api.get('/m/check/coupon', {
             params: { coupon: couponParam, planId: selectedPlanId },
-            headers: { 'Content-Type': 'application/json' }
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {})
+            }
           });
-          
+
           if (couponRes.data.success) {
             setDiscount(couponRes.data.data.discount ?? 0);
             setCouponApplied(true);
@@ -115,10 +133,10 @@ const SubscriptionContent = () => {
           console.error("Error auto-applying coupon:", error.response?.data?.message);
         }
       };
-      
+
       autoApplyCoupon();
     }
-  }, [couponParam, selectedPlanId, ref_page, plan_type]);
+  }, [couponParam, selectedPlanId, ref_page, plan_type, token]);
 
   // Update URL when selection changes
   useEffect(() => {
@@ -126,13 +144,13 @@ const SubscriptionContent = () => {
       const params = new URLSearchParams(searchParams.toString());
       const currentPlanId = params.get('planId');
       const currentCoupon = params.get('coupon');
-      
+
       // Only update if something actually changed
-      const shouldUpdate = 
+      const shouldUpdate =
         currentPlanId !== selectedPlanId ||
         (coupon && couponApplied && currentCoupon !== coupon) ||
         ((!coupon || !couponApplied) && currentCoupon !== null);
-      
+
       if (shouldUpdate) {
         params.set('planId', selectedPlanId);
         if (coupon && couponApplied) {
@@ -154,29 +172,32 @@ const SubscriptionContent = () => {
   const selectedPlan = plans.find((p) => p.plandId === selectedPlanId);
   const finalPrice = couponApplied && selectedPlan ? selectedPlan.current - (selectedPlan.current * discount / 100) : selectedPlan?.current || 0;
 
-  const applyCoupon = async() => {
+  const applyCoupon = async () => {
     if (!selectedPlan) return;
-    
+
     try {
       const couponRes = await api.get('/m/check/coupon', {
         params: { coupon, planId: selectedPlan.plandId },
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
       });
-      
+
       if (!couponRes.data.success) {
         setCouponError(couponRes?.data?.message || "Invalid Coupon Code");
         return;
       }
-      
+
       setDiscount(couponRes.data.data.discount ?? 0);
       setCouponApplied(true);
       setCouponError("");
-      
+
       // Update URL with coupon
       const params = new URLSearchParams(searchParams.toString());
       params.set('coupon', coupon);
       router.replace(`/subscription?${params.toString()}`, { scroll: false });
-      
+
       subscription_progress(ref_page || "Unknown", 'coupon_applied', plan_type || "Unknown", true);
     } catch (error: any) {
       console.error("Error applying coupon:", error.response?.data?.message);
@@ -184,26 +205,30 @@ const SubscriptionContent = () => {
     }
   };
 
-  const handlePayment = async() => {
+  const handlePayment = async () => {
     if (!selectedPlan) return;
-    
+
     setPaying(true);
 
     subscription_progress(ref_page || "Unknown", 'payment_initiated', plan_type || "Unknown", true);
-    
+
     try {
       const response = await api.post('/payment/create-order', {
         planId: selectedPlan.plandId,
         coupon: couponApplied ? coupon : null,
         // Note: duration is calculated on backend based on May-to-May cycle
+      }, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
       });
-      
+
       if (!response.data.success) {
         console.error("Payment creation failed:", response.data.message);
         setPaying(false);
         return;
       }
-      
+
       const order = response.data.data;
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
@@ -214,7 +239,7 @@ const SubscriptionContent = () => {
         description: `Subscription for ${selectedPlan.label} plan`,
         handler: async function (response: any) {
           subscription_progress(ref_page || "Unknown", 'payment_verified', plan_type || "Unknown", true);
-          
+
           const verifyResponse = await api.post(
             '/payment/verify',
             {
@@ -228,7 +253,10 @@ const SubscriptionContent = () => {
               razorpaySignature: response.razorpay_signature,
             },
             {
-              headers: { 'Content-Type': 'application/json' }
+              headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+              }
             }
           );
 
@@ -241,17 +269,17 @@ const SubscriptionContent = () => {
           setPaying(false);
         },
         prefill: {
-          name: order.userName, 
+          name: order.userName,
           email: order.userEmail,
         },
         modal: {
-          ondismiss: function() {
+          ondismiss: function () {
             setPaying(false);
             subscription_progress(ref_page || "Unknown", 'payment_abandoned', plan_type || "Unknown", true);
           }
         }
       };
-      
+
       const razorpay = new (window as any).Razorpay(options);
       razorpay.open();
     } catch (error) {
@@ -298,7 +326,7 @@ const SubscriptionContent = () => {
             className="flex items-center text-primary-600 hover:text-primary-700 transition-colors font-medium text-sm"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back 
+            Back
           </button>
           <div className="flex-1 text-center">
             <h1 className="text-sm sm:text-base font-semibold text-gray-900">Complete Your Subscription</h1>
@@ -308,23 +336,22 @@ const SubscriptionContent = () => {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 ">
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-6">
-          
+
           {/* Plan Selection */}
           <div className="lg:col-span-6 space-y-6">
             <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200">
               <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-4 sm:mb-6">Choose Your Duration</h2>
-              
+
               <div className="space-y-4">
                 {plans.map((plan) => (
-                    <button
-                      key={plan.plandId}
-                      onClick={() => setSelectedPlanId(plan.plandId)}
-                      className={`w-full p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 text-left ${
-                        selectedPlanId === plan.plandId
-                          ? "border-primary-400 bg-primary-50 shadow-lg"
-                          : "border-gray-200 hover:border-gray-300 bg-white"
+                  <button
+                    key={plan.plandId}
+                    onClick={() => setSelectedPlanId(plan.plandId)}
+                    className={`w-full p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 text-left ${selectedPlanId === plan.plandId
+                      ? "border-primary-400 bg-primary-50 shadow-lg"
+                      : "border-gray-200 hover:border-gray-300 bg-white"
                       }`}
-                    >
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900 text-sm sm:text-base">{plan.label}</div>
@@ -418,7 +445,7 @@ const SubscriptionContent = () => {
           <div className="lg:col-span-4">
             <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200 md:sticky md:top-6">
               <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4 sm:mb-6">Order Summary</h3>
-              
+
               {selectedPlan && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
@@ -447,7 +474,7 @@ const SubscriptionContent = () => {
                   )}
                 </div>
               )}
-              
+
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <div className="flex justify-between items-center mb-6">
                   <span className="text-base sm:text-lg font-bold text-gray-900">Total:</span>
@@ -455,8 +482,8 @@ const SubscriptionContent = () => {
                     ₹{Math.round(finalPrice).toLocaleString()}
                   </span>
                 </div>
-                
-                <button 
+
+                <button
                   className={`w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold py-3 sm:py-4 rounded-xl text-base sm:text-lg hover:from-primary-600 hover:to-primary-700 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center ${paying ? 'opacity-60 cursor-not-allowed' : ''}`}
                   onClick={handlePayment}
                   disabled={paying}
@@ -464,7 +491,7 @@ const SubscriptionContent = () => {
                   <CreditCard className="w-5 h-5 mr-2" />
                   {paying ? 'Processing...' : `Pay ₹${Math.round(finalPrice).toLocaleString()}`}
                 </button>
-                
+
                 <div className="flex items-center justify-center mt-4 text-gray-500 text-xs sm:text-sm">
                   <Shield className="w-6 h-6 mr-1" />
                   Secure payment with 256-bit SSL encryption

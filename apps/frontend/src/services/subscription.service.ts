@@ -1,4 +1,4 @@
-import  api  from '@/utils/api'
+import api from '@/utils/api'
 
 // Plan types
 export interface Plan {
@@ -115,12 +115,17 @@ export interface RecentSubscription {
 // Plan API functions
 export const planService = {
   // Get all plans
-  async getPlans(params?: { status?: string; search?: string }): Promise<Plan[]> {
+  async getPlans(params?: { status?: string; search?: string }, token?: string): Promise<Plan[]> {
     const searchParams = new URLSearchParams()
     if (params?.status) searchParams.append('status', params.status)
     if (params?.search) searchParams.append('search', params.search)
-    
-    const response = await api.get(`/plans?${searchParams.toString()}`)
+
+    const config: any = {}
+    if (token) {
+      config.headers = { Authorization: `Bearer ${token}` }
+    }
+
+    const response = await api.get(`/plans?${searchParams.toString()}`, config)
     return response.data.data || []
   },
 
@@ -161,7 +166,7 @@ export const promoCodeService = {
     const searchParams = new URLSearchParams()
     if (params?.status) searchParams.append('status', params.status)
     if (params?.search) searchParams.append('search', params.search)
-    
+
     const response = await api.get(`/promocodes?${searchParams.toString()}`)
     return response.data.data || []
   },
@@ -279,7 +284,7 @@ export const adminSubscriptionService = {
     if (params?.search) searchParams.append('search', params.search)
     if (params?.page) searchParams.append('page', params.page.toString())
     if (params?.limit) searchParams.append('limit', params.limit.toString())
-    
+
     const response = await api.get(`/admin/subscriptions?${searchParams.toString()}`)
     return response.data.data
   },
@@ -294,7 +299,7 @@ export const adminSubscriptionService = {
     if (params.userId) searchParams.append('userId', params.userId)
     if (params.username) searchParams.append('username', params.username)
     if (params.email) searchParams.append('email', params.email)
-    
+
     const response = await api.get(`/admin/subscriptions/user?${searchParams.toString()}`)
     return response.data.data
   },
@@ -308,7 +313,7 @@ export const adminSubscriptionService = {
     if (identifier.userId) searchParams.append('userId', identifier.userId)
     if (identifier.username) searchParams.append('username', identifier.username)
     if (identifier.email) searchParams.append('email', identifier.email)
-    
+
     const response = await api.patch(`/admin/subscriptions/user?${searchParams.toString()}`, data)
     return response.data.data
   },
@@ -323,7 +328,7 @@ export const adminSubscriptionService = {
     if (identifier.userId) searchParams.append('userId', identifier.userId)
     if (identifier.username) searchParams.append('username', identifier.username)
     if (identifier.email) searchParams.append('email', identifier.email)
-    
+
     const response = await api.delete(`/admin/subscriptions/user?${searchParams.toString()}`)
     return response.data.data
   },
@@ -343,7 +348,7 @@ export const adminSubscriptionService = {
     const searchParams = new URLSearchParams()
     if (params?.startDate) searchParams.append('startDate', params.startDate)
     if (params?.endDate) searchParams.append('endDate', params.endDate)
-    
+
     const response = await api.get(`/admin/subscriptions/statistics?${searchParams.toString()}`)
     return response.data.data
   }
