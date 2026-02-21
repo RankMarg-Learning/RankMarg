@@ -1,6 +1,6 @@
 import TestPage from '@/components/test/TestPage'
 import { Metadata } from 'next';
-import React from 'react'
+import React, { Suspense } from 'react'
 
 export async function generateMetadata({ params }: { params: { testId: string } }): Promise<Metadata> {
   return {
@@ -9,12 +9,12 @@ export async function generateMetadata({ params }: { params: { testId: string } 
   };
 }
 
-const TestHomePage = ({params}:{params:{testId:string}}) => {
+const TestHomePage = ({ params }: { params: { testId: string } }) => {
 
   return (
-    <>
+    <Suspense fallback={null}>
       <TestPage testId={params.testId} />
-    </>
+    </Suspense>
   )
 }
 

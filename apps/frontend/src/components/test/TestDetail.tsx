@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@repo/common-ui'
 import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
@@ -26,8 +26,8 @@ export default function TestDetail({ testId }: { testId: string }) {
   const [step, setStep] = useState<"instructions" | "details">("instructions")
   const [agreed, setAgreed] = useState(false)
 
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("token");
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
 
   const { setQuestions, setTestId, setTestSection, setTestInfo, setIsLoaded, setToken, token: contextToken } = useTestContext()
 

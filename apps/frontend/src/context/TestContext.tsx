@@ -174,16 +174,13 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
           const timing = timings[questionIndex] || 0;
           const answer = JSON.stringify(questionData.selectedOptions);
 
-          // Track counts and determine submission status
           if (questionData.status === QuestionStatus.Answered) {
             counts.cntAnswered++;
 
-            // Determine if answer is correct
             let isCorrect = false;
             if (question.type === "INTEGER") {
               isCorrect = question.isNumerical === questionData.selectedOptions?.[0];
             } else {
-              // For single and multiple choice questions
               isCorrect = questionData.selectedOptions?.every(
                 (index) => question.options[index]?.isCorrect
               ) || false;
@@ -198,7 +195,6 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
             };
           }
 
-          // Handle other question statuses
           let status: SubmitStatus;
           switch (questionData.status) {
             case QuestionStatus.NotAnswered:
@@ -242,7 +238,6 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
           });
 
         if (response.status === 200) {
-          // Handle test completion
           const testEndTime = new Date(response.data.TestEnd);
           const currentTime = new Date();
 

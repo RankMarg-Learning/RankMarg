@@ -1,6 +1,7 @@
 "use client";
 
 import { QuestionNavigation, TestHeader, TestQuestionUI } from "@/components/test/panel";
+import { useSearchParams } from "next/navigation";
 import { useTestContext } from "@/context/TestContext";
 import React, { useEffect, useState } from "react";
 import Loading from "../Loading";
@@ -17,8 +18,8 @@ import { Button } from "@repo/common-ui";
 const TestPage = ({ testId }: { testId: string }) => {
   const { setTestId, isLoaded, setIsTestComplete, setMinimizeCount, setToken } = useTestContext();
   const [showExitWarning, setShowExitWarning] = useState(false);
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("token");
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
 
 
   useEffect(() => {
