@@ -48,50 +48,38 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/api/') ||
     pathname.includes('.') ||
-    pathname.startsWith('/favicon.ico') ||
-    pathname.startsWith('/test')
+    pathname.startsWith('/favicon.ico')
   ) {
     return NextResponse.next();
   }
 
   const user = await getUser(request);
 
-  // Handle root and auth pages with special redirect logic
   if (pathname === "/" || pathname === "/sign-in" || pathname === "/sign-up") {
     if (user) {
-      // Redirect authenticated users to their default page
       const redirectUrl = getDefaultRedirectUrl(user);
       return NextResponse.redirect(new URL(redirectUrl, request.url));
     }
-    // Allow unauthenticated users to access these pages
     return NextResponse.next();
   }
 
-  // Handle new user onboarding flow
   if (user && user.isNewUser) {
-    // New users must complete onboarding first
     if (pathname !== '/onboarding') {
       return NextResponse.redirect(new URL('/onboarding', request.url));
     }
-    // Allow access to onboarding page
     return NextResponse.next();
   }
 
-  // Check route access using the new system
   const accessResult = checkRouteAccess(pathname, user);
 
-  // If access is denied and we have a redirect destination
   if (!accessResult.hasAccess && accessResult.redirectTo) {
     return NextResponse.redirect(new URL(accessResult.redirectTo, request.url));
   }
 
-  // If access is denied but no specific redirect (shouldn't happen with our system)
   if (!accessResult.hasAccess) {
-    // Fallback redirect based on authentication status
     const fallbackUrl = user ? '/unauthorized' : '/sign-in';
     return NextResponse.redirect(new URL(fallbackUrl, request.url));
   }
 
-  // Access granted or unknown route (let Next.js handle 404s)
   return NextResponse.next();
 }

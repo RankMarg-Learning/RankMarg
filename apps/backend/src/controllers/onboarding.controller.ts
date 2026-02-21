@@ -79,8 +79,7 @@ export class OnboardingController {
       }
 
       //*NOTE:update token in cookie
-
-      AuthUtil.updateTokenCookie(req, res, (payload) => ({
+      const newToken = AuthUtil.updateTokenCookie(req, res, (payload) => ({
         ...payload,
         isNewUser: false,
         examCode: examCode,
@@ -101,7 +100,7 @@ export class OnboardingController {
 
       ResponseUtil.success(
         res,
-        null,
+        { token: newToken },
         "Onboarding information saved successfully",
         200,
         undefined,

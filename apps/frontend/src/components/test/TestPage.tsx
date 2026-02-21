@@ -17,7 +17,6 @@ import { Button } from "@repo/common-ui";
 const TestPage = ({ testId }: { testId: string }) => {
   const { setTestId, isLoaded, setIsTestComplete, setMinimizeCount, setToken } = useTestContext();
   const [showExitWarning, setShowExitWarning] = useState(false);
-
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token");
 

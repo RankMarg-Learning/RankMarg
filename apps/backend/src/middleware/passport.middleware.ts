@@ -89,11 +89,19 @@ export const isInstructor = (
 /**
  * Middleware to handle Google OAuth authentication
  */
-export const authenticateGoogle = passport.authenticate("google", {
-  scope: ["profile", "email"],
-  accessType: "offline",
-  prompt: "consent",
-});
+export const authenticateGoogle = (req: Request, res: Response, next: NextFunction) => {
+  const platform = (req.query.platform as string) || "web";
+  const mobileRedirectUri = (req.query.redirect_uri as string); // Custom redirect for mobile (e.g. expo go)
+
+  console.log(`[Auth] Initiating Google Auth. Platform: ${platform}, Mobile Redirect: ${mobileRedirectUri || 'default'}`);
+
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    accessType: "offline",
+    prompt: "consent",
+    state: JSON.stringify({ platform, mobileRedirectUri }), // Use JSON for multiple properties
+  })(req, res, next);
+};
 
 /**
  * Middleware to handle Google OAuth callback
@@ -106,12 +114,13 @@ export const authenticateGoogleCallback = (
   passport.authenticate(
     "google",
     { session: false },
-    (err: any, user: Express.User, info: any) => {
+    (err: any, user: any, info: any) => {
       if (err) {
         return next(err);
       }
 
       if (!user) {
+        console.error("[Auth] Google Auth failed:", info?.message);
         return next(
           new ApiError(
             ErrorCode.UNAUTHORIZED,
@@ -120,6 +129,26 @@ export const authenticateGoogleCallback = (
           )
         );
       }
+
+      // Capture platform and optional redirect from state
+      let platform = "web";
+      let mobileRedirectUri = null;
+
+      try {
+        if (req.query.state) {
+          const stateData = JSON.parse(req.query.state as string);
+          platform = stateData.platform || "web";
+          mobileRedirectUri = stateData.mobileRedirectUri || null;
+        }
+      } catch (e) {
+        console.error("[Auth] Error parsing OAuth state:", e);
+        platform = (req.query.state as string) || "web";
+      }
+
+      console.log(`[Auth] Google Callback. Platform: ${platform}, Mobile Redirect: ${mobileRedirectUri || 'default'}`);
+
+      (user as any).platform = platform;
+      (user as any).mobileRedirectUri = mobileRedirectUri;
 
       // Attach user to request
       req.user = user;
