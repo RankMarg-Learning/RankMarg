@@ -1,13 +1,15 @@
 import TestDetail from '@/components/test/TestDetail'
-import React from 'react'
+import React, { Suspense } from 'react'
 
-const TestPanelPage = ({params}:{
-  params:{
-    testId:string
+const TestPanelPage = ({ params }: {
+  params: {
+    testId: string
   }
 }) => {
   return (
-    <TestDetail testId={params.testId} />
+    <Suspense fallback={null}>
+      <TestDetail testId={params.testId} />
+    </Suspense>
   )
 }
 

@@ -106,8 +106,8 @@ export const routeConfigs: RouteConfig[] = [
   { path: "/my-curriculum", type: RouteType.EXACT, access: AccessLevel.PROTECTED, roles: ALL_AUTHENTICATED_ROLES, description: "Personal curriculum" },
 
   // Payment and subscription
-  { path: "/payment", type: RouteType.EXACT, access: AccessLevel.PROTECTED, roles: ALL_AUTHENTICATED_ROLES, description: "Payment page" },
-  { path: "/subscription", type: RouteType.EXACT, access: AccessLevel.PROTECTED, roles: ALL_AUTHENTICATED_ROLES, description: "Subscription management" },
+  { path: "/payment", type: RouteType.EXACT, access: AccessLevel.PUBLIC, description: "Payment page" },
+  { path: "/subscription", type: RouteType.EXACT, access: AccessLevel.PUBLIC, description: "Subscription management" },
 
   // Challenge system
   { path: "/challenge", type: RouteType.EXACT, access: AccessLevel.PROTECTED, roles: ALL_AUTHENTICATED_ROLES, description: "Challenges overview" },

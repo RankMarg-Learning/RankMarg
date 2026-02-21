@@ -21,31 +21,31 @@ export class paymentController {
   ): Promise<void> => {
     try {
       const { planId, coupon } = req.body;
-      
+
       // Security: Input validation
       if (!planId || typeof planId !== 'string') {
         ResponseUtil.error(res, "Missing or invalid planId", 400);
         return;
       }
-      
+
       const userId = req.user.id;
-      
+
       // Fetch plan
       const plan = await prisma.plan.findUnique({
         where: { id: planId },
         select: { id: true, amount: true, isActive: true, duration: true },
       });
-      
+
       if (!plan) {
         ResponseUtil.error(res, "Plan not found", 404);
         return;
       }
-      
+
       if (!plan.isActive) {
         ResponseUtil.error(res, "Plan is not active", 400);
         return;
       }
-      
+
       // Validate and get coupon discount
       let discount = 0;
       if (coupon && typeof coupon === 'string' && coupon.trim().length > 0) {
@@ -65,68 +65,68 @@ export class paymentController {
             applicablePlans: { select: { id: true } },
           },
         });
-        
+
         if (!promoCode) {
           ResponseUtil.error(res, "Invalid or expired coupon code", 400);
           return;
         }
-        
+
         // Check if coupon applies to this plan
-        const planMatches = promoCode.applicablePlans.length === 0 || 
+        const planMatches = promoCode.applicablePlans.length === 0 ||
           promoCode.applicablePlans.some(p => p.id === planId);
-        
+
         if (!planMatches) {
           ResponseUtil.error(res, "Coupon does not apply to this plan", 400);
           return;
         }
-        
+
         // Check usage limit
         if (promoCode.maxUsageCount && promoCode.currentUsageCount >= promoCode.maxUsageCount) {
           ResponseUtil.error(res, "Coupon usage limit exceeded", 400);
           return;
         }
-        
+
         discount = promoCode.discount;
-        
+
         // Validate discount range
         if (discount < 0 || discount > 100) {
           ResponseUtil.error(res, "Invalid discount value", 400);
           return;
         }
       }
-      
+
       // Start with full plan price
       const basePrice = plan.amount;
-      
+
       // Apply default discount first
       const priceAfterDefaultDiscount = basePrice * (1 - DEFAULT_PLAN_DISCOUNT / 100);
-      
+
       // Apply coupon discount on top of default discount
       const discountedPrice = priceAfterDefaultDiscount * (1 - discount / 100);
       const finalAmount = Math.round(discountedPrice);
-      
+
       // Calculate total discount applied
       const totalDiscountPercent = 100 - ((finalAmount / basePrice) * 100);
-      
+
       // Security: Validate final amount
       const maxAllowedAmount = plan.duration >= 730 ? plan.amount * 2 : plan.amount * 1.5;
       if (finalAmount <= 0 || finalAmount > maxAllowedAmount) {
         ResponseUtil.error(res, "Invalid calculated price", 400);
         return;
       }
-      
+
       // Create Razorpay order
       const razorpay = new Razorpay({
         key_id: ServerConfig.razorpay.key_id!,
         key_secret: ServerConfig.razorpay.key_secret!,
       });
-      
+
       const receipt = `order_${userId}_${Date.now()}`.slice(0, 40);
       const order = await razorpay.orders.create({
         amount: finalAmount * 100, // Convert to paise
         currency: "INR",
         receipt,
-          notes: {
+        notes: {
           userId,
           planId,
           originalPlanPrice: plan.amount.toString(),
@@ -135,23 +135,23 @@ export class paymentController {
           totalDiscount: totalDiscountPercent.toFixed(2),
         },
       });
-      
+
       if (!order) {
         ResponseUtil.error(res, "Failed to create order", 400);
         return;
       }
-      
+
       // Get or create subscription
       let subscription = await prisma.subscription.findFirst({
         where: { userId },
         select: { id: true },
       });
-      
+
       if (!subscription) {
         ResponseUtil.error(res, "Subscription not found. Please contact support.", 404);
         return;
       }
-      
+
       // Create payment record
       await prisma.payment.create({
         data: {
@@ -164,7 +164,7 @@ export class paymentController {
           subscription: { connect: { id: subscription.id } },
         },
       });
-      
+
       const response = {
         userId,
         orderId: order.id,
@@ -177,7 +177,7 @@ export class paymentController {
         defaultDiscount: DEFAULT_PLAN_DISCOUNT,
         priceAfterDefaultDiscount: Math.round(priceAfterDefaultDiscount),
       };
-      
+
       ResponseUtil.success(res, response, "Order created successfully", 200);
     } catch (error) {
       next(error);
@@ -199,13 +199,13 @@ export class paymentController {
         razorpayPaymentId,
         razorpaySignature,
       } = req.body;
-      
+
       // Security: Input validation
       if (!orderId || !razorpayPaymentId || !razorpaySignature || !planId || !userId) {
         ResponseUtil.error(res, "Missing required payment verification fields", 400);
         return;
       }
-      
+
       // Security: Verify signature
       const text = `${orderId}|${razorpayPaymentId}`;
       const generatedSignature = crypto
@@ -217,13 +217,13 @@ export class paymentController {
         ResponseUtil.error(res, "Invalid payment signature", 400);
         return;
       }
-      
+
       // Security: Verify user matches authenticated user
       if (userId !== req.user.id) {
         ResponseUtil.error(res, "User mismatch", 403);
         return;
       }
-      
+
       // Fetch payment record to verify
       const payment = await prisma.payment.findFirst({
         where: {
@@ -241,46 +241,46 @@ export class paymentController {
           },
         },
       });
-      
+
       if (!payment) {
         ResponseUtil.error(res, "Payment record not found", 404);
         return;
       }
-      
+
       // Security: Verify amount matches
       if (Math.abs(payment.amount - amount) > 1) {
         ResponseUtil.error(res, "Amount mismatch", 400);
         return;
       }
-      
+
       // Fetch plan
       const plan = await prisma.plan.findUnique({
         where: { id: planId },
         select: { id: true, amount: true, name: true, isActive: true, duration: true },
       });
-      
+
       if (!plan || !plan.isActive) {
         ResponseUtil.error(res, "Plan not found or inactive", 404);
         return;
       }
-      
+
       // Security: Validate price calculation
       // Account for default discount + coupon discount
       const priceAfterDefaultDiscount = plan.amount * (1 - DEFAULT_PLAN_DISCOUNT / 100);
       const expectedPrice = Math.round(priceAfterDefaultDiscount * (1 - (discount || 0) / 100));
-      
+
       // Allow small rounding differences (up to 1 rupee)
       const priceDifference = Math.abs(amount - expectedPrice);
-      
+
       if (priceDifference > 1) {
         ResponseUtil.error(res, `Price mismatch. Expected: ₹${expectedPrice}, Got: ₹${amount}`, 400);
         return;
       }
-      
+
       // Get subscription expiry date based on plan duration (1 year or 2 years)
       const expiryDate = getSubscriptionExpiryDate(plan.duration);
       const remainingDays = Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-      
+
       // Update subscription
       const subscription = await prisma.subscription.update({
         where: {
@@ -307,12 +307,12 @@ export class paymentController {
           },
         },
       });
-      
+
       if (!subscription) {
         ResponseUtil.error(res, "Subscription not found", 404);
         return;
       }
-      
+
       // Update payment status
       await prisma.payment.update({
         where: { id: payment.id },
@@ -321,7 +321,7 @@ export class paymentController {
           paidAt: new Date(),
         },
       });
-      
+
       // Update coupon usage if coupon was used
       if (coupon) {
         await prisma.promoCode.updateMany({
@@ -331,9 +331,9 @@ export class paymentController {
           },
         });
       }
-      
+
       // Update auth token
-      AuthUtil.updateTokenCookie(req, res, (payload) => ({
+      const newToken = AuthUtil.updateTokenCookie(req, res, (payload) => ({
         ...payload,
         plan: {
           id: subscription.plan.id,
@@ -346,8 +346,9 @@ export class paymentController {
         expiry: subscription.currentPeriodEnd.toLocaleDateString("en-IN"),
         planId: subscription.plan.id,
         planName: subscription.plan.name,
+        token: newToken,
       };
-      
+
       ResponseUtil.success(res, payload, "Payment verified successfully", 200);
     } catch (error) {
       next(error);

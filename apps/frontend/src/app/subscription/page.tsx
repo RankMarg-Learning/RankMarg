@@ -48,7 +48,6 @@ const SubscriptionContent = () => {
   const [paying, setPaying] = useState(false);
   const [token, setToken] = useState<string | null>(urlToken);
 
-  // Handle token persistence
   useEffect(() => {
     if (urlToken) {
       sessionStorage.setItem('auth_token', urlToken);
@@ -57,11 +56,12 @@ const SubscriptionContent = () => {
       const storedToken = sessionStorage.getItem('auth_token');
       if (storedToken) {
         setToken(storedToken);
+      } else {
+        router.push('/sign-in');
       }
     }
   }, [urlToken]);
 
-  // Fetch plans from API
   useEffect(() => {
     const fetchPlans = async () => {
       try {
@@ -88,7 +88,6 @@ const SubscriptionContent = () => {
 
         setPlans(mappedPlans);
 
-        // Set selected plan from URL param
         if (planIdParam) {
           const foundPlan = mappedPlans.find(p => p.plandId === planIdParam);
           if (foundPlan) {
@@ -110,7 +109,6 @@ const SubscriptionContent = () => {
     fetchPlans();
   }, [planIdParam, token]);
 
-  // Auto-apply coupon from URL if present
   useEffect(() => {
     if (couponParam && couponParam.length > 0 && selectedPlanId) {
       const autoApplyCoupon = async () => {
@@ -138,14 +136,12 @@ const SubscriptionContent = () => {
     }
   }, [couponParam, selectedPlanId, ref_page, plan_type, token]);
 
-  // Update URL when selection changes
   useEffect(() => {
     if (selectedPlanId) {
       const params = new URLSearchParams(searchParams.toString());
       const currentPlanId = params.get('planId');
       const currentCoupon = params.get('coupon');
 
-      // Only update if something actually changed
       const shouldUpdate =
         currentPlanId !== selectedPlanId ||
         (coupon && couponApplied && currentCoupon !== coupon) ||
@@ -193,7 +189,6 @@ const SubscriptionContent = () => {
       setCouponApplied(true);
       setCouponError("");
 
-      // Update URL with coupon
       const params = new URLSearchParams(searchParams.toString());
       params.set('coupon', coupon);
       router.replace(`/subscription?${params.toString()}`, { scroll: false });
@@ -216,7 +211,6 @@ const SubscriptionContent = () => {
       const response = await api.post('/payment/create-order', {
         planId: selectedPlan.plandId,
         coupon: couponApplied ? coupon : null,
-        // Note: duration is calculated on backend based on May-to-May cycle
       }, {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {})
@@ -292,12 +286,10 @@ const SubscriptionContent = () => {
     return null;
   }
 
-  // Show full-screen loading until plans are loaded
   if (loading) {
     return <Loading />;
   }
 
-  // Show error if plans failed to load
   if (error || plans.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center">

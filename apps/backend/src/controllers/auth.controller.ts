@@ -274,6 +274,7 @@ export const authController = {
       }
 
       const user = req.user as any;
+      console.log(`[Auth] Processing Google Callback for user: ${user.email}, Platform: ${user.platform}`);
 
       // Create JWT payload
       const payload = {
@@ -293,31 +294,22 @@ export const authController = {
       // Determine redirect URL based on whether user is new
       const redirectUrl = user.isNewUser ? "/onboarding" : "/dashboard";
 
-      // For API response, send token and user data
-      if (req.headers.accept?.includes("application/json")) {
-        ResponseUtil.success(
-          res,
-          {
-            user: {
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              username: user.username,
-              avatar: user.image,
-              role: user.role,
-              examCode: user.examCode || "",
-              isNewUser: user.isNewUser,
-              plan: user.plan,
-            },
-            accessToken,
-          },
-          "Google authentication successful"
-        );
+      // For browser response, redirect to frontend
+      const frontendUrl = getPrimaryFrontendOrigin();
+
+      if (user.platform === "mobile") {
+        const baseRedirect = user.mobileRedirectUri || "rankmarg://auth-callback";
+        // Ensure we don't double-append query markers
+        const separator = baseRedirect.includes('?') ? '&' : '?';
+        const mobileRedirect = `${baseRedirect}${separator}token=${accessToken}&isNewUser=${user.isNewUser}`;
+
+        console.log(`[Auth] Mobile platform detected. Redirecting to: ${mobileRedirect}`);
+        res.redirect(mobileRedirect);
+        return;
       }
 
-      // For browser response, redirect to frontend
-      // The token is already in the cookie, so no need to include in URL
-      const frontendUrl = getPrimaryFrontendOrigin();
+      console.log(`[Auth] Web platform detected. Redirecting to: ${frontendUrl}${redirectUrl}`);
+      // For website, redirect to the frontend
       res.redirect(`${frontendUrl}${redirectUrl}`);
     } catch (error) {
       next(error);

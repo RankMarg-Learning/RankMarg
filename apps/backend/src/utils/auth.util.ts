@@ -36,10 +36,10 @@ export const AuthUtil = {
    * Update JWT token in HttpOnly cookie
    */
   updateTokenCookie(req: Request, res: Response, updateFn: UpdatePayloadFn) {
-    const token = req.cookies["x-auth-token"];
+    const token = AuthUtil.extractToken(req);
 
     if (!token) {
-      throw new Error("Token not found in cookies");
+      throw new Error("Authentication token not found");
     }
     const payload = AuthUtil.verifyToken(token);
     const { exp, iat, ...cleanPayload } = payload;
