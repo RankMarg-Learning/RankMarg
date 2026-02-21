@@ -28,8 +28,9 @@ export default function TestDetail({ testId }: { testId: string }) {
 
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const platformParam = searchParams.get("platform");
 
-  const { setQuestions, setTestId, setTestSection, setTestInfo, setIsLoaded, setToken, token: contextToken } = useTestContext()
+  const { setQuestions, setTestId, setTestSection, setTestInfo, setIsLoaded, setToken, token: contextToken, setPlatform, platform: contextPlatform } = useTestContext()
 
 
 
@@ -41,11 +42,18 @@ export default function TestDetail({ testId }: { testId: string }) {
 
   useEffect(() => {
     if (test?.data?.testStatus === TestStatus.COMPLETED) {
-      router.push(`/t/${testId}/analysis`)
+      if (platformParam === 'mobile' || contextPlatform === 'mobile') {
+        window.location.href = `rankmarg://t/${testId}/analysis`;
+      } else {
+        router.push(`/t/${testId}/analysis`)
+      }
     }
     setTestId(testId)
     if (token) {
       setToken(token)
+    }
+    if (platformParam) {
+      setPlatform(platformParam)
     }
     if (test) {
       setTestInfo({
@@ -75,7 +83,7 @@ export default function TestDetail({ testId }: { testId: string }) {
       })
     }
     setIsLoaded(false)
-  }, [test, setTestId, setQuestions, setTestSection, setTestInfo, setIsLoaded, testId, router])
+  }, [test, setTestId, setQuestions, setTestSection, setTestInfo, setIsLoaded, testId, router, platformParam])
 
   const handleTestStart = () => {
     if (test.testKey && test.testKey !== testKey) {
