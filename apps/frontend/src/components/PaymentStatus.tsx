@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { CheckCircle, ArrowRight, XCircle, RefreshCcw } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-const SUPPORT_EMAIL = 'support@rankmarg.in'; 
+const SUPPORT_EMAIL = 'support@rankmarg.in';
 
 const PaymentStatus = () => {
   const [countdown, setCountdown] = useState(10);
@@ -13,6 +13,8 @@ const PaymentStatus = () => {
   const plan = searchParams?.get('planName') || '';
   const expiry = searchParams?.get('expiry') || '';
   const status = searchParams?.get('status') || '';
+  const via = searchParams?.get('via') || '';
+  const token = searchParams?.get('token') || '';
 
   useEffect(() => {
     if (!status || (status !== 'success' && status !== 'failed')) {
@@ -25,12 +27,20 @@ const PaymentStatus = () => {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     } else if (status === 'success' && countdown === 0) {
-      router.push('/dashboard');
+      if (via === 'mobile') {
+        window.location.href = `rankmarg://auth-callback?token=${token}`;
+      } else {
+        router.push('/dashboard');
+      }
     }
-  }, [countdown, router, status]);
+  }, [countdown, router, status, via, token]);
 
   const handleDashboardRedirect = () => {
-    router.push('/dashboard');
+    if (via === 'mobile') {
+      window.location.href = `rankmarg://auth-callback?token=${token}`;
+    } else {
+      router.push('/dashboard');
+    }
   };
 
   const handleTryAgain = () => {
@@ -93,7 +103,7 @@ const PaymentStatus = () => {
               onClick={handleDashboardRedirect}
               className="w-full bg-primary-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-primary-500 transition-colors duration-200 flex items-center justify-center mb-4"
             >
-              <span className="mr-2">Go to Dashboard</span>
+              <span className="mr-2">{via === 'mobile' ? 'Return to App' : 'Go to Dashboard'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
@@ -109,7 +119,7 @@ const PaymentStatus = () => {
           {/* Countdown (only for success) */}
           {status === 'success' && (
             <div className="text-gray-500 text-sm mb-4">
-              Redirecting to dashboard in {countdown} seconds...
+              Redirecting to {via === 'mobile' ? 'app' : 'dashboard'} in {countdown} seconds...
             </div>
           )}
 

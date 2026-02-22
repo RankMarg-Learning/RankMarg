@@ -35,6 +35,7 @@ const SubscriptionContent = () => {
   const planIdParam = searchParams.get('planId');
   const couponParam = searchParams.get('coupon');
   const urlToken = searchParams.get('token');
+  const via = searchParams.get('via') || '';
 
   const [plans, setPlans] = useState<DisplayPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -154,6 +155,9 @@ const SubscriptionContent = () => {
         } else {
           params.delete('coupon');
         }
+        if (via) {
+          params.set('via', via);
+        }
         router.replace(`/subscription?${params.toString()}`, { scroll: false });
       }
     }
@@ -255,10 +259,15 @@ const SubscriptionContent = () => {
           );
 
           if (verifyResponse.data.success) {
-            router.push(`/payment?status=success&planId=${verifyResponse.data.data.planId}&expiry=${verifyResponse.data.data.expiry}&planName=${verifyResponse.data.data.planName}`);
+            const newToken = verifyResponse.data.data.token;
+            if (newToken) {
+              sessionStorage.setItem('auth_token', newToken);
+              setToken(newToken);
+            }
+            router.push(`/payment?status=success&planId=${verifyResponse.data.data.planId}&expiry=${verifyResponse.data.data.expiry}&planName=${verifyResponse.data.data.planName}${via ? `&via=${via}` : ''}${newToken ? `&token=${newToken}` : ''}`);
             subscription_purchased(selectedPlan.plandId, finalPrice, 'INR', 'Razorpay');
           } else {
-            router.push('/payment?status=failed');
+            router.push(`/payment?status=failed&token=${token}&via=${via}`);
           }
           setPaying(false);
         },
