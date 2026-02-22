@@ -261,7 +261,6 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
             }
 
             if (platform === 'mobile') {
-              // Redirect back to mobile app analysis screen via deep link
               window.location.href = `rankmarg://t/${testId}/analysis`;
             } else {
               router.push(`/t/${testId}/analysis`);

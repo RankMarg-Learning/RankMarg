@@ -1,11 +1,14 @@
 "use client"
 import React from 'react';
 import { Check, X, Sparkles } from "lucide-react";
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const SaasPricing = () => {
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const via = searchParams.get('via') || '';
+  const token = searchParams.get('token') || '';
 
   const trustIndicators = [
     {
@@ -41,7 +44,7 @@ const SaasPricing = () => {
     { feature: "Section Wise", free: "Limited", paid: "Unlimited" },
   ];
 
-  
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-primary-50">
@@ -56,7 +59,7 @@ const SaasPricing = () => {
             Choose Your Plan
           </h1>
           <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Unlock the full potential of your NEET/JEE preparation with our comprehensive solution. 
+            Unlock the full potential of your NEET/JEE preparation with our comprehensive solution.
             Compare features and choose the plan that fits your needs.
           </p>
         </header>
@@ -127,36 +130,36 @@ const SaasPricing = () => {
             {detailedComparison.map((row) => (
               <div key={row.feature} className="px-4 py-4">
                 <div className="text-sm font-semibold text-gray-900 mb-2">{row.feature}</div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-gray-50 rounded-lg p-2 border">
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">Free</div>
-                      {row.free === true ? (
-                        <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
-                          <Check className="w-3 h-3 text-green-600" />
-                        </div>
-                      ) : row.free === false ? (
-                        <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
-                          <X className="w-3 h-3 text-gray-400" />
-                        </div>
-                      ) : (
-                        <div className="text-xs font-medium text-gray-800">{row.free}</div>
-                      )}
-                    </div>
-                    <div className="bg-primary-50 rounded-lg p-2 border border-primary-100">
-                      <div className="text-[11px] uppercase tracking-wide text-primary-700 mb-1">Paid</div>
-                      {row.paid === true ? (
-                        <div className="w-5 h-5 bg-primary-100 rounded-full flex items-center justify-center">
-                          <Check className="w-3 h-3 text-primary-600" />
-                        </div>
-                      ) : row.paid === false ? (
-                        <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
-                          <X className="w-3 h-3 text-gray-400" />
-                        </div>
-                      ) : (
-                        <div className="text-xs font-semibold text-primary-800">{row.paid}</div>
-                      )}
-                    </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-gray-50 rounded-lg p-2 border">
+                    <div className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">Free</div>
+                    {row.free === true ? (
+                      <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                        <Check className="w-3 h-3 text-green-600" />
+                      </div>
+                    ) : row.free === false ? (
+                      <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                        <X className="w-3 h-3 text-gray-400" />
+                      </div>
+                    ) : (
+                      <div className="text-xs font-medium text-gray-800">{row.free}</div>
+                    )}
                   </div>
+                  <div className="bg-primary-50 rounded-lg p-2 border border-primary-100">
+                    <div className="text-[11px] uppercase tracking-wide text-primary-700 mb-1">Paid</div>
+                    {row.paid === true ? (
+                      <div className="w-5 h-5 bg-primary-100 rounded-full flex items-center justify-center">
+                        <Check className="w-3 h-3 text-primary-600" />
+                      </div>
+                    ) : row.paid === false ? (
+                      <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                        <X className="w-3 h-3 text-gray-400" />
+                      </div>
+                    ) : (
+                      <div className="text-xs font-semibold text-primary-800">{row.paid}</div>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -170,14 +173,21 @@ const SaasPricing = () => {
             </div>
             <button
               className="w-full sm:w-auto bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold px-6 md:px-8 py-3 rounded-xl shadow-lg text-base md:text-lg hover:scale-105 transition-transform duration-200"
-              onClick={() => router.push('/subscription?plan=rank&ref=pricing_page')}
+              onClick={() => {
+                const params = new URLSearchParams();
+                params.set('plan', 'rank');
+                params.set('ref', 'pricing_page');
+                if (via) params.set('via', via);
+                if (token) params.set('token', token);
+                router.push(`/subscription?${params.toString()}`);
+              }}
             >
               Enroll Now
             </button>
           </div>
         </div>
 
-        
+
 
         {/* Trust Indicators */}
         <div className="mt-8 md:mt-12 hidden">
@@ -197,7 +207,7 @@ const SaasPricing = () => {
             </div>
           </div>
         </div>
-        
+
       </div>
 
     </div>

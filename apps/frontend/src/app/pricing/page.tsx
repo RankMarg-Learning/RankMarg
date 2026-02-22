@@ -49,9 +49,9 @@ export const metadata: Metadata = {
 
 const page = () => {
   return (
-    <div>
+    <React.Suspense fallback={<div>Loading...</div>}>
       <SaasPricing />
-    </div>
+    </React.Suspense>
   )
 }
 
