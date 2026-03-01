@@ -1,6 +1,6 @@
 "use client"
 import { Suspense, useEffect, useState, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,  DialogDescription, DialogClose } from "@repo/common-ui";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogClose } from "@repo/common-ui";
 
 import { Button } from "@repo/common-ui";
 import {
@@ -61,7 +61,7 @@ function QuestionsContent() {
   const [currentPage, setCurrentPage] = useState<number>(
     Number.isNaN(initialPageFromUrl) || initialPageFromUrl < 1 ? 1 : initialPageFromUrl
   );
-  
+
   const isSyncingFromUrl = useRef(false);
 
   useEffect(() => {
@@ -72,16 +72,16 @@ function QuestionsContent() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data: questions, refetch ,isLoading } = useQuery({
+  const { data: questions, refetch, isLoading } = useQuery({
     queryKey: ["questions", currentPage, debouncedSearchQuery, publishFilter],
-    queryFn: () => getQuestionByFilter({ 
-      page: currentPage, 
+    queryFn: () => getQuestionByFilter({
+      page: currentPage,
       limit,
       search: debouncedSearchQuery || undefined,
       isPublished: publishFilter === "all" ? undefined : publishFilter === "published"
     })
   });
-  
+
   const updatePageInUrl = (newPage: number) => {
     const params = new URLSearchParams(searchParams);
     if (newPage <= 1) {
@@ -95,23 +95,23 @@ function QuestionsContent() {
 
   const updateFiltersInUrl = (search: string, published: string, preservePage = false) => {
     const params = new URLSearchParams(searchParams);
-    
+
     if (search.trim()) {
       params.set("search", search.trim());
     } else {
       params.delete("search");
     }
-    
+
     if (published !== "all") {
       params.set("published", published);
     } else {
       params.delete("published");
     }
-    
+
     if (!preservePage) {
       params.delete("page");
     }
-    
+
     const next = params.toString();
     router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
   };
@@ -119,7 +119,6 @@ function QuestionsContent() {
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     setCurrentPage(1);
-    // Don't update URL immediately - let debounce handle it
   };
 
   const handlePublishFilterChange = (value: string) => {
@@ -157,12 +156,12 @@ function QuestionsContent() {
     if (isSyncingFromUrl.current) {
       return;
     }
-    
+
     const currentSearchInUrl = searchParams.get("search") || "";
     const currentPublishedInUrl = searchParams.get("published") || "all";
     const searchMatches = (debouncedSearchQuery || "") === currentSearchInUrl;
     const publishedMatches = publishFilter === currentPublishedInUrl;
-    
+
     if (!searchMatches || !publishedMatches) {
       updateFiltersInUrl(debouncedSearchQuery, publishFilter);
     }
@@ -171,9 +170,9 @@ function QuestionsContent() {
   useEffect(() => {
     const searchFromUrl = searchParams.get("search") || "";
     const publishedFromUrl = searchParams.get("published") || "all";
-    
+
     isSyncingFromUrl.current = true;
-    
+
     if (searchFromUrl !== searchQuery) {
       setSearchQuery(searchFromUrl);
       setDebouncedSearchQuery(searchFromUrl);
@@ -181,22 +180,22 @@ function QuestionsContent() {
     if (publishedFromUrl !== publishFilter) {
       setPublishFilter(publishedFromUrl);
     }
-    
-    
+
+
     requestAnimationFrame(() => {
       setTimeout(() => {
         isSyncingFromUrl.current = false;
       }, 100);
     });
   }, [searchParams]);
-  
-  
+
+
 
   const handleDelete = async (slug: string) => {
     if (slug) {
-     const data = await deleteQuestion(slug);
+      const data = await deleteQuestion(slug, true);
       setIsDeleteDialogOpen(false);
-      if(data.success) {
+      if (data.success) {
         toast({
           title: "Success! Question Deleted Successfully",
           variant: "default",
@@ -204,10 +203,10 @@ function QuestionsContent() {
           className: "bg-gray-100 text-gray-800",
         })
         refetch();
-      }else{
+      } else {
         toast({ title: "Error", description: "Failed to delete question", color: "white", className: "bg-red-500 text-white" })
       }
-      
+
     }
   };
 
@@ -239,7 +238,7 @@ function QuestionsContent() {
     }
   };
 
-  if(!questions?.success && !isLoading) {
+  if (!questions?.success && !isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="flex flex-col items-center justify-center text-gray-500">
@@ -250,7 +249,7 @@ function QuestionsContent() {
       </div>
     )
   }
-  
+
 
   return (
     <>
@@ -286,7 +285,7 @@ function QuestionsContent() {
                 className="pl-10"
               />
             </div>
-            
+
             {/* Published Filter */}
             <div className="flex items-center space-x-2">
               <Filter className="h-4 w-4 text-gray-400" />
@@ -302,7 +301,7 @@ function QuestionsContent() {
               </Select>
             </div>
           </div>
-          
+
           {/* Clear Filters Button */}
           {(searchQuery || publishFilter !== "all") && (
             <Button
@@ -316,7 +315,7 @@ function QuestionsContent() {
             </Button>
           )}
         </div>
-        
+
         {/* Active Filters Display */}
         {(searchQuery || publishFilter !== "all") && (
           <div className="mt-3 flex flex-wrap gap-2">
@@ -392,7 +391,7 @@ function QuestionsContent() {
               ) : (
                 questions?.data?.questions
                   .map((question) => (
-                    <TableRow 
+                    <TableRow
                       key={question.id}
                       onContextMenu={(e) => {
                         e.preventDefault();
@@ -405,7 +404,7 @@ function QuestionsContent() {
                       <TableCell>{getDifficultyBadge(question.difficulty)}</TableCell>
                       <TableCell>{question?.subject?.name || "-"}</TableCell>
                       <TableCell className="max-w-[150px] truncate">
-                      {question?.topic?.name || "-"}
+                        {question?.topic?.name || "-"}
                       </TableCell>
                       <TableCell className={`text-center ${questions?.data?.accessRole === Role.ADMIN ? "" : "hidden"}`}>
                         {question.isPublished ? (
@@ -468,15 +467,15 @@ function QuestionsContent() {
       </div>
 
       <DropdownMenu open={!!contextMenu} onOpenChange={() => setContextMenu(null)}>
-        <DropdownMenuContent 
-          style={{ 
-            position: 'absolute', 
-            left: `${contextMenu?.x}px`, 
-            top: `${contextMenu?.y}px`, 
-            zIndex: 1000 
+        <DropdownMenuContent
+          style={{
+            position: 'absolute',
+            left: `${contextMenu?.x}px`,
+            top: `${contextMenu?.y}px`,
+            zIndex: 1000
           }}
         >
-          <DropdownMenuItem 
+          <DropdownMenuItem
             className="flex items-center gap-2"
             onClick={() => {
               router.push(`/admin/questions/${contextMenu.question.slug}/edit?page=${currentPage}&published=${publishFilter}&search=${searchQuery}`);

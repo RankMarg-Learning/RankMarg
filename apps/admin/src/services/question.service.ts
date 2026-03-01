@@ -11,23 +11,23 @@ export const getAllQuestions = async () => {
       success: false,
       message: "Error fetching questions",
     }
-    
+
   }
-  
+
 };
 
 export const getQuestionByFilter = async (filter: Partial<QuestionFilter>) => {
   try {
     const response = await api.get('/question', { params: filter });
     return response.data;
-    
+
   } catch (error) {
     console.error("Error fetching questions by filter:", error);
     return {
       success: false,
       message: "Error fetching questions",
     }
-    
+
   }
 }
 
@@ -35,16 +35,16 @@ export const getQuestionBySlug = async (slug: string) => {
   try {
     const response = await api.get(`/question/${slug}`);
     return response.data;
-    
+
   } catch (error) {
     console.error("Error fetching question by slug:", error);
     return {
       success: false,
       message: "Error fetching question",
     }
-    
+
   }
-  
+
 };
 
 export const addQuestions = async (question: Partial<Question>) => {
@@ -53,13 +53,13 @@ export const addQuestions = async (question: Partial<Question>) => {
     return response.data;
   } catch (error: any) {
     console.error("Error adding question:", error);
-    
+
     // Extract error message from response
-    const errorMessage = error.response?.data?.message || 
-                        error.response?.data?.error || 
-                        error.message || 
-                        "Error adding question";
-    
+    const errorMessage = error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      "Error adding question";
+
     return {
       success: false,
       message: errorMessage,
@@ -75,13 +75,13 @@ export const updateQuestion = async (slug: string, question: Partial<Question>) 
     return response.data;
   } catch (error: any) {
     console.error("Update question error:", error);
-    
+
     // Extract error message from response
-    const errorMessage = error.response?.data?.message || 
-                        error.response?.data?.error || 
-                        error.message || 
-                        "Error updating question";
-    
+    const errorMessage = error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      "Error updating question";
+
     return {
       success: false,
       message: errorMessage,
@@ -98,10 +98,10 @@ export const migrateAttempts = async (sourceQuestionId: string, targetQuestionId
     return response.data;
   } catch (error: any) {
     console.error("Error migrating attempts:", error);
-    const errorMessage = error.response?.data?.message || 
-                        error.response?.data?.error || 
-                        error.message || 
-                        "Error migrating attempts";
+    const errorMessage = error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      "Error migrating attempts";
     return {
       success: false,
       message: errorMessage,
@@ -109,11 +109,11 @@ export const migrateAttempts = async (sourceQuestionId: string, targetQuestionId
   }
 };
 
-export const deleteQuestion = async (slug: string) => {
+export const deleteQuestion = async (slug: string, force: boolean = false) => {
   try {
-    const response = await api.delete(`/question/${slug}`);
+    const response = await api.delete(`/question/${slug}`, { params: { force } });
     return response.data;
-    
+
   } catch (error) {
     console.log(error)
     return {

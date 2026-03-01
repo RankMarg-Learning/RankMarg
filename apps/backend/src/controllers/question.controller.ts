@@ -444,10 +444,28 @@ export class QuestionController {
   ) => {
     try {
       const { slug } = req.params;
-      await prisma.question.delete({
+      const force = req.query.force === "true";
+
+      const question = await prisma.question.findUnique({
         where: { slug },
+        select: { id: true },
       });
-      ResponseUtil.success(res, null, "Ok", 200);
+
+      if (!question) {
+        ResponseUtil.error(res, "Question not found", 404);
+        return;
+      }
+
+      if (force) {
+        await prisma.$transaction([
+          prisma.attempt.deleteMany({ where: { questionId: question.id } }),
+          prisma.question.delete({ where: { id: question.id } }),
+        ]);
+        ResponseUtil.success(res, null, "Question force-deleted successfully", 200);
+      } else {
+        await prisma.question.delete({ where: { slug } });
+        ResponseUtil.success(res, null, "Question deleted successfully", 200);
+      }
     } catch (error) {
       next(error);
     }
