@@ -214,7 +214,6 @@ export const TestBuilderProvider: React.FC<TestBuilderProviderProps> = ({
     }
   }, [initialTest]);
 
-  // Convenience functions - memoized to prevent infinite re-renders
   const setBasicInfo = React.useCallback((info: Partial<Pick<TestBuilderState, 'title' | 'description' | 'examCode' | 'duration' | 'examType' | 'difficulty' | 'referenceId'>>) => {
     dispatch({ type: 'SET_BASIC_INFO', payload: info });
   }, []);

@@ -437,6 +437,7 @@ export class TestController {
         difficulty,
         status,
         visibility,
+        referenceId
       } = req.body;
 
       const calculateTotalMarks = (
@@ -478,6 +479,7 @@ export class TestController {
           status,
           visibility,
           testKey,
+          referenceId,
           difficulty,
           examType,
           duration: duration,
