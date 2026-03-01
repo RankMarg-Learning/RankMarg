@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-// Removed unused Card imports
 import { FormStep, test } from '@/types/typeAdmin';
 import { TestBuilderProvider, useTestBuilder } from '../../../context/TestBuilderContext';
 import StepNavigation from './components/StepNavigation';
@@ -18,7 +17,6 @@ interface TestBuilderProps {
   loading?: boolean;
 }
 
-// Internal component that uses the context
 const TestBuilderContent: React.FC<{
   onSave: (test: Partial<test>) => void;
   onCancel: () => void;
@@ -26,7 +24,6 @@ const TestBuilderContent: React.FC<{
 }> = ({ onSave, onCancel, externalLoading = false }) => {
   const { state, setLoading } = useTestBuilder();
 
-  // Sync external loading state
   React.useEffect(() => {
     setLoading(externalLoading);
   }, [externalLoading, setLoading]);
@@ -39,6 +36,7 @@ const TestBuilderContent: React.FC<{
       duration: state.duration,
       examType: state.examType,
       difficulty: state.difficulty,
+      referenceId: state.referenceId || undefined,
       startTime: state.startTime,
       endTime: state.endTime,
       visibility: state.visibility,
@@ -51,7 +49,6 @@ const TestBuilderContent: React.FC<{
         negativeMarks: section.negativeMarks,
         testQuestion: section.testQuestion,
       })),
-      // Add metadata
       ...(state.isEditing ? {} : { createdAt: new Date().toISOString() }),
     };
 
@@ -75,7 +72,6 @@ const TestBuilderContent: React.FC<{
 
   return (
     <div className="w-full space-y-4">
-      {/* Simple Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">
           {state.isEditing ? 'Edit Test' : 'Create Test'}
@@ -105,9 +101,7 @@ const TestBuilderContent: React.FC<{
         </Alert>
       )}
 
-      {/* Main Content */}
       <div className="bg-white border rounded-lg">
-        {/* Simple Header */}
         <div className="px-6 py-3 border-b bg-gray-50">
           <div className="flex items-center justify-between">
             <div className="text-sm font-medium">
@@ -120,19 +114,16 @@ const TestBuilderContent: React.FC<{
             </div>
           </div>
         </div>
-        
+
         <div className="p-6 space-y-6">
-          {/* Current Step Content */}
           <div className="min-h-[400px]">
             {renderCurrentStep()}
           </div>
-          
-          {/* Step Navigation */}
+
           <StepNavigation onSave={handleSave} onCancel={onCancel} />
         </div>
       </div>
 
-      {/* Simple Loading Overlay */}
       {state.loading && (
         <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg flex items-center gap-3">
@@ -145,18 +136,17 @@ const TestBuilderContent: React.FC<{
   );
 };
 
-// Main TestBuilder component with provider
-const TestBuilder: React.FC<TestBuilderProps> = ({ 
-  initialTest, 
-  onSave, 
-  onCancel, 
-  loading = false 
+const TestBuilder: React.FC<TestBuilderProps> = ({
+  initialTest,
+  onSave,
+  onCancel,
+  loading = false
 }) => {
   return (
     <TestBuilderProvider initialTest={initialTest}>
-      <TestBuilderContent 
-        onSave={onSave} 
-        onCancel={onCancel} 
+      <TestBuilderContent
+        onSave={onSave}
+        onCancel={onCancel}
         externalLoading={loading}
       />
     </TestBuilderProvider>
