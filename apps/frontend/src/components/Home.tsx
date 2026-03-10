@@ -4,13 +4,12 @@ import { Avatar, AvatarFallback, AvatarImage, Button, DropdownMenu, DropdownMenu
 import { BookOpen, Crown, User, Settings, LogOut } from 'lucide-react'
 import { SubjectBackgroundColor, SubjectCardColor } from '@/constant/SubjectColorCode'
 import { useUserData } from '@/context/ClientContextProvider'
-import { useRouter } from 'next/navigation'
-import api from '@/utils/api'
 import Link from 'next/link'
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown'
 import { useHome, useTodayStats } from '@/hooks/useHome'
 import ErrorCTA from '@/components/error'
 import SmartSubjectSession from './dashboard/SmartSubjectSession'
+import { handleSignOut } from '@/utils/signOut'
 
 
 
@@ -19,18 +18,6 @@ export const DashboardHome = () => {
     const { user } = useUserData();
     const { stats, isLoading, isError, error } = useTodayStats();
     const { session, } = useHome()
-
-    const router = useRouter()
-    const handleSignOut = async () => {
-        try {
-            const res = await api.post("/auth/sign-out");
-            if (res.data.success) {
-                router.push("/sign-in");
-            }
-        } catch (error) {
-            console.error("Error signing out:", error);
-        }
-    };
 
     if (isError) {
         return <ErrorCTA message={error?.message} />

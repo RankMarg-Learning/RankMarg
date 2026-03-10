@@ -46,8 +46,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useUserData } from "@/context/ClientContextProvider"
 import { cn } from "@/lib/utils"
-import { useRouter } from "next/navigation"
-import api from "@/utils/api"
+import { handleSignOut } from "@/utils/signOut"
 
 interface NavItem {
     icon: React.ElementType
@@ -58,17 +57,6 @@ interface NavItem {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const pathname = usePathname()
     const { user } = useUserData()
-    const router = useRouter()
-    const handleSignOut = async () => {
-        try {
-            const res = await api.post("/auth/sign-out");
-            if (res.data.success) {
-                router.push("/sign-in");
-            }
-        } catch (error) {
-            console.error("Error signing out:", error);
-        }
-    };
 
     const navItems: NavItem[] = [
         { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
