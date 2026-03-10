@@ -52,12 +52,10 @@ const SubscriptionContent = () => {
 
   useEffect(() => {
     if (urlToken) {
-      sessionStorage.setItem('auth_token', urlToken);
+      localStorage.setItem('accessToken', urlToken);
       setToken(urlToken);
     } else {
-      console.log("No token found");
-      const storedToken = sessionStorage.getItem('auth_token');
-      console.log("Stored token:", storedToken);
+      const storedToken = localStorage.getItem('accessToken')
       if (storedToken) {
         setToken(storedToken);
       } else {
