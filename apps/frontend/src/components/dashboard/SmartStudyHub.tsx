@@ -15,7 +15,7 @@ const TodaysProgressCard = ({
   minutesStudied = 0,
   goalMinutes = 0
 }) => (
-  <Card className="border border-primary-100">
+  <Card className="border border-primary-100 md:block hidden">
     <CardContent className="p-3 sm:p-4 space-y-1.5 sm:space-y-2">
       <h3 className="font-medium text-sm text-primary-800">Today's Progress</h3>
       <Progress

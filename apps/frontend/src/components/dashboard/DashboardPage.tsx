@@ -12,10 +12,34 @@ import { useUserData } from '@/context/ClientContextProvider'
 import HeaderHome from './HeaderHome'
 import HowItWorks from './HowItWorks'
 import HighlightDialog from './HighlightDialog'
+import { useHomeConfig } from '@/hooks/useHomeConfig'
+import HomeCarousel from './HomeCarousel'
+import HomePoll from './HomePoll'
+import HomeInputForm from './HomeInputForm'
+import ImportantBlogs from './ImportantBlogs'
+
+
+function isTargetMatch(target: string[], examCode?: string): boolean {
+    if (!target || target.length === 0) return true;
+    if (!examCode) return false;
+    return target.map((t) => t.toUpperCase()).includes(examCode.toUpperCase());
+}
+
+function isNotExpired(end: string): boolean {
+    if (!end) return true;
+    return new Date() < new Date(end);
+}
+function matchesItem(target: string[], end: string, examCode?: string): boolean {
+    return isTargetMatch(target, examCode) && isNotExpired(end);
+}
 
 const DashboardPage = () => {
-    const { dashboardBasic, currentStudies, session, isLoading, isError } = useHome()
+    const { dashboardBasic, currentStudies, session, isLoading: isHomeLoading, isError: isHomeError } = useHome()
     const { user } = useUserData()
+    const { config, isLoading: isConfigLoading, isError: isConfigError } = useHomeConfig();
+
+    const isLoading = isHomeLoading || isConfigLoading;
+    const isError = isHomeError || isConfigError;
 
     if (isLoading) return <DashboardSkeleton />
     if (isError) {
@@ -25,6 +49,25 @@ const DashboardPage = () => {
             </div>
         )
     }
+
+    const { carousel, poll, input, important_blogs } = config?.section || {};
+    const examCode = user?.examCode ?? undefined;
+
+    const carouselItems = (carousel?.items ?? [])
+        .filter((item) => matchesItem(item.target, item.end, examCode))
+        .sort((a, b) => a.priority - b.priority);
+
+    const pollItem = (poll?.items ?? []).find((item) =>
+        matchesItem(item.target, item.end, examCode)
+    );
+
+    const inputItem = (input?.items ?? []).find((item) =>
+        matchesItem(item.target, item.end, examCode)
+    );
+
+    const blogItems = (important_blogs?.items ?? [])
+        .filter((item) => matchesItem(item.target, item.end ?? "", examCode))
+        .sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99));
     return (
         <>
             <HighlightDialog />
@@ -50,6 +93,21 @@ const DashboardPage = () => {
                     <SmartStudyHub dashboardData={dashboardBasic}
                         currentStudies={currentStudies} />
                 </div>
+                <div className="px-3 space-y-2" >
+                    {carousel?.enabled && carouselItems.length > 0 && (
+                        <HomeCarousel items={carouselItems} autoplay={carousel.autoplay} />
+                    )}
+                    {poll?.enabled && pollItem && (
+                        <HomePoll poll={pollItem} submitApi={poll.api} />
+                    )}
+                    {input?.enabled && inputItem && (
+                        <HomeInputForm
+                            inputItem={inputItem}
+                            submitApi={input.api || undefined}
+                        />
+                    )}
+                </div>
+
                 {session?.length > 0 ? (
                     <SmartSubjectSession session={session} />
                 ) : (
@@ -63,11 +121,14 @@ const DashboardPage = () => {
 
                     </div>
                 )}
-                {/* <QuickNavigation /> */}
-                <div className="px-3 sm:px-0">
+
+                <div className="px-3 space-y-4 ">
                     <HowItWorks />
+                    {important_blogs?.enabled && blogItems.length > 0 && (
+                        <ImportantBlogs title={important_blogs.title} blogs={blogItems} />
+                    )}
                 </div>
-            </div>
+            </div >
         </>
     )
 }
