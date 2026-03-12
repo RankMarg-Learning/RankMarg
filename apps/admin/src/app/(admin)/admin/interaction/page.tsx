@@ -19,13 +19,15 @@ import {
   SelectItem
 } from "@repo/common-ui";
 import { useInteractionData } from "@/hooks/useInteractionData";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, Settings, BarChart2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function InteractionPage() {
   const [filterType, setFilterType] = useState<string>("ALL");
-  const { data: interactions, isLoading } = useInteractionData(filterType);
+  const [page, setPage] = useState(1);
+  const { interactions, total, isLoading } = useInteractionData(filterType, page);
 
   const exportToCSV = () => {
     if (!interactions || interactions.length === 0) return;
@@ -65,18 +67,26 @@ export default function InteractionPage() {
           <h1 className="text-2xl font-bold text-gray-900">User Interactions</h1>
           <p className="text-sm text-gray-500">Monitor and export poll responses and form submissions.</p>
         </div>
-        <Button onClick={exportToCSV} disabled={!interactions?.length} className="flex items-center gap-2">
-          <Download className="w-4 h-4" />
-          Export to CSV
-        </Button>
+        <div className="flex items-center gap-3">
+          <Link href="/admin/interaction/config">
+            <Button variant="outline" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Config
+            </Button>
+          </Link>
+          <Button onClick={exportToCSV} disabled={!interactions?.length} className="flex items-center gap-2">
+            <Download className="w-4 h-4" />
+            Export to CSV
+          </Button>
+        </div>
       </div>
 
       <Card>
         <CardContent className="p-4">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-48">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
+            <div className="w-full md:w-48">
               <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Filter By Type</label>
-              <Select value={filterType} onValueChange={setFilterType}>
+              <Select value={filterType} onValueChange={(val) => { setFilterType(val); setPage(1); }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -87,7 +97,73 @@ export default function InteractionPage() {
                 </SelectContent>
               </Select>
             </div>
+            {filterType !== "FORM" && interactions && interactions.length > 0 && (
+              <div className="flex-1 w-full">
+                <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Quick Stats</label>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-100">
+                    Showing: {interactions.filter((i: any) => i.type === "POLL").length} Polls
+                  </Badge>
+                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100">
+                    Total in DB: {total}
+                  </Badge>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Poll Summary Section */}
+          {(filterType === "ALL" || filterType === "POLL") && interactions && interactions.length > 0 && (
+            <div className="mb-8 space-y-4">
+              <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                <BarChart2 className="w-4 h-4" />
+                Poll Analytics (Latest Sample)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Array.from(new Set(interactions.filter((i: any) => i.type === "POLL").map((i: any) => i.data.pollId))).map((pollId: any) => {
+                  const pollResponses = interactions.filter((i: any) => i.type === "POLL" && i.data.pollId === pollId);
+                  const question = pollResponses[0]?.data.question || pollId;
+                  const totalPoll = pollResponses.length;
+                  
+                  // Aggregate options
+                  const counts: Record<string, number> = {};
+                  pollResponses.forEach((r: any) => {
+                    counts[r.data.answer] = (counts[r.data.answer] || 0) + 1;
+                  });
+
+                  return (
+                    <div key={pollId} className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 space-y-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <h4 className="text-sm font-bold text-gray-900 leading-snug">{question}</h4>
+                        <Badge className="bg-white text-gray-500 border-gray-200 text-[10px] whitespace-nowrap">
+                          {totalPoll} samples
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([opt, count]) => {
+                          const percent = Math.round((count / totalPoll) * 100);
+                          return (
+                            <div key={opt} className="space-y-1">
+                              <div className="flex justify-between text-[11px] font-medium">
+                                <span className="text-gray-600 truncate max-w-[80%]">{opt}</span>
+                                <span className="text-gray-900">{count} ({percent}%)</span>
+                              </div>
+                              <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-primary-500 rounded-full transition-all duration-500" 
+                                  style={{ width: `${percent}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <div className="rounded-md border border-gray-100 overflow-hidden">
             <Table>
@@ -177,6 +253,33 @@ export default function InteractionPage() {
               </TableBody>
             </Table>
           </div>
+
+          {/* Simple Pagination */}
+          {total > 50 && (
+            <div className="flex items-center justify-between mt-6 px-2">
+              <p className="text-sm text-gray-500">
+                Total {total} interactions
+              </p>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  disabled={page === 1}
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                >
+                  Previous
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  disabled={page * 50 >= total}
+                  onClick={() => setPage(p => p + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

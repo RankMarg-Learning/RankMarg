@@ -23,4 +23,8 @@ router.post("/submit/form", authenticate, (req, res, next) => { miscController.s
 
 router.get("/admin/interactions", authenticate, isAdmin, (req, res, next) => { miscController.getInteractions(req, res, next); });
 
+router.get("/admin/config", authenticate, isAdmin, (req, res, next) => { miscController.getHomeConfig(req, res, next); });
+
+router.post("/admin/config", authenticate, isAdmin, (req, res, next) => { miscController.updateHomeConfig(req, res, next); });
+
 export default router;

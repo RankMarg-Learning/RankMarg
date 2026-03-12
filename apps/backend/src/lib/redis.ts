@@ -211,6 +211,16 @@ class RedisService {
     }
   }
 
+  async hIncrBy(key: string, field: string, increment: number): Promise<number> {
+    try {
+      await this.connect();
+      return await this.client.hIncrBy(key, field, increment);
+    } catch (error) {
+      logger.error(`Redis HINCRBY error for key ${key}, field ${field}:`, error);
+      return 0;
+    }
+  }
+
   async hGetAll(key: string): Promise<Record<string, string> | null> {
     try {
       await this.connect();

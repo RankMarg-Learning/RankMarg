@@ -157,6 +157,11 @@ export const queryKeys = {
     all: ['interactions'] as const,
     byType: (type: string) => ['interactions', type] as const,
   },
+
+  // Home Config related queries
+  homeConfig: {
+    all: ['homeConfig'] as const,
+  },
 } as const;
 
 // Type for query keys
