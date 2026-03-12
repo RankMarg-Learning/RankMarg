@@ -9,12 +9,6 @@ import { InputItem } from "@/types/homeConfig.types";
 import { cn } from "@/lib/utils";
 import api from "@/utils/api";
 
-const FIELD_LABELS: Record<string, string> = {
-  application_number: "Application Number",
-  date_of_birth: "Date of Birth",
-  mother_name: "Mother's Name",
-  other: "Other",
-};
 
 interface HomeInputFormProps {
   inputItem: InputItem;
@@ -33,7 +27,7 @@ export default function HomeInputForm({
   const [values, setValues] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
     fieldKeys.forEach((k) => {
-      initial[k] = inputItem.fields[k] ?? "";
+      initial[k] = inputItem.fields[k]?.value ?? "";
     });
     return initial;
   });
@@ -57,13 +51,19 @@ export default function HomeInputForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!submitApi || submitting || submitted) return;
+
+    for (const key of fieldKeys) {
+      if (inputItem.fields[key]?.required && !values[key]?.trim()) {
+        setError(`${inputItem.fields[key].label} is required.`);
+        return;
+      }
+    }
+
     setSubmitting(true);
     setError(null);
 
     try {
-      const submitUrl = "/m/submit/form";
-
-      const res = await api.post(submitUrl, {
+      const res = await api.post(submitApi, {
         formId: inputItem.id,
         values: values
       })
@@ -81,13 +81,6 @@ export default function HomeInputForm({
       setSubmitting(false);
     }
   };
-
-  const getInputType = (key: string) => {
-    if (key.includes("date")) return "date";
-    if (key.includes("pin") || key.includes("number")) return "text";
-    return "text";
-  };
-
   if (isHidden) return null;
 
   return (
@@ -114,31 +107,37 @@ export default function HomeInputForm({
         {/* Form fields */}
         <form onSubmit={handleSubmit} className="px-4 py-3 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {fieldKeys.map((key) => (
-              <div key={key} className="flex flex-col gap-1">
-                <label
-                  htmlFor={`home-input-${key}`}
-                  className="text-xs font-medium text-gray-700"
-                >
-                  {FIELD_LABELS[key] ?? key.replace(/_/g, " ")}
-                </label>
-                <input
-                  id={`home-input-${key}`}
-                  type={getInputType(key)}
-                  value={values[key]}
-                  onChange={(e) => handleChange(key, e.target.value)}
-                  disabled={submitted}
-                  placeholder={`Enter ${FIELD_LABELS[key] ?? key}`}
-                  className={cn(
-                    "w-full text-sm rounded-lg border px-3 py-2 outline-none transition-all duration-200",
-                    "focus:ring-2 focus:ring-amber-300 focus:border-amber-400",
-                    submitted
-                      ? "bg-gray-50 text-gray-400 cursor-default border-gray-100"
-                      : "bg-white border-gray-200 text-gray-800 hover:border-amber-300"
-                  )}
-                />
-              </div>
-            ))}
+            {fieldKeys.map((key) => {
+              const field = inputItem.fields[key];
+              const inputType = field.type === "calendar" ? "date" : field.type;
+
+              return (
+                <div key={key} className="flex flex-col gap-1">
+                  <label
+                    htmlFor={`home-input-${key}`}
+                    className="text-xs font-medium text-gray-700"
+                  >
+                    {field.label}
+                  </label>
+                  <input
+                    id={`home-input-${key}`}
+                    type={inputType}
+                    value={values[key]}
+                    onChange={(e) => handleChange(key, e.target.value)}
+                    disabled={submitted}
+                    required={field.required}
+                    placeholder={field.placeholder || `Enter ${field.label}`}
+                    className={cn(
+                      "w-full text-sm rounded-lg border px-3 py-2 outline-none transition-all duration-200",
+                      "focus:ring-2 focus:ring-amber-300 focus:border-amber-400",
+                      submitted
+                        ? "bg-gray-50 text-gray-400 cursor-default border-gray-100"
+                        : "bg-white border-gray-200 text-gray-800 hover:border-amber-300"
+                    )}
+                  />
+                </div>
+              );
+            })}
           </div>
 
           {error && (

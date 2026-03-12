@@ -1,12 +1,13 @@
 import { AuthenticatedRequest } from "@/middleware/auth.middleware";
 import { Response, NextFunction } from "express";
 import { v2 as cloudinary } from "cloudinary";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { ResponseUtil } from "@/utils/response.util";
 import ServerConfig from "@/config/server.config";
 import prisma from "@/lib/prisma";
 import { v4 as uuidv4 } from "uuid";
 import { s3 } from "@/lib/s3";
+import redisService from "@/lib/redis";
 
 cloudinary.config({
   cloud_name: ServerConfig.cloudinary.cloud_name,
@@ -185,11 +186,12 @@ export class MiscController {
         },
       });
 
-      ResponseUtil.success(res, submission, "Poll submitted successfully", 200);
+      ResponseUtil.success(res, { submission }, "Poll submitted successfully", 200);
     } catch (error) {
       next(error);
     }
   };
+
 
   submitInputForm = async (
     req: AuthenticatedRequest,
@@ -227,6 +229,98 @@ export class MiscController {
       });
 
       ResponseUtil.success(res, submission, "Form submitted successfully", 200);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getInteractions = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { type, page = "1", limit = "50" } = req.query;
+      const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
+      const take = parseInt(limit as string);
+
+      const where: any = {};
+      if (type === "POLL" || type === "FORM") {
+        where.type = type;
+      } else {
+        where.type = { in: ["POLL", "FORM"] };
+      }
+
+      const [interactions, total] = await Promise.all([
+        prisma.misc.findMany({
+          where,
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              }
+            }
+          },
+          orderBy: {
+            createdAt: "desc"
+          },
+          skip,
+          take
+        }),
+        prisma.misc.count({ where })
+      ]);
+
+      ResponseUtil.success(res, { interactions, total, page: parseInt(page as string), limit: take }, "Interactions fetched successfully", 200);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getHomeConfig = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const command = new GetObjectCommand({
+        Bucket: ServerConfig.s3.bucket,
+        Key: "json/home.json",
+      });
+
+      const response = await s3.send(command);
+      const str = await response.Body?.transformToString();
+      const config = JSON.parse(str || "{}");
+
+      ResponseUtil.success(res, config, "Home config fetched successfully", 200);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateHomeConfig = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { config } = req.body;
+      if (!config) {
+        ResponseUtil.error(res, "Configuration data is required", 400);
+        return;
+      }
+
+      const command = new PutObjectCommand({
+        Bucket: ServerConfig.s3.bucket,
+        Key: "json/home.json",
+        Body: JSON.stringify(config, null, 4),
+        ContentType: "application/json",
+      });
+
+      await s3.send(command);
+      ResponseUtil.success(res, null, "Home config updated successfully", 200);
     } catch (error) {
       next(error);
     }

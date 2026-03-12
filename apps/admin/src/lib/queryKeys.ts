@@ -151,6 +151,17 @@ export const queryKeys = {
     promoCodes: () => ['subscription', 'promocodes'] as const,
     promoCode: (id: string) => ['subscription', 'promocode', id] as const,
   },
+
+  // Interaction related queries
+  interactions: {
+    all: ['interactions'] as const,
+    byType: (type: string) => ['interactions', type] as const,
+  },
+
+  // Home Config related queries
+  homeConfig: {
+    all: ['homeConfig'] as const,
+  },
 } as const;
 
 // Type for query keys

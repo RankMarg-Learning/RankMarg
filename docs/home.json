@@ -90,7 +90,7 @@
                     "end": ""
                 }
             ],
-            "api": "https://api.rankmarg.in/poll/submit"
+            "api": "https://api.rankmarg.in/m/submit/poll"
         },
         "input": {
             "type": "input",
@@ -100,9 +100,24 @@
                     "id": "neet_admit_card",
                     "text": "Check your NEET Admit Card",
                     "fields": {
-                        "application_number": "",
-                        "date_of_birth": "",
-                        "mother_name": ""
+                        "application_number": {
+                            "label": "Application Number",
+                            "type": "text",
+                            "placeholder": "Enter your 12-digit application number",
+                            "required": true
+                        },
+                        "date_of_birth": {
+                            "label": "Date of Birth",
+                            "type": "calendar",
+                            "placeholder": "Select your DOB",
+                            "required": true
+                        },
+                        "mother_name": {
+                            "label": "Mother's Name",
+                            "type": "text",
+                            "placeholder": "Enter your mother's name",
+                            "required": true
+                        }
                     },
                     "target": [
                         "NEET"
@@ -113,8 +128,18 @@
                     "id": "jee_admit_card",
                     "text": "Check your JEE Admit Card",
                     "fields": {
-                        "application_number": "",
-                        "date_of_birth": ""
+                        "application_number": {
+                            "label": "Application Number",
+                            "type": "text",
+                            "placeholder": "Enter application number",
+                            "required": true
+                        },
+                        "date_of_birth": {
+                            "label": "Date of Birth",
+                            "type": "calendar",
+                            "placeholder": "Select DOB",
+                            "required": true
+                        }
                     },
                     "target": [
                         "JEE"
@@ -122,7 +147,7 @@
                     "end": "2026-04-01"
                 }
             ],
-            "api": "https://api.rankmarg.in/neet/admit-card"
+            "api": "https://api.rankmarg.in/m/submit/form"
         },
         "important_blogs": {
             "type": "blog_list",

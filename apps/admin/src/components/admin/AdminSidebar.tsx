@@ -1,6 +1,6 @@
 "use client"
 import { cn } from "@/lib/utils";
-import { Brain,  LayoutDashboard,  LogOut,  TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload, Users, MessageSquare } from "lucide-react";
+import { Brain, LayoutDashboard, LogOut, TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload, Users, MessageSquare, MousePointerClick } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useMemo } from "react";
@@ -20,12 +20,12 @@ interface SidebarItemProps {
 
 const SidebarItem: React.FC<SidebarItemProps> = ({ icon: Icon, label, href, isActive, onClick }) => {
   return (
-    <Link 
-      href={href} 
+    <Link
+      href={href}
       className={cn(
         "flex items-center gap-3 px-3 py-2 rounded-md transition-colors ",
-        isActive 
-          ? "bg-primary  text-gray-800" 
+        isActive
+          ? "bg-primary  text-gray-800"
           : "text-gray-600 hover:bg-primary-100"
       )}
       onClick={onClick}
@@ -41,7 +41,7 @@ const AdminSidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const router = useRouter();
   const { user } = useUserData();
-  
+
   const allMenuItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/admin", exact: true },
     { icon: Brain, label: "Questions", href: "/admin/questions" },
@@ -52,14 +52,15 @@ const AdminSidebar = () => {
     { icon: CreditCard, label: "Plans", href: "/admin/plans" },
     { icon: Gift, label: "PromoCodes", href: "/admin/promocodes" },
     { icon: Users, label: "User Subscriptions", href: "/admin/user-subscriptions" },
+    { icon: MousePointerClick, label: "User Interactions", href: "/admin/interaction" },
   ];
 
-  
+
   const menuItems = useMemo(() => {
     if (user?.role === Role.INSTRUCTOR) {
-      return allMenuItems.filter(item => 
-        item.href !== "/admin/plans" && 
-        item.href !== "/admin/promocodes" && 
+      return allMenuItems.filter(item =>
+        item.href !== "/admin/plans" &&
+        item.href !== "/admin/promocodes" &&
         item.href !== "/admin/user-subscriptions" &&
         item.href !== "/admin/reports"
       );
@@ -67,10 +68,10 @@ const AdminSidebar = () => {
     return allMenuItems;
   }, [user?.role]);
 
-  const handleSignOut = async() => {
+  const handleSignOut = async () => {
     try {
       const res = await api.post("/auth/sign-out");
-      if(res.data.success){
+      if (res.data.success) {
         router.push("/sign-in");
       }
     } catch (error) {
@@ -97,18 +98,18 @@ const AdminSidebar = () => {
             <Brain className="h-5 w-5" />
           </div>
         )}
-        <button 
+        <button
           onClick={() => setCollapsed(!collapsed)}
           className="text-gray-500 hover:text-gray-700 "
         >
-          {collapsed ? <ArrowRightToLine  className="w-4 h-4"/> : <ArrowLeftFromLine className="w-4 h-4"/>}
+          {collapsed ? <ArrowRightToLine className="w-4 h-4" /> : <ArrowLeftFromLine className="w-4 h-4" />}
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {menuItems.map((item) => {
-          const isActive = item.exact 
-            ? currentPath === item.href 
+          const isActive = item.exact
+            ? currentPath === item.href
             : currentPath === item.href || currentPath?.startsWith(item.href + "/")
           return (
             <SidebarItem
@@ -117,14 +118,14 @@ const AdminSidebar = () => {
               label={collapsed ? "" : item.label}
               href={item.href}
               isActive={isActive}
-              onClick={() => {}}
+              onClick={() => { }}
             />
           )
         })}
       </div>
 
       <div className="p-3 border-t border-gray-200">
-        <Button 
+        <Button
           className="w-full flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors text-sm"
           onClick={handleSignOut}
         >
