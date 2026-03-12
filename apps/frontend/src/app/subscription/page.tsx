@@ -49,12 +49,13 @@ const SubscriptionContent = () => {
   const [paying, setPaying] = useState(false);
   const [token, setToken] = useState<string | null>(urlToken);
 
+
   useEffect(() => {
     if (urlToken) {
-      sessionStorage.setItem('auth_token', urlToken);
+      localStorage.setItem('accessToken', urlToken);
       setToken(urlToken);
     } else {
-      const storedToken = sessionStorage.getItem('auth_token');
+      const storedToken = localStorage.getItem('accessToken')
       if (storedToken) {
         setToken(storedToken);
       } else {

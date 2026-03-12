@@ -31,10 +31,10 @@ const signInSchema = z.object({
 
 const SignInForm = () => {
   const [msg, setMsg] = useState("");
-  const [msgType, setMsgType] = useState("error"); 
+  const [msgType, setMsgType] = useState("error");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const {
     register,
     handleSubmit,
@@ -61,25 +61,26 @@ const SignInForm = () => {
   const handleLogin = async (data: { username: string; password: string }) => {
     setIsLoading(true);
     setMsg("");
-    
+
     try {
       const response = await api.post("/auth/sign-in", data);
-      
+
       if (response.data.success && response.data.data) {
         signin_completed('email');
         setMsg("Welcome back! Redirecting...");
         setMsgType("success");
-        
+
         const user = response.data.data.user;
+        localStorage.setItem('accessToken', response.data.data.accessToken);
         let redirectPath = '/dashboard';
-        
+
         if (user.isNewUser) {
           redirectPath = '/onboarding';
         } else {
           redirectPath = '/dashboard';
-          
+
         }
-        
+
         setTimeout(() => {
           router.push(redirectPath);
         }, 500);
@@ -89,7 +90,7 @@ const SignInForm = () => {
       }
     } catch (error: any) {
       console.error("Login failed:", error);
-      
+
       if (error.response?.data?.message) {
         setMsg(error.response.data.message);
       } else if (error.response?.data?.error === "UNAUTHORIZED") {
@@ -104,7 +105,7 @@ const SignInForm = () => {
       setIsLoading(false);
     }
   };
-  
+
   const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const lowercaseUsername = event.target.value.toLowerCase();
     setValue("username", lowercaseUsername, { shouldValidate: true });
@@ -121,7 +122,7 @@ const SignInForm = () => {
         return "bg-red-50 text-red-600 border-red-200";
     }
   };
-  
+
   return (
     <div className="flex items-center justify-center h-screen yellow-gradient">
       <div className="w-full max-w-md">
@@ -171,19 +172,19 @@ const SignInForm = () => {
                   className="absolute right-2 top-9 text-sm text-gray-500"
                   onClick={() => setShowPassword((prev) => !prev)}
                 >
-                  {showPassword ? <Eye className="w-5 h-5"/> : <EyeOff className="w-5 h-5"/>}
+                  {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                 </button>
                 {errors.password && (
                   <p className="text-red-500 text-sm">{errors.password?.message?.toString()}</p>
                 )}
               </div>
-              
+
               {msg && (
                 <Alert className={`mt-2  ${getMessageStyles()}`}>
                   <AlertDescription>{msg}</AlertDescription>
                 </Alert>
               )}
-              
+
               <Button
                 type="submit"
                 className="w-full mt-4"
@@ -237,11 +238,11 @@ const SignInForm = () => {
 
             <div className="mt-4 text-center text-sm">
               New to our platform?{" "}
-              <Link href="/sign-up" onClick={()=>click_signup_cta('Create an account','signin_page_cta')} className="text-yellow-600 hover:text-yellow-800 underline ">
+              <Link href="/sign-up" onClick={() => click_signup_cta('Create an account', 'signin_page_cta')} className="text-yellow-600 hover:text-yellow-800 underline ">
                 Create an account
               </Link>
             </div>
-            
+
             <p className="text-center text-xs text-gray-500 mt-4">
               Protected by enterprise-grade security. We respect your privacy.
             </p>

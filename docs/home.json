@@ -1,0 +1,188 @@
+{
+    "update-date": "2026-03-11",
+    "version": "1.1.0",
+    "meta": {
+        "target_convention": "[] = show to ALL users | ['NEET'] = NEET only | ['JEE'] = JEE only | ['NEET','JEE'] = both",
+        "end_convention": "'' = no expiry | '2026-04-10' = hide after this date"
+    },
+    "section": {
+        "carousel": {
+            "type": "carousel",
+            "enabled": true,
+            "autoplay": true,
+            "items": [
+                {
+                    "id": "neet_registration",
+                    "type": "notification",
+                    "desktop_image": "https://utfs.io/f/DbhgrrAIqRoKsM1GJvl5xXNwpv6Q9lomI1WJZLFCnfhM7zPD",
+                    "app_image": "https://utfs.io/f/DbhgrrAIqRoKsM1GJvl5xXNwpv6Q9lomI1WJZLFCnfhM7zPD",
+                    "cta_url": "/exam/neet-registration",
+                    "priority": 1,
+                    "target": [
+                        "NEET"
+                    ],
+                    "level": [
+                        2,
+                        3,
+                        4,
+                        5
+                    ],
+                    "end": "2026-04-10"
+                }
+            ]
+        },
+        "poll": {
+            "type": "poll",
+            "enabled": true,
+            "items": [
+                {
+                    "id": "neet_prep_poll",
+                    "question": "How is your NEET 2026 preparation going?",
+                    "options": [
+                        {
+                            "id": "excellent",
+                            "text": "Excellent 🔥"
+                        },
+                        {
+                            "id": "good",
+                            "text": "Good 👍"
+                        },
+                        {
+                            "id": "average",
+                            "text": "Average 😐"
+                        },
+                        {
+                            "id": "struggling",
+                            "text": "Struggling 😣"
+                        }
+                    ],
+                    "target": [
+                        "NEET"
+                    ],
+                    "level": [],
+                    "end": ""
+                },
+                {
+                    "id": "jee_prep_poll",
+                    "question": "How is your JEE 2026 preparation going?",
+                    "options": [
+                        {
+                            "id": "excellent",
+                            "text": "Excellent 🔥"
+                        },
+                        {
+                            "id": "good",
+                            "text": "Good 👍"
+                        },
+                        {
+                            "id": "average",
+                            "text": "Average 😐"
+                        },
+                        {
+                            "id": "struggling",
+                            "text": "Struggling 😣"
+                        }
+                    ],
+                    "target": [
+                        "JEE"
+                    ],
+                    "level": [],
+                    "end": ""
+                }
+            ],
+            "api": "https://api.rankmarg.in/poll/submit"
+        },
+        "input": {
+            "type": "input",
+            "enabled": true,
+            "items": [
+                {
+                    "id": "neet_admit_card",
+                    "text": "Check your NEET Admit Card",
+                    "fields": {
+                        "application_number": "",
+                        "date_of_birth": "",
+                        "mother_name": ""
+                    },
+                    "target": [
+                        "NEET"
+                    ],
+                    "end": "2026-05-01"
+                },
+                {
+                    "id": "jee_admit_card",
+                    "text": "Check your JEE Admit Card",
+                    "fields": {
+                        "application_number": "",
+                        "date_of_birth": ""
+                    },
+                    "target": [
+                        "JEE"
+                    ],
+                    "end": "2026-04-01"
+                }
+            ],
+            "api": "https://api.rankmarg.in/neet/admit-card"
+        },
+        "important_blogs": {
+            "type": "blog_list",
+            "enabled": true,
+            "title": "Important Articles for You",
+            "items": [
+                {
+                    "id": "neet_strategy",
+                    "title": "NEET 2026 Strategy Based on NEET 2025 Paper",
+                    "slug": "/articles/neet-2026-strategy",
+                    "image": "https://cdn.rankmarg.in/blog/neet-strategy.webp",
+                    "tag": "Strategy",
+                    "target": [
+                        "NEET"
+                    ],
+                    "priority": 1
+                },
+                {
+                    "id": "jee_high_weightage",
+                    "title": "Top High Weightage Chapters for JEE 2026",
+                    "slug": "/articles/jee-high-weightage-chapters",
+                    "image": "https://cdn.rankmarg.in/blog/jee-weightage.webp",
+                    "tag": "Important",
+                    "target": [
+                        "JEE"
+                    ],
+                    "priority": 2
+                },
+                {
+                    "id": "neet_mistakes",
+                    "title": "10 Common Mistakes NEET Aspirants Make",
+                    "slug": "/articles/neet-common-mistakes",
+                    "image": "https://cdn.rankmarg.in/blog/neet-mistakes.webp",
+                    "tag": "Guidance",
+                    "target": [
+                        "NEET"
+                    ],
+                    "priority": 3
+                },
+                {
+                    "id": "jee_time_mgmt",
+                    "title": "Time Management Strategies for JEE Mains 2026",
+                    "slug": "/articles/jee-time-management",
+                    "image": "https://cdn.rankmarg.in/blog/jee-time.webp",
+                    "tag": "Strategy",
+                    "target": [
+                        "JEE"
+                    ],
+                    "priority": 4
+                },
+                {
+                    "id": "rank_improvement",
+                    "title": "How to Improve Your Rank in Last 60 Days",
+                    "slug": "/articles/rank-improvement-last-60-days",
+                    "image": "https://cdn.rankmarg.in/blog/rank-improvement.webp",
+                    "tag": "Guidance",
+                    "target": [],
+                    "priority": 5
+                }
+            ]
+        }
+    }
+}

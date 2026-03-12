@@ -14,35 +14,28 @@ export interface TestSection {
 }
 
 export interface TestBuilderState {
-  // Basic Info
   title: string;
   description: string;
   examCode: string;
   duration: number;
   examType: ExamType;
   difficulty: 'EASY' | 'MEDIUM' | 'HARD';
-  
-  // Sections
+  referenceId: string;
+
   testSections: TestSection[];
-  
-  // Review & Settings
   startTime: Date | null;
   endTime: Date | null;
   visibility: Visibility;
   status: TestStatus;
-  
-  // UI State
   currentStep: FormStep;
   loading: boolean;
   errors: Record<string, string>;
-  
-  // Other
   initialTest?: test;
   isEditing: boolean;
 }
 
 type TestBuilderAction =
-  | { type: 'SET_BASIC_INFO'; payload: Partial<Pick<TestBuilderState, 'title' | 'description' | 'examCode' | 'duration' | 'examType' | 'difficulty'>> }
+  | { type: 'SET_BASIC_INFO'; payload: Partial<Pick<TestBuilderState, 'title' | 'description' | 'examCode' | 'duration' | 'examType' | 'difficulty' | 'referenceId'>> }
   | { type: 'SET_SECTIONS'; payload: TestSection[] }
   | { type: 'ADD_SECTION'; payload: TestSection }
   | { type: 'UPDATE_SECTION'; payload: { index: number; section: Partial<TestSection> } }
@@ -63,6 +56,7 @@ const initialState: TestBuilderState = {
   duration: 60,
   examType: ExamType.FULL_LENGTH,
   difficulty: 'MEDIUM',
+  referenceId: '',
   testSections: [],
   startTime: new Date(),
   endTime: null,
@@ -78,13 +72,13 @@ function testBuilderReducer(state: TestBuilderState, action: TestBuilderAction):
   switch (action.type) {
     case 'SET_BASIC_INFO':
       return { ...state, ...action.payload };
-      
+
     case 'SET_SECTIONS':
       return { ...state, testSections: action.payload };
-      
+
     case 'ADD_SECTION':
       return { ...state, testSections: [...state.testSections, action.payload] };
-      
+
     case 'UPDATE_SECTION':
       return {
         ...state,
@@ -94,13 +88,13 @@ function testBuilderReducer(state: TestBuilderState, action: TestBuilderAction):
             : section
         ),
       };
-      
+
     case 'REMOVE_SECTION':
       return {
         ...state,
         testSections: state.testSections.filter((_, index) => index !== action.payload),
       };
-      
+
     case 'SET_SECTION_QUESTIONS':
       return {
         ...state,
@@ -110,22 +104,22 @@ function testBuilderReducer(state: TestBuilderState, action: TestBuilderAction):
             : section
         ),
       };
-      
+
     case 'SET_REVIEW_INFO':
       return { ...state, ...action.payload };
-      
+
     case 'SET_CURRENT_STEP':
       return { ...state, currentStep: action.payload };
-      
+
     case 'SET_LOADING':
       return { ...state, loading: action.payload };
-      
+
     case 'SET_ERRORS':
       return { ...state, errors: action.payload };
-      
+
     case 'CLEAR_ERRORS':
       return { ...state, errors: {} };
-      
+
     case 'RESET_FORM':
       const resetData = action.payload;
       return {
@@ -137,6 +131,7 @@ function testBuilderReducer(state: TestBuilderState, action: TestBuilderAction):
           duration: resetData.duration || 60,
           examType: resetData.examType || ExamType.FULL_LENGTH,
           difficulty: (resetData.difficulty as 'EASY' | 'MEDIUM' | 'HARD') || 'MEDIUM',
+          referenceId: resetData.referenceId || '',
           testSections: resetData.testSection?.map(section => ({
             id: `section-${Date.now()}-${Math.random()}`,
             name: section.name,
@@ -154,14 +149,14 @@ function testBuilderReducer(state: TestBuilderState, action: TestBuilderAction):
           initialTest: resetData,
         }),
       };
-      
+
     case 'INITIALIZE':
       return {
         ...initialState,
         ...action.payload,
         isEditing: !!action.payload.initialTest,
       };
-      
+
     default:
       return state;
   }
@@ -170,9 +165,8 @@ function testBuilderReducer(state: TestBuilderState, action: TestBuilderAction):
 interface TestBuilderContextType {
   state: TestBuilderState;
   dispatch: React.Dispatch<TestBuilderAction>;
-  
-  // Convenience functions
-  setBasicInfo: (info: Partial<Pick<TestBuilderState, 'title' | 'description' | 'examCode' | 'duration' | 'examType' | 'difficulty'>>) => void;
+
+  setBasicInfo: (info: Partial<Pick<TestBuilderState, 'title' | 'description' | 'examCode' | 'duration' | 'examType' | 'difficulty' | 'referenceId'>>) => void;
   addSection: () => void;
   updateSection: (index: number, section: Partial<TestSection>) => void;
   removeSection: (index: number) => void;
@@ -185,8 +179,7 @@ interface TestBuilderContextType {
   setErrors: (errors: Record<string, string>) => void;
   clearErrors: () => void;
   reset: (initialTest?: test) => void;
-  
-  // Computed values
+
   isValid: boolean;
   canProceed: boolean;
   totalQuestions: number;
@@ -208,9 +201,9 @@ interface TestBuilderProviderProps {
   initialTest?: test;
 }
 
-export const TestBuilderProvider: React.FC<TestBuilderProviderProps> = ({ 
-  children, 
-  initialTest 
+export const TestBuilderProvider: React.FC<TestBuilderProviderProps> = ({
+  children,
+  initialTest
 }) => {
   const [state, dispatch] = useReducer(testBuilderReducer, initialState);
 
@@ -221,8 +214,7 @@ export const TestBuilderProvider: React.FC<TestBuilderProviderProps> = ({
     }
   }, [initialTest]);
 
-  // Convenience functions - memoized to prevent infinite re-renders
-  const setBasicInfo = React.useCallback((info: Partial<Pick<TestBuilderState, 'title' | 'description' | 'examCode' | 'duration' | 'examType' | 'difficulty'>>) => {
+  const setBasicInfo = React.useCallback((info: Partial<Pick<TestBuilderState, 'title' | 'description' | 'examCode' | 'duration' | 'examType' | 'difficulty' | 'referenceId'>>) => {
     dispatch({ type: 'SET_BASIC_INFO', payload: info });
   }, []);
 
@@ -291,13 +283,13 @@ export const TestBuilderProvider: React.FC<TestBuilderProviderProps> = ({
       case FormStep.BASIC_INFO:
         return !!(state.title && state.examCode && state.duration > 0);
       case FormStep.SECTIONS:
-        return state.testSections.length > 0 && 
-               state.testSections.every(section => 
-                 section.name && 
-                 section.correctMarks > 0 && 
-                 section.negativeMarks >= 0 &&
-                 section.testQuestion.length > 0
-               );
+        return state.testSections.length > 0 &&
+          state.testSections.every(section =>
+            section.name &&
+            section.correctMarks > 0 &&
+            section.negativeMarks >= 0 &&
+            section.testQuestion.length > 0
+          );
       case FormStep.REVIEW:
         return true;
       default:
@@ -312,7 +304,7 @@ export const TestBuilderProvider: React.FC<TestBuilderProviderProps> = ({
   }, [state.testSections]);
 
   const totalMarks = React.useMemo(() => {
-    return state.testSections.reduce((total, section) => 
+    return state.testSections.reduce((total, section) =>
       total + (section.testQuestion.length * section.correctMarks), 0);
   }, [state.testSections]);
 

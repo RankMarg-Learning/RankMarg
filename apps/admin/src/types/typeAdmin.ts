@@ -1,4 +1,8 @@
-import { QuestionType } from "@repo/db/enums";
+import { QuestionType, TestStatus, Visibility, ExamType } from "@repo/db/enums";
+
+// Re-export as values AND types so they work in z.nativeEnum(), as property
+// accesses (.DRAFT, .PRIVATE, .FULL_LENGTH) and in type annotation positions.
+export { TestStatus, Visibility, ExamType };
 
 
 
@@ -36,32 +40,9 @@ export enum FormStep {
   REVIEW = 2
 }
 
-export enum ExamType {
-  FULL_LENGTH = "FULL_LENGTH",
-  SUBJECT_WISE = "SUBJECT_WISE",
-  CHAPTER_WISE = "CHAPTER_WISE",
-  ONBOARDING = "ONBOARDING",
-  CUSTOM = "CUSTOM",
-  PYQ = "PYQ",
-  SPEED_TEST = "SPEED_TEST",
-  WEAKNESS_BASED = "WEAKNESS_BASED",
-  ADAPTIVE = "ADAPTIVE",
-  DAILY_CHALLENGE = "DAILY_CHALLENGE",
-  SIMULATION = "SIMULATION"
-}
+// ExamType is re-exported from @repo/db/enums (single source of truth)
 
-export enum TestStatus {
-  DRAFT = "DRAFT",
-  ACTIVE = "ACTIVE",
-  COMPLETED = "COMPLETED",
-  ARCHIVED = "ARCHIVED"
-}
 
-export enum Visibility {
-  PUBLIC = "PUBLIC",
-  PRIVATE = "PRIVATE",
-  RESTRICTED = "RESTRICTED"
-}
 
 export interface User {
   id: string;

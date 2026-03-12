@@ -4,7 +4,7 @@ import { QuestionStatus } from '@/utils';
 import { calculateMarks } from '@/utils/test/calculateMarks';
 import { SubmitStatus } from '@repo/db/enums';
 import api from '@/utils/api';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback } from 'react';
 
 export type QuestionType = 'single' | 'multiple' | 'integer';
@@ -84,6 +84,25 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
   const [testSection, setTestSection] = useState<Record<string, SectionConfig>>({})
   const [testStatus, setTestStatus] = useState<TestStatus>("JOIN")
   const [platform, setPlatform] = useState<string>("");
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem('accessToken');
+      if (storedToken) {
+        setToken(storedToken);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const urlToken = searchParams.get('token');
+    if (urlToken && urlToken !== token) {
+      console.log("Token sync: URL token found, updating state and localStorage");
+      localStorage.setItem('accessToken', urlToken);
+      setToken(urlToken);
+    }
+  }, [searchParams, token]);
 
   const totalQuestions = useMemo(() => questions?.length || 0, [questions]);
 
@@ -91,15 +110,6 @@ export const TestProvider = ({ children }: { children: ReactNode }) => {
     setQuestionsState(newQuestions);
   }, []);
 
-  useEffect(() => {
-    if (!testInfo || !questions.length || !testId || !Object.keys(testSection).length) {
-      if (testId) {
-        router.push(`/test/${testId}/instructions${token ? `?token=${token}` : ''}`);
-      } else {
-        router.push(`/tests`);
-      }
-    }
-  }, [testInfo, questions, testId, testSection, router]);
 
   useEffect(() => {
     if (!testInfo?.testId) return;

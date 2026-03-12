@@ -5,7 +5,6 @@ import { test, ExamType, TestStatus, Visibility } from '@/types/typeAdmin';
 import TestBuilder from './TestBuilder';
 import { z } from "zod";
 
-// Keep the original schema for backward compatibility
 export const testSchema = z.object({
   title: z.string().nonempty("Title is required"),
   description: z
@@ -19,15 +18,16 @@ export const testSchema = z.object({
   difficulty: z.enum(["EASY", "MEDIUM", "HARD"]),
   status: z.nativeEnum(TestStatus),
   visibility: z.nativeEnum(Visibility),
+  referenceId: z.string().optional(),
   startTime: z
-    .union([z.string(), z.date()]) 
-    .transform((val) => (typeof val === "string" ? new Date(val) : val)) ,
+    .union([z.string(), z.date()])
+    .transform((val) => (typeof val === "string" ? new Date(val) : val)),
   endTime: z
     .union([z.date(), z.null()])
     .refine((date) => !date || date > new Date(), {
       message: "End time must be in the future",
     }),
-    testSection: z.array(z.object({
+  testSection: z.array(z.object({
     name: z.string().nonempty("Section name is required"),
     isOptional: z.boolean(),
     maxQuestions: z.number().int().optional(),
@@ -40,10 +40,7 @@ export const testSchema = z.object({
   })).min(1, "At least one section is required"),
 });
 
-/**
- * TestForm - Updated to use the new optimized TestBuilder system
- * Maintains backward compatibility with the original interface
- */
+
 interface TestFormProps {
   initialTest?: test;
   onSave: (test: Partial<test>) => void;

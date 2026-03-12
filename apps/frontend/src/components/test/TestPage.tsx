@@ -23,26 +23,31 @@ const TestPage = ({ testId }: { testId: string }) => {
 
 
   useEffect(() => {
+    setTestId(testId);
+  }, [testId, setTestId]);
+
+  useEffect(() => {
+    if (token) {
+      setToken(token);
+    }
+  }, [token, setToken]);
+
+  useEffect(() => {
     const enterFullScreen = async () => {
       const elem = document.documentElement;
-
       try {
         if (elem.requestFullscreen) {
           await elem.requestFullscreen();
-        } else if ((elem as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> }).webkitRequestFullscreen) {
-          await (elem as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> }).webkitRequestFullscreen();
-        } else if ((elem as HTMLElement & { msRequestFullscreen?: () => Promise<void> }).msRequestFullscreen) {
-          await (elem as HTMLElement & { msRequestFullscreen?: () => Promise<void> }).msRequestFullscreen();
+        } else if ((elem as any).webkitRequestFullscreen) {
+          await (elem as any).webkitRequestFullscreen();
+        } else if ((elem as any).msRequestFullscreen) {
+          await (elem as any).msRequestFullscreen();
         }
       } catch (error) {
         console.error("Failed to enter full-screen mode:", error);
       }
     };
 
-    setTestId(testId);
-    if (token) {
-      setToken(token);
-    }
     enterFullScreen();
 
     const handleFullscreenChange = () => {
@@ -58,7 +63,6 @@ const TestPage = ({ testId }: { testId: string }) => {
       }
     };
 
-
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
@@ -66,7 +70,7 @@ const TestPage = ({ testId }: { testId: string }) => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [testId, setTestId]);
+  }, [setMinimizeCount]);
 
 
 

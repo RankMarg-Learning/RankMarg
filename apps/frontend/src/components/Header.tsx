@@ -10,11 +10,9 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { useUserData } from '@/context/ClientContextProvider';
-import api from '@/utils/api';
 import { Skeleton } from '@repo/common-ui';
-import { useRouter } from 'next/navigation';
-// import HeaderTrialBadge from './upgrade/trial';
 import { NotificationDropdown } from './notifications/NotificationDropdown';
+import { handleSignOut } from '@/utils/signOut';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -22,18 +20,6 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, isLoading } = useUserData();
-
-  const router = useRouter()
-  const handleSignOut = async () => {
-    try {
-      const res = await api.post("/auth/sign-out");
-      if (res.data.success) {
-        router.push("/sign-in");
-      }
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
 
   return (
     <header className="sticky top-0 z-30 w-full backdrop-blur-md bg-white/95 border-b border-gray-200/50 shadow-sm">

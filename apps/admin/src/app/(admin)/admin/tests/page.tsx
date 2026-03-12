@@ -2,7 +2,7 @@
 
 import { Button } from "@repo/common-ui"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/common-ui"
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/common-ui"
+import { Card, CardContent } from "@repo/common-ui"
 import Link from 'next/link'
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "@/hooks/use-toast"
@@ -25,7 +25,7 @@ export default function AdminTestPage() {
     queryKey: ["tests"],
     queryFn: async () => getTests(),
   });
-  
+
   const getTestLink = (testId: string) => `${process.env.NEXT_PUBLIC_WEBSITE_URL!}/test/${testId}`
 
   const handleCopyTestLink = async (testId: string) => {
@@ -71,14 +71,14 @@ export default function AdminTestPage() {
         })
         refetch()
       }
-      else{
+      else {
         toast({
           title: response.message,
           variant: "default",
           duration: 3000,
           className: "bg-red-500 text-white",
         })
-        
+
       }
     }
   }
@@ -91,9 +91,9 @@ export default function AdminTestPage() {
         duration: 2000,
         className: "bg-gray-100 text-gray-800",
       });
-      
+
       const response = await downloadTestPDF(testId);
-      
+
       if (response.success) {
         toast({
           title: "PDF Downloaded Successfully",
@@ -119,8 +119,8 @@ export default function AdminTestPage() {
     }
   }
 
-  if(!tests?.success && !isLoading){
-    return(
+  if (!tests?.success && !isLoading) {
+    return (
       <div className="flex justify-center items-center h-screen">
         <h1 className="text-2xl font-bold text-red-500">{tests.message}</h1>
       </div>
@@ -137,7 +137,15 @@ export default function AdminTestPage() {
           <p className="text-gray-500">Manage all your Tests</p>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-
+          <Link href="/admin/tests/intelligent-create">
+            <Button
+              variant="outline"
+              className=" hover:bg-primary-500 flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Quick Create
+            </Button>
+          </Link>
           <Link href="/admin/tests/add">
             <Button
               variant="outline"
@@ -151,14 +159,6 @@ export default function AdminTestPage() {
       </div>
       <div className="space-y-6">
         <Card>
-          <CardHeader className="hidden">
-            <div className="flex justify-between items-center">
-              <CardTitle>Test Management</CardTitle>
-              <Link href="/admin/tests/create">
-                <Button>Create New Test</Button>
-              </Link>
-            </div>
-          </CardHeader>
           <CardContent className="rounded-md">
             <div className="flex justify-end mb-4">
             </div>

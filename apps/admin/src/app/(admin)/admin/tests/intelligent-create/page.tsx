@@ -34,6 +34,9 @@ import {
   SelectValue,
 } from "@repo/common-ui";
 import type { SectionFilter } from "@/components/admin/test/intelligent-builder/types";
+import { useSubjects } from "@/hooks/useSubject";
+import { useTopics } from "@/hooks/useTopics";
+import { addTest } from "@/services/test.service";
 
 
 interface SelectedQuestion {
@@ -83,8 +86,7 @@ type StepId = typeof STEPS[number]["id"];
 
 export default function IntelligentTestCreate() {
   const router = useRouter();
-  
-  // Basic test information
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [duration, setDuration] = useState("");
@@ -93,31 +95,37 @@ export default function IntelligentTestCreate() {
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [infiniteTime, setInfiniteTime] = useState(true);
-  const [examType, setExamType] = useState("");
+  const [examType, setExamType] = useState<ExamType>(ExamType.FULL_LENGTH);
   const [difficulty, setDifficulty] = useState("");
   const [examCode, setExamCode] = useState("");
   const [visibility, setVisibility] = useState("PUBLIC");
   const [status, setStatus] = useState("DRAFT");
-  
-  // Section and question management
+  const [referenceId, setReferenceId] = useState("");
+  const [chapterSubjectId, setChapterSubjectId] = useState("");
+
+  const { subjects, isLoading: isSubjectsLoading } = useSubjects(examCode || undefined);
+  const { topics, isLoading: isTopicsLoading } = useTopics(
+    examCode && chapterSubjectId ? chapterSubjectId : undefined
+  );
+
   const [sectionFilters, setSectionFilters] = useState<SectionFilter[]>([]);
   const [generatedSections, setGeneratedSections] = useState<ProcessedSection[]>([]);
   const [isSavingSection, setIsSavingSection] = useState(false);
   const [isCreatingTest, setIsCreatingTest] = useState(false);
-  
-  // Step management
+
   const [currentStep, setCurrentStep] = useState<StepId>("basic");
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep);
   const progress = ((currentStepIndex + 1) / STEPS.length) * 100;
 
-  // Handlers for select filters
   const handleDifficulty = (value: string[]) => {
     setDifficulty(value[0] === "Default" ? "" : value[0]);
   };
 
   const handleExamCode = (value: string[]) => {
     setExamCode(value[0] === "Default" ? "" : value[0]);
+    setReferenceId("");
+    setChapterSubjectId("");
   };
 
   const handleVisibility = (value: string) => {
@@ -128,7 +136,12 @@ export default function IntelligentTestCreate() {
     setStatus(value);
   };
 
-  // Generate options from enums
+  const handleExamTypeChange = (value: ExamType) => {
+    setExamType(value);
+    setReferenceId("");
+    setChapterSubjectId("");
+  };
+
   const examTypeOptions = Object.entries(ExamType).map(([key, value]) => ({
     value: key,
     label: TextFormator(value),
@@ -144,7 +157,6 @@ export default function IntelligentTestCreate() {
     label: TextFormator(value),
   }));
 
-  // Validation functions
   const validateBasicInfo = (): boolean => {
     if (!title.trim()) {
       toast({
@@ -170,11 +182,10 @@ export default function IntelligentTestCreate() {
       });
       return false;
     }
-    
+
     return true;
   };
 
-  // Step navigation handlers
   const handleNextStep = () => {
     switch (currentStep) {
       case "basic":
@@ -212,18 +223,15 @@ export default function IntelligentTestCreate() {
   const handleGoToStep = (stepId: StepId) => {
     const targetIndex = STEPS.findIndex((s) => s.id === stepId);
     const currentIndex = STEPS.findIndex((s) => s.id === currentStep);
-    
-    // Only allow going to completed steps or next step
+
     if (targetIndex <= currentIndex + 1) {
       setCurrentStep(stepId);
     }
   };
 
-  // Section management
   const handleAddSection = async (section: SectionFilter) => {
     setIsSavingSection(true);
     try {
-      // Generate questions for this section only
       const response = await api.post("/test/intelligent-create", {
         sections: [section],
         examCode,
@@ -238,11 +246,10 @@ export default function IntelligentTestCreate() {
           questionLimit: section.questionCount,
           subjectId: section.subjectId,
         };
-        
-        // Add to section filters and generated sections
+
         setSectionFilters([...sectionFilters, section]);
         setGeneratedSections([...generatedSections, normalizedSection]);
-        
+
         toast({
           title: "Section Added Successfully",
           description: `${section.name} added with ${generatedSection.questions.length} questions`,
@@ -265,7 +272,7 @@ export default function IntelligentTestCreate() {
     const sectionName = sectionFilters[index]?.name;
     setSectionFilters(sectionFilters.filter((_, i) => i !== index));
     setGeneratedSections(generatedSections.filter((_, i) => i !== index));
-    
+
     toast({
       title: "Section Removed",
       description: `${sectionName} has been removed`,
@@ -276,7 +283,6 @@ export default function IntelligentTestCreate() {
     setGeneratedSections(sections);
   };
 
-  // Final test creation
   const handleCreateTest = async () => {
     try {
       if (!validateBasicInfo()) return;
@@ -301,7 +307,6 @@ export default function IntelligentTestCreate() {
 
       setIsCreatingTest(true);
 
-      // Transform generated sections to match the API format
       const testSection = generatedSections.map((section) => ({
         name: section.name,
         isOptional: section.isOptional,
@@ -321,14 +326,15 @@ export default function IntelligentTestCreate() {
         startTime: startDate,
         endTime: endDate || null,
         testSection,
-        examType: examType || ExamType.FULL_LENGTH,
-        status,
-        visibility,
+        examType: (examType || ExamType.FULL_LENGTH) as ExamType,
+        referenceId: referenceId || undefined,
+        status: status as TestStatus,
+        visibility: visibility as Visibility,
       };
 
-      const response = await api.post("/test", testData);
+      const response = await addTest(testData)
 
-      if (response.status === 200) {
+      if (response.success) {
         toast({
           title: "Success",
           description: "Test Created Successfully",
@@ -350,7 +356,6 @@ export default function IntelligentTestCreate() {
     }
   };
 
-  // Calculate summary statistics
   const totalQuestions = generatedSections.reduce(
     (sum, section) => sum + section.questions.length,
     0
@@ -384,18 +389,16 @@ export default function IntelligentTestCreate() {
                   <button
                     onClick={() => handleGoToStep(step.id)}
                     disabled={index > currentStepIndex + 1}
-                    className={`flex flex-col items-center gap-2 ${
-                      index <= currentStepIndex ? "cursor-pointer" : "cursor-not-allowed opacity-50"
-                    }`}
+                    className={`flex flex-col items-center gap-2 ${index <= currentStepIndex ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+                      }`}
                   >
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                        currentStep === step.id
-                          ? "bg-primary text-primary-foreground"
-                          : index < currentStepIndex
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${currentStep === step.id
+                        ? "bg-primary text-primary-foreground"
+                        : index < currentStepIndex
                           ? "bg-green-500 text-white"
                           : "bg-muted text-muted-foreground"
-                      }`}
+                        }`}
                     >
                       {index < currentStepIndex ? (
                         <Check className="h-5 w-5" />
@@ -469,7 +472,7 @@ export default function IntelligentTestCreate() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="examType">Exam Type*</Label>
-                  <Select value={examType} onValueChange={(value) => setExamType(value)}>
+                  <Select value={examType} onValueChange={handleExamTypeChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select exam type" />
                     </SelectTrigger>
@@ -505,6 +508,86 @@ export default function IntelligentTestCreate() {
                   />
                 </div>
               </div>
+
+              {(examType === "SUBJECT_WISE" || examType === "CHAPTER_WISE") && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="ref-subject">
+                      {examType === "SUBJECT_WISE" ? "Subject*" : "Subject (for topic filter)*"}
+                    </Label>
+                    <Select
+                      value={examType === "SUBJECT_WISE" ? referenceId : chapterSubjectId}
+                      onValueChange={(value) => {
+                        if (examType === "SUBJECT_WISE") {
+                          setReferenceId(value);
+                        } else {
+                          setChapterSubjectId(value);
+                          setReferenceId("");
+                        }
+                      }}
+                    >
+                      <SelectTrigger id="ref-subject">
+                        <SelectValue
+                          placeholder={
+                            !examCode
+                              ? "Select exam code first"
+                              : isSubjectsLoading
+                                ? "Loading subjects…"
+                                : "Select subject"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(subjects as any[]).map((s: any) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {examType === "CHAPTER_WISE" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="ref-topic">Topic (Chapter)*</Label>
+                      <Select
+                        value={referenceId}
+                        onValueChange={(value) => setReferenceId(value)}
+                        disabled={!chapterSubjectId}
+                      >
+                        <SelectTrigger id="ref-topic">
+                          <SelectValue
+                            placeholder={
+                              !chapterSubjectId
+                                ? "Select a subject first"
+                                : isTopicsLoading
+                                  ? "Loading topics…"
+                                  : "Select topic"
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(topics as any[]).map((t: any) => (
+                            <SelectItem key={t.id} value={t.id}>
+                              {t.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {examType && (
+                <p className="text-xs text-muted-foreground rounded-md border bg-muted/40 px-3 py-2">
+                  {examType === "FULL_LENGTH" && "📋 Full Length — no scope restriction."}
+                  {examType === "SUBJECT_WISE" && "📚 Subject-wise — the selected subject will be stored as referenceId."}
+                  {examType === "CHAPTER_WISE" && "📖 Chapter-wise — the selected topic (chapter) will be stored as referenceId."}
+                  {!["FULL_LENGTH", "SUBJECT_WISE", "CHAPTER_WISE"].includes(examType) &&
+                    `ℹ️ ${TextFormator(examType)} — referenceId is optional for this type.`}
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -584,8 +667,8 @@ export default function IntelligentTestCreate() {
           <QuestionPreviewList
             sections={generatedSections}
             onUpdateSections={handleUpdateSections}
-            onBack={() => {}}
-            onCreate={() => {}}
+            onBack={() => { }}
+            onCreate={() => { }}
             hideActions={true}
             examCode={examCode}
           />
@@ -633,6 +716,14 @@ export default function IntelligentTestCreate() {
                     <p className="text-sm text-muted-foreground">Type</p>
                     <Badge variant="outline">{TextFormator(examType || ExamType.FULL_LENGTH)}</Badge>
                   </div>
+                  {referenceId && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        {examType === "SUBJECT_WISE" ? "Subject ID (referenceId)" : "Topic ID (referenceId)"}
+                      </p>
+                      <Badge variant="secondary" className="font-mono text-xs">{referenceId}</Badge>
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm text-muted-foreground">Duration</p>
                     <p className="font-medium">{duration} minutes</p>
@@ -728,7 +819,7 @@ export default function IntelligentTestCreate() {
               {/* Publication Settings */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Publication Settings</h3>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="finalTimeSettings">Time Settings</Label>
@@ -844,7 +935,7 @@ export default function IntelligentTestCreate() {
               onClick={handleCreateTest}
               disabled={isCreatingTest}
               size="lg"
-              
+
             >
               {isCreatingTest ? (
                 <>

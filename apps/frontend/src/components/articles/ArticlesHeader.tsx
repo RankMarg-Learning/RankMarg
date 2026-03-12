@@ -12,28 +12,15 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { useUserData } from '@/context/ClientContextProvider';
-import api from '@/utils/api';
 import { Skeleton } from '@repo/common-ui';
-import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import HeaderTrialBadge from '../upgrade/trial';
 import { cn } from '@/lib/utils';
+import { handleSignOut } from '@/utils/signOut';
 
 export function ArticlesHeader() {
   const { user, isLoading } = useUserData();
-  const router = useRouter();
   const pathname = usePathname();
-
-  const handleSignOut = async () => {
-    try {
-      const res = await api.post("/auth/sign-out");
-      if (res.data.success) {
-        router.push("/sign-in");
-      }
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
 
   const navLinks = [
     { href: "/", label: "Home", icon: Home },

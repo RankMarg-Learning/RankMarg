@@ -11,6 +11,30 @@ const QuerySchema = z.object({
   sessionsCount: z.coerce.number().int().positive().default(3),
 });
 
+const HOME_CONFIG_CDN_URL =
+  process.env.HOME_CONFIG_CDN_URL ??
+  "https://cdn.rankmarg.in/json/home.json";
+
+
+async function fetchHomeConfig(): Promise<object | null> {
+  try {
+    const bustUrl = `${HOME_CONFIG_CDN_URL}?_t=${Date.now()}`;
+
+    const res = await fetch(bustUrl, {
+      signal: AbortSignal.timeout(3000),
+      headers: {
+        "Cache-Control": "no-cache, no-store",
+        "Pragma": "no-cache",
+      },
+    });
+
+    if (!res.ok) return null;
+    return (await res.json()) as object;
+  } catch {
+    return null;
+  }
+}
+
 export class DashboardController {
   //[GET] /
   getDashboard = async (
@@ -413,6 +437,28 @@ export class DashboardController {
       next(error);
     }
   }
+
+  //[GET] /home-config
+  getHomeConfig = async (
+    _req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const config = await fetchHomeConfig();
+
+      if (!config) {
+        ResponseUtil.success(res, null, "Home config not available", 200, undefined, {
+          "Cache-Control": "public, max-age=30, stale-while-revalidate=60",
+        });
+        return;
+      }
+
+      ResponseUtil.success(res, config, "Ok", 200, undefined,);
+    } catch (error) {
+      next(error);
+    }
+  };
 
   //[GET] /ai-practice
   getAiPractice = async (

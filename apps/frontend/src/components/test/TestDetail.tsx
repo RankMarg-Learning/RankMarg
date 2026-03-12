@@ -27,16 +27,27 @@ export default function TestDetail({ testId }: { testId: string }) {
   const [agreed, setAgreed] = useState(false)
 
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  const urlToken = searchParams.get("token");
   const platformParam = searchParams.get("platform");
 
-  const { setQuestions, setTestId, setTestSection, setTestInfo, setIsLoaded, setToken, token: contextToken, setPlatform, platform: contextPlatform } = useTestContext()
+  const {
+    setQuestions,
+    setTestId,
+    setTestSection,
+    setTestInfo,
+    setIsLoaded,
+    setToken,
+    token: contextToken,
+    setPlatform,
+    platform: contextPlatform
+  } = useTestContext()
 
-
+  const activeToken = urlToken || contextToken || (typeof window !== 'undefined' ? localStorage.getItem('accessToken') : "") || "";
 
   const { data: test, isLoading } = useQuery({
-    queryKey: ["testId", testId, token || contextToken],
-    queryFn: async () => getTestDetails(testId, token || contextToken || "")
+    queryKey: ["getTestDetails", testId, activeToken],
+    queryFn: () => getTestDetails(testId, activeToken),
+    enabled: !!testId,
   })
 
 
@@ -49,8 +60,8 @@ export default function TestDetail({ testId }: { testId: string }) {
       }
     }
     setTestId(testId)
-    if (token) {
-      setToken(token)
+    if (activeToken) {
+      setToken(activeToken)
     }
     if (platformParam) {
       setPlatform(platformParam)
@@ -83,14 +94,14 @@ export default function TestDetail({ testId }: { testId: string }) {
       })
     }
     setIsLoaded(false)
-  }, [test, setTestId, setQuestions, setTestSection, setTestInfo, setIsLoaded, testId, router, platformParam])
+  }, [test, setTestId, setQuestions, setTestSection, setTestInfo, setIsLoaded, testId, router, platformParam, activeToken, setToken])
 
   const handleTestStart = () => {
     if (test.testKey && test.testKey !== testKey) {
       setAgreed(false)
       return
     }
-    const startUrl = `/test/${testId}${token ? `?token=${token}` : ''}`
+    const startUrl = `/test/${testId}${activeToken ? `?token=${activeToken}` : ''}`
     router.push(startUrl)
   };
 

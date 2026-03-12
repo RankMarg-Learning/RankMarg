@@ -26,6 +26,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const handleSignOut = async () => {
     try {
       const res = await api.post("/auth/sign-out");
+      localStorage.removeItem('accessToken');
       if (res.data.success) {
         router.push("/sign-in");
       }
