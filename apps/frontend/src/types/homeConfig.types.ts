@@ -43,18 +43,18 @@ export interface PollSection {
   api: string;
 }
 
-export interface InputFields {
-  application_number?: string;
-  date_of_birth?: string;
-  security_pin?: string;
-  mother_name?: string;
-  [key: string]: string | undefined;
+export interface InputFieldDef {
+  label: string;
+  type: "text" | "calendar" | "email" | "number";
+  placeholder?: string;
+  required?: boolean;
+  value?: string; // initial value if any
 }
 
 export interface InputItem {
   id: string;
   text: string;
-  fields: InputFields;
+  fields: Record<string, InputFieldDef>;
   target: string[];
   end: string;
 }
