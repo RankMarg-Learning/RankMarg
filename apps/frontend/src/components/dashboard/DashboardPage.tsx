@@ -17,6 +17,7 @@ import HomeCarousel from './HomeCarousel'
 import HomePoll from './HomePoll'
 import HomeInputForm from './HomeInputForm'
 import ImportantBlogs from './ImportantBlogs'
+import { cn } from '@/lib/utils'
 
 
 function isTargetMatch(target: string[], examCode?: string): boolean {
@@ -71,7 +72,7 @@ const DashboardPage = () => {
     return (
         <>
             <HighlightDialog />
-            <div className="flex flex-col space-y-6">
+            <div className="flex flex-col space-y-2">
 
                 <div className="bg-gradient-to-r from-primary-50 to-primary-100">
                     {user?.isActive === false && (
@@ -93,18 +94,35 @@ const DashboardPage = () => {
                     <SmartStudyHub dashboardData={dashboardBasic}
                         currentStudies={currentStudies} />
                 </div>
-                <div className="px-3 space-y-2" >
-                    {carousel?.enabled && carouselItems.length > 0 && (
-                        <HomeCarousel items={carouselItems} autoplay={carousel.autoplay} />
-                    )}
+                <div className="px-3 grid grid-cols-1 md:grid-cols-2 gap-2" >
+                    <div className={cn(
+                        "col-span-1 md:col-span-2",
+                        (!poll?.enabled || !pollItem) && (!input?.enabled || !inputItem) ? "md:col-span-2" : ""
+                    )}>
+                        {carousel?.enabled && carouselItems.length > 0 && (
+                            <HomeCarousel items={carouselItems} autoplay={carousel.autoplay} />
+                        )}
+                    </div>
+
                     {poll?.enabled && pollItem && (
-                        <HomePoll poll={pollItem} submitApi={poll.api} />
+                        <div className={cn(
+                            "w-full",
+                            (!input?.enabled || !inputItem) ? "md:col-span-2" : "col-span-1"
+                        )}>
+                            <HomePoll poll={pollItem} submitApi={poll.api} />
+                        </div>
                     )}
+
                     {input?.enabled && inputItem && (
-                        <HomeInputForm
-                            inputItem={inputItem}
-                            submitApi={input.api || undefined}
-                        />
+                        <div className={cn(
+                            "w-full",
+                            (!poll?.enabled || !pollItem) ? "md:col-span-2" : "col-span-1"
+                        )}>
+                            <HomeInputForm
+                                inputItem={inputItem}
+                                submitApi={input.api || undefined}
+                            />
+                        </div>
                     )}
                 </div>
 

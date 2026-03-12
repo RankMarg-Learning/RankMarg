@@ -14,24 +14,8 @@
                 {
                     "id": "neet_registration",
                     "type": "notification",
-                    "image": "https://utfs.io/f/DbhgrrAIqRoKsM1GJvl5xXNwpv6Q9lomI1WJZLFCnfhM7zPD",
-                    "cta_url": "/exam/neet-registration",
-                    "priority": 1,
-                    "target": [
-                        "NEET"
-                    ],
-                    "level": [
-                        2,
-                        3,
-                        4,
-                        5
-                    ],
-                    "end": "2026-04-10"
-                },
-                {
-                    "id": "neet_registration",
-                    "type": "notification",
-                    "image": "https://utfs.io/f/DbhgrrAIqRoKsM1GJvl5xXNwpv6Q9lomI1WJZLFCnfhM7zPD",
+                    "desktop_image": "https://utfs.io/f/DbhgrrAIqRoKsM1GJvl5xXNwpv6Q9lomI1WJZLFCnfhM7zPD",
+                    "app_image": "https://utfs.io/f/DbhgrrAIqRoKsM1GJvl5xXNwpv6Q9lomI1WJZLFCnfhM7zPD",
                     "cta_url": "/exam/neet-registration",
                     "priority": 1,
                     "target": [

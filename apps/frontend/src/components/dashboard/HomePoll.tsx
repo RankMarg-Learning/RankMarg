@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@repo/common-ui";
 import { Button } from "@repo/common-ui";
 import { Badge } from "@repo/common-ui";
 import { BarChart2, CheckCircle2, Loader2 } from "lucide-react";
 import { PollItem } from "@/types/homeConfig.types";
 import { cn } from "@/lib/utils";
+import api from "@/utils/api";
 
 const STORAGE_PREFIX = "rankmarg_poll_";
 
@@ -18,16 +19,20 @@ interface HomePollProps {
 export default function HomePoll({ poll, submitApi }: HomePollProps) {
   const storageKey = `${STORAGE_PREFIX}${btoa(poll.question).slice(0, 20)}`;
 
-  const [selected, setSelected] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem(storageKey);
-  });
+  const [selected, setSelected] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return Boolean(localStorage.getItem(storageKey));
-  });
+  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isHidden, setIsHidden] = useState(false);
+
+  useEffect(() => {
+    const isAlreadySubmitted = localStorage.getItem(storageKey);
+    if (isAlreadySubmitted) {
+      setSelected(isAlreadySubmitted);
+      setSubmitted(true);
+      setIsHidden(true);
+    }
+  }, [storageKey]);
 
   const handleSubmit = async () => {
     if (!selected || submitting || submitted) return;
@@ -35,19 +40,30 @@ export default function HomePoll({ poll, submitApi }: HomePollProps) {
     setError(null);
 
     try {
-      await fetch(submitApi, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: poll.question, answer: selected }),
-      });
+      const submitUrl = "/m/submit/poll";
+      
+      const response = await api.post(submitUrl, {
+        pollId: poll.id || `poll_${storageKey}`,
+        question: poll.question,
+        answer: selected
+      })
+
+      if (!response.data.success) throw new Error(response.data.message);
+
       localStorage.setItem(storageKey, selected);
       setSubmitted(true);
-    } catch {
-      setError("Couldn't submit. Please try again.");
+      
+      setTimeout(() => {
+        setIsHidden(true);
+      }, 3000);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Couldn't submit. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (isHidden) return null;
 
   return (
     <Card className="border border-primary-100 shadow-sm overflow-hidden">
@@ -88,8 +104,8 @@ export default function HomePoll({ poll, submitApi }: HomePollProps) {
                       ? "border-primary-400 bg-primary-50 text-primary-800"
                       : "border-gray-100 bg-gray-50 text-gray-400 cursor-default"
                     : isSelected
-                    ? "border-primary-400 bg-primary-50 text-primary-800 ring-1 ring-primary-300"
-                    : "border-gray-200 bg-white text-gray-700 hover:border-primary-300 hover:bg-primary-50/50"
+                      ? "border-primary-400 bg-primary-50 text-primary-800 ring-1 ring-primary-300"
+                      : "border-gray-200 bg-white text-gray-700 hover:border-primary-300 hover:bg-primary-50/50"
                 )}
               >
                 <span
@@ -98,8 +114,8 @@ export default function HomePoll({ poll, submitApi }: HomePollProps) {
                     isVoted
                       ? "border-primary-500 bg-primary-500"
                       : isSelected
-                      ? "border-primary-500 bg-primary-100"
-                      : "border-gray-300"
+                        ? "border-primary-500 bg-primary-100"
+                        : "border-gray-300"
                   )}
                 />
                 <span className="flex-1 truncate">{opt.text}</span>

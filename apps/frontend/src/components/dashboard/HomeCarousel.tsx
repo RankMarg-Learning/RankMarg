@@ -9,32 +9,45 @@ import { cn } from "@/lib/utils";
 
 
 function CarouselSlide({ item }: { item: CarouselItem }) {
-
   return (
     <Link
       href={item.cta_url || "#"}
-      className={cn(
-        "relative flex items-center gap-4 sm:gap-6 px-4 sm:px-6 md:px-8 py-5 sm:py-6 overflow-hidden min-h-[140px] sm:min-h-[160px] group transition-all duration-500",
-        !item.image
-      )}
+      className="relative block w-full group overflow-hidden transition-all duration-500"
     >
-      {item.image && (
-        <>
+      <div className="relative w-full aspect-[2.8/1] sm:aspect-[11/1] bg-gray-100">
+        {/* Mobile Image */}
+        {(item.app_image) && (
           <img
-            src={item.image}
+            src={item.app_image}
             alt={item.id}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).parentElement?.classList.add("hidden");
-            }}
+            className={cn(
+              "absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105",
+              item.desktop_image ? "sm:hidden" : ""
+            )}
+            loading="lazy"
           />
-        </>
-      )}
+        )}
 
-      {!item.image && (
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-white/20 transition-colors" />
-      )}
+        {item.desktop_image && (
+          <img
+            src={item.desktop_image}
+            alt={item.id}
+            className="hidden sm:block absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            loading="lazy"
+          />
+        )}
 
+        {!(item.app_image || item.desktop_image) && (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center p-6 text-white text-center">
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold">{item.title}</h3>
+              <p className="text-sm opacity-90">{item.subtitle}</p>
+            </div>
+          </div>
+        )}
+
+        <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors duration-300" />
+      </div>
     </Link>
   );
 }

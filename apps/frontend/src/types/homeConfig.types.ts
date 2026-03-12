@@ -5,7 +5,8 @@ export interface CarouselItem {
   type: "notification" | "discount" | "feature";
   title?: string;       // optional — slide renders without heading if absent
   subtitle?: string;    // optional — slide renders without sub-text if absent
-  image?: string;       // optional — falls back to type icon if empty/absent
+  desktop_image?: string;
+  app_image?: string;
   cta_text?: string;    // optional — CTA button hidden if absent
   cta_url: string;
   priority: number;

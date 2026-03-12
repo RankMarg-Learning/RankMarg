@@ -7,6 +7,7 @@ import { Badge } from "@repo/common-ui";
 import { ClipboardList, Loader2, CheckCircle2 } from "lucide-react";
 import { InputItem } from "@/types/homeConfig.types";
 import { cn } from "@/lib/utils";
+import api from "@/utils/api";
 
 const FIELD_LABELS: Record<string, string> = {
   application_number: "Application Number",
@@ -60,12 +61,13 @@ export default function HomeInputForm({
     setError(null);
 
     try {
-      const res = await fetch(submitApi, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-      if (!res.ok) throw new Error("Server error");
+      const submitUrl = "/m/submit/form";
+
+      const res = await api.post(submitUrl, {
+        formId: inputItem.id,
+        values: values
+      })
+      if (!res.data.success) throw new Error("Server error");
 
       setSubmitted(true);
       localStorage.setItem(`submitted_input_${inputItem.id}`, "true");

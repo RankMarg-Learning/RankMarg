@@ -15,6 +15,10 @@ router.post("/upload-s3", authenticate, miscController.uploadS3);
 
 router.get("/check/coupon", authenticate, miscController.checkCoupon);
 
-router.post("/check/phone", authenticate, miscController.checkPhoneNumber);
+router.post("/check/phone", authenticate, (req, res, next) => { miscController.checkPhoneNumber(req, res, next); });
+
+router.post("/submit/poll", authenticate, (req, res, next) => { miscController.submitPoll(req, res, next); });
+
+router.post("/submit/form", authenticate, (req, res, next) => { miscController.submitInputForm(req, res, next); });
 
 export default router;

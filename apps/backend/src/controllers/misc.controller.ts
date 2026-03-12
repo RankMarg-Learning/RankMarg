@@ -149,4 +149,87 @@ export class MiscController {
       next(error);
     }
   };
+
+  submitPoll = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { pollId, answer, question } = req.body;
+      const userId = req.user?.id;
+
+      if (!pollId || !answer) {
+        ResponseUtil.error(res, "Poll ID and answer are required", 400);
+        return;
+      }
+
+      if (!userId) {
+        ResponseUtil.error(res, "User not authenticated", 401);
+        return;
+      }
+
+      const miscKey = `poll:${pollId}:${userId}`;
+
+      const submission = await (prisma as any).misc.upsert({
+        where: { key: miscKey },
+        update: {
+          data: { answer, question, pollId },
+          updatedAt: new Date(),
+        },
+        create: {
+          key: miscKey,
+          type: "POLL",
+          userId: userId,
+          data: { answer, question, pollId },
+        },
+      });
+
+      ResponseUtil.success(res, submission, "Poll submitted successfully", 200);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  submitInputForm = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { formId, values } = req.body;
+      const userId = req.user?.id;
+
+      if (!formId || !values) {
+        ResponseUtil.error(res, "Form ID and values are required", 400);
+        return;
+      }
+
+      if (!userId) {
+        ResponseUtil.error(res, "User not authenticated", 401);
+        return;
+      }
+
+      const miscKey = `form:${formId}:${userId}`;
+
+      const submission = await (prisma as any).misc.upsert({
+        where: { key: miscKey },
+        update: {
+          data: { values, formId },
+          updatedAt: new Date(),
+        },
+        create: {
+          key: miscKey,
+          type: "FORM",
+          userId: userId,
+          data: { values, formId },
+        },
+      });
+
+      ResponseUtil.success(res, submission, "Form submitted successfully", 200);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
+

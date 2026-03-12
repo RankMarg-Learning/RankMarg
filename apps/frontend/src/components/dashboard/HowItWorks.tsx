@@ -68,8 +68,8 @@ const HowItWorks = () => {
     ]
 
     return (
-        <Card className="border border-primary-100 bg-white shadow-sm m-2 md:mb-2 mb-20">
-            <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+        <Card className="border border-primary-100 bg-white shadow-sm m-2 md:mb-2 mb-2">
+            <CardContent className="p-3  space-y-3 sm:space-y-4">
                 {/* Header - Always Visible */}
                 <div
                     className="flex items-center justify-between cursor-pointer"
