@@ -231,5 +231,43 @@ export class MiscController {
       next(error);
     }
   };
+
+  getInteractions = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { type } = req.query;
+
+      const where: any = {};
+      if (type === "POLL" || type === "FORM") {
+        where.type = type;
+      } else {
+        where.type = { in: ["POLL", "FORM"] };
+      }
+
+      const interactions = await prisma.misc.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+            }
+          }
+        },
+        orderBy: {
+          createdAt: "desc"
+        }
+      });
+
+      ResponseUtil.success(res, interactions, "Interactions fetched successfully", 200);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 

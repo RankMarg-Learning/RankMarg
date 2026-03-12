@@ -1,6 +1,6 @@
 "use client"
 import { cn } from "@/lib/utils";
-import { Brain,  LayoutDashboard,  LogOut,  TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload, Users, MessageSquare } from "lucide-react";
+import { Brain,  LayoutDashboard,  LogOut,  TestTube, BookOpen, ArrowRightToLine, ArrowLeftFromLine, CreditCard, Gift, Upload, Users, MessageSquare, MousePointerClick } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useMemo } from "react";
@@ -52,6 +52,7 @@ const AdminSidebar = () => {
     { icon: CreditCard, label: "Plans", href: "/admin/plans" },
     { icon: Gift, label: "PromoCodes", href: "/admin/promocodes" },
     { icon: Users, label: "User Subscriptions", href: "/admin/user-subscriptions" },
+    { icon: MousePointerClick, label: "User Interactions", href: "/admin/interaction" },
   ];
 
   
