@@ -41,7 +41,7 @@ export const AppDownloadBanner = ({ hasTabBar = false }: AppDownloadBannerProps)
       e.preventDefault()
       const fallbackUrl = "https://play.google.com/store/apps/details?id=com.rankmarg.app&hl=en_IN"
       if (/android/i.test(navigator.userAgent)) {
-        window.location.href = `intent://open#Intent;package=com.rankmarg.app;scheme=rankmarg;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`
+        window.location.href = `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;launchFlags=0x10000000;package=com.rankmarg.app;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`
       } else {
         window.location.href = fallbackUrl
       }
