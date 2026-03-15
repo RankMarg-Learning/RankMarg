@@ -15,7 +15,7 @@ import JourneyToSuccess from "@/components/landing/JourneyToSuccess"
 import Link from "next/link"
 import { useEffect, useRef } from "react"
 import { click_login_cta, click_signup_cta, gtagEvent, view_homepage } from "@/utils/analytics"
-
+import { AppDownloadBanner } from "@/components/AppDownloadBanner"
 
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -66,6 +66,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen  overflow-hidden noselect">
+      <AppDownloadBanner />
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-primary-50/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
