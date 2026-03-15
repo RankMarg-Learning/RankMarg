@@ -2,6 +2,7 @@
 "use client"
 import React from 'react';
 import { MobileTabBar } from '@/components/MobileTabBar';
+import { AppDownloadBanner } from '@/components/AppDownloadBanner';
 
 const Layout = ({
   children,
@@ -13,6 +14,7 @@ const Layout = ({
       <div >
         {children}
       </div>
+      <AppDownloadBanner hasTabBar />
       <MobileTabBar />
     </>
   );
