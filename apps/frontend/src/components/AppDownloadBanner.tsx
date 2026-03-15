@@ -51,7 +51,7 @@ export const AppDownloadBanner = ({ hasTabBar = false }: AppDownloadBannerProps)
   const bottomPosition = hasTabBar ? 'bottom-[64px]' : 'bottom-0'
 
   return (
-    <div className={`fixed ${bottomPosition} left-0 right-0 z-[100] bg-white border-t border-gray-200 shadow-[0_-4px_10px_-1px_rgba(0,0,0,0.1)] p-3 flex justify-between items-center sm:hidden animate-in slide-in-from-bottom-2`}>
+    <div className={`fixed ${bottomPosition} left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-[0_-4px_10px_-1px_rgba(0,0,0,0.1)] p-3 flex justify-between items-center sm:hidden animate-in slide-in-from-bottom-2`}>
       <button onClick={handleDismiss} className="mr-3 text-gray-400 hover:text-gray-600 transition-colors p-1" aria-label="Close banner">
         <X size={18} />
       </button>
