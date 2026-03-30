@@ -1,13 +1,11 @@
-// Types for the home.json CDN config
-
 export interface CarouselItem {
   id: string;
   type: "notification" | "discount" | "feature";
-  title?: string;       // optional — slide renders without heading if absent
-  subtitle?: string;    // optional — slide renders without sub-text if absent
+  title?: string;
+  subtitle?: string;
   desktop_image?: string;
   app_image?: string;
-  cta_text?: string;    // optional — CTA button hidden if absent
+  cta_text?: string;
   cta_url: string;
   priority: number;
   target: string[];
@@ -48,7 +46,7 @@ export interface InputFieldDef {
   type: "text" | "calendar" | "email" | "number";
   placeholder?: string;
   required?: boolean;
-  value?: string; // initial value if any
+  value?: string;
 }
 
 export interface InputItem {
@@ -74,7 +72,7 @@ export interface BlogItem {
   tag: string;
   target: string[];
   priority?: number;
-  end?: string;       // optional — hide article on/after this date
+  end?: string;
 }
 
 export interface ImportantBlogsSection {

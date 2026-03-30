@@ -14,39 +14,37 @@ function CarouselSlide({ item }: { item: CarouselItem }) {
       href={item.cta_url || "#"}
       className="relative block w-full group overflow-hidden transition-all duration-500"
     >
-      <div className="relative w-full aspect-[2.8/1] sm:aspect-[11/1] bg-gray-100">
+      <div className="relative w-full aspect-[2.8/1] sm:aspect-[11/1] bg-gray-100/50 dark:bg-gray-800/50">
         {/* Mobile Image */}
-        {(item.app_image) && (
+        {item.app_image && (
           <img
             src={item.app_image}
-            alt={item.id}
-            className={cn(
-              "absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105",
-              item.desktop_image ? "sm:hidden" : ""
-            )}
+            alt={item.title || item.id}
+            className="sm:hidden absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             loading="lazy"
           />
         )}
 
+        {/* Desktop Image */}
         {item.desktop_image && (
           <img
             src={item.desktop_image}
-            alt={item.id}
+            alt={item.title || item.id}
             className="hidden sm:block absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             loading="lazy"
           />
         )}
 
         {!(item.app_image || item.desktop_image) && (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center p-6 text-white text-center">
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold">{item.title}</h3>
-              <p className="text-sm opacity-90">{item.subtitle}</p>
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 flex items-center justify-center p-6 text-white text-center">
+            <div className="space-y-2 backdrop-blur-sm bg-black/5 p-4 rounded-xl">
+              <h3 className="text-xl sm:text-2xl font-bold tracking-tight">{item.title}</h3>
+              <p className="text-sm sm:text-base opacity-90 max-w-md mx-auto">{item.subtitle}</p>
             </div>
           </div>
         )}
 
-        <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors duration-300" />
+        <div className="absolute inset-0 bg-black/[0.02] group-hover:bg-black/0 transition-colors duration-300 pointer-events-none" />
       </div>
     </Link>
   );
